@@ -74,19 +74,14 @@ Discover a kubernetes deployment pipeline
 
 ## MVP Tasks
 ### Hello World
-Write a hello world application which respond with "Hello World" over an HTTP interface. For MVP don't worry about setting up a TES style electric project. Do the simplest thing, e.g. [http-server](https://www.npmjs.com/package/http-server) serving a static page
-
-Additionally the application should include:
-
-* a Dockerfile
-* Kubernetes manifest template
-
-The Dockerfile should be very simple. I suggest basing it on node:8-alpine, running npm install and launching node index.js
-
-The Kubernetes manifest template should use a placeholder for the containers image, but can hard code everything else. Use a templating language which will work nicely with both yaml and json.
+- [X] Write a hello world application which respond with "Hello World" over an HTTP interface. For MVP don't worry about setting up a TES style electric project. Do the simplest thing.
+- [X] Include a Dockerfile
+- [X] Include a Kubernetes manifest template
+- [X] The Dockerfile should be very simple. I suggest basing it on node:8-alpine, running npm install and launching node index.js
+- [X] The Kubernetes manifest template should use a placeholder for the containers image, but can hard code everything else. Use a templating language which will work nicely with both yaml and json.
 
 ### Jenkins Job
-Create a Jenkins job to build the docker image and publish it to the TES docker repository
+- [X] Create a Jenkins job to build the docker image and publish it to the TES docker repository
 
 ### Release Tool
 We need to get release data (e.g. the manifest file, image name etc) from Jenkins to the Deployment Tool. Write a command line node module for POSTing the following information to the Deployment tool
@@ -111,18 +106,22 @@ Content-Type: application/json
   "image": "docker.tescloud.com/tescloud/kubernaut-hello-world:23"
 }
 ```
-* Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example.
-* Publish the node module to sinopia
-* Update the Hello World app to include the kube-release script
-* Update the Jenkins Job to call the kube-release script. Ensure the build fails on error.
+- [ ] Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example.
+- [ ] Publish the node module to sinopia
+- [ ] Update the Hello World app to include the kube-release script
+- [ ] Update the Jenkins Job to call the kube-release script. Ensure the build fails on error.
 
 ### Deployment Tool
 The Deployment tool needs to
-* Update the kubernetes manfest with the docker image
-* Deploy the Hello World application using the Kubernetes API. It should POST the whole manifest, not patch it.
+- [X] Update the kubernetes manfest with the docker image
+- [X] Deploy the Hello World application using the Kubernetes API. It should POST the whole manifest, not patch it.
+- [ ] The deployment tool should also be running in the kubernetes cluster
+- [ ] Kubernetes should manage the kubernetes secrets require by the deployment tool and these should be injected into the container
 
 ### Kubernets Cluster
-We need access to a kubernetes cluster and instructions for installing / configuring CLI tools
+- [X] We need access to a kubernetes cluster and instructions for installing / configuring CLI tools
+
+
 
 ## Next Steps
 1. Add a UI to the Deployment Tool, listing releases
