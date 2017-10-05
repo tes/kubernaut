@@ -34,10 +34,10 @@ describe('Releases API', () => {
     system.stop(cb);
   });
 
-  it('should render the kubernetes manifest with the fully qualified image name', async (done) => {
+  it('should apply the kubernetes manifest template', async (done) => {
 
     const json = {
-      manifest: fs.readFileSync(path.join(__dirname, 'data', 'kubernetes.yaml'), 'utf-8'),
+      template: fs.readFileSync(path.join(__dirname, 'data', 'kubernetes.yaml'), 'utf-8'),
       image: "quay.io/cressie176/kubernaut-hello-world:123",
     };
 
