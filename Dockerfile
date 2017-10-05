@@ -5,11 +5,6 @@ ENV NODE_ENV=production
 
 RUN apk add -U --no-cache curl ca-certificates tcpdump
 
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
-RUN chmod +x /usr/local/bin/kubectl
-RUN apk add -U --no-cache curl ca-certificates tcpdump
-RUN kubectl version --client
-
 RUN npm config set color false
 
 # First install the server dependencies (hopefully cached in previous image)
@@ -24,5 +19,9 @@ COPY . .
 RUN NODE_ENV=development npm run test-server -- --ci --bail --no-colors --verbose
 RUN npm run build-server
 RUN npm run lint
+
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+RUN chmod +x /usr/local/bin/kubectl
+RUN kubectl version --client
 
 ENTRYPOINT node .
