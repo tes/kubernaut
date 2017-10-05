@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
-import { safeLoadAll } from 'js-yaml';
 import hogan from 'hogan.js';
+import Debug from 'debug';
+const debug = Debug('kubernaut:routes:api');
 
 export default function(options = {}) {
 
@@ -8,13 +9,12 @@ export default function(options = {}) {
 
     app.post('/api/releases', bodyParser.json(), async (req, res, next) => {
 
-      const { image, template } = req.body;
+      const { image, template, } = req.body;
 
       try {
-        const yaml = hogan.compile(template).render({ image });
-        const manifest = safeLoadAll(yaml)
-        await kubernetes.apply(image, manifest)
-        res.json({})
+        const yaml = hogan.compile(template).render({ image, });
+        await kubernetes.apply(yaml, res.locals.logger);
+        res.json({});
       } catch(err) {
         next(err);
       }

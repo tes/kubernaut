@@ -1,7 +1,14 @@
 from node:8-alpine
 
+ENV HOME=/config
 ENV NODE_ENV=production
-RUN apk add -U --no-cache tcpdump curl
+
+RUN apk add -U --no-cache curl ca-certificates tcpdump
+
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+RUN chmod +x /usr/local/bin/kubectl
+RUN apk add -U --no-cache curl ca-certificates tcpdump
+RUN kubectl version --client
 
 RUN npm config set color false
 

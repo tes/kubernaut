@@ -1,12 +1,14 @@
+import { safeLoadAll, } from 'js-yaml';
+
 export default function(options = {}) {
 
-  function start({ repo = {}, }, cb) {
+  function start({ store = [],}, cb) {
 
-    function apply(image, manifest) {
+    function apply(yaml) {
       return new Promise((resolve) => {
-        repo[image] = manifest;
+        store.push(safeLoadAll(yaml));
         resolve();
-      })
+      });
     }
 
     return cb(null, {

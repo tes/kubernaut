@@ -27,7 +27,7 @@ Discover a kubernetes deployment pipeline
 │       GitHub       │
 │                    │
 │                    │
-│                    │                                                                                                                     
+│                    │
 └────────────────────┘
            │
            │
@@ -94,10 +94,10 @@ We need to get release data (e.g. the manifest file, image name etc) from Jenkin
 * The Kubernets Manifest File
 * Image Details
 
-e.g. 
+e.g.
 ```
 npm run kubernaut-release \
-  --manifest ./manifest.json \
+  --manifest ./kubernetes.yaml \
   --image docker-registry.tescloud.com/tescloud/app-h2o:23 \
   --server https://kubernaut.tescloud.com \
 ```
@@ -107,25 +107,17 @@ POST /api/releases
 Content-Type: application/json
 
 {
-  "manifest": {
-    "content-type": "application/json",
-    "content": "contents of the template"
-  },
-  "image": {
-    "registry": "docker.tescloud.com",
-    "user": "tescloud",
-    "repo": "app-h2o",
-    "tag": "23"
-  }
+  "template": "contents of the template",
+  "image": "docker.tescloud.com/tescloud/kubernaut-hello-world:23"
 }
 ```
-* Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example. 
+* Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example.
 * Publish the node module to sinopia
 * Update the Hello World app to include the kube-release script
 * Update the Jenkins Job to call the kube-release script. Ensure the build fails on error.
 
 ### Deployment Tool
-The Deployment tool needs to 
+The Deployment tool needs to
 * Update the kubernetes manfest with the docker image
 * Deploy the Hello World application using the Kubernetes API. It should POST the whole manifest, not patch it.
 

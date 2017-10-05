@@ -11,13 +11,13 @@ describe('Releases API', () => {
   let system = { stop: cb => cb(), };
 
   const loggerOptions = {};
-  const repo = {};
+  const store = [];
 
   beforeAll(cb => {
     system = createSystem()
     .set('config.overrides', { server: { port: 13001, }, })
-    .set('repo', repo)
-    .set('kubernetes', kubernetes()).dependsOn('repo')
+    .set('store', store)
+    .set('kubernetes', kubernetes()).dependsOn('store')
     .set('transports.human', human(loggerOptions))
     .start((err, components) => {
       if (err) return cb(err);
@@ -48,9 +48,9 @@ describe('Releases API', () => {
       json,
     });
 
-    expect(repo[json.image]).toBeTruthy();
-    expect(repo[json.image].length).toBe(3);
-    expect(repo[json.image][2].spec.template.spec.containers[0].image).toBe(json.image);
+    expect(store.length).toBe(1);
+    expect(store[0].length).toBe(3);
+    expect(store[0][2].spec.template.spec.containers[0].image).toBe(json.image);
     done();
   });
 });
