@@ -117,10 +117,10 @@ The Deployment tool needs to
 - [X] Deploy the Hello World application using the Kubernetes API. It should POST the whole manifest, not patch it.
 - [ ] The deployment tool should also be running in the kubernetes cluster
 - [ ] Kubernetes should manage the kubernetes secrets require by the deployment tool and these should be injected into the container
+- [ ] The deployment tool should be accessible from jenkins over HTTP
 
 ### Kubernets Cluster
 - [X] We need access to a kubernetes cluster and instructions for installing / configuring CLI tools
-
 
 
 ## Next Steps
