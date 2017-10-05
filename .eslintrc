@@ -1,0 +1,22 @@
+{
+  "extends": "imperative-es6",
+  "plugins": [
+    "react"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "ecmaFeatures": {
+       "jsx": true,
+       "experimentalObjectRestSpread": true,
+    }
+  },
+  "env": {
+    "jest": true
+  },
+  "rules": {
+    "semi": [2, "always"],
+    "comma-dangle": [2, "always"],
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+  }
+}
