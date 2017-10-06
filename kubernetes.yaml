@@ -45,7 +45,15 @@ spec:
     spec:
       containers:
       - name: kubernaut
-        image: {{container}}
+        image: quay.io/cressie176/kubernaut:13
         ports:
         - containerPort: 3001
           name: web
+        volumeMounts:
+        - name: kubectl-config
+          mountPath: "/config/.kube"
+          readOnly: true
+      volumes:
+        - name: kubectl-config
+          secret:
+            secretName: kubectl
