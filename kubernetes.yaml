@@ -34,7 +34,7 @@ metadata:
   labels:
     app: kubernaut
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: kubernaut
@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
       - name: kubernaut
-        image: quay.io/cressie176/kubernaut:13
+        image: {{image}}
         ports:
         - containerPort: 3001
           name: web
