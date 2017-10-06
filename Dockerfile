@@ -13,6 +13,7 @@ WORKDIR /opt/kubernaut
 COPY package.json .
 COPY package-lock.json .
 
+RUN npm config set registry http://npm.tescloud.com
 RUN NODE_ENV=development npm install --clean --force
 
 COPY . .
