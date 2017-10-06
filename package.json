@@ -31,7 +31,7 @@
     "eslint-plugin-react": "^7.2.0",
     "husky": "^0.14.3",
     "jest": "^21.0.0-beta.1",
-    "kubernaut-cli": "^1.0.0-build.2",
+    "kubernaut-cli": "^1.0.0-build.4",
     "nodemon": "^1.11.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
