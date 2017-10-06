@@ -106,18 +106,18 @@ Content-Type: application/json
   "image": "docker.tescloud.com/tescloud/kubernaut-hello-world:23"
 }
 ```
-- [ ] Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example.
-- [ ] Publish the node module to sinopia
-- [ ] Update the Hello World app to include the kube-release script
-- [ ] Update the Jenkins Job to call the kube-release script. Ensure the build fails on error.
+- [X] Implement the node module so that it can be called using an npm script ```npm run kube-release``` see [prerelease-ftw](https://github.com/guidesmiths/prerelease-ftw) for an example.
+- [X] Publish the node module to sinopia
+- [X] Update the Hello World app to include the kube-release script
+- [X] Update the Jenkins Job to call the kube-release script. Ensure the build fails on error.
 
 ### Deployment Tool
 The Deployment tool needs to
 - [X] Update the kubernetes manfest with the docker image
 - [X] Deploy the Hello World application using the Kubernetes API. It should POST the whole manifest, not patch it.
-- [ ] The deployment tool should also be running in the kubernetes cluster
-- [ ] Kubernetes should manage the kubernetes secrets require by the deployment tool and these should be injected into the container
-- [ ] The deployment tool should be accessible from jenkins over HTTP
+- [X] The deployment tool should also be running in the kubernetes cluster
+- [X] Kubernetes should manage the kubernetes secrets require by the deployment tool and these should be injected into the container
+- [X] The deployment tool should be accessible from jenkins over HTTP
 
 ### Kubernets Cluster
 - [X] We need access to a kubernetes cluster and instructions for installing / configuring CLI tools
@@ -130,8 +130,6 @@ The Deployment tool needs to
 1. Release Tool authentication (API KEY?)
 1. UI authentication (github)
 1. Team based permissions
-1. Support yaml and json manifests
 1. Define service criteria (e.g. single node process, logs to stdout, responds to SIGINT and SIGTERM, exposes liveness and readiness endpoints)
 1. HipChat integration
 1. Audit All Releases
-1. Wrap the release-too in a docker image so Jenkins doesn't need node installed
