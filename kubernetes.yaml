@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
       - name: kubernaut
-        image: {{image}}
+        image: {{IMAGE}}
         ports:
         - containerPort: 3001
           name: web
