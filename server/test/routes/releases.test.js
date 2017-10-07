@@ -34,23 +34,29 @@ describe('Releases API', () => {
     system.stop(cb);
   });
 
-  it('should apply the kubernetes manifest template', async (done) => {
+  it.only('should apply the kubernetes manifest template', async (done) => {
 
-    const json = {
-      template: fs.readFileSync(path.join(__dirname, 'data', 'kubernetes.yaml'), 'utf-8'),
-      image: "quay.io/cressie176/kubernaut-hello-world:123",
+    const formData = {
+      IMAGE: 'quay.io/cressie176/kubernaut:123',
+      TEMPLATE: {
+        value:  fs.createReadStream(path.join(__dirname, 'data', 'kubernetes.yaml')),
+        options: {
+          filename: 'kubernetes.yaml',
+          contentType: 'application/x-yaml',
+        },
+      },
     };
 
     await request({
       url: `http://${config.server.host}:${config.server.port}/api/releases`,
       method: 'POST',
       resolveWithFullResponse: true,
-      json,
+      formData,
     });
 
     expect(store.length).toBe(1);
     expect(store[0].length).toBe(3);
-    expect(store[0][2].spec.template.spec.containers[0].image).toBe(json.image);
+    expect(store[0][2].spec.template.spec.containers[0].image).toBe(formData.IMAGE);
     done();
   });
 });

@@ -1,18 +1,18 @@
-import bodyParser from 'body-parser';
+import multer from 'multer';
 import hogan from 'hogan.js';
-import Debug from 'debug';
-const debug = Debug('kubernaut:routes:api');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
   function start({ pkg, app, prepper, kubernetes, }, cb) {
 
-    app.post('/api/releases', bodyParser.json(), async (req, res, next) => {
+    app.post('/api/releases', upload.single('TEMPLATE'), async (req, res, next) => {
 
-      const { image, template, } = req.body;
-
+      const template = new Buffer(req.file.buffer).toString();
       try {
-        const yaml = hogan.compile(template).render({ image, });
+        const yaml = hogan.compile(template).render(req.body);
         await kubernetes.apply(yaml, res.locals.logger);
         res.json({});
       } catch(err) {
