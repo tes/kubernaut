@@ -2,7 +2,7 @@ import { spawn, } from 'child_process';
 
 export default function(options = {}) {
 
-  function start({ repo = {}, }, cb) {
+  function start(cb) {
 
     function apply(manifest, logger) {
       return new Promise((resolve, reject) => {

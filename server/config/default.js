@@ -30,10 +30,16 @@ module.exports = {
       'devDependencies',
     ],
   },
+  postgres: {
+    connectionTimeoutMillis: 1000,
+  },
   routes: {
   },
   server: {
     host: '0.0.0.0',
     port: 3000,
+  },
+  store: {
+    nukeable: false,
   },
 };

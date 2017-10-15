@@ -1,0 +1,6 @@
+START TRANSACTION;
+
+TRUNCATE release CASCADE;
+TRUNCATE release_attribute CASCADE;
+
+COMMIT;

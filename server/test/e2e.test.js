@@ -4,7 +4,7 @@ import createSystem from './test-system';
 
 describe('kubernaut', () => {
 
-  let system;
+  let system = { stop: cb => cb(), };
   let config;
 
   beforeAll(cb => {

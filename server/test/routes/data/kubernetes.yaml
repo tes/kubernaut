@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
       - name: kubernaut-hello-world
-        image: {{IMAGE}}
+        image: {{image}}
         ports:
         - containerPort: 3000
           name: web

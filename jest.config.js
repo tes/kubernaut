@@ -1,4 +1,5 @@
 module.exports = {
+  'verbose': true,
   'testMatch': [
     '**/server/test/**/*.test.js?(x)',
   ],
