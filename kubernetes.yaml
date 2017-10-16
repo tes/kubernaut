@@ -49,6 +49,9 @@ spec:
         ports:
         - containerPort: 3001
           name: web
+        env:
+        - name: APP_ENV
+          value: live
         volumeMounts:
         - name: kubectl-config
           mountPath: "/config/.kube"
