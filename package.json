@@ -7,7 +7,7 @@
     "start": "concurrently 'npm run start-server' 'npm run start-client'",
     "start-server": "npm run start-server-dependencies && nodemon server/index.js --exec babel-node --ignore client/",
     "start-client": "true",
-    "start-server-dependencies": "docker-compose up -d",
+    "start-server-dependencies": "docker-compose up -d local-dependencies",
     "test": "npm run test-server && npm run test-client",
     "test-server": "APP_ENV=test jest",
     "test-server-w": "APP_ENV=test jest --watch",
@@ -16,7 +16,7 @@
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
     "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
     "build-client": "true",
-    "prepush": "docker build --tag quay.io/cressie176/kubernaut:local .",
+    "prepush": "IMAGE=kubernaut TAG=local docker-compose run --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
     "lint": "eslint ."
   },
   "author": "TES",

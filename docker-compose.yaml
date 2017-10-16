@@ -2,8 +2,25 @@ version: '2'
 
 services:
 
-  postgres:
+  local-dependencies:
+    image: alpine
+    command: /bin/true
+    depends_on:
+    - local-postgres
+
+  local-postgres:
     image: postgres:10-alpine
     container_name: postgres
     ports:
      - '5432:5432'
+
+  build-kubernaut:
+    build: ./
+    image: ${IMAGE}:${TAG}
+    depends_on:
+    - build-postgres
+    environment:
+    - KUBERNAUT__POSTGRES__HOST=build-postgres
+
+  build-postgres:
+    image: postgres:10-alpine
