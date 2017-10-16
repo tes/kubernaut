@@ -14,7 +14,7 @@
     "test-client": "true",
     "test-client-w": "true",
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
-    "build-server": "rm -rf server/build && babel -d server/build ./server -s",
+    "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
     "build-client": "true",
     "prepush": "docker build --tag quay.io/cressie176/kubernaut:local .",
     "lint": "eslint ."
