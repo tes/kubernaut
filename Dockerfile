@@ -17,7 +17,6 @@ RUN npm config set registry http://npm.tescloud.com
 RUN NODE_ENV=development npm install --clean --force
 
 COPY . .
-RUN NODE_ENV=development npm run test-server -- --ci --bail --no-colors --verbose
 RUN npm run build-server
 RUN npm run lint
 
