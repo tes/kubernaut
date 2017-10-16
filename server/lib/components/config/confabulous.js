@@ -2,6 +2,7 @@ import path from 'path';
 import Confabulous from 'confabulous';
 
 const loaders = Confabulous.loaders;
+const processors = Confabulous.processors;
 
 export default function(options = {}) {
 
@@ -13,6 +14,7 @@ export default function(options = {}) {
       .add(config => loaders.require({ path: path.join(process.cwd(), 'server', 'config', 'default.js'), watch: true, }))
       .add(config => loaders.require({ path: path.join(process.cwd(), 'server', 'config', `${process.env.APP_ENV}.js`), mandatory: false, }))
       .add(config => loaders.require({ path: path.join(process.cwd(), 'secrets', 'secrets.json'), watch: true, mandatory: false, }))
+      .add(config => loaders.env([ processors.envToCamelCaseProp({ prefix: 'KUBERNAUT__', filter: /^KUBERNAUT__/, }), ]))
       .add(config => loaders.args())
       .add(config => loaders.echo(overrides))
       .on('loaded', cb)
