@@ -18,8 +18,7 @@
     "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
     "build-client": "true",
     "prepush": "IMAGE=kubernaut TAG=local docker-compose run --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
-    "lint": "eslint .",
-    "cachebust": "echo foo"
+    "lint": "eslint ."
   },
   "author": "TES",
   "license": "UNLICENSED",
