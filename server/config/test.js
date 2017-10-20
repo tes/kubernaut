@@ -2,6 +2,11 @@ module.exports = {
   logger: {
     transport: 'human',
   },
+  transports: {
+    human: {
+      level: 'error',
+    },
+  },
   postgres: {
     database: 'postgres',
     user: 'postgres',

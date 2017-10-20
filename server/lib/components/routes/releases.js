@@ -1,7 +1,9 @@
 import multer from 'multer';
 import hogan from 'hogan.js';
-import { v4 as uuid, } from 'uuid';
+import highwayhash from 'highwayhash';
+import crypto from 'crypto';
 
+const key = crypto.randomBytes(32);
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage, });
 
@@ -31,19 +33,32 @@ export default function(options = {}) {
 
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
-      const template = new Buffer(req.file.buffer).toString();
-      const yaml = hogan.compile(template).render(req.body);
-      const release = {
-        id: uuid(),
-        name: req.body.name,
+      const buffer = new Buffer(req.file.buffer);
+      const source = buffer.toString();
+      const checksum = highwayhash.asHexString(key, buffer);
+
+      if (!req.body.service) return res.status(400).json({ message: 'service is required', });
+      if (!req.body.version) return res.status(400).json({ message: 'version is required', });
+
+      const data = {
+        service: {
+          name: req.body.service,
+        },
         version: req.body.version,
-        description: req.body.description,
-        template,
+        template: {
+          source,
+          checksum,
+        },
         attributes: req.body,
+      };
+      const meta = {
+        date: new Date(),
+        user: 'anonymous',
       };
 
       try {
-        await store.saveRelease(release, { date: new Date(), user: 'anonymous', });
+        const release = await store.saveRelease(data, meta);
+        const yaml = hogan.compile(source).render(req.body);
         await kubernetes.apply(yaml, res.locals.logger);
         res.json({ id: release.id, });
       } catch(err) {
@@ -54,7 +69,7 @@ export default function(options = {}) {
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
         await store.deleteRelease(req.params.id, { date: new Date(), user: 'anonymous', });
-        res.send(202);
+        res.status(202).send();
       } catch (err) {
         next(err);
       }

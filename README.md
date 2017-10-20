@@ -133,3 +133,6 @@ The Deployment tool needs to
 1. Define service criteria (e.g. single node process, logs to stdout, responds to SIGINT and SIGTERM, exposes liveness and readiness endpoints)
 1. HipChat integration
 1. Audit All Releases
+
+### Notes
+- Create a release for a deleted service ???

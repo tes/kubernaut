@@ -1,11 +1,9 @@
-import fs from 'fs';
-import path from 'path';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logging/human';
 import kubernetes from '../../lib/components/kubernetes/kubernetes-stub';
-import { makeRelease, makeMeta, } from '../factories';
+import { makeRelease, makeMeta, makeFormData, } from '../factories';
 
 describe('Releases API', () => {
 
@@ -21,13 +19,17 @@ describe('Releases API', () => {
     .set('config.overrides', { server: { port: 13001, }, })
     .set('manifests', manifests)
     .set('kubernetes', kubernetes()).dependsOn('manifests')
-    .set('transports.human', human(loggerOptions))
+    .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
       cb();
     });
+  });
+
+  beforeEach(cb => {
+    store.nuke().then(cb);
   });
 
   afterEach(() => {
@@ -41,7 +43,7 @@ describe('Releases API', () => {
 
   describe('GET /api/releases', () => {
 
-    beforeAll(async done => {
+    beforeEach(async () => {
 
       const releases = [];
       for (var i = 0; i < 51; i++) {
@@ -54,11 +56,9 @@ describe('Releases API', () => {
       await Promise.all(releases.map(async release => {
         await store.saveRelease(release.data, release.meta);
       }));
-
-      done();
     });
 
-    it('should return a list of releases', async done => {
+    it('should return a list of releases', async () => {
 
       const releases = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -67,10 +67,9 @@ describe('Releases API', () => {
       });
 
       expect(releases.length).toBe(50);
-      done();
     });
 
-    it('should limit results', async done => {
+    it('should limit results', async () => {
 
       const releases = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -80,10 +79,9 @@ describe('Releases API', () => {
       });
 
       expect(releases.length).toBe(40);
-      done();
     });
 
-    it('should page results', async done => {
+    it('should page results', async () => {
 
       const releases = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -93,29 +91,27 @@ describe('Releases API', () => {
       });
 
       expect(releases.length).toBe(41);
-      done();
     });
 
   });
 
   describe('GET /api/releases/:id', () => {
 
-    it('should return the requested release', async done => {
+    it('should return the requested release', async () => {
 
       const data = makeRelease();
-      await store.saveRelease(data, makeMeta());
+      const saved = await store.saveRelease(data, makeMeta());
 
       const release = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
+        url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,
         method: 'GET',
         json: true,
       });
 
-      expect(release.id).toBe(data.id);
-      done();
+      expect(release.id).toBe(saved.id);
     });
 
-    it('should return 404 for missing releases', async done => {
+    it('should return 404 for missing releases', async () => {
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/does-not-exist`,
@@ -126,29 +122,15 @@ describe('Releases API', () => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(404);
-        done();
       });
     });
   });
 
   describe('POST /api/releases', () => {
 
-    it('should save a release', async done => {
+    it('should save a release', async () => {
 
-      const data = makeRelease();
-
-      const formData = {
-        name: data.name,
-        version: data.version,
-        image: data.attributes.image,
-        template: {
-          value:  fs.createReadStream(path.join(__dirname, 'data', 'kubernetes.yaml')),
-          options: {
-            filename: 'kubernetes.yaml',
-            contentType: 'application/x-yaml',
-          },
-        },
-      };
+      const formData = makeFormData();
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -167,25 +149,11 @@ describe('Releases API', () => {
         json: true,
       });
 
-      done();
     });
 
-    it('should apply the kubernetes manifest template', async done => {
+    it('should apply the kubernetes manifest template', async () => {
 
-      const data = makeRelease();
-
-      const formData = {
-        name: data.name,
-        version: data.version,
-        image: data.attributes.image,
-        template: {
-          value:  fs.createReadStream(path.join(__dirname, 'data', 'kubernetes.yaml')),
-          options: {
-            filename: 'kubernetes.yaml',
-            contentType: 'application/x-yaml',
-          },
-        },
-      };
+      const formData = makeFormData();
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -197,14 +165,43 @@ describe('Releases API', () => {
       expect(manifests.length).toBe(1);
       expect(manifests[0].length).toBe(3);
       expect(manifests[0][2].spec.template.spec.containers[0].image).toBe(formData.image);
-      done();
+    });
+
+    it('should reject releases without a service', async () => {
+
+      const formData = makeFormData();
+      delete formData.service;
+
+      loggerOptions.suppress = true;
+
+      await expect(request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        method: 'POST',
+        formData,
+      })).rejects.toHaveProperty('statusCode', 400);
+
+    });
+
+    it('should reject releases without a version', async () => {
+
+      const formData = makeFormData();
+      delete formData.version;
+
+      loggerOptions.suppress = true;
+
+      await expect(request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        method: 'POST',
+        formData,
+      })).rejects.toHaveProperty('statusCode', 400);
+
     });
 
   });
 
   describe('DELETE /api/releases/:id', () => {
 
-    it('should delete releases', async done => {
+    it('should delete releases', async () => {
 
       const data = makeRelease();
       await store.saveRelease(data, makeMeta());
@@ -227,11 +224,11 @@ describe('Releases API', () => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(404);
-        done();
+
       });
     });
 
-    it('should tolerate repeated deletions', async done => {
+    it('should tolerate repeated deletions', async () => {
 
       const data = makeRelease();
       await store.saveRelease(data, makeMeta());
@@ -253,10 +250,9 @@ describe('Releases API', () => {
       });
 
       expect(response2.statusCode).toBe(202);
-      done();
     });
 
-    it('should tolerate deletion of missing releases', async done => {
+    it('should tolerate deletion of missing releases', async () => {
 
       const data = makeRelease();
       await store.saveRelease(data, makeMeta());
@@ -269,7 +265,6 @@ describe('Releases API', () => {
       });
 
       expect(response1.statusCode).toBe(202);
-      done();
     });
   });
 });

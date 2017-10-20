@@ -5,8 +5,8 @@ import bunyan from './bunyan';
 import prepperMiddleware from './prepper-middleware';
 
 module.exports = new System({ name: 'logging', })
-  .add('transports.human', human())
-  .add('transports.bunyan', bunyan()).dependsOn('pkg')
+  .add('transports.human', human()).dependsOn('config')
+  .add('transports.bunyan', bunyan()).dependsOn('config', 'pkg')
   .add('transports').dependsOn(
     { component: 'transports.human', destination: 'human', },
     { component: 'transports.bunyan', destination: 'bunyan', })

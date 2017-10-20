@@ -1,9 +1,9 @@
 SELECT
-  name,
-  value,
-  release
+  ra.name,
+  ra.value,
+  ra.release
 FROM
-  release_attribute
+  release_attribute ra
 WHERE
-  release = $1
+  ra.release = $1
 ;

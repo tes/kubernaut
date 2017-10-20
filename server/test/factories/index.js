@@ -1,17 +1,29 @@
 import Chance from 'chance';
-import { v4 as uuid, } from 'uuid';
+import get from 'lodash.get';
+import fs from 'fs';
+import path from 'path';
+import highwayhash from 'highwayhash';
+import crypto from 'crypto';
 
+const key = crypto.randomBytes(32);
 const chance = new Chance();
+const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
+const sampleTemplate = fs.readFileSync(sampleTemplatePath, 'utf-8');
 
 function makeRelease(overrides = {}) {
-  const name = chance.name().toLowerCase().replace(/\s/g, '-');
-  const version = `${chance.integer({ min: 1, max: 1000, })}`;
+  const name = get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-'));
+  const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
+  const source = sampleTemplate;
+
   return {
-    id: uuid(),
-    name,
+    service: {
+      name,
+    },
     version,
-    description: chance.sentence(),
-    template: chance.sentence(),
+    template: {
+      source,
+      checksum: highwayhash.asHexString(key, Buffer.from(source)),
+    },
     attributes: {
       template: `${chance.word().toLowerCase()}.yaml`,
       image: `registry/repo/${name}:${version}`,
@@ -28,4 +40,22 @@ function makeMeta(overrides = {}) {
   };
 }
 
-export { makeRelease, makeMeta, };
+function makeFormData(overrides = {}) {
+
+  const data = makeRelease();
+
+  return {
+    service: data.service.name,
+    version: data.version,
+    image: data.attributes.image,
+    template: {
+      value:  fs.createReadStream(sampleTemplatePath),
+      options: {
+        filename: 'kubernetes.yaml',
+        contentType: 'application/x-yaml',
+      },
+    },
+  };
+}
+
+export { makeRelease, makeMeta, makeFormData, };

@@ -8,63 +8,103 @@ export default function(options) {
 
       logger.debug(`Getting release by id: ${id}`);
 
-      return Promise.all([
+      return await Promise.all([
         db.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
         db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
       ]).then(([releaseResult, attributesResult,]) => {
         logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
-        if (!releaseResult.rowCount) return;
-        return toRelease(releaseResult.rows[0], attributesResult.rows);
+        return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
       });
     }
 
-    async function saveRelease(release, meta) {
+    async function saveRelease(data, meta) {
       return await withTransaction(async connection => {
-        await _saveRelease(connection, release, meta);
-        await _saveReleaseAttributes(connection, release);
+        const service = await _ensureService(connection, data.service, meta);
+        const template = await _ensureReleaseTemplate(connection, data.template, meta);
+        const release = await _saveRelease(connection, service, template, data, meta);
+        const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
+        return { ...release, service, template, attributes, };
       });
     }
 
-    async function _saveRelease(connection, release, meta) {
+    async function _ensureService(connection, data, meta) {
 
-      logger.debug(`Saving release id: ${release.id}, version: ${release.version}`);
+      logger.debug(`Ensuring service: ${data.name}`);
 
-      await connection.query(SQL.SAVE_RELEASE, [
-        release.id,
-        release.name,
-        release.version,
-        release.description,
-        release.template,
-        meta.date,
-        meta.user,
+      const result = await connection.query(SQL.ENSURE_SERVICE, [
+        data.name, meta.date, meta.user,
       ]);
+
+      const service = {
+        ...data, id: result.rows[0].id,
+      };
+
+      logger.debug(`Ensured service: ${service.name} with id: ${service.id}`);
+
+      return service;
     }
 
-    async function _saveReleaseAttributes(connection, release) {
+    async function _ensureReleaseTemplate(connection, data, meta) {
 
-      const attributeNames = Object.keys(release.attributes);
+      logger.debug(`Ensuring release template with checksum: ${data.checksum}`);
 
-      logger.debug(`Saving attributes [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
+      const result = await connection.query(SQL.ENSURE_RELEASE_TEMPLATE, [
+        data.source, data.checksum, meta.date, meta.user,
+      ]);
 
-      const attributes = attributeNames
-        .map(name => ({
-          name,
-          value: release.attributes[name],
-          release: release.id,
-        }));
+      const template = {
+        ...data, id: result.rows[0].id,
+      };
+
+      logger.debug(`Ensured release template with checksum ${template.checksum} and id: ${template.id}`);
+
+      return template;
+    }
+
+    async function _saveRelease(connection, service, template, data, meta) {
+
+      logger.debug(`Saving release: ${service.name}, version: ${data.version}`);
+
+      const result = await connection.query(SQL.SAVE_RELEASE, [
+        service.id, data.version, template.id, meta.date, meta.user,
+      ]);
+
+      const release = {
+        ...data, id: result.rows[0].id,
+      };
+
+      logger.debug(`Saved release: ${service.name}, version: ${release.version} with id: ${release.id}`);
+
+      return release;
+    }
+
+    async function _saveReleaseAttributes(connection, release, data) {
+
+      const attributeNames = Object.keys(data);
+
+      logger.debug(`Saving release attributes: [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
+
+      const attributes = attributeNames.map(name => ({
+        name, value: data[name], release: release.id,
+      }));
 
       await connection.query(SQL.SAVE_RELEASE_ATTRIBUTES, [JSON.stringify(attributes),]);
 
-      return;
+      logger.debug(`Saved release attributes: [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
+
+      return attributes;
     }
 
     async function listReleases(limit = 50, offset = 0) {
-      logger.debug('Listing releases');
+
+      logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
+
       const result = await db.query(SQL.LIST_RELEASES, [
-        limit,
-        offset,
+        limit, offset,
       ]);
+
       logger.debug(`Found ${result.rowCount} releases`);
+
       return result.rows.map(row => toRelease(row));
     }
 
@@ -102,10 +142,16 @@ export default function(options) {
     function toRelease(row, attributeRows = []) {
       return {
         id: row.id,
-        name: row.name,
+        service: {
+          id: row.service_id,
+          name: row.service_name,
+        },
         version: row.version,
-        description: row.description,
-        template: row.template,
+        template: row.template_id ? {
+          id: row.template_id,
+          source: row.template_source,
+          checksum: row.template_checksum,
+        } : undefined,
         createdOn: row.created_on,
         createdBy: row.created_by,
         deletedOn: row.deleted_on,
