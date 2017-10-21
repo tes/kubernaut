@@ -33,6 +33,7 @@ metadata:
   name: kubernaut
   labels:
     app: kubernaut
+    version: {{version}}
 spec:
   replicas: 1
   selector:
