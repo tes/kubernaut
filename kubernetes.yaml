@@ -33,7 +33,7 @@ metadata:
   name: {{service}}
   labels:
     app: {{service}}
-    version: {{version}}
+    version: "{{version}}"
 spec:
   replicas: 1
   selector:
