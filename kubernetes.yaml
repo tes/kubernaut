@@ -17,10 +17,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kubernaut
+  name: {{service}}
 spec:
   selector:
-    app: kubernaut
+    app: {{service}}
   ports:
     - port: 80
       targetPort: web
@@ -30,22 +30,22 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: kubernaut
+  name: {{service}}
   labels:
-    app: kubernaut
+    app: {{service}}
     version: {{version}}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubernaut
+      app: {{service}}
   template:
     metadata:
       labels:
-        app: kubernaut
+        app: {{service}}
     spec:
       containers:
-      - name: kubernaut
+      - name: {{service}}
         image: {{image}}
         ports:
         - containerPort: 3000
