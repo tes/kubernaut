@@ -36,7 +36,7 @@ export default function(options = {}) {
     }
 
     async function listReleases(limit = 50, offset = 0) {
-      return releases.filter(byActiveReleases)
+      return releases.filter(byActive)
         .map(toSlimRelease)
         .sort(byMostRecent)
         .slice(offset, offset + limit);
@@ -60,7 +60,7 @@ export default function(options = {}) {
              b.id.localeCompare(a.id);
     }
 
-    function byActiveReleases(r) {
+    function byActive(r) {
       return !r.deletedOn && !getService(r.service).deletedOn;
     }
 

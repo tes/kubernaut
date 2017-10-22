@@ -1,8 +1,8 @@
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeRelease, makeMeta, makeProfile, } from '../factories';
+import { makeRelease, makeMeta, } from '../factories';
 
-describe('Store', () => {
+describe('Release Store', () => {
 
   const suites = [
     {
@@ -43,31 +43,6 @@ describe('Store', () => {
         store.nuke().then(() => {
           system.stop(cb);
         }).catch(cb);
-      });
-
-      describe('Save Profile', () => {
-
-        it('should create a profile', async () => {
-          await store.saveProfile(makeProfile(), makeMeta());
-        });
-
-        it('should prevent duplicate profile versions', async () => {
-          const data = makeProfile({
-            name: 'duplicate-profile-version',
-            version: '123',
-          });
-          await store.saveProfile(data, makeMeta());
-          await expect(store.saveProfile(data, makeMeta())).rejects.toHaveProperty('code', '23505');
-        });
-
-        it('should permit multiple profile versions', async () => {
-          const data1 = makeProfile({ name: 'multiple-profile-versions', version: '1', });
-          await store.saveProfile(data1, makeMeta());
-
-          const data2 = makeProfile({ name: 'multiple-profile-versions', version: '2', });
-          await store.saveProfile(data2, makeMeta());
-        });
-
       });
 
       describe('Save release', () => {
@@ -115,8 +90,8 @@ describe('Store', () => {
           expect(release.template.checksum).toBe(data.template.checksum);
           expect(release.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(release.createdBy).toBe(meta.user);
-          expect(release.attributes.TEMPLATE).toBe(data.attributes.TEMPLATE);
-          expect(release.attributes.IMAGE).toBe(data.attributes.IMAGE);
+          expect(release.attributes.template).toBe(data.attributes.template);
+          expect(release.attributes.image).toBe(data.attributes.image);
         });
 
         it('should return undefined when release not found', async () => {
