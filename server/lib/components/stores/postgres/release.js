@@ -135,10 +135,6 @@ export default function(options) {
       }
     }
 
-    async function nuke() {
-      await db.query(SQL.NUKE);
-    }
-
     function toRelease(row, attributeRows = []) {
       return {
         id: row.id,
@@ -162,16 +158,11 @@ export default function(options) {
       };
     }
 
-    db.on('error', err => {
-      logger.warn(err, 'Database client errored and was evicted from the pool');
-    });
-
     return cb(null, {
       getRelease,
       saveRelease,
       listReleases,
       deleteRelease,
-      nuke : config.nukeable ? nuke : undefined,
     });
   }
 

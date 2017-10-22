@@ -7,8 +7,8 @@ CREATE TABLE release_attribute (
   UNIQUE (release, name)
 );
 
-CREATE INDEX release_attribute__release__idx ON release_attribute (
-  release
+CREATE INDEX release_attribute__release__name__idx ON release_attribute (
+  release, name
 );
 
 COMMIT;

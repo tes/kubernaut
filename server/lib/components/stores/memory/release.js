@@ -2,7 +2,9 @@ import { v4 as uuid, } from 'uuid';
 
 export default function(options = {}) {
 
-  function start({ services = [], releases = [], clock, }, cb) {
+  function start({ tables, }, cb) {
+
+    const { services, releases, } = tables;
 
     async function getService(id) {
       return services.find(s => s.id === id && !s.deletedOn);
@@ -75,16 +77,11 @@ export default function(options = {}) {
       return item;
     }
 
-    async function nuke() {
-      releases.length = 0;
-    }
-
     return cb(null, {
       getRelease,
       saveRelease,
       listReleases,
       deleteRelease,
-      nuke,
     });
   }
 

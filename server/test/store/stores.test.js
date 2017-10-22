@@ -1,24 +1,22 @@
 import createSystem from '../test-system';
-import pg from 'systemic-pg';
-import migrator from '../../lib/components/store/migrator';
-import store from '../../lib/components/store/real';
-import { makeRelease, makeMeta, } from '../factories';
+import postgres from '../../lib/components/stores/postgres';
+import { makeRelease, makeMeta, makeProfile, } from '../factories';
 
 describe('Store', () => {
 
   const suites = [
     {
-      name: 'Fake',
+      name: 'Memory',
       system: createSystem()
         .remove('server'),
     },
     {
-      name: 'Real',
+      name: 'Postgres',
       system: createSystem()
         .remove('server')
-        .set('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config.postgres', })
-        .set('postgres', pg()).dependsOn('config', 'logger', 'migrator')
-        .set('store', store()).dependsOn('config', 'logger', 'postgres'),
+        .remove('store.release')
+        .remove('store.profile')
+        .include(postgres),
     },
   ];
 
@@ -37,7 +35,7 @@ describe('Store', () => {
         });
       });
 
-      beforeEach(cb => {
+      beforeEach(async cb => {
         store.nuke().then(cb);
       });
 
@@ -47,6 +45,31 @@ describe('Store', () => {
         }).catch(cb);
       });
 
+      describe('Save Profile', () => {
+
+        it('should create a profile', async () => {
+          await store.saveProfile(makeProfile(), makeMeta());
+        });
+
+        it('should prevent duplicate profile versions', async () => {
+          const data = makeProfile({
+            name: 'duplicate-profile-version',
+            version: '123',
+          });
+          await store.saveProfile(data, makeMeta());
+          await expect(store.saveProfile(data, makeMeta())).rejects.toHaveProperty('code', '23505');
+        });
+
+        it('should permit multiple profile versions', async () => {
+          const data1 = makeProfile({ name: 'multiple-profile-versions', version: '1', });
+          await store.saveProfile(data1, makeMeta());
+
+          const data2 = makeProfile({ name: 'multiple-profile-versions', version: '2', });
+          await store.saveProfile(data2, makeMeta());
+        });
+
+      });
+
       describe('Save release', () => {
 
         it('should create a release', async () => {
@@ -54,7 +77,6 @@ describe('Store', () => {
         });
 
         it('should prevent duplicate release versions', async () => {
-
           const data = makeRelease({
             service: {
               name: 'duplicate-release-version',
@@ -62,15 +84,13 @@ describe('Store', () => {
           });
           await store.saveRelease(data, makeMeta());
           await expect(store.saveRelease(data, makeMeta())).rejects.toHaveProperty('code', '23505');
-
         });
 
         it('should permit multiple release versions', async () => {
-
-          const data1 = makeRelease({ id: 'multiple-release-version-1', name: 'multiple-release-versions', version: '1', });
+          const data1 = makeRelease({ name: 'multiple-release-versions', version: '1', });
           await store.saveRelease(data1, makeMeta());
 
-          const data2 = makeRelease({ id: 'multiple-release-version-2', name: 'multiple-release-versions', version: '2', });
+          const data2 = makeRelease({ name: 'multiple-release-versions', version: '2', });
           await store.saveRelease(data2, makeMeta());
         });
 
@@ -119,7 +139,6 @@ describe('Store', () => {
         });
 
       });
-
 
       describe('List Releases', () => {
 
