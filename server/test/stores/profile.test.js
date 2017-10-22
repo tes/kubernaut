@@ -110,7 +110,7 @@ describe('Profile Store', () => {
 
       });
 
-      xdescribe('List Profile', () => {
+      describe('List Profile', () => {
 
         it('should list profiles, ordered by deletedOn desc, createdOn desc and id desc', async () => {
 

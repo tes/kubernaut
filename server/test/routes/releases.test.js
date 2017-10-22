@@ -3,7 +3,7 @@ import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logging/human';
 import kubernetes from '../../lib/components/kubernetes/kubernetes-stub';
-import { makeRelease, makeMeta, makeFormData, } from '../factories';
+import { makeRelease, makeMeta, makeReleaseForm, } from '../factories';
 
 describe('Releases API', () => {
 
@@ -130,7 +130,7 @@ describe('Releases API', () => {
 
     it('should save a release', async () => {
 
-      const formData = makeFormData();
+      const formData = makeReleaseForm();
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -153,7 +153,7 @@ describe('Releases API', () => {
 
     it('should apply the kubernetes manifest template', async () => {
 
-      const formData = makeFormData();
+      const formData = makeReleaseForm();
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -169,7 +169,7 @@ describe('Releases API', () => {
 
     it('should reject releases without a service', async () => {
 
-      const formData = makeFormData();
+      const formData = makeReleaseForm();
       delete formData.service;
 
       loggerOptions.suppress = true;
@@ -184,7 +184,7 @@ describe('Releases API', () => {
 
     it('should reject releases without a version', async () => {
 
-      const formData = makeFormData();
+      const formData = makeReleaseForm();
       delete formData.version;
 
       loggerOptions.suppress = true;

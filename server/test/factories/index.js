@@ -55,7 +55,7 @@ function makeMeta(overrides = {}) {
   };
 }
 
-function makeFormData(overrides = {}) {
+function makeReleaseForm(overrides = {}) {
 
   const data = makeRelease();
 
@@ -73,4 +73,4 @@ function makeFormData(overrides = {}) {
   };
 }
 
-export { makeProfile, makeRelease, makeMeta, makeFormData, };
+export { makeProfile, makeRelease, makeMeta, makeReleaseForm, };
