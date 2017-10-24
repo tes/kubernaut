@@ -1,0 +1,3 @@
+ALTER TABLE service SET LOGGED;
+ALTER TABLE release SET LOGGED;
+ALTER TABLE release_attribute SET LOGGED;

@@ -1,6 +1,6 @@
 export default function(options = {}) {
 
-  function start({ profile, release, tables, }, cb) {
+  function start({ release, tables, }, cb) {
 
     async function nuke() {
       Object.keys(tables).forEach(name => {
@@ -9,7 +9,6 @@ export default function(options = {}) {
     }
 
     cb(null, {
-      ...profile,
       ...release,
       nuke,
     });

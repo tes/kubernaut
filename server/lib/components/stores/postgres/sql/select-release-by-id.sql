@@ -1,4 +1,4 @@
-EXPLAIN ANALYZE SELECT
+SELECT
   ar.id,
   ar.service_id,
   ar.service_name,
@@ -9,7 +9,7 @@ EXPLAIN ANALYZE SELECT
   ar.created_on,
   ar.created_by
 FROM
-  active_release__mv ar, release_template rt
+  active_release__vw ar, release_template rt
 WHERE
   ar.id = $1 AND
   rt.id = ar.template

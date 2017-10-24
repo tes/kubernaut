@@ -18,6 +18,6 @@ module.exports = {
     port: 3001,
   },
   store: {
-    nukeable: true,
+    unsafe: true,
   },
 };

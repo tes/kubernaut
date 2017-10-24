@@ -41,7 +41,7 @@ Discover a kubernetes deployment pipeline
 │                    │                      │
 │                    │                      │
 ├────────────────────┤                      │
-│ Release │   Deploy │                      │
+│ Release │  Deploy  │                      │
 └────────────────────┘                      │
      │          │                           │
      │          │                           │
@@ -88,5 +88,11 @@ Creates a new release
 Soft deletes a release
 
 
+### Maintenance
+PostgreSQL creates dead tuples when updating or deleting rows. Dead tuples need to be vacuumed from time to time for efficiency. PostgreSQL defaults to running autovacuum when the ratio between live and dead tuples hits a certain percentage. After running an autovacuum PostgreSQL performs an ANALYZE, which is when it gathers stats used to optimse queries.
+
+The vast majority of operations will be inserts. The only updates are when a release or service is soft deleted. This means that autovacuum is likely never to run, and consquently ANALYZE will not be automatically run either. As data grows this may harm performance.
+
+See [here](https://github.com/tes/kubernaut/issues/4)
 
 

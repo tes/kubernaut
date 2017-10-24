@@ -73,11 +73,12 @@ describe('Release Store', () => {
 
       describe('Get Release', () => {
 
-        it('should retrieve releases by id', async () => {
+        it('should retrieve release by id', async (done) => {
 
           const data = makeRelease();
           const meta = makeMeta({ date: new Date(), user: 'cressie176', });
           const saved = await store.saveRelease(data, meta);
+
           const release = await store.getRelease(saved.id);
 
           expect(release).toBeDefined();
@@ -92,6 +93,8 @@ describe('Release Store', () => {
           expect(release.createdBy).toBe(meta.user);
           expect(release.attributes.template).toBe(data.attributes.template);
           expect(release.attributes.image).toBe(data.attributes.image);
+
+          done()
         });
 
         it('should return undefined when release not found', async () => {

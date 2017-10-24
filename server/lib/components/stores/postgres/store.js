@@ -2,7 +2,7 @@ import SQL from './sql';
 
 export default function(options = {}) {
 
-  function start({ config, logger, profile, release, postgres: db, }, cb) {
+  function start({ config, logger, release, postgres: db, }, cb) {
 
     db.on('error', err => {
       logger.warn(err, 'Database client errored and was evicted from the pool');
@@ -12,10 +12,19 @@ export default function(options = {}) {
       await db.query(SQL.NUKE);
     }
 
+    async function logged() {
+      await db.query(SQL.LOGGED_TABLES);
+    }
+
+    async function unlogged() {
+      await db.query(SQL.UNLOGGED_TABLES);
+    }
+
     cb(null, {
-      ...profile,
       ...release,
-      nuke : config.nukeable ? nuke : undefined,
+      nuke : config.unsafe ? nuke : undefined,
+      logged: config.unsafe ? logged : undefined,
+      unlogged: config.unsafe ? unlogged : undefined,
     });
   }
 

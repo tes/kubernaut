@@ -19,6 +19,6 @@ module.exports = {
     port: 13000,
   },
   store: {
-    nukeable: true,
+    unsafe: true,
   },
 };

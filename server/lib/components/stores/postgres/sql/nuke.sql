@@ -1,7 +1,5 @@
 START TRANSACTION;
 
-TRUNCATE profile CASCADE;
-TRUNCATE profile_attribute CASCADE;
 TRUNCATE service CASCADE;
 TRUNCATE release_template CASCADE;
 TRUNCATE release CASCADE;
