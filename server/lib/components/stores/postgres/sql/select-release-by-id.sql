@@ -1,18 +1,16 @@
-SELECT
-  r.id,
-  s.id AS service_id,
-  s.name AS service_name,
-  r.version,
-  t.id as template_id,
-  t.source as template_source,
-  t.checksum as template_checksum,
-  r.created_on,
-  r.created_by
+EXPLAIN ANALYZE SELECT
+  ar.id,
+  ar.service_id,
+  ar.service_name,
+  ar.version,
+  rt.id as template_id,
+  rt.source as template_source,
+  rt.checksum as template_checksum,
+  ar.created_on,
+  ar.created_by
 FROM
-  release r, service s, release_template t
+  active_release__mv ar, release_template rt
 WHERE
-  r.id = $1 AND
-  r.service = s.id AND
-  r.deleted_on IS NULL AND
-  s.deleted_on IS NULL
+  ar.id = $1 AND
+  rt.id = ar.template
 ;

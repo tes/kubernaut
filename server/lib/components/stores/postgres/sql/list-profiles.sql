@@ -9,8 +9,7 @@ FROM
 WHERE
   p.deleted_on IS NULL
 ORDER BY
-  -- Using coalesce to take advantage of release__deleted_on__created_on__service__idx
-  COALESCE(p.deleted_on, p.created_on) DESC,
+  p.created_on DESC,
   p.id DESC
 LIMIT
   $1

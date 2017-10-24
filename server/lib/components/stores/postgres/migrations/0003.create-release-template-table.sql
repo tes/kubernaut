@@ -8,16 +8,8 @@ CREATE TABLE release_template (
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by TEXT,
-  UNIQUE (checksum),
-  CONSTRAINT release_deletion CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
-);
-
-CREATE INDEX release_template__checksum__idx ON release_template (
-  checksum
-);
-
-CREATE INDEX release_template__deleted_on__created_on__id__idx on release_template (
-  COALESCE(deleted_on, created_on), id
+  CONSTRAINT release__checksum__uniq UNIQUE (checksum),
+  CONSTRAINT release__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
 CREATE FUNCTION ensure_release_template (

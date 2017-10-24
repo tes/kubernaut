@@ -9,16 +9,8 @@ CREATE TABLE release (
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by TEXT,
-  UNIQUE (service, version),
-  CONSTRAINT release_deletion CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
-);
-
-CREATE INDEX release__deleted_on__created_on__id__idx on release (
-  COALESCE(deleted_on, created_on), id
-);
-
-CREATE INDEX release__deleted_on__created_on__service__idx on release (
-  COALESCE(deleted_on, created_on), service
+  CONSTRAINT release__service__version__uniq UNIQUE (service, version),
+  CONSTRAINT release__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
 COMMIT;

@@ -14,6 +14,7 @@
     "test-server-i": "APP_ENV=test jest --runInBand",
     "test-client": "true",
     "test-client-w": "true",
+    "load-test-data": "babel-node ./server/test/bin/load-test-data.js",
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
     "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
     "build-client": "true",
@@ -34,6 +35,7 @@
     "husky": "^0.14.3",
     "jest": "^21.0.0-beta.1",
     "nodemon": "^1.11.0",
+    "p-limit": "^1.1.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
   },
