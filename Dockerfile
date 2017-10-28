@@ -13,17 +13,13 @@ RUN mkdir -p /opt/kubernaut
 WORKDIR /opt/kubernaut
 COPY package.json .
 COPY package-lock.json .
-
 RUN NODE_ENV=development npm install --clean --force
 
 # Then install the client dependencies (hopefully cached in previous image)
-RUN NODE_ENV=development npm install --clean --force
-
-RUN mkdir -p /opt/app/client
-WORKDIR /opt/app/client
+RUN mkdir -p /opt/kubernaut/client
+WORKDIR /opt/kubernaut/client
 COPY client/package.json .
 COPY client/package-lock.json .
-
 RUN NODE_ENV=development npm install --clean --force
 
 # Now build the client (likely to cachebust)
