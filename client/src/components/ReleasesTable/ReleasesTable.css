@@ -1,0 +1,23 @@
+.releases-table .releases-table__body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.releases-table .releases-table__heading__created {
+  width: 350px;
+}
+
+.releases-table .releases-table__body__row__created .releases-table__body__row__created__on {
+  margin-right: 20px;
+}
+
+.releases-table .releases-table__body__row__created .releases-table__body__row__created__ago {
+  font-style: italic;
+}
+
+.releases-table .releases-table__body__row__service-name {
+  white-space: nowrap;
+}
+
+.releases-table .releases-table__body__row__version {
+  white-space: nowrap;
+}

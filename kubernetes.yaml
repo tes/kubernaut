@@ -48,7 +48,7 @@ spec:
       - name: {{service}}
         image: {{image}}
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
           name: web
         env:
         - name: APP_ENV

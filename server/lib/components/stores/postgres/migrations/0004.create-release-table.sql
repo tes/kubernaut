@@ -13,4 +13,16 @@ CREATE TABLE release (
   CONSTRAINT release__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
+CREATE INDEX release__service__idx ON release (
+  service DESC
+);
+
+CREATE INDEX release__template__idx ON release (
+  template DESC
+);
+
+CREATE INDEX release__created_on__idx ON release (
+  created_on DESC
+);
+
 COMMIT;

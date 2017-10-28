@@ -11,6 +11,14 @@ CREATE TABLE service (
   CONSTRAINT service__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
+CREATE INDEX service__name__idx ON service (
+  name DESC
+);
+
+CREATE INDEX service__created_on__idx ON service (
+  created_on DESC
+);
+
 CREATE FUNCTION ensure_service (
   name TEXT,
   created_on TIMESTAMP WITH TIME ZONE,

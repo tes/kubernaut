@@ -94,7 +94,7 @@ describe('Release Store', () => {
           expect(release.attributes.template).toBe(data.attributes.template);
           expect(release.attributes.image).toBe(data.attributes.image);
 
-          done()
+          done();
         });
 
         it('should return undefined when release not found', async () => {

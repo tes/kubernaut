@@ -13,11 +13,11 @@ export default function(options = {}) {
     }
 
     async function logged() {
-      await db.query(SQL.LOGGED_TABLES);
+      await db.query(SQL.SET_LOGGED);
     }
 
     async function unlogged() {
-      await db.query(SQL.UNLOGGED_TABLES);
+      await db.query(SQL.SET_UNLOGGED);
     }
 
     cb(null, {

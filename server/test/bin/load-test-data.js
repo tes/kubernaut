@@ -1,6 +1,6 @@
 import createSystem from '../../lib/system';
 import Chance from 'chance';
-import { makeRelease, makeMeta } from '../factories';
+import { makeRelease, makeMeta, } from '../factories';
 import pLimit from 'p-limit';
 
 const limit = pLimit(50);
@@ -8,11 +8,11 @@ const chance = new Chance();
 
 process.env.APP_ENV = 'local';
 
-const system = createSystem()
+createSystem()
   .remove('server')
   .start(async (err, dependencies) => {
       if (err) throw err;
-      const { store, postgres } = dependencies
+      const { store, postgres, } = dependencies;
 
       try {
         await store.unlogged();
@@ -22,12 +22,13 @@ const system = createSystem()
         const releases = [];
         for (var v = 0; v < 100; v++) {
           for (var s = 0; s < 100; s++) {
-            const name = `${chance.word()}-${chance.word()}`
-            const data = makeRelease({ service: { name }, version: `${v}` })
-            const meta = makeMeta()
+            const name = `service-${chance.word()}-${chance.word()}`;
+            const data = makeRelease({ service: { name, }, version: `${chance.hash()}`, });
+            const meta = makeMeta({ date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000, })), });
+
             releases.push(limit(() => {
-              return store.saveRelease(data, meta)
-            }))
+              return store.saveRelease(data, meta);
+            }));
           }
         }
         await Promise.all(releases);
@@ -38,7 +39,7 @@ const system = createSystem()
       }
 
       process.exit(0);
-  })
+  });
 
 
-setInterval(() => {}, Number.MAX_VALUE)
+setInterval(() => {}, Number.MAX_VALUE);

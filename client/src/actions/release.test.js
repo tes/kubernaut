@@ -1,0 +1,88 @@
+import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+import fetchMock from 'fetch-mock';
+import {
+  fetchReleases,
+  FETCH_RELEASES_REQUEST,
+  FETCH_RELEASES_SUCCESS,
+  FETCH_RELEASES_ERROR,
+} from './release';
+
+const mockStore = configureStore([thunk,]);
+
+describe('Release Actions', () => {
+
+  let actions;
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
+  it('should fetch releases', async () => {
+
+    fetchMock.mock('/api/releases', [1, 2, 3,]);
+
+    await dispatchReleasesActions();
+
+    expectReleasesRequest();
+    expectReleasesSuccess([1, 2, 3,]);
+  });
+
+  it('should tolerate errors fetching articles', async () => {
+
+    fetchMock.mock('/api/releases', 500, );
+
+    await dispatchReleasesActions();
+
+    expectReleasesError('/api/releases returned 500 Internal Server Error');
+  });
+
+  it('should tolerate failures fetching articles', async () => {
+
+    fetchMock.mock('/api/releases', 403, );
+
+    await dispatchReleasesActions();
+
+    expectReleasesError('/api/releases returned 403 Forbidden');
+  });
+
+  it('should timeout fetching article', async () => {
+
+    fetchMock.mock('/api/releases', {
+      throws: new Error('simulate network timeout'),
+    });
+
+    await dispatchReleasesActions();
+
+    expectReleasesError('simulate network timeout');
+  });
+
+  async function dispatchReleasesActions() {
+    const store = mockStore({});
+    const options = { quiet: true, };
+    await store.dispatch(fetchReleases(options));
+    actions = store.getActions();
+    expect(actions).toHaveLength(2);
+  }
+
+  function expectReleasesRequest() {
+    expect(Object.keys(actions[0]).length).toBe(3);
+    expect(actions[0].type).toBe(FETCH_RELEASES_REQUEST);
+    expect(actions[0].data).toMatchObject([]);
+    expect(actions[0].loading).toBe(true);
+  }
+
+  function expectReleasesSuccess(releases) {
+    expect(Object.keys(actions[1]).length).toBe(2);
+    expect(actions[1].type).toBe(FETCH_RELEASES_SUCCESS);
+    expect(actions[1].data).toMatchObject(releases);
+  }
+
+  function expectReleasesError(msg) {
+    expect(Object.keys(actions[1]).length).toBe(3);
+    expect(actions[1].type).toBe(FETCH_RELEASES_ERROR);
+    expect(actions[1].data).toMatchObject([]);
+    expect(actions[1].error.message).toBe(msg);
+  }
+
+});
