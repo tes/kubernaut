@@ -1,3 +1,4 @@
+import cheerio from 'cheerio';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from './test-system';
@@ -21,8 +22,6 @@ describe('kubernaut', () => {
 
   it('should respond to status requests', async () => {
 
-    expect.assertions(6);
-
     const res = await request({
       url: `http://${config.server.host}:${config.server.port}/__/status`,
       resolveWithFullResponse: true,
@@ -38,8 +37,6 @@ describe('kubernaut', () => {
 
   it('should respond with 404 to unknown admin requests', async () => {
 
-    expect.assertions(5);
-
     await request({
       url: `http://${config.server.host}:${config.server.port}/__/unknown`,
       resolveWithFullResponse: true,
@@ -50,6 +47,52 @@ describe('kubernaut', () => {
       expectHeader(reason.response, 'content-type', 'application/json; charset=utf-8');
       expectHeader(reason.response, 'cache-control', 'no-cache, no-store, must-revalidate');
     });
+  });
+
+  it('should respond to client app requests', async () => {
+
+    const res = await request({
+      url: `http://${config.server.host}:${config.server.port}/`,
+      resolveWithFullResponse: true,
+      followRedirect: false,
+    });
+
+    expectStatus(res, 200);
+    expectHeader(res, 'content-type', 'text/html; charset=utf-8');
+    expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
+    expectHeader(res, 'etag');
+
+    const $ = cheerio.load(res.body);
+    expect($('title').text()).toBe('Kubernaut');
+  });
+
+  it('should redirect /index.html to /', async () => {
+
+    await request({
+      url: `http://${config.server.host}:${config.server.port}/index.html`,
+      resolveWithFullResponse: true,
+      followRedirect: false,
+    }).catch(errors.StatusCodeError, (reason) => {
+      expectStatus(reason.response, 301);
+      expectHeader(reason.response, 'location', '/');
+    });
+  });
+
+  it('should respond to releases requests', async () => {
+
+    const res = await request({
+      url: `http://${config.server.host}:${config.server.port}/releases`,
+      resolveWithFullResponse: true,
+      followRedirect: false,
+    });
+
+    expectStatus(res, 200);
+    expectHeader(res, 'content-type', 'text/html; charset=utf-8');
+    expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
+    expectHeader(res, 'etag');
+
+    const $ = cheerio.load(res.body);
+    expect($('title').text()).toBe('Kubernaut');
   });
 
   function expectStatus(res, value) {
