@@ -4,9 +4,12 @@
 See https://github.com/tes/infra/issues/1857 for background
 
 ## Goal
-Discover a kubernetes deployment pipeline
+To build a Kubernetes continuous delivery pipeline through discovery.
 
 ## Prerequisites
+* Node.js version 8 or higher
+* Docker Compose 1.14.0 or higher
+* Docker 17 or higher
 * Basic understanding of [Kubernetes Concepts](https://kubernetes.io/docs/concepts/)
 * Local installation of [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Cluster config file (ask Daniel Malon or Stephen Cresswell)
@@ -19,6 +22,25 @@ kubectl get pods
 kubectl delete pod $POD_NAME
 kubectl describe pod $POD_NAME --output yaml
 kubectl exec -it $POD_NAME sh
+```
+
+## Getting Started
+```
+npm i
+npm run start-server-dependencies
+npm test
+npm run load-test-data
+npm start
+```
+This should open a browser displaying the kubernetes application. Click on the [releases tab](http://localhost:3000/releases) to view the test data.
+
+As you make change source code the application should rebuild automatically. You can also run tests in watch mode while developing.
+```
+npm run test-server-w
+```
+or
+```
+npm run test-client-w
 ```
 
 ## Workflow
