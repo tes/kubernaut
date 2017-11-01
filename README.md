@@ -20,7 +20,6 @@ kubectl describe pod $POD_NAME --output yaml
 kubectl exec -it $POD_NAME sh
 ```
 
-
 ## Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
@@ -88,7 +87,76 @@ kubectl exec -it $POD_NAME sh
 </pre>
 
 
-## API
+## Kubernaut Domain Model
+
+<pre>
+                               ┌───────────────────┐
+                               │                   │
+                               │                   │
+                               │      Service      │
+                               │                   │
+                               │                   │
+                               └───────────────────┘
+                                         │
+                                         │
+                                         │
+                                         │
+                                        ╱│╲
+┌───────────────────┐          ┌───────────────────┐        ┌───────────────────┐
+│                   │          │                   │        │                   │
+│                   │         ╱│                   │       ╱│      Release      │
+│     Template      │──────────│      Release      │────────│     Attribute     │
+│                   │         ╲│                   │       ╲│                   │
+│                   │          │                   │        │                   │
+└───────────────────┘          └───────────────────┘        └───────────────────┘
+                                         │
+                                         │
+                                         │
+                                         │
+                                        ╱│╲
+                               ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+
+                               │                   │
+                                    Deployment
+                               │                   │
+
+                               └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+</pre>
+
+### Service
+An app / micro service
+
+| Property  |   |
+|-----------|---|
+| id        | uuid, genreated by PostgreSQL |
+| name      | the service name, e.g. service-jobs-api |
+| namespace | the kubernetes namespace where the service will be deployed, e.g. jobs, resources |
+
+### Release
+A release of an app / micro service
+
+| Property  |   |
+|-----------|---|
+| id        | uuid, genreated by PostgreSQL |
+| version   | The release version. Currently jenkins build number, we're considering using / incorporating git commit |
+
+### Template
+A moustache template for the kubernetes manifest file (yaml).
+
+| Property  |   |
+|-----------|---|
+| source    | The template source. The template is rendered using release attributes (see below) to form the kubernates manfiest |
+
+### Release Attribute
+Key value pairs, which may be rendered into the kubernetes template, e.g. service name, image, version, commit, 
+
+| Property  |   |
+|-----------|---|
+| name      | attribute name |
+| value     | attribute value |
+
+
+## Kubernaut API
 
 ### GET /api/releases
 Lists all active releases
