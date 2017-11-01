@@ -1,10 +1,8 @@
-# kubernaut
+# Kubernaut
 > Definition of kubernaut - an expert or habitual user of the Kubernetes., a person who uses computer technology to experience containerisation.
 
-See https://github.com/tes/infra/issues/1857 for background
-
 ## Goal
-To build a Kubernetes continuous delivery pipeline through discovery.
+To build a Kubernetes continuous delivery pipeline through discovery. See Kubernaut in action [here](http://kubernaut.tescloud.com)
 
 ## Prerequisites
 * Node.js version 8 or higher
