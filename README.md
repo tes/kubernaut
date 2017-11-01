@@ -43,6 +43,14 @@ or
 npm run test-client-w
 ```
 
+### Where's The Code?
+
+#### The Server
+Kubernaut uses dependency injection called [systemic](https://www.npmjs.com/package/systemic) to organise code. It's the spiritual successor to [electrician](https://www.npmjs.com/package/electrician). Systemic systems are started by a [runner](https://github.com/tes/kubernaut/blob/master/server/index.js) which handles interupts and uncaught exceptions. Server side components and their dependencies are declared [here](https://github.com/tes/kubernaut/blob/master/server/lib/components).
+
+#### The Client
+The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate, as I want to keep the entry barrier as low as possible.
+
 ## Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
