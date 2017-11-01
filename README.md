@@ -87,7 +87,7 @@ kubectl exec -it $POD_NAME sh
 </pre>
 
 
-## Kubernaut Domain Model
+## Kubernaut Domain Model (Work In Progress)
 
 <pre>
                                ┌───────────────────┐
@@ -128,7 +128,6 @@ An app / micro service
 
 | Property  |   |
 |-----------|---|
-| id        | uuid, genreated by PostgreSQL |
 | name      | the service name, e.g. service-jobs-api |
 | namespace | the kubernetes namespace where the service will be deployed, e.g. jobs, resources |
 
@@ -137,7 +136,6 @@ A release of an app / micro service
 
 | Property  |   |
 |-----------|---|
-| id        | uuid, genreated by PostgreSQL |
 | version   | The release version. Currently jenkins build number, we're considering using / incorporating git commit |
 
 ### Template
@@ -154,6 +152,13 @@ Key value pairs, which may be rendered into the kubernetes template, e.g. servic
 |-----------|---|
 | name      | attribute name |
 | value     | attribute value |
+
+### Deployment
+A release of an app / micro service
+
+| Property  |   |
+|-----------|---|
+| context   | The kubernetes context which defines the target cluster |
 
 
 ## Kubernaut API
