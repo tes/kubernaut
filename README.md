@@ -34,6 +34,7 @@ npm start
 ```
 This should open a browser displaying the kubernetes application. Click on the [releases tab](http://localhost:3000/releases) to view the test data.
 
+### Developing
 As you make change source code the application should rebuild automatically. You can also run tests in watch mode while developing.
 ```
 npm run test-server-w
