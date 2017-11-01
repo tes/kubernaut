@@ -10,7 +10,8 @@ Discover a kubernetes deployment pipeline
 * Basic understanding of [Kubernetes Concepts](https://kubernetes.io/docs/concepts/)
 * Local installation of [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * Cluster config file (ask Daniel Malon or Stephen Cresswell)
-* Familiary with [kubectl commands](https://kubernetes.io/docs/user-guide/kubectl-overview/), e.g.
+* Familiarity with the [contributor notes](https://github.com/tes/kubernaut/blob/master/CONTRIBUTING.md)
+* Familiarity with [kubectl commands](https://kubernetes.io/docs/user-guide/kubectl-overview/), e.g.
 
 ```
 kubectl apply -f manifest.yaml
