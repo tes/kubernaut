@@ -9,7 +9,7 @@ class ReleasesTable extends Component {
     const { error = null, loading = false, releases = [], } = this.props;
 
     const errorTableBody = (
-      <tbody className='releases-table__body--error'>
+      <tbody className='releases-table__body releases-table__body--error'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info'>Error loading releases</td>
         </tr>
@@ -17,7 +17,7 @@ class ReleasesTable extends Component {
     );
 
     const loadingTableBody = (
-      <tbody className='releases-table__body--loading'>
+      <tbody className='releases-table__body releases-table__body--loading'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info'>Loading releases…</td>
         </tr>
@@ -25,7 +25,7 @@ class ReleasesTable extends Component {
     );
 
     const emptyTableBody = (
-      <tbody className='releases-table__body--empty'>
+      <tbody className='releases-table__body releases-table__body--empty'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info'>There are no releases</td>
         </tr>
@@ -33,7 +33,7 @@ class ReleasesTable extends Component {
     );
 
     const releasesTableBody = (
-      <tbody className='releases-table__body--data'>
+      <tbody className='releases-table__body releases-table__body--data'>
       {
         releases.map(release => {
           return <tr className='releases-table__body__row' key={release.id} id={release.id} >
