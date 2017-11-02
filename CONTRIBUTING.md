@@ -28,7 +28,7 @@ Did you know that the NASA Mars Climate Orbiter disintegrated because they didn'
 The only valid reason for comments is to explain why confusing code cannot be simplified - maybe you're working around a bug in a 3rd party library or implementing a naturally complicated algorithm (e.g. [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance). If you use comments to explain code for some other reason, then instead of writing the comment, take the time to simplify the code.
 
 ### Automated Tests
-The code base is pretty well tested and will continue to be so.
+The code base is well tested and will continue to be so. I try to vaoid mockings because tests which use mocking assert interactions rather than side effects. Interactions change even when the side effects stay the same, so this approach to testing is more brittle. The tests express implementation, rather than intent. 
 
 ### Syntax
 Please adhere to the linting rules.
