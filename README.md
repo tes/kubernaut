@@ -25,6 +25,8 @@ kubectl exec -it $POD_NAME sh
 ## Getting Started
 ```
 npm i
+cd client; npm i; cd ..
+npm run build
 npm run start-server-dependencies
 npm test
 npm run load-test-data
