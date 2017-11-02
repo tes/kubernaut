@@ -1,7 +1,7 @@
 # Contributing
 
 ### Doing One Thing (Well)
-An application should do one thing well. Kubernaut's "one thing" is to facilitate deployments of services to Kubernetes clusters. Likewise a class / module should only ever have one reason to change. Before creating a new class / module define its job in a single sentence, without conjunctions, e.g. using the word "and" or cyclic references, e.g. "A service locator locates services".
+An application should do one thing well. Kubernaut's "one thing" is to facilitate deployments of services to Kubernetes clusters. Likewise a class / module should only ever have one reason to change. Before creating a new class / module define its job in a single sentence, without conjunctions, e.g. using the word "and" or cyclic references, e.g. "The job of a service locator is to locate services".
 
 ### Naming
 Naming is hard. Please take time to think of appropriate names. Use nouns for modules / classes and verbs for functions. Be suspicious of nouns ending in 'er' or 'or'. Manager, Locator, Helper, Wrapper usually operater on another entity's data. E.g. instead of `HttpHelper.get`, use `HttpClient.get`. Instead of `ServiceLocator.locate`, maybe `Services.locate`. Avoid abbreviations (unless industry, defacto or company standard). Don't be afraid to use constants that aren't likely to change (e.g. 404)
