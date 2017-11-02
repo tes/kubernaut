@@ -15,7 +15,7 @@ describe('Release Store', () => {
       system: createSystem()
         .remove('server')
         .remove('store.release')
-        .remove('store.profile')
+        .remove('store.deployment')
         .include(postgres),
     },
   ];
