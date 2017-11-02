@@ -23,7 +23,8 @@ createSystem()
         for (var v = 1; v <= 10; v++) {
           for (var s = 0; s < 10; s++) {
             const name = `service-${chance.word()}-${chance.word()}`;
-            const data = makeRelease({ service: { name, }, version: `${chance.hash().substr(0, 6)}-${('0000' + v).slice(-4)}`, });
+            const commit = chance.hash().substr(0, 6);
+            const data = makeRelease({ service: { name, }, version: `${commit}-${v}`, });
             const meta = makeMeta({ date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000, })), });
 
             releases.push(limit(() => {
@@ -43,3 +44,4 @@ createSystem()
 
 
 setInterval(() => {}, Number.MAX_VALUE);
+
