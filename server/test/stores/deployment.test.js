@@ -46,8 +46,23 @@ describe('Deployment Store', () => {
       });
 
       describe('Save deployment', () => {
-        it('should create a deployment', async () => {
-          await store.saveDeployment(makeRelease(), {context: 'deployment',}, makeMeta());
+        it('should create a deployment', async (done) => {
+          const release = makeRelease();
+          const meta = makeMeta();
+          const existingRelease = await store.saveRelease(release, meta);
+
+          const context = 'deployment';
+          const saved = await store.saveDeployment(existingRelease, {context,}, meta);
+          const deployment = await store.getDeployment(saved.id);
+
+          expect(deployment).toBeDefined();
+          expect(deployment.id).toBe(saved.id);
+          expect(deployment.release).toBe(existingRelease.id);
+          expect(deployment.context).toBe(context);
+          expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
+          expect(deployment.createdBy).toBe(meta.user);
+
+          done();
         });
       });
     });

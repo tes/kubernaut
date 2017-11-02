@@ -13,8 +13,13 @@ export default function(options = {}) {
       return deployment;
     }
 
+    async function getDeployment(id) {
+      return deployments.find(d => d.id === id);
+    }
+
     return cb(null, {
       saveDeployment,
+      getDeployment,
     });
   }
 
