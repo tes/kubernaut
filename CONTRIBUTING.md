@@ -13,7 +13,7 @@ The art of code is to maximise the work not done. When your domain model is wron
 I try to keep the average size of a function to around 4. I'm not quite hitting that with Kubernaut yet. With async / try / catch it's likely to be a little bigger. Functions shouldn't jump between operating on data and calling other functions. I also try to keep the number of function parameters down to around 2 or 3. Any more is an indicator that the domain model is wrong.
 
 ### Else Considered Harmful
-I don't mind guard conditions (an if statement near the top of a function that returns immediately or throws an exception), but try very hard to avoid else or switch statements. They are typically hiding a fork in behaviour that is probably better handled with polymorphism. 
+I don't mind guard conditions (an if statement near the top of a function that returns immediately or throws an exception), but try very hard to avoid else or switch statements. They are typically hiding a fork in behaviour that is probably better handled with polymorphism. Alternatives to Else. Alternatives are lookups e.g. `commands.find('create')`, event handlers e.g.`listener.on('create')`, the [Strategy Pattern](https://en.wikipedia.org/wiki/Strategy_pattern) - although this is usually a complicated beast, indicative of over engineering.
 
 ### Booleans Make Bad Parameters
 Passing booleans as parameters leads to else statements. Else statements are bad. Use polymorphism instead.
