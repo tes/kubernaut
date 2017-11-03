@@ -9,6 +9,7 @@ import { composeWithDevTools, } from 'redux-devtools-extension';
 // Components
 import Header from './components/Header';
 import ReleasesPage from './components/ReleasesPage';
+import HomePage from './components/HomePage';
 
 // Reducers
 import releases from './reducers/releases';
@@ -51,8 +52,8 @@ class App extends Component {
                   <ReleasesPage />
                 } />
                 <Route path='/' render={() =>
-                  'Kubernaut - an expert or habitual user of [Kubernetes](https://kubernetes.io/)., a person who uses computer technology to experience containerisation.'
-                }/>
+                  <HomePage />
+                } />
               </Switch>
             </div>
           </div>
