@@ -51,7 +51,7 @@ class App extends Component {
                   <ReleasesPage />
                 } />
                 <Route path='/' render={() =>
-                  '404'
+                  'Kubernaut - an expert or habitual user of [Kubernetes](https://kubernetes.io/)., a person who uses computer technology to experience containerisation.'
                 }/>
               </Switch>
             </div>
