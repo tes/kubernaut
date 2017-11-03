@@ -11,7 +11,7 @@ class ReleasesTable extends Component {
     const errorTableBody = (
       <tbody className='releases-table__body releases-table__body--error'>
         <tr className='releases-table__body__row'>
-          <td className='releases-table__body__row__info'>Error loading releases</td>
+          <td className='releases-table__body__row__info' colSpan='3'>Error loading releases</td>
         </tr>
       </tbody>
     );
@@ -19,7 +19,7 @@ class ReleasesTable extends Component {
     const loadingTableBody = (
       <tbody className='releases-table__body releases-table__body--loading'>
         <tr className='releases-table__body__row'>
-          <td className='releases-table__body__row__info'>Loading releases…</td>
+          <td className='releases-table__body__row__info' colSpan='3'>Loading releases…</td>
         </tr>
       </tbody>
     );
@@ -27,7 +27,7 @@ class ReleasesTable extends Component {
     const emptyTableBody = (
       <tbody className='releases-table__body releases-table__body--empty'>
         <tr className='releases-table__body__row'>
-          <td className='releases-table__body__row__info'>There are no releases</td>
+          <td className='releases-table__body__row__info' colSpan='3'>There are no releases</td>
         </tr>
       </tbody>
     );
@@ -64,9 +64,7 @@ class ReleasesTable extends Component {
             if (error) return errorTableBody;
             else if (loading) return loadingTableBody;
             else if (releases.length === 0) return emptyTableBody;
-            else {
-              return releasesTableBody;
-            }
+            else return releasesTableBody;
           })()
         }
       </table>
