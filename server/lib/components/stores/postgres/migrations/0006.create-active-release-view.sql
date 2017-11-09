@@ -8,7 +8,9 @@ SELECT
   r.version,
   r.template,
   r.created_on,
-  r.created_by
+  r.created_by,
+  s.created_on AS service_created_on,
+  s.created_by AS service_created_by
 FROM
   release r, service s
 WHERE

@@ -36,17 +36,17 @@ export default function(options) {
       ]);
 
       const service = {
-        ...data, id: result.rows[0].id,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.user,
       };
 
-      logger.debug(`Ensured service: ${service.name} with id: ${service.id}`);
+      logger.debug(`Ensured service: ${service.name}/${service.id}`);
 
       return service;
     }
 
     async function _ensureReleaseTemplate(connection, data, meta) {
 
-      logger.debug(`Ensuring release template with checksum: ${data.checksum}`);
+      logger.debug(`Ensuring release template: ${data.checksum}`);
 
       const result = await connection.query(SQL.ENSURE_RELEASE_TEMPLATE, [
         data.source, data.checksum, meta.date, meta.user,
@@ -56,24 +56,24 @@ export default function(options) {
         ...data, id: result.rows[0].id,
       };
 
-      logger.debug(`Ensured release template with checksum ${template.checksum} and id: ${template.id}`);
+      logger.debug(`Ensured release template: ${template.checksum}/${template.id}`);
 
       return template;
     }
 
     async function _saveRelease(connection, service, template, data, meta) {
 
-      logger.debug(`Saving release: ${service.name}, version: ${data.version}`);
+      logger.debug(`Saving release: ${service.name}/${data.version}`);
 
       const result = await connection.query(SQL.SAVE_RELEASE, [
         service.id, data.version, template.id, meta.date, meta.user,
       ]);
 
       const release = {
-        ...data, id: result.rows[0].id,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.user,
       };
 
-      logger.debug(`Saved release: ${service.name}, version: ${release.version} with id: ${release.id}`);
+      logger.debug(`Saved release ${service.name}/${release.version}/${release.id}`);
 
       return release;
     }

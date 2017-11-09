@@ -48,7 +48,14 @@ describe('Release Store', () => {
       describe('Save release', () => {
 
         it('should create a release', async () => {
-          await store.saveRelease(makeRelease(), makeMeta());
+          const data = makeRelease();
+          const meta = makeMeta();
+          const release = await store.saveRelease(data, meta);
+
+          expect(release).toBeDefined();
+          expect(release.id).toBeDefined();
+          expect(release.createdOn).toBe(meta.date);
+          expect(release.createdBy).toBe(meta.user);
         });
 
         it('should prevent duplicate release versions', async () => {
@@ -74,11 +81,9 @@ describe('Release Store', () => {
       describe('Get Release', () => {
 
         it('should retrieve release by id', async (done) => {
-
           const data = makeRelease();
-          const meta = makeMeta({ date: new Date(), user: 'cressie176', });
+          const meta = makeMeta();
           const saved = await store.saveRelease(data, meta);
-
           const release = await store.getRelease(saved.id);
 
           expect(release).toBeDefined();

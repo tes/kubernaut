@@ -5,16 +5,19 @@ export default function(options = {}) {
 
     const { deployments, } = tables;
 
-    async function saveDeployment(release, {context,}, meta) {
-      const deployment = {
-        id: uuid(), release: release.id, context, createdOn: meta.date, createdBy: meta.user,
-      };
-      deployments.push(deployment);
-      return deployment;
+    async function saveDeployment(deployment, meta) {
+      return append(deployments, {
+        ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.user,
+      });
     }
 
     async function getDeployment(id) {
       return deployments.find(d => d.id === id);
+    }
+
+    function append(collection, item) {
+      collection.push(item);
+      return item;
     }
 
     return cb(null, {

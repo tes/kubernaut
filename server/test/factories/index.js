@@ -10,6 +10,16 @@ const chance = new Chance();
 const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
 const sampleTemplate = fs.readFileSync(sampleTemplatePath, 'utf-8');
 
+function makeDeployment(overrides = {}) {
+  const context = get(overrides, 'context', chance.name().toLowerCase().replace(/\s/g, '-'));
+
+  return {
+    context,
+    release: makeRelease(),
+    ...overrides,
+  };
+}
+
 function makeRelease(overrides = {}) {
   const name = get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-'));
   const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
@@ -58,4 +68,4 @@ function makeReleaseForm(overrides = {}) {
   };
 }
 
-export { makeRelease, makeMeta, makeReleaseForm, };
+export { makeDeployment, makeRelease, makeMeta, makeReleaseForm, };
