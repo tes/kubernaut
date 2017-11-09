@@ -113,9 +113,9 @@ describe('Release Store', () => {
         it('should soft delete release', async () => {
 
           const data = makeRelease();
-          await store.saveRelease(data, makeMeta());
+          const saved = await store.saveRelease(data, makeMeta());
 
-          await store.deleteRelease(data.id, makeMeta());
+          await store.deleteRelease(saved.id, makeMeta());
           const release = await store.getRelease(data.id);
 
           expect(release).toBe(undefined);

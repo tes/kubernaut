@@ -30,6 +30,15 @@ export default function(options) {
       return deployment;
     }
 
+    async function deleteDeployment(id, meta) {
+      logger.debug(`Deleting deployment id: ${id}`);
+      await db.query(SQL.DELETE_DEPLOYMENT, [
+        id,
+        meta.date,
+        meta.user,
+      ]);
+    }
+
     function toDeployment(row) {
       return {
         id: row.id,
@@ -65,6 +74,7 @@ export default function(options) {
     return cb(null, {
       saveDeployment,
       getDeployment,
+      deleteDeployment,
     });
   }
 

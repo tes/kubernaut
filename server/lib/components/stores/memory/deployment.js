@@ -5,14 +5,22 @@ export default function(options = {}) {
 
     const { deployments, } = tables;
 
+    async function getDeployment(id) {
+      return deployments.find(d => d.id === id);
+    }
+
     async function saveDeployment(deployment, meta) {
       return append(deployments, {
         ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.user,
       });
     }
 
-    async function getDeployment(id) {
-      return deployments.find(d => d.id === id);
+    async function deleteDeployment(id, meta) {
+      const deployment = deployments.find(r => r.id === id && !r.deletedOn);
+      if (deployment) {
+        deployment.deletedOn = meta.date;
+        deployment.deletedBy = meta.user;
+      }
     }
 
     function append(collection, item) {
@@ -23,6 +31,7 @@ export default function(options = {}) {
     return cb(null, {
       saveDeployment,
       getDeployment,
+      deleteDeployment,
     });
   }
 

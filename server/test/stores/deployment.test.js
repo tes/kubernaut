@@ -45,7 +45,7 @@ describe('Deployment Store', () => {
         }).catch(cb);
       });
 
-      describe('Save deployment', () => {
+      describe('Save Deployment', () => {
 
         it('should create a deployment', async () => {
           const release = await store.saveRelease(makeRelease(), makeMeta());
@@ -61,11 +61,10 @@ describe('Deployment Store', () => {
         });
       });
 
-      describe('Get deployment', () => {
+      describe('Get Deployment', () => {
 
         it('should retrieve deployment by id', async () => {
           const release = await store.saveRelease(makeRelease(), makeMeta());
-
           const data = makeDeployment({ release, });
           const meta = makeMeta();
           const saved = await store.saveDeployment(data, meta);
@@ -87,6 +86,23 @@ describe('Deployment Store', () => {
           const deployment = await store.getDeployment('missing');
           expect(deployment).toBe(undefined);
         });
+      });
+
+      describe('Delete Deployment', () => {
+
+        it('should soft delete deployment', async () => {
+
+          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const data = makeDeployment({ release, });
+          const meta = makeMeta();
+          const saved = await store.saveDeployment(data, meta);
+
+          await store.deleteDeployment(saved.id, makeMeta());
+          const deployment = await store.getDeployment(data.id);
+
+          expect(deployment).toBe(undefined);
+        });
+
       });
 
     });
