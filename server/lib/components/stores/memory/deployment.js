@@ -23,6 +23,32 @@ export default function(options = {}) {
       }
     }
 
+    async function listDeployments(limit = 50, offset = 0) {
+      return deployments.filter(byActive)
+        .sort(byMostRecent)
+        .map(toSlimDeployment)
+        .slice(offset, offset + limit);
+    }
+
+    function byActive(d) {
+      return !d.deletedOn && !d.release.deletedOn && !d.release.service.deletedOn;
+    }
+
+    function getTimeForSort(date) {
+      return date ? date.getTime() : 0;
+    }
+
+    function byMostRecent(a, b) {
+      return getTimeForSort(b.deletedOn) - getTimeForSort(a.deletedOn) ||
+             getTimeForSort(b.createdOn) - getTimeForSort(a.createdOn) ||
+             b.id.localeCompare(a.id);
+    }
+
+    function toSlimDeployment(deployment) {
+      const release = { ...deployment.release, template: undefined, attribtes: {}, };
+      return { ...deployment, release, };
+    }
+
     function append(collection, item) {
       collection.push(item);
       return item;
@@ -31,6 +57,7 @@ export default function(options = {}) {
     return cb(null, {
       saveDeployment,
       getDeployment,
+      listDeployments,
       deleteDeployment,
     });
   }

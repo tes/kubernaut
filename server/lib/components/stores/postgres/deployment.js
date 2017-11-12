@@ -30,6 +30,19 @@ export default function(options) {
       return deployment;
     }
 
+    async function listDeployments(limit = 50, offset = 0) {
+
+      logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
+
+      const result = await db.query(SQL.LIST_DEPLOYMENTS, [
+        limit, offset,
+      ]);
+
+      logger.debug(`Found ${result.rowCount} deployments`);
+
+      return result.rows.map(row => toDeployment(row));
+    }
+
     async function deleteDeployment(id, meta) {
       logger.debug(`Deleting deployment id: ${id}`);
       await db.query(SQL.DELETE_DEPLOYMENT, [
@@ -75,6 +88,7 @@ export default function(options) {
       saveDeployment,
       getDeployment,
       deleteDeployment,
+      listDeployments,
     });
   }
 

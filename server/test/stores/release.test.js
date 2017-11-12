@@ -206,60 +206,37 @@ describe('Release Store', () => {
           expect(Object.keys(releases[0].attributes).length).toBe(0);
         });
 
-        it('should limit results to 50 by default', async () => {
+        describe('Pagination', () => {
 
-          const releases = [];
-          for (var i = 0; i < 51; i++) {
-            releases.push({
-              data: makeRelease(),
-              meta: makeMeta(),
-            });
-          }
+          beforeEach(async () => {
+            const releases = [];
+            for (var i = 0; i < 51; i++) {
+              releases.push({
+                data: makeRelease(),
+                meta: makeMeta(),
+              });
+            }
 
-          await Promise.all(releases.map(async release => {
-            await store.saveRelease(release.data, release.meta);
-          }));
+            await Promise.all(releases.map(async release => {
+              await store.saveRelease(release.data, release.meta);
+            }));
+          });
 
-          const results = await store.listReleases();
-          expect(results.length).toBe(50);
+          it('should limit releases to 50 by default', async () => {
+            const results = await store.listReleases();
+            expect(results.length).toBe(50);
+          });
+
+          it('should limit releases to the specified number', async () => {
+            const results = await store.listReleases(10, 0);
+            expect(results.length).toBe(10);
+          });
+
+          it('should page results', async () => {
+            const results = await store.listReleases(50, 10);
+            expect(results.length).toBe(41);
+          });
         });
-
-        it('should limit results', async () => {
-
-          const releases = [];
-          for (var i = 0; i < 51; i++) {
-            releases.push({
-              data: makeRelease(),
-              meta: makeMeta(),
-            });
-          }
-
-          await Promise.all(releases.map(async release => {
-            await store.saveRelease(release.data, release.meta);
-          }));
-
-          const results = await store.listReleases(10, 0);
-          expect(results.length).toBe(10);
-        });
-
-        it('should page results', async () => {
-
-          const releases = [];
-          for (var i = 0; i < 51; i++) {
-            releases.push({
-              data: makeRelease(),
-              meta: makeMeta(),
-            });
-          }
-
-          await Promise.all(releases.map(async release => {
-            await store.saveRelease(release.data, release.meta);
-          }));
-
-          const results = await store.listReleases(50, 10);
-          expect(results.length).toBe(41);
-        });
-
       });
     });
   });

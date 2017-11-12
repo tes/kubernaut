@@ -59,7 +59,6 @@ describe('Releases API', () => {
     });
 
     it('should return a list of releases', async () => {
-
       const releases = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
         method: 'GET',
