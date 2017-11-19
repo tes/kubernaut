@@ -7,7 +7,7 @@ const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
-  function start({ pkg, app, prepper, store, kubernetes, checksum, }, cb) {
+  function start({ pkg, app, prepper, store, checksum, }, cb) {
 
     app.get('/api/releases', async (req, res, next) => {
       const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -59,8 +59,6 @@ export default function(options = {}) {
 
       try {
         const release = await store.saveRelease(data, meta);
-        const manifest = hogan.compile(yaml).render(req.body);
-        await kubernetes.apply('test', manifest, res.locals.logger);
         res.json({ id: release.id, });
       } catch(err) {
         next(err);
