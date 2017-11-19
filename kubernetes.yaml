@@ -57,7 +57,13 @@ spec:
         - name: kubectl-config
           mountPath: "/config/.kube"
           readOnly: true
+        - name: kubernaut-config
+          mountPath: "/opt/kubernaut/secrets"
+          readOnly: true
       volumes:
         - name: kubectl-config
           secret:
             secretName: kubectl
+        - name: kubernaut-config
+          secret:
+            secretName: kubernaut
