@@ -12,13 +12,17 @@ describe('Releases API', () => {
   let store = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
-  const manifests = [];
+  const contexts = {
+    test: {
+      manifests: [],
+    },
+  };
 
   beforeAll(cb => {
     system = createSystem()
     .set('config.overrides', { server: { port: 13001, }, })
-    .set('manifests', manifests)
-    .set('kubernetes', kubernetes()).dependsOn('manifests')
+    .set('contexts', contexts)
+    .set('kubernetes', kubernetes()).dependsOn('contexts')
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
@@ -34,7 +38,7 @@ describe('Releases API', () => {
 
   afterEach(() => {
     loggerOptions.suppress = false;
-    manifests.length = 0;
+    contexts.test = { manifests: [], };
   });
 
   afterAll(cb => {
@@ -161,9 +165,9 @@ describe('Releases API', () => {
         formData,
       });
 
-      expect(manifests.length).toBe(1);
-      expect(manifests[0].length).toBe(3);
-      expect(manifests[0][2].spec.template.spec.containers[0].image).toBe(formData.image);
+      expect(contexts.test.manifests.length).toBe(1);
+      expect(contexts.test.manifests[0].length).toBe(3);
+      expect(contexts.test.manifests[0][2].spec.template.spec.containers[0].image).toBe(formData.image);
     });
 
     it('should reject releases without a service', async () => {
@@ -212,7 +216,7 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(response.statusCode).toBe(202);
+      expect(response.statusCode).toBe(204);
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
@@ -227,7 +231,7 @@ describe('Releases API', () => {
       });
     });
 
-    it('should tolerate repeated deletions', async () => {
+    it('should tolerate repeated release deletions', async () => {
 
       const data = makeRelease();
       await store.saveRelease(data, makeMeta());
@@ -239,7 +243,7 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(response1.statusCode).toBe(202);
+      expect(response1.statusCode).toBe(204);
 
       const response2 = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
@@ -248,22 +252,19 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(response2.statusCode).toBe(202);
+      expect(response2.statusCode).toBe(204);
     });
 
     it('should tolerate deletion of missing releases', async () => {
 
-      const data = makeRelease();
-      await store.saveRelease(data, makeMeta());
-
-      const response1 = await request({
+      const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/does-not-exist`,
         method: 'DELETE',
         resolveWithFullResponse: true,
         json: true,
       });
 
-      expect(response1.statusCode).toBe(202);
+      expect(response.statusCode).toBe(204);
     });
   });
 });

@@ -80,7 +80,7 @@ describe('Release Store', () => {
 
       describe('Get Release', () => {
 
-        it('should retrieve release by id', async (done) => {
+        it('should retrieve release by id', async () => {
           const data = makeRelease();
           const meta = makeMeta();
           const saved = await store.saveRelease(data, meta);
@@ -98,14 +98,59 @@ describe('Release Store', () => {
           expect(release.createdBy).toBe(meta.user);
           expect(release.attributes.template).toBe(data.attributes.template);
           expect(release.attributes.image).toBe(data.attributes.image);
-
-          done();
         });
 
         it('should return undefined when release not found', async () => {
           const release = await store.getRelease('missing');
           expect(release).toBe(undefined);
         });
+      });
+
+      describe('Find Release', () => {
+
+        it('should find a release by service name and version', async () => {
+          const data = makeRelease({
+            service: {
+              name: 'foo',
+            },
+            version: '22',
+          });
+          const meta = makeMeta();
+          const saved = await store.saveRelease(data, meta);
+          const release = await store.findRelease({ name: 'foo', version: '22', });
+
+          expect(release).toBeDefined();
+          expect(release.id).toBe(saved.id);
+        });
+
+        it('should return undefined when service not found', async () => {
+          const data = makeRelease({
+            service: {
+              name: 'foo',
+            },
+            version: '22',
+          });
+          const meta = makeMeta();
+          await store.saveRelease(data, meta);
+
+          const release = await store.findRelease({ name: 'bar', version: '22', });
+          expect(release).toBe(undefined);
+        });
+
+        it('should return undefined when version not found', async () => {
+          const data = makeRelease({
+            service: {
+              name: 'foo',
+            },
+            version: '22',
+          });
+          const meta = makeMeta();
+          await store.saveRelease(data, meta);
+
+          const release = await store.findRelease({ name: 'foo', version: '23', });
+          expect(release).toBe(undefined);
+        });
+
       });
 
       describe('Delete Release', () => {

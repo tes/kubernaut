@@ -6,7 +6,7 @@ export default function(options = {}) {
     const { deployments, } = tables;
 
     async function getDeployment(id) {
-      return deployments.find(d => d.id === id);
+      return deployments.find(d => d.id === id && !d.deletedOn);
     }
 
     async function saveDeployment(deployment, meta) {

@@ -17,6 +17,18 @@ export default function(options) {
       });
     }
 
+    async function findRelease({ name, version, }) {
+      logger.debug(`Finding release by name: ${name}, version: ${version}`);
+
+      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [name, version,]);
+      logger.debug(`Found ${release.rowCount} releases with name: ${name}, version: ${version}`);
+
+      if (release.rowCount === 0) return;
+
+      const attributes = await db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [release.id,]);
+      return toRelease(release.rows[0], attributes.rows);
+    }
+
     async function saveRelease(data, meta) {
       return await withTransaction(async connection => {
         const service = await _ensureService(connection, data.service, meta);
@@ -160,6 +172,7 @@ export default function(options) {
 
     return cb(null, {
       getRelease,
+      findRelease,
       saveRelease,
       listReleases,
       deleteRelease,

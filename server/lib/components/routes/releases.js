@@ -59,7 +59,7 @@ export default function(options = {}) {
       try {
         const release = await store.saveRelease(data, meta);
         const yaml = hogan.compile(source).render(req.body);
-        await kubernetes.apply(yaml, res.locals.logger);
+        await kubernetes.apply('test', yaml, res.locals.logger);
         res.json({ id: release.id, });
       } catch(err) {
         next(err);
@@ -69,7 +69,7 @@ export default function(options = {}) {
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
         await store.deleteRelease(req.params.id, { date: new Date(), user: 'anonymous', });
-        res.status(202).send();
+        res.status(204).send();
       } catch (err) {
         next(err);
       }
