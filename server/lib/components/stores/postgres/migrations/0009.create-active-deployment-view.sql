@@ -3,6 +3,9 @@ START TRANSACTION;
 CREATE VIEW active_deployment__vw AS
 SELECT
   d.id,
+  d.context,
+  d.manifest_yaml,
+  d.manifest_json,
   s.id AS service_id,
   s.name AS service_name,
   r.id AS release_id,

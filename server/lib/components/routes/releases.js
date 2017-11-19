@@ -1,15 +1,13 @@
 import multer from 'multer';
 import hogan from 'hogan.js';
-import highwayhash from 'highwayhash';
-import crypto from 'crypto';
+import { safeLoadAll as yaml2json, } from 'js-yaml';
 
-const key = crypto.randomBytes(32);
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
-  function start({ pkg, app, prepper, store, kubernetes, }, cb) {
+  function start({ pkg, app, prepper, store, kubernetes, checksum, }, cb) {
 
     app.get('/api/releases', async (req, res, next) => {
       const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -34,8 +32,8 @@ export default function(options = {}) {
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
       const buffer = new Buffer(req.file.buffer);
-      const source = buffer.toString();
-      const checksum = highwayhash.asHexString(key, buffer);
+      const yaml = buffer.toString();
+      const json = yaml2json(yaml);
 
       if (!req.body.service) return res.status(400).json({ message: 'service is required', });
       if (!req.body.version) return res.status(400).json({ message: 'version is required', });
@@ -46,8 +44,11 @@ export default function(options = {}) {
         },
         version: req.body.version,
         template: {
-          source,
-          checksum,
+          source: {
+            yaml,
+            json,
+          },
+          checksum: checksum(buffer),
         },
         attributes: req.body,
       };
@@ -58,8 +59,8 @@ export default function(options = {}) {
 
       try {
         const release = await store.saveRelease(data, meta);
-        const yaml = hogan.compile(source).render(req.body);
-        await kubernetes.apply('test', yaml, res.locals.logger);
+        const manifest = hogan.compile(yaml).render(req.body);
+        await kubernetes.apply('test', manifest, res.locals.logger);
         res.json({ id: release.id, });
       } catch(err) {
         next(err);

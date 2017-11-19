@@ -2,7 +2,6 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logging/human';
-import kubernetes from '../../lib/components/kubernetes/kubernetes-stub';
 import { makeRelease, makeMeta, makeReleaseForm, } from '../factories';
 
 describe('Releases API', () => {
@@ -22,7 +21,6 @@ describe('Releases API', () => {
     system = createSystem()
     .set('config.overrides', { server: { port: 13001, }, })
     .set('contexts', contexts)
-    .set('kubernetes', kubernetes()).dependsOn('contexts')
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
@@ -142,32 +140,18 @@ describe('Releases API', () => {
         formData,
       });
 
-      const release = JSON.parse(response.body);
+      const id = JSON.parse(response.body).id;
+      expect(id).toBeDefined();
 
-      expect(release.id).toBeDefined();
+      const release = await store.getRelease(id);
 
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${release.id}`,
-        method: 'GET',
-        json: true,
-      });
-
-    });
-
-    it('should apply the kubernetes manifest template', async () => {
-
-      const formData = makeReleaseForm();
-
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
-        method: 'POST',
-        resolveWithFullResponse: true,
-        formData,
-      });
-
-      expect(contexts.test.manifests.length).toBe(1);
-      expect(contexts.test.manifests[0].length).toBe(3);
-      expect(contexts.test.manifests[0][2].spec.template.spec.containers[0].image).toBe(formData.image);
+      expect(release).toBeDefined();
+      expect(release.service.name).toBe(formData.service);
+      expect(release.version).toBe(formData.version);
+      expect(release.template.source.yaml).toBeDefined();
+      expect(release.template.source.json).toBeDefined();
+      expect(release.template.checksum).toBe('f449ec78a09c2d18');
+      expect(release.attributes.image).toBe(formData.image);
     });
 
     it('should reject releases without a service', async () => {

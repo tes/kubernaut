@@ -18,7 +18,7 @@ export default function(options) {
       logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.context}`);
 
       const result = await db.query(SQL.SAVE_DEPLOYMENT, [
-        data.release.id, data.context, meta.date, meta.user,
+        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.user,
       ]);
 
       const deployment = {
@@ -55,6 +55,11 @@ export default function(options) {
     function toDeployment(row) {
       return {
         id: row.id,
+        context: row.context,
+        manifest: {
+          yaml: row.manifest_yaml,
+          json: row.manifest_json,
+        },
         release: {
           id: row.release_id,
           service: {
@@ -68,7 +73,10 @@ export default function(options) {
           version: row.release_version,
           template: row.release_template_id ? {
             id: row.release_template_id,
-            source: row.release_template_source,
+            source: {
+              yaml: row.release_template_source_yaml,
+              json: row.release_template_source_json,
+            },
             checksum: row.release_template_checksum,
           } : undefined,
           createdOn: row.release_created_on,
@@ -76,7 +84,6 @@ export default function(options) {
           deletedOn: row.release_deleted_on,
           deletedBy: row.release_deleted_by,
         },
-        context: row.context,
         createdOn: row.created_on,
         createdBy: row.created_by,
         deletedOn: row.deleted_on,

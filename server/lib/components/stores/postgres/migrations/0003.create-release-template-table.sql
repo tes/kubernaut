@@ -2,7 +2,8 @@ START TRANSACTION;
 
 CREATE TABLE release_template (
   id TEXT PRIMARY KEY,
-  source TEXT NOT NULL,
+  source_yaml TEXT NOT NULL,
+  source_json JSONB NOT NULL,
   checksum TEXT NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by TEXT NOT NULL,
@@ -13,7 +14,8 @@ CREATE TABLE release_template (
 );
 
 CREATE FUNCTION ensure_release_template (
-  source TEXT,
+  source_yaml TEXT,
+  source_json JSONB,
   checksum TEXT,
   created_on TIMESTAMP WITH TIME ZONE,
   created_by TEXT
@@ -28,13 +30,15 @@ BEGIN
   IF NOT FOUND THEN
     INSERT INTO release_template (
       id,
-      source,
+      source_yaml,
+      source_json,
       checksum,
       created_on,
       created_by
     ) values (
       uuid_generate_v4(),
-      source,
+      source_yaml,
+      source_json,
       checksum,
       created_on,
       created_by

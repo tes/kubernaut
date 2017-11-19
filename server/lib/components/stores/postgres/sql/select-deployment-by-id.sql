@@ -1,5 +1,8 @@
 SELECT
   ad.id,
+  ad.context,
+  ad.manifest_yaml,
+  ad.manifest_json,
   ad.service_id,
   ad.service_name,
   ad.service_created_on,
@@ -9,7 +12,8 @@ SELECT
   ad.release_created_on,
   ad.release_created_by,
   rt.id AS release_template_id,
-  rt.source AS release_template_source,
+  rt.source_yaml AS release_template_source_yaml,
+  rt.source_json AS release_template_source_json,
   rt.checksum AS release_template_checksum,
   ad.created_on,
   ad.created_by

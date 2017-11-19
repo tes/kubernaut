@@ -92,7 +92,8 @@ describe('Release Store', () => {
           expect(release.service.name).toBe(data.service.name);
           expect(release.version).toBe(data.version);
           expect(release.template.id).toBe(saved.template.id);
-          expect(release.template.source).toBe(data.template.source);
+          expect(release.template.source.yaml).toBe(data.template.source.yaml);
+          expect(release.template.source.json).toEqual(data.template.source.json);
           expect(release.template.checksum).toBe(data.template.checksum);
           expect(release.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(release.createdBy).toBe(meta.user);

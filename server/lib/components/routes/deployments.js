@@ -1,4 +1,6 @@
 import bodyParser from 'body-parser';
+import hogan from 'hogan.js';
+import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 export default function(options = {}) {
 
@@ -35,9 +37,15 @@ export default function(options = {}) {
 
         if (!release) return res.status(400).json({ message: `Release ${req.body.service}/${req.body.version} was not found`, });
 
+        const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
+        const json = yaml2json(yaml);
+
         const data = {
           context: req.body.context,
-          // manifest,
+          manifest: {
+            yaml,
+            json,
+          },
           release,
         };
         const meta = {
@@ -46,6 +54,7 @@ export default function(options = {}) {
         };
 
         const deployment = await store.saveDeployment(data, meta);
+        await kubernetes.apply('test', deployment.manifest.yaml, res.locals.logger);
 
         res.json({ id: deployment.id, });
       } catch (err) {

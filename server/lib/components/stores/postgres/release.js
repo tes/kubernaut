@@ -61,7 +61,7 @@ export default function(options) {
       logger.debug(`Ensuring release template: ${data.checksum}`);
 
       const result = await connection.query(SQL.ENSURE_RELEASE_TEMPLATE, [
-        data.source, data.checksum, meta.date, meta.user,
+        data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.user,
       ]);
 
       const template = {
@@ -157,7 +157,10 @@ export default function(options) {
         version: row.version,
         template: row.template_id ? {
           id: row.template_id,
-          source: row.template_source,
+          source: {
+            yaml: row.template_source_yaml,
+            json: row.template_source_json,
+          },
           checksum: row.template_checksum,
         } : undefined,
         createdOn: row.created_on,

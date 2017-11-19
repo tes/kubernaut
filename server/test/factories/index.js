@@ -5,6 +5,8 @@ import path from 'path';
 import highwayhash from 'highwayhash';
 import crypto from 'crypto';
 import pm from 'power-merge';
+import hogan from 'hogan.js';
+import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -16,8 +18,10 @@ const { or, eq, reference, } = pm.commands;
 const shallow = {
   when: or([
     eq('node.path', 'template.value'),
-    eq('node.path', 'template.source'),
-    eq('node.path', 'release.template.source'),
+    eq('node.path', 'template.source.yaml'),
+    eq('node.path', 'template.source.json'),
+    eq('node.path', 'release.template.source.yaml'),
+    eq('node.path', 'release.template.source.json'),
   ]),
   then: reference('b.value'),
 };
@@ -30,18 +34,26 @@ const merge = pm.compile({
   ], });
 
 function makeDeployment(overrides = {}) {
+  const release = makeRelease(overrides.release);
+  const yaml = get(overrides, 'manifest.yaml', hogan.compile(release.template.source.yaml).render(release.attributes));
+  const json = get(overrides, 'manifest.json', yaml2json(yaml));
   const context = get(overrides, 'context', chance.name().toLowerCase().replace(/\s/g, '-'));
 
   return merge({
     context,
-    release: makeRelease(),
+    manifest: {
+      yaml,
+      json,
+    },
+    release,
   }, overrides);
 }
 
 function makeRelease(overrides = {}) {
   const name = get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-'));
   const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
-  const source = sampleTemplate;
+  const yaml = get(overrides, 'template.source.yaml', sampleTemplate);
+  const json = get(overrides, 'template.source.json', yaml2json(yaml));
 
   return merge({
     service: {
@@ -49,8 +61,11 @@ function makeRelease(overrides = {}) {
     },
     version,
     template: {
-      source,
-      checksum: highwayhash.asHexString(key, Buffer.from(source)),
+      source: {
+        yaml,
+        json,
+      },
+      checksum: highwayhash.asHexString(key, Buffer.from(yaml)),
     },
     attributes: {
       template: `${chance.word().toLowerCase()}.yaml`,

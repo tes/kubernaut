@@ -144,7 +144,7 @@ describe('Deployments API', () => {
       });
       await store.saveRelease(data.release, makeMeta());
 
-      const deployment = await request({
+      const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
@@ -154,31 +154,46 @@ describe('Deployments API', () => {
         },
       });
 
-      expect(deployment.id).toBeDefined();
+      expect(response.id).toBeDefined();
 
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${deployment.id}`,
-        method: 'GET',
-        json: true,
-      });
+      const deployment = await store.getDeployment(response.id);
 
+      expect(deployment).toBeDefined();
+      expect(deployment.context).toBe('test');
+      expect(deployment.manifest.yaml).toEqual(data.manifest.yaml);
+      expect(deployment.manifest.json).toEqual(data.manifest.json);
+      expect(deployment.release.service.name).toBe(data.release.service.name);
+      expect(deployment.release.version).toBe(data.release.version);
     });
 
-  //   it('should apply the kubernetes manifest template', async () => {
+    it('should apply the kubernetes manifest', async () => {
 
-  //     const formData = makeReleaseForm();
+      const data = makeDeployment({
+        context: 'test',
+        release: {
+          attributes: {
+            image: 'foo:22',
+          },
+        },
+      });
+      await store.saveRelease(data.release, makeMeta());
 
-  //     await request({
-  //       url: `http://${config.server.host}:${config.server.port}/api/deployments`,
-  //       method: 'POST',
-  //       resolveWithFullResponse: true,
-  //       formData,
-  //     });
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        json: {
+          context: data.context,
+          service: data.release.service.name,
+          version: data.release.version,
+        },
+      });
 
-  //     expect(contexts.test.manifests.length).toBe(1);
-  //     expect(contexts.test.manifests[0].length).toBe(3);
-  //     expect(contexts.test.manifests[0][2].spec.template.spec.containers[0].image).toBe(formData.image);
-  //   });
+      expect(response.id).toBeDefined();
+
+      expect(contexts.test.manifests.length).toBe(1);
+      expect(contexts.test.manifests[0].length).toBe(3);
+      expect(contexts.test.manifests[0][2].spec.template.spec.containers[0].image).toBe('foo:22');
+    });
 
     it('should reject deployments without a context', async () => {
 
