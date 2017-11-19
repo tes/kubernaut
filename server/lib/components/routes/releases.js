@@ -1,5 +1,4 @@
 import multer from 'multer';
-import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 const storage = multer.memoryStorage();
