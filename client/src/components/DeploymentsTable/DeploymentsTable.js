@@ -11,7 +11,7 @@ class DeploymentsTable extends Component {
     const errorTableBody = (
       <tbody className='deployments-table__body deployments-table__body--error'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='3'>Error loading deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='4'>Error loading deployments</td>
         </tr>
       </tbody>
     );
@@ -19,7 +19,7 @@ class DeploymentsTable extends Component {
     const loadingTableBody = (
       <tbody className='deployments-table__body deployments-table__body--loading'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='3'>Loading deployments…</td>
+          <td className='deployments-table__body__row__info' colSpan='4'>Loading deployments…</td>
         </tr>
       </tbody>
     );
@@ -27,7 +27,7 @@ class DeploymentsTable extends Component {
     const emptyTableBody = (
       <tbody className='deployments-table__body deployments-table__body--empty'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='3'>There are no deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='4'>There are no deployments</td>
         </tr>
       </tbody>
     );
