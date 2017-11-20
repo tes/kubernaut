@@ -214,7 +214,7 @@ Lists all active deployments
 Gets a single deployment
 
 ### POST /api/deployments
-Deploys the specified release to a context
+Deploys a release using the specified context
 
 ### DELETE /api/deployments/:id
 Soft deletes a deployment
