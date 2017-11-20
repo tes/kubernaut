@@ -178,7 +178,7 @@ A moustache template for the kubernetes manifest file (yaml).
 | source    | The template source. The template is rendered using release attributes (see below) to form the kubernates manfiest |
 
 ### Release Attribute
-Key value pairs, which may be rendered into the kubernetes template, e.g. service name, image, version, commit, 
+Key value pairs, which may be rendered into the kubernetes template, e.g. service name, image, version, commit,
 
 | Property  |   |
 |-----------|---|
@@ -206,6 +206,18 @@ Creates a new release
 
 ### DELETE /api/releases/:id
 Soft deletes a release
+
+### GET /api/deployments
+Lists all active deployments
+
+### GET /api/deployments/:id
+Gets a single deployment
+
+### POST /api/deployments
+Deploys the specified release to a context
+
+### DELETE /api/deployments/:id
+Soft deletes a deployment
 
 
 
