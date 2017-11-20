@@ -6,7 +6,7 @@ import { Human, Ago, } from '../DisplayDate';
 
 describe('ReleasesTable', () => {
 
-  xit('should render table heading', () => {
+  it('should render table heading', () => {
 
     const wrapper = renderReleasesTable();
 
@@ -17,7 +17,7 @@ describe('ReleasesTable', () => {
     expect(wrapper.find('.releases-table__heading__version').text()).toBe('Version');
   });
 
-  xit('should render empty table', () => {
+  it('should render empty table', () => {
 
     const wrapper = renderReleasesTable({ releases: [], });
 

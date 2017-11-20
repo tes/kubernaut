@@ -9,10 +9,12 @@ import { composeWithDevTools, } from 'redux-devtools-extension';
 // Components
 import Header from './components/Header';
 import ReleasesPage from './components/ReleasesPage';
+import DeploymentsPage from './components/DeploymentsPage';
 import HomePage from './components/HomePage';
 
 // Reducers
 import releases from './reducers/releases';
+import deployments from './reducers/deployments';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -34,6 +36,7 @@ const initialState = {};
 
 const store = createStore(combineReducers({
   releases,
+  deployments,
 }), initialState, composeWithDevTools(
   applyMiddleware(thunk)
 ));
@@ -50,6 +53,9 @@ class App extends Component {
               <Switch>
                 <Route exact path='/releases' render={() =>
                   <ReleasesPage />
+                } />
+                <Route exact path='/deployments' render={() =>
+                  <DeploymentsPage />
                 } />
                 <Route path='/' render={() =>
                   <HomePage />

@@ -1,5 +1,6 @@
 SELECT
   ad.id,
+  ad.context,
   ad.service_id,
   ad.service_name,
   ad.service_created_on,

@@ -1,0 +1,23 @@
+.deployments-table .deployments-table__body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.deployments-table .deployments-table__heading__created {
+  width: 350px;
+}
+
+.deployments-table .deployments-table__body__row__created .deployments-table__body__row__created__on {
+  margin-right: 20px;
+}
+
+.deployments-table .deployments-table__body__row__created .deployments-table__body__row__created__ago {
+  font-style: italic;
+}
+
+.deployments-table .deployments-table__body__row__service-name {
+  white-space: nowrap;
+}
+
+.deployments-table .deployments-table__body__row__version {
+  white-space: nowrap;
+}
