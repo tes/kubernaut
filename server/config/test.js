@@ -8,6 +8,7 @@ module.exports = {
     },
   },
   postgres: {
+    hostname: 'localhost',
     database: 'postgres',
     user: 'postgres',
     connectionTimeoutMillis: 100,

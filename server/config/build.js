@@ -3,10 +3,9 @@ module.exports = {
     transport: 'human',
   },
   postgres: {
-    host: 'postgres',
+    hostname: 'postgres',
     database: 'postgres',
     user: 'postgres',
-    connectionTimeoutMillis: 100,
   },
   routes: {
   },

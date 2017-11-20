@@ -25,7 +25,8 @@ export default function(options) {
 
       if (release.rowCount === 0) return;
 
-      const attributes = await db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [release.id,]);
+      const attributes = await db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
+
       return toRelease(release.rows[0], attributes.rows);
     }
 

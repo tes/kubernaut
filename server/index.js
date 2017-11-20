@@ -5,7 +5,7 @@ process.env.APP_ENV = process.env.APP_ENV || 'local';
 
 runner(system(), { logger: console, }).start((err, dependencies) => {
   if (err) die('Error starting system', err);
-  dependencies.logger.info(`${dependencies.pkg.name} has started`);
+  dependencies.logger.info(`${dependencies.pkg.name} has started in ${process.env.APP_ENV}`);
 });
 
 function die(message, err) {

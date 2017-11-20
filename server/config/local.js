@@ -1,16 +1,14 @@
 module.exports = {
+  checksum: {
+    key: 'cf31ec7e1ac4592fa95cb5b38e1b7e8878c995f4698e26a6b363a8e73fe24a27',
+  },
   logger: {
     transport: 'human',
   },
-  transports: {
-    human: {
-      level: 'info',
-    },
-  },
   postgres: {
+    hostname: 'localhost',
     database: 'postgres',
     user: 'postgres',
-    connectionTimeoutMillis: 1000,
   },
   routes: {
   },
@@ -20,7 +18,9 @@ module.exports = {
   store: {
     unsafe: true,
   },
-  checksum: {
-    key: 'cf31ec7e1ac4592fa95cb5b38e1b7e8878c995f4698e26a6b363a8e73fe24a27',
+  transports: {
+    human: {
+      level: 'info',
+    },
   },
 };
