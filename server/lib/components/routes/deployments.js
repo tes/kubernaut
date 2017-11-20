@@ -56,7 +56,7 @@ export default function(options = {}) {
         const deployment = await store.saveDeployment(data, meta);
         await kubernetes.apply('test', deployment.manifest.yaml, res.locals.logger);
 
-        res.json({ id: deployment.id, });
+        res.status(202).json({ id: deployment.id, });
       } catch (err) {
         next(err);
       }
