@@ -33,11 +33,11 @@ export default function(options = {}) {
       if (!req.body.service) return res.status(400).json({ message: 'service is required', });
       if (!req.body.version) return res.status(400).json({ message: 'version is required', });
 
-      let template
+      let template;
       try {
         template = getTemplate(req.file.buffer);
       } catch (err) {
-        return next(err)
+        return next(err);
       }
 
       const data = {
@@ -45,13 +45,7 @@ export default function(options = {}) {
           name: req.body.service,
         },
         version: req.body.version,
-        template: {
-          source: {
-            yaml,
-            json,
-          },
-          checksum: checksum(buffer),
-        },
+        template,
         attributes: req.body,
       };
       const meta = {
@@ -76,13 +70,13 @@ export default function(options = {}) {
       }
     });
 
-    cb();
-  }
+    function getTemplate(buffer) {
+      const yaml = buffer.toString();
+      const json = yaml2json(yaml);
+      return { source: { yaml, json, }, checksum: checksum(buffer), };
+    }
 
-  function getTemplate(buffer) {
-    const yaml = buffer.toString();
-    const json = yaml2json(yaml);
-    return { source: { yaml, json, }, checksum: checksum(buffer) }
+    cb();
   }
 
   return {

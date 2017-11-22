@@ -39,15 +39,16 @@ export default function(options = {}) {
         const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
         if (!contextOk) return res.status(400).json({ message: `Context ${req.body.context} was not found`, });
 
-        const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
-        const json = yaml2json(yaml);
+        let manifest;
+        try {
+          manifest = getManifest(release);
+        } catch (err) {
+          return next(err);
+        }
 
         const data = {
           context: req.body.context,
-          manifest: {
-            yaml,
-            json,
-          },
+          manifest,
           release,
         };
         const meta = {
@@ -102,9 +103,14 @@ export default function(options = {}) {
       }
     });
 
+    function getManifest(release) {
+      const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
+      const json = yaml2json(yaml);
+      return { yaml, json, };
+    }
+
     cb();
   }
-
 
   return {
     start,
