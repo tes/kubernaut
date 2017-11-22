@@ -30,12 +30,15 @@ export default function(options = {}) {
 
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
-      const buffer = new Buffer(req.file.buffer);
-      const yaml = buffer.toString();
-      const json = yaml2json(yaml);
-
       if (!req.body.service) return res.status(400).json({ message: 'service is required', });
       if (!req.body.version) return res.status(400).json({ message: 'version is required', });
+
+      let template
+      try {
+        template = getTemplate(req.file.buffer);
+      } catch (err) {
+        return next(err)
+      }
 
       const data = {
         service: {
@@ -59,7 +62,7 @@ export default function(options = {}) {
       try {
         const release = await store.saveRelease(data, meta);
         res.json({ id: release.id, });
-      } catch(err) {
+      } catch (err) {
         next(err);
       }
     });
@@ -76,6 +79,11 @@ export default function(options = {}) {
     cb();
   }
 
+  function getTemplate(buffer) {
+    const yaml = buffer.toString();
+    const json = yaml2json(yaml);
+    return { source: { yaml, json, }, checksum: checksum(buffer) }
+  }
 
   return {
     start,
