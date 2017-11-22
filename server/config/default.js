@@ -30,6 +30,11 @@ module.exports = {
       'devDependencies',
     ],
   },
+  middleware: {
+    default: {
+      showErrorDetail: true,
+    },
+  },
   postgres: {
     connectionTimeoutMillis: 1000,
   },

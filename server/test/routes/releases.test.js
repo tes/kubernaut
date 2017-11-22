@@ -1,5 +1,7 @@
 import request from 'request-promise';
 import errors from 'request-promise/errors';
+import fs from 'fs';
+import path from 'path';
 import createSystem from '../test-system';
 import human from '../../lib/components/logging/human';
 import { makeRelease, makeMeta, makeReleaseForm, } from '../factories';
@@ -159,7 +161,6 @@ describe('Releases API', () => {
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
-
     });
 
     it('should reject releases without a version', async () => {
@@ -167,6 +168,43 @@ describe('Releases API', () => {
       const formData = makeReleaseForm();
       delete formData.version;
 
+      loggerOptions.suppress = true;
+
+      await expect(request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        method: 'POST',
+        formData,
+      })).rejects.toHaveProperty('statusCode', 400);
+    });
+
+    it('should reject releases with invalid template', async () => {
+
+      const templatePath = path.join('server', 'test', 'factories', 'data', 'invalid-template.yaml');
+
+      const formData = makeReleaseForm({
+        template: {
+          value: fs.createReadStream(templatePath),
+        },
+      });
+      loggerOptions.suppress = true;
+
+      await expect(request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        method: 'POST',
+        formData,
+      })).rejects.toHaveProperty('statusCode', 400);
+
+    });
+
+    it('should reject releases with invalid manifest', async () => {
+
+      const templatePath = path.join('server', 'test', 'factories', 'data', 'invalid-manifest.yaml');
+
+      const formData = makeReleaseForm({
+        template: {
+          value: fs.createReadStream(templatePath),
+        },
+      });
       loggerOptions.suppress = true;
 
       await expect(request({

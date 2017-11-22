@@ -165,6 +165,40 @@ describe('Deployments API', () => {
       expect(deployment.release.version).toBe(release.version);
     });
 
+    it('should report manifest compilation errors', async () => {
+
+      const release = makeRelease({
+        service: {
+          name: 'foo',
+        },
+        template: {
+          source: {
+            yaml: '"{{#whatever}}"',
+            json: {},
+          },
+        },
+        version: '22',
+      });
+      await store.saveRelease(release, makeMeta());
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        json: {
+          context: 'test',
+          service: 'foo',
+          version: '22',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 500');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(500);
+        expect(reason.response.body.message).toMatch(/Error compiling manifest/);
+      });
+    });
+
     it('should apply the kubernetes manifest', async () => {
 
       const release = makeRelease({

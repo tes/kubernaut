@@ -1,0 +1,9 @@
+---
+apiVersion: voyager.appscode.com/v1beta1
+kind: Ingress
+metadata:
+  name: {{#whatever}}
+spec:
+  backend:
+    serviceName: kubernaut-hello-world
+    servicePort: '80'

@@ -14,17 +14,33 @@ const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
 const sampleTemplate = fs.readFileSync(sampleTemplatePath, 'utf-8');
 
 const { deepClone, } = pm.ruleSets;
-const { or, eq, reference, } = pm.commands;
-const shallow = {
-  when: or([
-    eq('node.path', 'template.value'),
-    eq('node.path', 'template.source.yaml'),
-    eq('node.path', 'template.source.json'),
-    eq('node.path', 'release.template.source.yaml'),
-    eq('node.path', 'release.template.source.json'),
-  ]),
-  then: reference('b.value'),
-};
+const { and, or, eq, ne, reference, } = pm.commands;
+const shallow = [
+  {
+    when: and([
+      ne('a.value', undefined),
+      or([
+        eq('node.path', 'template.value'),
+        eq('node.path', 'template.source.yaml'),
+        eq('node.path', 'template.source.json'),
+        eq('node.path', 'release.template.source.yaml'),
+        eq('node.path', 'release.template.source.json'),
+      ]),
+    ]),
+    then: reference('a.value'),
+  },
+  {
+    when: or([
+      eq('node.path', 'template.value'),
+      eq('node.path', 'template.source.yaml'),
+      eq('node.path', 'template.source.json'),
+      eq('node.path', 'release.template.source.yaml'),
+      eq('node.path', 'release.template.source.json'),
+    ]),
+    then: reference('b.value'),
+  },
+];
+
 const merge = pm.compile({
   api: {
     direction: 'right-to-left',

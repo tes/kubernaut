@@ -1,5 +1,6 @@
 import bodyParser from 'body-parser';
 import hogan from 'hogan.js';
+import Boom from 'boom';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 export default function(options = {}) {
@@ -28,20 +29,20 @@ export default function(options = {}) {
 
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
-      if (!req.body.context) return res.status(400).json({ message: 'context is required', });
-      if (!req.body.service) return res.status(400).json({ message: 'service is required', });
-      if (!req.body.version) return res.status(400).json({ message: 'version is required', });
+      if (!req.body.context) return next(Boom.badRequest('context is required'));
+      if (!req.body.service) return next(Boom.badRequest('service is required'));
+      if (!req.body.version) return next(Boom.badRequest('version is required'));
 
       try {
         const release = await store.findRelease({ name: req.body.service, version: req.body.version, });
-        if (!release) return res.status(400).json({ message: `Release ${req.body.service}/${req.body.version} was not found`, });
+        if (!release) return next(Boom.badRequest(`Release ${req.body.service}/${req.body.version} was not found`));
 
         const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
-        if (!contextOk) return res.status(400).json({ message: `Context ${req.body.context} was not found`, });
+        if (!contextOk) return next(Boom.badRequest(`Context ${req.body.context} was not found`));
 
         const data = {
           context: req.body.context,
-          manifest: getManifest(release),
+          manifest: await getManifest(release, res.locals.logger),
           release,
         };
         const meta = {
@@ -68,10 +69,10 @@ export default function(options = {}) {
         if (!deployment) return next();
 
         const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
-        if (!contextOk) return res.status(500).json({ message: `Context ${deployment.context} was not found`, });
+        if (!contextOk) return next(Boom.internal(`Context ${deployment.context} was not found`));
 
         const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.name, res.locals.logger);
-        if (!deploymentOk) return res.status(500).json({ message: `Deployment ${deployment.release.service.name} was not found`, });
+        if (!deploymentOk) return next(Boom.internal(`Deployment ${deployment.release.service.name} was not found`));
 
         const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.name, res.locals.logger);
 
@@ -96,10 +97,15 @@ export default function(options = {}) {
       }
     });
 
-    function getManifest(release) {
-      const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
-      const json = yaml2json(yaml);
-      return { yaml, json, };
+    function getManifest(release, logger) {
+      return new Promise(resolve => {
+        const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
+        const json = yaml2json(yaml);
+        resolve({ yaml, json, });
+      }).catch(err => {
+        logger.error(err);
+        throw Boom.internal('Error compiling manifest');
+      });
     }
 
     cb();

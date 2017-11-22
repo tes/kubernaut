@@ -1,4 +1,6 @@
 import multer from 'multer';
+import Boom from 'boom';
+import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 const storage = multer.memoryStorage();
@@ -30,8 +32,8 @@ export default function(options = {}) {
 
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
-      if (!req.body.service) return res.status(400).json({ message: 'service is required', });
-      if (!req.body.version) return res.status(400).json({ message: 'version is required', });
+      if (!req.body.service) return next(Boom.badRequest('service is required'));
+      if (!req.body.version) return next(Boom.badRequest('version is required'));
 
       try {
         const data = {
@@ -39,7 +41,7 @@ export default function(options = {}) {
             name: req.body.service,
           },
           version: req.body.version,
-          template: getTemplate(req.file.buffer),
+          template: await getTemplate(req.file.buffer, res.locals.logger),
           attributes: req.body,
         };
         const meta = {
@@ -63,10 +65,16 @@ export default function(options = {}) {
       }
     });
 
-    function getTemplate(buffer) {
-      const yaml = buffer.toString();
-      const json = yaml2json(yaml);
-      return { source: { yaml, json, }, checksum: checksum(buffer), };
+    function getTemplate(buffer, logger) {
+      return new Promise(resolve => {
+        const yaml = buffer.toString();
+        hogan.compile(yaml).render({});
+        const json = yaml2json(yaml);
+        resolve({ source: { yaml, json, }, checksum: checksum(buffer), });
+      }).catch(err => {
+        logger.error(err);
+        throw Boom.badRequest('Error in template');
+      });
     }
 
     cb();
