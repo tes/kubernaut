@@ -6,7 +6,7 @@ export default function(options = {}) {
 
     function apply(context, manifest, logger) {
       return new Promise((resolve, reject) => {
-        const kubectl = spawn('kubectl', ['apply', '--context', context, '--filename', '-',]);
+        const kubectl = spawn('kubectl', ['--context', context, 'apply', '--filename', '-',]);
         kubectl.stdout.on('data', data => {
           logger.info(data.toString().trim());
         });
@@ -24,8 +24,20 @@ export default function(options = {}) {
     }
 
     function checkContext(context, logger) {
+      return check(['config', 'get-contexts', context,], logger);
+    }
+
+    function checkDeployment(context, name, logger) {
+      return check(['--context', context, 'get', 'deployment', name,], logger);
+    }
+
+    function rolloutStatus(context, name, logger) {
+      return check(['--context', context, 'rollout', 'status', `deployments/${name}`,], logger);
+    }
+
+    function check(args, logger) {
       return new Promise((resolve, reject) => {
-        const kubectl = spawn('kubectl', ['get-contexts', context,]);
+        const kubectl = spawn('kubectl', args);
         kubectl.stdout.on('data', data => {
           logger.info(data.toString().trim());
         });
@@ -43,6 +55,8 @@ export default function(options = {}) {
     return cb(null, {
       apply,
       checkContext,
+      checkDeployment,
+      rolloutStatus,
     });
   }
 

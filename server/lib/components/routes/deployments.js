@@ -34,8 +34,10 @@ export default function(options = {}) {
 
       try {
         const release = await store.findRelease({ name: req.body.service, version: req.body.version, });
-
         if (!release) return res.status(400).json({ message: `Release ${req.body.service}/${req.body.version} was not found`, });
+
+        const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
+        if (!contextOk) return res.status(400).json({ message: `Context ${req.body.context} was not found`, });
 
         const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
         const json = yaml2json(yaml);
@@ -54,13 +56,41 @@ export default function(options = {}) {
         };
 
         const deployment = await store.saveDeployment(data, meta);
-        await kubernetes.apply('test', deployment.manifest.yaml, res.locals.logger);
+        await kubernetes.apply(deployment.context, deployment.manifest.yaml, res.locals.logger);
 
-        res.status(202).json({ id: deployment.id, });
+        if (req.query.wait === 'true') {
+          res.redirect(`/api/deployments/${deployment.id}/status`);
+        } else {
+          res.status(202).json({ id: deployment.id, });
+        }
       } catch (err) {
         next(err);
       }
+    });
 
+    app.get('/api/deployments/:id/status', async (req, res, next) => {
+      try {
+        const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next();
+
+        const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
+        if (!contextOk) return res.status(500).json({ message: `Context ${deployment.context} was not found`, });
+
+        const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.name, res.locals.logger);
+        if (!deploymentOk) return res.status(500).json({ message: `Deployment ${deployment.release.service.name} was not found`, });
+
+        const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.name, res.locals.logger);
+
+        return ok ? res.status(200).json({
+          id: deployment.id,
+          status: 'success',
+        }) : res.status(502).json({
+          id: deployment.id,
+          status: 'failed',
+        });
+      } catch (err) {
+        next(err);
+      }
     });
 
     app.delete('/api/deployments/:id', async (req, res, next) => {

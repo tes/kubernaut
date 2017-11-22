@@ -11,16 +11,10 @@ describe('Releases API', () => {
   let store = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
-  const contexts = {
-    test: {
-      manifests: [],
-    },
-  };
 
   beforeAll(cb => {
     system = createSystem()
     .set('config.overrides', { server: { port: 13001, }, })
-    .set('contexts', contexts)
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
@@ -36,7 +30,6 @@ describe('Releases API', () => {
 
   afterEach(() => {
     loggerOptions.suppress = false;
-    contexts.test = { manifests: [], };
   });
 
   afterAll(cb => {

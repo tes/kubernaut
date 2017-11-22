@@ -216,6 +216,17 @@ Gets a single deployment
 ### POST /api/deployments
 Deploys a release using the specified context
 
+### GET /api/deployments/:id/status
+Returns the status of a deployment (blocks until known)
+
+| Status | Meaning |
+|--------|---------|
+| 200    | Deployment met all the conditions of the deployment strategy |
+| 404    | Deployment not found by kubernaut |
+| 500    | Mismatch between kubernaut's deployment (context or service name) and kubernetes (or a usual server error) |
+| 502    | Deployment failed to meet all the conditions of the deployment strategy within the deadline |
+
+
 ### DELETE /api/deployments/:id
 Soft deletes a deployment
 
