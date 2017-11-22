@@ -39,16 +39,9 @@ export default function(options = {}) {
         const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
         if (!contextOk) return res.status(400).json({ message: `Context ${req.body.context} was not found`, });
 
-        let manifest;
-        try {
-          manifest = getManifest(release);
-        } catch (err) {
-          return next(err);
-        }
-
         const data = {
           context: req.body.context,
-          manifest,
+          manifest: getManifest(release),
           release,
         };
         const meta = {

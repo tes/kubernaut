@@ -33,27 +33,20 @@ export default function(options = {}) {
       if (!req.body.service) return res.status(400).json({ message: 'service is required', });
       if (!req.body.version) return res.status(400).json({ message: 'version is required', });
 
-      let template;
       try {
-        template = getTemplate(req.file.buffer);
-      } catch (err) {
-        return next(err);
-      }
+        const data = {
+          service: {
+            name: req.body.service,
+          },
+          version: req.body.version,
+          template: getTemplate(req.file.buffer),
+          attributes: req.body,
+        };
+        const meta = {
+          date: new Date(),
+          user: 'anonymous',
+        };
 
-      const data = {
-        service: {
-          name: req.body.service,
-        },
-        version: req.body.version,
-        template,
-        attributes: req.body,
-      };
-      const meta = {
-        date: new Date(),
-        user: 'anonymous',
-      };
-
-      try {
         const release = await store.saveRelease(data, meta);
         res.json({ id: release.id, });
       } catch (err) {
