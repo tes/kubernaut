@@ -216,9 +216,9 @@ describe('Deployments API', () => {
           version: '22',
         },
       }).then(() => {
-        throw new Error('Should have redirected with 302');
+        throw new Error('Should have redirected with 303');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(302);
+        expect(reason.response.statusCode).toBe(303);
         expect(reason.response.headers.location).toMatch(/api\/deployments\/.+\/status/);
       });
     });

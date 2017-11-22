@@ -59,7 +59,7 @@ export default function(options = {}) {
         await kubernetes.apply(deployment.context, deployment.manifest.yaml, res.locals.logger);
 
         if (req.query.wait === 'true') {
-          res.redirect(`/api/deployments/${deployment.id}/status`);
+          res.redirect(303, `/api/deployments/${deployment.id}/status`);
         } else {
           res.status(202).json({ id: deployment.id, });
         }
