@@ -7,6 +7,15 @@ module.exports = {
       {
         id: 'local',
       },
+      {
+        id: 'bearer',
+        users: [
+          {
+            id: 'machine-user/ava',
+            token: 'ava',
+          },
+        ],
+      },
     ],
   },
   checksum: {

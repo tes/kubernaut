@@ -1,9 +1,9 @@
 import { Strategy as GitHubStrategy, } from 'passport-github';
 
-/********************************************************************************************
+/*
  Using 'module.exports' to workaround TypeError require is not a function
  See https://stackoverflow.com/questions/33007878/nodejs-typeerror-require-is-not-a-function
- ********************************************************************************************/
+*/
 module.exports = function() {
 
   function start({ config, logger, app, passport, }, cb) {
