@@ -5,7 +5,7 @@ const APP_ROUTES = /^(?!(?:\/api\/|\/__\/)).*/;
 
 module.exports = function() {
 
-  function start({ app, config, logger, prepper,}, cb) {
+  function start({ app, config, loggerMiddleware, auth, }, cb) {
 
     const clientApp = function(status) {
       return (req, res, next) => {
@@ -19,7 +19,7 @@ module.exports = function() {
     app.use((req, res, next) => {
       if (!req.headers['user-agent']) return next();
       if (!req.headers['user-agent'].includes('kube-probe')) return next();
-      prepper.disable(req, res, next);
+      loggerMiddleware.disable(req, res, next);
     });
 
     // Always serve the app from root
@@ -29,17 +29,18 @@ module.exports = function() {
     app.get([
       /^\/$/,
       '/releases/:release?',
-    ], clientApp(200));
+      '/deployments/:deployment?',
+    ], auth('client'), clientApp(200));
 
     // Serve other static resources with logging disabled
-    app.get(APP_ROUTES, prepper.disable, express.static('./client/build', {
+    app.get(APP_ROUTES, loggerMiddleware.disable, auth('client'), express.static('./client/build', {
       setHeaders: (res, path) => {
         res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       },
     }));
 
     // Ensure client 404's are handled by the app
-    app.get(APP_ROUTES, prepper.enable, clientApp(404));
+    app.get(APP_ROUTES, loggerMiddleware.enable, clientApp(404));
 
     cb();
   }

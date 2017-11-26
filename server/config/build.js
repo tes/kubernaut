@@ -1,4 +1,14 @@
 module.exports = {
+  auth: {
+    middleware: {
+      loginUrl: '/auth/test',
+    },
+    strategies: [
+      {
+        id: 'test',
+      },
+    ],
+  },
   logger: {
     transport: 'human',
   },
@@ -12,6 +22,10 @@ module.exports = {
   server: {
     host: '0.0.0.0',
     port: 13000,
+  },
+  session: {
+    store: 'memory',
+    secret: 'secret',
   },
   store: {
     nukeable: true,

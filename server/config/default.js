@@ -25,13 +25,14 @@ module.exports = {
       'password',
       'secret',
       'token',
+      'request.headers.authorization',
       'request.headers.cookie',
       'dependencies',
       'devDependencies',
     ],
   },
-  middleware: {
-    default: {
+  app: {
+    middleware: {
       showErrorDetail: true,
     },
   },

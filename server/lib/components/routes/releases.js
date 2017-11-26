@@ -8,7 +8,7 @@ const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
-  function start({ pkg, app, prepper, store, checksum, }, cb) {
+  function start({ pkg, app, store, checksum, }, cb) {
 
     app.get('/api/releases', async (req, res, next) => {
       const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;

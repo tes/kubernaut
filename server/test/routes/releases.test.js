@@ -3,7 +3,7 @@ import errors from 'request-promise/errors';
 import fs from 'fs';
 import path from 'path';
 import createSystem from '../test-system';
-import human from '../../lib/components/logging/human';
+import human from '../../lib/components/logger/human';
 import { makeRelease, makeMeta, makeReleaseForm, } from '../factories';
 
 describe('Releases API', () => {

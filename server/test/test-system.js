@@ -1,12 +1,14 @@
 import system from '../lib/system';
 import { fake as clock, } from 'groundhog-day';
-import memory from '../lib/components/stores/memory';
+import memorySession from '../lib/components/express/session-memory';
+import memoryStore from '../lib/components/stores/memory';
 
 export default function() {
   return system()
       .set('clock', clock())
       .remove('postgres')
       .remove('migrator')
-      .include(memory);
+      .set('session', memorySession()).dependsOn('config', 'logger')
+      .include(memoryStore);
 }
 

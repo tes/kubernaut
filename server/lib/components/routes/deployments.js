@@ -5,7 +5,7 @@ import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, prepper, store, kubernetes, }, cb) {
+  function start({ pkg, app, store, kubernetes, }, cb) {
 
     app.get('/api/deployments', async (req, res, next) => {
       const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
