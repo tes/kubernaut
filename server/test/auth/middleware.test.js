@@ -54,8 +54,7 @@ describe('Auth Middleware', () => {
           app.get('/authenticated', login, auth('client'), (req, res) => res.status(204).send());
           app.get('/unauthenticated', auth('client'), (req, res) => res.status(204).send());
           app.use((err, req, res, next) => {
-            console.log(err)
-            res.status(Boom.isBoom(err) ? err.output.statusCode : 500).send()
+            res.status(Boom.isBoom(err) ? err.output.statusCode : 500).send();
           });
           cb();
         });
