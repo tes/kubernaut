@@ -27,7 +27,6 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --verbose",
-    "test-w": "react-scripts test --env=jsdom",
     "postbuild": "postcss --use postcss-custom-properties --replace build/**/*.css",
     "eject": "react-scripts eject"
   },
