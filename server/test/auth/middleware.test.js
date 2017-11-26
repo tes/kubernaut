@@ -2,7 +2,7 @@ import express from 'systemic-express/express';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import session from 'express-session';
-import Boom from 'Boom';
+import boom from 'Boom';
 import middleware from '../../lib/components/auth/middleware';
 
 describe('Auth Middleware', () => {
