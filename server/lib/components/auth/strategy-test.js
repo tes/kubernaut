@@ -11,7 +11,7 @@ module.exports = function() {
     logger.info('Using test authentication strategy');
 
     const strategy = new CustomStrategy((req, cb) => {
-      const user = { id: 'chuck', };
+      const user = { id: 'chuck', name: 'Chuck Yeager' };
       return cb(null, user);
     });
 

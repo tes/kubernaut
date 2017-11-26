@@ -12,8 +12,7 @@ module.exports = function() {
     logger.info('Using local authentication strategy');
 
     const strategy = new CustomStrategy((req, cb) => {
-      const user = userInfo().username;
-      return cb(null, user);
+      return cb(null, { id: userInfo().username, });
     });
 
     strategy.name = 'local';
