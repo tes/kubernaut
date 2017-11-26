@@ -5,11 +5,6 @@ module.exports = {
   logger: {
     transport: 'human',
   },
-  postgres: {
-    hostname: 'localhost',
-    database: 'postgres',
-    user: 'postgres',
-  },
   routes: {
   },
   server: {

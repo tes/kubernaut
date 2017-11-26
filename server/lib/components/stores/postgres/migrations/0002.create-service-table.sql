@@ -28,7 +28,7 @@ $$
 DECLARE
   id text;
 BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext(name));
+  PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_' || name));
 
   SELECT service.id INTO id FROM service WHERE service.name = ensure_service.name;
   IF NOT FOUND THEN

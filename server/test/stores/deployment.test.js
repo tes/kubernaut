@@ -13,10 +13,18 @@ describe('Deployment Store', () => {
     {
       name: 'Postgres',
       system: createSystem()
-        .remove('server')
+        .set('config.overrides', {
+          postgres: {
+            tenant: {
+              user: 'deployment_test',
+              password: 'password',
+            },
+          },
+        })
         .remove('store.release')
         .remove('store.deployment')
-        .include(postgres),
+        .include(postgres)
+        .remove('server'),
     },
   ];
 
