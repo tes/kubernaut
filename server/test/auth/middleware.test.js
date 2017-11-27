@@ -2,6 +2,7 @@ import express from 'systemic-express/express';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import session from 'express-session';
+import passport from 'passport';
 import Boom from 'boom';
 import middleware from '../../lib/components/auth/middleware';
 
@@ -42,6 +43,9 @@ describe('Auth Middleware', () => {
     function startServer(cb) {
       const app = express();
       app.use(session({ secret: 'keyboard cat', resave: true, saveUninitialized: true, }));
+      app.use(passport.initialize());
+      app.use(passport.session());
+
       app.locals.loginUrl = '/auth/test';
       server = app.listen(port, err => {
         if (err) return cb(err);
@@ -54,7 +58,11 @@ describe('Auth Middleware', () => {
           app.get('/authenticated', login, auth('client'), (req, res) => res.status(204).send());
           app.get('/unauthenticated', auth('client'), (req, res) => res.status(204).send());
           app.use((err, req, res, next) => {
-            res.status(Boom.isBoom(err) ? err.output.statusCode : 500).send();
+            err = Boom.wrap(err)
+            err.output.payload.message = err.message
+            err.output.payload.stack = err.stack
+            res.status(err.output.statusCode);
+            res.send(`${err.output.payload.statusCode} ${err.output.payload.message}\n${err.output.payload.stack}`);
           });
           cb();
         });
