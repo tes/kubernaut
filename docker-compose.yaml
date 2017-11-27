@@ -20,6 +20,7 @@ services:
     depends_on:
     - build-postgres
     environment:
+    - NODE_ENV=development
     - KUBERNAUT__POSTGRES__HOST=build-postgres
 
   build-postgres:
