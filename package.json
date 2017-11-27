@@ -19,7 +19,7 @@
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
     "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
     "build-client": "cd client; npm run build",
-    "prepush": "IMAGE=kubernaut TAG=local docker-compose run --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
+    "prepush": "IMAGE=kubernaut TAG=$(git rev-parse --short HEAD)-local docker-compose run --rm --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
     "lint": "eslint ."
   },
   "author": "TES",

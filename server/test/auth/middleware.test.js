@@ -58,9 +58,9 @@ describe('Auth Middleware', () => {
           app.get('/authenticated', login, auth('client'), (req, res) => res.status(204).send());
           app.get('/unauthenticated', auth('client'), (req, res) => res.status(204).send());
           app.use((err, req, res, next) => {
-            err = Boom.wrap(err)
-            err.output.payload.message = err.message
-            err.output.payload.stack = err.stack
+            err = Boom.wrap(err);
+            err.output.payload.message = err.message;
+            err.output.payload.stack = err.stack;
             res.status(err.output.statusCode);
             res.send(`${err.output.payload.statusCode} ${err.output.payload.message}\n${err.output.payload.stack}`);
           });
