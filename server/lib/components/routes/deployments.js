@@ -64,6 +64,7 @@ export default function(options = {}) {
     });
 
     app.get('/api/deployments/:id/status', async (req, res, next) => {
+      req.setTimeout(0);
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next();
