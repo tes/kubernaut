@@ -25,6 +25,8 @@ const shallow = [
         eq('node.path', 'template.source.json'),
         eq('node.path', 'release.template.source.yaml'),
         eq('node.path', 'release.template.source.json'),
+        eq('node.path', 'manifest.yaml'),
+        eq('node.path', 'manifest.json'),
       ]),
     ]),
     then: reference('a.value'),
@@ -36,6 +38,8 @@ const shallow = [
       eq('node.path', 'template.source.json'),
       eq('node.path', 'release.template.source.yaml'),
       eq('node.path', 'release.template.source.json'),
+      eq('node.path', 'manifest.yaml'),
+      eq('node.path', 'manifest.json'),
     ]),
     then: reference('b.value'),
   },
@@ -48,6 +52,16 @@ const merge = pm.compile({
     shallow,
     deepClone,
   ], });
+
+function makeAccount(overrides = {}) {
+  const first = chance.first();
+  const last = chance.last();
+  return merge({
+    identity: `${first}_${last}`.toLowerCase(),
+    provider: chance.company(),
+    displayName: `${first} ${last}`,
+  }, overrides);
+}
 
 function makeDeployment(overrides = {}) {
   const release = makeRelease(overrides.release);
@@ -115,4 +129,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeDeployment, makeRelease, makeMeta, makeReleaseForm, };
+export { makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };

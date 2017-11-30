@@ -50,9 +50,9 @@ npm run test-client-w
 Kubernaut uses dependency injection called [systemic](https://www.npmjs.com/package/systemic) to organise code. It's the spiritual successor to [electrician](https://www.npmjs.com/package/electrician). Systemic systems are started by a [runner](https://github.com/tes/kubernaut/blob/master/server/index.js) which handles interupts and uncaught exceptions. Server side components and their dependencies are declared [here](https://github.com/tes/kubernaut/blob/master/server/lib/components).
 
 #### The Client
-The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate, as I want to keep the entry barrier as low as possible.
+The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate. The aim is to keep the entry barrier as low as possible.
 
-## Workflow
+## Kubernaut Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
 │                    │ Kubernetes Manifest Template │
@@ -146,50 +146,50 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
                                          │
                                          │
                                         ╱│╲
-                               ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-
+                               ┌───────────────────┐
                                │                   │
-                                    Deployment
                                │                   │
-
-                               └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+                               │    Deployment     │
+                               │                   │
+                               │                   │
+                               └───────────────────┘
 </pre>
 
 ### Service
 An app / micro service
 
-| Property  |   |
-|-----------|---|
+| Property  | Description |
+|-----------|-------------|
 | name      | the service name, e.g. service-jobs-api |
 | namespace | the kubernetes namespace where the service will be deployed, e.g. jobs, resources |
 
 ### Release
 A release of an app / micro service
 
-| Property  |   |
-|-----------|---|
+| Property  | Description |
+|-----------|-------------|
 | version   | The release version. Currently jenkins build number, we're considering using / incorporating git commit |
 
 ### Template
 A moustache template for the kubernetes manifest file (yaml).
 
-| Property  |   |
-|-----------|---|
+| Property  | Description |
+|-----------|-------------|
 | source    | The template source. The template is rendered using release attributes (see below) to form the kubernates manfiest |
 
 ### Release Attribute
 Key value pairs, which may be rendered into the kubernetes template, e.g. service name, image, version, commit,
 
-| Property  |   |
-|-----------|---|
+| Property  | Description |
+|-----------|-------------|
 | name      | attribute name |
 | value     | attribute value |
 
 ### Deployment
 A release of an app / micro service
 
-| Property  |   |
-|-----------|---|
+| Property  | Description |
+|-----------|-------------|
 | context   | The kubernetes context which defines the target cluster |
 
 
@@ -225,7 +225,6 @@ Returns the status of a deployment (blocks until known)
 | 404    | Deployment not found by kubernaut |
 | 500    | Mismatch between kubernaut's deployment (context or service name) and kubernetes (or a usual server error) |
 | 502    | Deployment failed to meet all the conditions of the deployment strategy within the deadline |
-
 
 ### DELETE /api/deployments/:id
 Soft deletes a deployment

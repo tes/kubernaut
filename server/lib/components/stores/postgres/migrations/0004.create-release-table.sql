@@ -9,9 +9,12 @@ CREATE TABLE release (
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by TEXT,
-  CONSTRAINT release__service__version__uniq UNIQUE (service, version),
   CONSTRAINT release__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
+
+CREATE UNIQUE INDEX release__service__version__uniq ON release (
+  service DESC, version DESC
+) WHERE deleted_on IS NULL;
 
 CREATE INDEX release__service__idx ON release (
   service DESC

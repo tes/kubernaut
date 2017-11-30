@@ -24,6 +24,7 @@ describe('Release Store', () => {
         .remove('server')
         .remove('store.release')
         .remove('store.deployment')
+        .remove('store.acount')
         .include(postgres),
     },
   ];
@@ -179,7 +180,7 @@ describe('Release Store', () => {
 
       describe('List Releases', () => {
 
-        it('should list releases, ordered by deletedOn desc, createdOn desc and id desc', async () => {
+        it('should list releases, ordered by createdOn desc and id desc', async () => {
 
           const releases = [
             {

@@ -1,0 +1,6 @@
+{
+    "directives": {
+        "audit": "false"
+    },
+    "namespace": "refdata"
+}

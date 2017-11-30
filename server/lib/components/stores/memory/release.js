@@ -59,7 +59,7 @@ export default function(options = {}) {
     }
 
     function reportDuplicateReleaseVersions(release) {
-      if (releases.find(r => r.service.name === release.service.name && r.version === release.version)) throw Object.assign(new Error(), { code: '23505', });
+      if (releases.find(r => r.service.name === release.service.name && r.version === release.version)) throw Object.assign(new Error('Duplicate Release'), { code: '23505', });
     }
 
     function byMostRecent(a, b) {

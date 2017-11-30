@@ -7,13 +7,12 @@ CREATE TABLE service (
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by TEXT,
-  CONSTRAINT service__name__uniq UNIQUE (name),
   CONSTRAINT service__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
-CREATE INDEX service__name__idx ON service (
+CREATE UNIQUE INDEX service__name__uniq ON service (
   name DESC
-);
+) WHERE deleted_on IS NULL;
 
 CREATE INDEX service__created_on__idx ON service (
   created_on DESC

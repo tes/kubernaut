@@ -9,9 +9,12 @@ CREATE TABLE release_template (
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by TEXT,
-  CONSTRAINT release__checksum__uniq UNIQUE (checksum),
   CONSTRAINT release__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
+
+CREATE UNIQUE INDEX release__checksum__uniq ON release_template (
+  checksum DESC
+) WHERE deleted_on IS NULL;
 
 CREATE FUNCTION ensure_release_template (
   source_yaml TEXT,
