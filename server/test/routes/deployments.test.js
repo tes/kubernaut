@@ -257,7 +257,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject deployments without a context', async () => {
+    it('should reject payloads without a context', async () => {
 
       loggerOptions.suppress = true;
 
@@ -277,7 +277,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject deployments without a service', async () => {
+    it('should reject payloads without a service', async () => {
 
       loggerOptions.suppress = true;
 
@@ -297,7 +297,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject deployments without a version', async () => {
+    it('should reject payloads without a version', async () => {
 
       loggerOptions.suppress = true;
 
@@ -317,7 +317,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject deployments a missing context', async () => {
+    it('should reject payloads a missing context', async () => {
 
       const release = makeRelease({
         service: {
@@ -346,7 +346,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject deployments without a matching release', async () => {
+    it('should reject payloads without a matching release', async () => {
 
       loggerOptions.suppress = true;
 

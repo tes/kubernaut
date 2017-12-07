@@ -8,13 +8,11 @@ export default function(options = {}) {
     const roles = {
       admin: {
         permissions: ["role_revoke", "role_grant", "releases_write", "releases_read", "deployments_write", "deployments_read", "client", "accounts_write", "accounts_read",],
-
       },
     };
 
     async function getAccount(id) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
-
       if (account) return {
         ...account,
         roles: account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {

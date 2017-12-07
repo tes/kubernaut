@@ -149,7 +149,7 @@ describe('Releases API', () => {
       expect(release.attributes.image).toBe(formData.image);
     });
 
-    it('should reject releases without a service', async () => {
+    it('should reject payloads without a service', async () => {
 
       const formData = makeReleaseForm();
       delete formData.service;
@@ -163,7 +163,7 @@ describe('Releases API', () => {
       })).rejects.toHaveProperty('statusCode', 400);
     });
 
-    it('should reject releases without a version', async () => {
+    it('should reject payloads without a version', async () => {
 
       const formData = makeReleaseForm();
       delete formData.version;
@@ -177,7 +177,7 @@ describe('Releases API', () => {
       })).rejects.toHaveProperty('statusCode', 400);
     });
 
-    it('should reject releases with invalid template', async () => {
+    it('should reject payloads with invalid template', async () => {
 
       const templatePath = path.join('server', 'test', 'factories', 'data', 'invalid-template.yaml');
 
@@ -196,7 +196,7 @@ describe('Releases API', () => {
 
     });
 
-    it('should reject releases with invalid manifest', async () => {
+    it('should reject payloads with invalid manifest', async () => {
 
       const templatePath = path.join('server', 'test', 'factories', 'data', 'invalid-manifest.yaml');
 

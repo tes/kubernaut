@@ -293,12 +293,43 @@ Lists all active user accounts
 ### POST /api/accounts
 Creates a new user account
 
-### POST /api/accounts/:id/roles
-Grants a role to a user account
-
-### DELETE /api/accounts/:id/roles
-Revokes a role from a user account
+#### Body
+```json
+{
+  "displayName": "John Wayne",
+}
+```
 
 ### DELETE /api/accounts/:id
 Soft deletes a user account
 
+### POST /api/identities
+Creates an account identity
+
+#### Body
+```json
+{
+  "account": "7008eeaa-0e58-45e9-a7cb-773edf9758c3",
+  "name": "cressie176",
+  "provider": "github",
+  "type": "oauth"
+}
+```
+
+
+### DELETE /api/identities/:id
+Delets an account identity
+
+### POST /api/roles
+Grants a role to a user account
+
+#### Body
+```json
+{
+  "account": "7008eeaa-0e58-45e9-a7cb-773edf9758c3",
+  "role": "admin"
+}
+```
+
+### DELETE /api/roles/:id
+Revokes a role from a user account
