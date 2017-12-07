@@ -3,13 +3,16 @@ import { v4 as uuid, } from 'uuid';
 export default function(options = {}) {
   function start({ tables, }, cb) {
 
-    const { deployments, } = tables;
+    const { deployments, releases, } = tables;
 
     async function getDeployment(id) {
       return deployments.find(d => d.id === id && !d.deletedOn);
     }
 
     async function saveDeployment(deployment, meta) {
+
+      reportMissingRelease(deployment.release);
+
       return append(deployments, {
         ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.user,
       });
@@ -28,6 +31,10 @@ export default function(options = {}) {
         .sort(byMostRecent)
         .map(toSlimDeployment)
         .slice(offset, offset + limit);
+    }
+
+    function reportMissingRelease(release) {
+      if (!releases.find(r => r.id === release.id && !r.deletedOn)) throw Object.assign(new Error('Missing Release'), { code: '23502', });
     }
 
     function byActive(d) {

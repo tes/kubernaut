@@ -9,7 +9,7 @@ export default function(options) {
 
       const deploymentResult = await db.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]);
 
-      logger.debug(`Found ${deploymentResult.rowCount} releases with id: ${id}`);
+      logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
 
       return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0]) : undefined;
     }

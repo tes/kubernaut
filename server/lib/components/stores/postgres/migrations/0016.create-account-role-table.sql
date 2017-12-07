@@ -4,7 +4,6 @@ CREATE TABLE account_role (
   id TEXT PRIMARY KEY,
   account TEXT NOT NULL REFERENCES account,
   role TEXT NOT NULL REFERENCES role,
-  namespace TEXT NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by TEXT NOT NULL,
   deleted_on TIMESTAMP WITH TIME ZONE,
@@ -14,15 +13,14 @@ CREATE TABLE account_role (
 
 CREATE UNIQUE INDEX account_role__account__role__uniq ON account_role (
   account DESC, role DESC
-) WHERE deleted_on IS NULL;
-
+);
 
 CREATE INDEX account_role__account__idx ON account_role (
   account DESC
 );
 
-CREATE INDEX account_role__created_on__idx ON account_role (
-  created_on DESC
+CREATE INDEX account_role__role__idx ON account_role (
+  role DESC
 );
 
 COMMIT;

@@ -34,7 +34,7 @@ describe('Release Store', () => {
     describe(`${suite.name} Store`, () => {
 
       let system = { stop: cb => cb(), };
-      let store = { nuke: new Promise(cb => cb()), };
+      let store = { nuke: () => new Promise(cb => cb()), };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -44,8 +44,8 @@ describe('Release Store', () => {
         });
       });
 
-      beforeEach(async cb => {
-        store.nuke().then(cb);
+      beforeEach(cb => {
+        store.nuke().then(cb).catch(cb);
       });
 
       afterAll(cb => {

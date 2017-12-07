@@ -1,26 +1,47 @@
 import { v4 as uuid, } from 'uuid';
 
 export default function(options = {}) {
+
   function start({ tables, }, cb) {
 
-    const { accounts, } = tables;
+    const { accounts, identities, account_roles, } = tables;
+    const roles = {
+      admin: {
+        permissions: ["role_revoke", "role_grant", "releases_write", "releases_read", "deployments_write", "deployments_read", "client", "accounts_write", "accounts_read",],
+
+      },
+    };
 
     async function getAccount(id) {
-      return accounts.find(a => a.id === id && !a.deletedOn);
+      const account = accounts.find(a => a.id === id && !a.deletedOn);
+
+      if (account) return {
+        ...account,
+        roles: account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {
+          result[accountRole.role] = { name: accountRole.role, permissions: roles[accountRole.role].permissions.slice(), };
+          return result;
+        }, {}),
+      };
     }
 
-    async function findAccount({ identity, provider, }) {
-      const account = accounts.find(a => a.identity === identity && a.provider === provider && !a.deletedOn);
-      if (!account) return;
-      return account;
+    async function findAccount({ name, provider, type, }) {
+      const identity = identities.find(i => i.name === name && i.provider === provider && i.type === type && !i.deletedOn);
+      if (!identity) return;
+
+      return accounts.find(a => a.id === identity.account);
     }
 
     async function saveAccount(account, meta) {
-      reportDuplicateAccounts(account);
 
       return append(accounts, {
         ...account, id: uuid(), createdOn: meta.date, createdBy: meta.user,
       });
+    }
+
+    async function listAccounts(limit = 50, offset = 0) {
+      return accounts.filter(byActive)
+        .sort(byDisplayName)
+        .slice(offset, offset + limit);
     }
 
     async function deleteAccount(id, meta) {
@@ -31,22 +52,58 @@ export default function(options = {}) {
       }
     }
 
-    async function listAccounts(limit = 50, offset = 0) {
-      return accounts.filter(byActive)
-        .sort(byIdentityAndProvider)
-        .slice(offset, offset + limit);
+    async function saveIdentity(id, identity, meta) {
+      reportDuplicateIdentities(identity);
+      reportMissingAccount(id);
+      return append(identities, {
+        ...identity, id: uuid(), account: id, createdOn: meta.date, createdBy: meta.user,
+      });
     }
 
-    function reportDuplicateAccounts(account) {
-      if (accounts.find(a => a.identity === account.identity && a.provider === account.provider && !a.deletedOn)) throw Object.assign(new Error('Duplicate Account'), { code: '23505', });
+    async function deleteIdentity(id, meta) {
+      const identity = identities.find(i => i.id === id && !i.deletedOn);
+      if (identity) {
+        identity.deletedOn = meta.date;
+        identity.deletedBy = meta.user;
+      }
+    }
+
+    async function grantRole(accountId, roleName, meta) {
+      const account = accounts.find(a => a.id === accountId && !a.deletedOn);
+      if (!account) throw Object.assign(new Error('Missing Account'), { code: '23502', });
+      if (!roles[roleName]) throw Object.assign(new Error('Missing Role'), { code: '23502', });
+
+      if (account_roles.find(ar => ar.account === accountId && ar.role === roleName && !ar.deletedOn)) return;
+
+      const granted = {
+        id: uuid(), account: accountId, role: roleName, createdOn: meta.date, createdBy: meta.user,
+      };
+
+      return append(account_roles, granted);
+    }
+
+    async function revokeRole(id, meta) {
+      const accountRole = account_roles.find(ar => ar.id === id && !ar.deletedOn);
+      if (accountRole) {
+        accountRole.deletedOn = meta.date;
+        accountRole.deletedBy = meta.user;
+      }
+    }
+
+    function reportDuplicateIdentities(identity) {
+      if (identities.find(i => i.name === identity.name && i.provider === identity.provider && i.type === identity.type && !i.deletedOn)) throw Object.assign(new Error('Duplicate Identity'), { code: '23505', });
+    }
+
+    function reportMissingAccount(id) {
+      if (!accounts.find(a => a.id === id && !a.deletedOn)) throw Object.assign(new Error('Missing Account'), { code: '23502', });
     }
 
     function byActive(a) {
       return !a.deletedOn;
     }
 
-    function byIdentityAndProvider(a, b) {
-      return a.identity.localeCompare(b.identity) || a.provider.localeCompare(b.provider);
+    function byDisplayName(a, b) {
+      return a.displayName.localeCompare(b.displayName);
     }
 
     function append(collection, item) {
@@ -60,6 +117,10 @@ export default function(options = {}) {
       findAccount,
       listAccounts,
       deleteAccount,
+      saveIdentity,
+      deleteIdentity,
+      grantRole,
+      revokeRole,
     });
   }
 

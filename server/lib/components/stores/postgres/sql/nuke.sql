@@ -1,9 +1,6 @@
 START TRANSACTION;
 
+TRUNCATE account CASCADE;
 TRUNCATE service CASCADE;
-TRUNCATE release_template CASCADE;
-TRUNCATE release CASCADE;
-TRUNCATE release_attribute CASCADE;
-TRUNCATE deployment CASCADE;
 
 COMMIT;

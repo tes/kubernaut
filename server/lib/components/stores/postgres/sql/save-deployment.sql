@@ -8,7 +8,7 @@ INSERT INTO deployment (
   created_by
 ) VALUES (
   uuid_generate_v4(),
-  $1,
+  (SELECT ar.id FROM active_release__vw ar WHERE ar.id = $1),
   $2,
   $3,
   $4,

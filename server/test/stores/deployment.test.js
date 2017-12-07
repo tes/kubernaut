@@ -34,7 +34,7 @@ describe('Deployment Store', () => {
     describe(`${suite.name} Store`, () => {
 
       let system = { stop: cb => cb(), };
-      let store = { nuke: new Promise(cb => cb()), };
+      let store = { nuke: () => new Promise(cb => cb()), };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -44,8 +44,8 @@ describe('Deployment Store', () => {
         });
       });
 
-      beforeEach(async cb => {
-        store.nuke().then(cb);
+      beforeEach(cb => {
+        store.nuke().then(cb).catch(cb);
       });
 
       afterAll(cb => {
@@ -78,6 +78,24 @@ describe('Deployment Store', () => {
           const deployment2 = await store.saveDeployment(data, meta);
 
           expect(deployment1.id).not.toBe(deployment2.id);
+        });
+
+        it('should report an error if release does not exist', async () => {
+          const data = makeDeployment({ release: { id: 'missing', }, });
+
+          await expect(
+            store.saveDeployment(data, makeMeta())
+          ).rejects.toHaveProperty('code', '23502');
+        });
+
+        it('should report an error if release was deleted', async () => {
+          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const data = makeDeployment({ release, });
+          await store.deleteRelease(release.id, makeMeta());
+
+          await expect(
+            store.saveDeployment(data, makeMeta())
+          ).rejects.toHaveProperty('code', '23502');
         });
 
       });

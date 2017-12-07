@@ -53,13 +53,20 @@ const merge = pm.compile({
     deepClone,
   ], });
 
+function makeIdentity(overrides = {}) {
+  return merge({
+    name: chance.word().toLowerCase(),
+    provider: chance.word().toLowerCase(),
+    type: chance.word().toLowerCase(),
+  }, overrides);
+}
+
 function makeAccount(overrides = {}) {
   const first = chance.first();
   const last = chance.last();
   return merge({
-    identity: `${first}_${last}`.toLowerCase(),
-    provider: chance.company(),
     displayName: `${first} ${last}`,
+    roles: [],
   }, overrides);
 }
 
@@ -129,4 +136,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };
+export { makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };

@@ -119,7 +119,7 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 </pre>
 
 
-## Kubernaut Domain Model (Work In Progress)
+## Kubernaut Domain Model
 
 <pre>
                                ┌───────────────────┐
@@ -154,6 +154,7 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
                                │                   │
                                └───────────────────┘
 </pre>
+
 
 ### Service
 An app / micro service
@@ -193,6 +194,60 @@ A release of an app / micro service
 | context   | The kubernetes context which defines the target cluster |
 
 
+## Kubernaut User Model
+
+<pre>
+┌───────────────────┐            ┌───────────────────┐           ┌───────────────────┐
+│                   │            │                   │           │                   │
+│                   │╲          ╱│                   │╲         ╱│                   │
+│      Account      │────────────│       Role        │───────────│    Permission     │
+│                   │╱          ╲│                   │╱         ╲│                   │
+│                   │            │                   │           │                   │
+└───────────────────┘            └───────────────────┘           └───────────────────┘
+           │
+           │
+           │
+           │
+          ╱│╲
+┌───────────────────┐
+│                   │
+│                   │
+│     Identity      │
+│                   │
+│                   │
+└───────────────────┘
+</pre>
+
+
+### Account
+A user account
+
+| Property  | Description |
+|----------------|-------------|
+| display_name   | The name of the user |
+
+### Identity
+Account identities (e.g. cressie176/github, machine_user/token)
+
+| Property  | Description |
+|----------------|-------------|
+| name       | The username or id associated with the identity |
+| provider   | The name of the identity provider, e.g. GitHub |
+| type       | The type of the identity, e.g. OAuth, Token, Trust |
+
+## Role
+| Property      | Description |
+|---------------|-------------|
+| name          | The role name, e.g. admin, maintainer, etc |
+| description   | A description of the role |
+
+## Permission
+| Property      | Description |
+|---------------|-------------|
+| name          | The permission name, e.g. read_release, write_release, etc |
+| description   | A description of the permission |
+
+
 ## Kubernaut API
 
 ### GET /api/releases
@@ -229,5 +284,21 @@ Returns the status of a deployment (blocks until known)
 ### DELETE /api/deployments/:id
 Soft deletes a deployment
 
+### GET /api/accounts/:id
+Gets a user account
 
+### GET /api/accounts
+Lists all active user accounts
+
+### POST /api/accounts
+Creates a new user account
+
+### POST /api/accounts/:id/roles
+Grants a role to a user account
+
+### DELETE /api/accounts/:id/roles
+Revokes a role from a user account
+
+### DELETE /api/accounts/:id
+Soft deletes a user account
 

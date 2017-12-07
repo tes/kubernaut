@@ -10,7 +10,7 @@ export default function(options) {
 
       return await Promise.all([
         db.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
-        db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
+        db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
       ]).then(([releaseResult, attributesResult,]) => {
         logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
         return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
@@ -25,7 +25,7 @@ export default function(options) {
 
       if (release.rowCount === 0) return;
 
-      const attributes = await db.query(SQL.SELECT_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
+      const attributes = await db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
 
       return toRelease(release.rows[0], attributes.rows);
     }
@@ -128,6 +128,7 @@ export default function(options) {
         meta.date,
         meta.user,
       ]);
+      logger.debug(`Deleted release id: ${id}`);
     }
 
     async function withTransaction(operations) {
