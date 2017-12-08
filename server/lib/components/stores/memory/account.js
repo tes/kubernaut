@@ -46,6 +46,8 @@ export default function(options = {}) {
     }
 
     async function ensureAccount(account, identity, meta) {
+      reportMissingMetadata(meta);
+
       const existing = await findAccount(identity);
       if (existing) return existing;
 
@@ -66,6 +68,7 @@ export default function(options = {}) {
     }
 
     async function deleteAccount(id, meta) {
+      reportMissingMetadata(meta)
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (account) {
         account.deletedOn = meta.date;
@@ -74,6 +77,7 @@ export default function(options = {}) {
     }
 
     async function saveIdentity(id, identity, meta) {
+      reportMissingMetadata(meta);
       reportDuplicateIdentities(identity);
       reportMissingAccount(id);
       return append(identities, {
@@ -82,6 +86,7 @@ export default function(options = {}) {
     }
 
     async function deleteIdentity(id, meta) {
+      reportMissingMetadata(meta);
       const identity = identities.find(i => i.id === id && !i.deletedOn);
       if (identity) {
         identity.deletedOn = meta.date;
@@ -90,6 +95,7 @@ export default function(options = {}) {
     }
 
     async function grantRole(accountId, roleName, meta) {
+      reportMissingMetadata(meta);
       reportMissingAccount(accountId);
       reportMissingRole(roleName);
       if (hasRole(accountId, roleName)) return;
@@ -102,6 +108,7 @@ export default function(options = {}) {
     }
 
     async function revokeRole(id, meta) {
+      reportMissingMetadata(meta);
       const accountRole = account_roles.find(ar => ar.id === id && !ar.deletedOn);
       if (accountRole) {
         accountRole.deletedOn = meta.date;
@@ -123,6 +130,10 @@ export default function(options = {}) {
 
     function reportMissingAccount(id) {
       if (!accounts.find(a => a.id === id && !a.deletedOn)) throw Object.assign(new Error('Missing Account'), { code: '23502', });
+    }
+
+    function reportMissingMetadata(meta) {
+      if (!meta.date || !meta.account) throw Object.assign(new Error('Missing Metadata'), { code: '23502', });
     }
 
     function reportMissingRole(name) {

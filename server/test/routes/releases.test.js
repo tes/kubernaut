@@ -222,10 +222,10 @@ describe('Releases API', () => {
     it('should delete releases', async () => {
 
       const data = makeRelease();
-      await store.saveRelease(data, makeMeta());
+      const saved = await store.saveRelease(data, makeMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
+        url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
         json: true,
@@ -233,53 +233,8 @@ describe('Releases API', () => {
 
       expect(response.statusCode).toBe(204);
 
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
-        method: 'GET',
-        resolveWithFullResponse: true,
-        json: true,
-      }).then(() => {
-        throw new Error('Should have failed with 404');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
-
-      });
-    });
-
-    it('should tolerate repeated release deletions', async () => {
-
-      const data = makeRelease();
-      await store.saveRelease(data, makeMeta());
-
-      const response1 = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response1.statusCode).toBe(204);
-
-      const response2 = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${data.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response2.statusCode).toBe(204);
-    });
-
-    it('should tolerate deletion of missing releases', async () => {
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/does-not-exist`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response.statusCode).toBe(204);
+      const release = await store.getRelease(saved.id);
+      expect(release).toBe(undefined);
     });
   });
 });

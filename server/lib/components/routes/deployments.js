@@ -8,9 +8,12 @@ export default function(options = {}) {
   function start({ pkg, app, store, kubernetes, }, cb) {
 
     app.get('/api/deployments', async (req, res, next) => {
-      const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
-      const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
       try {
+        if (!req.user.hasPermission('placeholder', 'deployments-read')) return next(Boom.forbidden());
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
         const deployments = await store.listDeployments(limit, offset);
         res.json(deployments);
       } catch (err) {
@@ -20,6 +23,8 @@ export default function(options = {}) {
 
     app.get('/api/deployments/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermission('placeholder', 'deployments-read')) return next(Boom.forbidden());
+
         const deployment = await store.getDeployment(req.params.id);
         return deployment ? res.json(deployment) : next();
       } catch (err) {
@@ -29,11 +34,14 @@ export default function(options = {}) {
 
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
-      if (!req.body.context) return next(Boom.badRequest('context is required'));
-      if (!req.body.service) return next(Boom.badRequest('service is required'));
-      if (!req.body.version) return next(Boom.badRequest('version is required'));
 
       try {
+        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
+
+        if (!req.body.context) return next(Boom.badRequest('context is required'));
+        if (!req.body.service) return next(Boom.badRequest('service is required'));
+        if (!req.body.version) return next(Boom.badRequest('version is required'));
+
         const release = await store.findRelease({ name: req.body.service, version: req.body.version, });
         if (!release) return next(Boom.badRequest(`Release ${req.body.service}/${req.body.version} was not found`));
 
@@ -60,8 +68,12 @@ export default function(options = {}) {
     });
 
     app.get('/api/deployments/:id/status', async (req, res, next) => {
+
       req.setTimeout(0);
+
       try {
+        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
+
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next();
 
@@ -87,6 +99,8 @@ export default function(options = {}) {
 
     app.delete('/api/deployments/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: req.user.id, };
         await store.deleteDeployment(req.params.id, meta);
         res.status(204).send();

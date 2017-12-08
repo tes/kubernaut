@@ -27,6 +27,8 @@ export default function(options = {}) {
     }
 
     async function saveRelease(release, meta) {
+      reportMissingMetadata(meta)
+
       const service = await ensureService(release.service, meta);
 
       reportDuplicateReleaseVersions(release);
@@ -37,6 +39,7 @@ export default function(options = {}) {
     }
 
     async function ensureService(data, meta) {
+      reportMissingMetadata(meta)
       const service = services.find(s => s.name === data.name) || append(services, {
         id: uuid(), name: data.name, createdOn: meta.date, createdBy: meta.account,
       });
@@ -51,6 +54,7 @@ export default function(options = {}) {
     }
 
     async function deleteRelease(id, meta) {
+      reportMissingMetadata(meta)
       const release = releases.find(r => r.id === id && !r.deletedOn);
       if (release) {
         release.deletedOn = meta.date;
@@ -60,6 +64,10 @@ export default function(options = {}) {
 
     function reportDuplicateReleaseVersions(release) {
       if (releases.find(r => r.service.name === release.service.name && r.version === release.version && !r.deletedOn)) throw Object.assign(new Error('Duplicate Release'), { code: '23505', });
+    }
+
+    function reportMissingMetadata(meta) {
+      if (!meta.date || !meta.account) throw Object.assign(new Error('Missing Metadata'), { code: '23502', });
     }
 
     function byMostRecent(a, b) {

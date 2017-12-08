@@ -372,7 +372,7 @@ describe('Account Store', () => {
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
-          expect(account.roles.admin.permissions).toContain('role-grant');
+          expect(account.roles.admin.permissions).toContain('accounts-write');
         });
 
         it('should fail if account does not exist', async () => {

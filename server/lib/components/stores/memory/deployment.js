@@ -10,7 +10,7 @@ export default function(options = {}) {
     }
 
     async function saveDeployment(deployment, meta) {
-
+      reportMissingMetadata(meta)
       reportMissingRelease(deployment.release);
 
       return append(deployments, {
@@ -19,6 +19,7 @@ export default function(options = {}) {
     }
 
     async function deleteDeployment(id, meta) {
+      reportMissingMetadata(meta)
       const deployment = deployments.find(r => r.id === id && !r.deletedOn);
       if (deployment) {
         deployment.deletedOn = meta.date;
@@ -35,6 +36,10 @@ export default function(options = {}) {
 
     function reportMissingRelease(release) {
       if (!releases.find(r => r.id === release.id && !r.deletedOn)) throw Object.assign(new Error('Missing Release'), { code: '23502', });
+    }
+
+    function reportMissingMetadata(meta) {
+      if (!meta.date || !meta.account) throw Object.assign(new Error('Missing Metadata'), { code: '23502', });
     }
 
     function byActive(d) {

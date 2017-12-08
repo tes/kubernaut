@@ -486,51 +486,8 @@ describe('Deployments API', () => {
 
       expect(response.statusCode).toBe(204);
 
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
-        method: 'GET',
-        resolveWithFullResponse: true,
-        json: true,
-      }).then(() => {
-        throw new Error('Should have failed with 404');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
-      });
-    });
-
-    it('should tolerate repeated deployment deletions', async () => {
-
-      const saved = await saveDeployment();
-
-      const response1 = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response1.statusCode).toBe(204);
-
-      const response2 = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response2.statusCode).toBe(204);
-    });
-
-    it('should tolerate deletion of missing deployments', async () => {
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/does-not-exist`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response.statusCode).toBe(204);
+      const deployment = await store.getDeployment(saved.id);
+      expect(deployment).toBe(undefined);
     });
   });
 

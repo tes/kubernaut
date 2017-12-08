@@ -11,9 +11,11 @@ export default function(options = {}) {
   function start({ pkg, app, store, checksum, }, cb) {
 
     app.get('/api/releases', async (req, res, next) => {
-      const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
-      const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
       try {
+        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const releases = await store.listReleases(limit, offset);
         res.json(releases);
       } catch (err) {
@@ -23,6 +25,8 @@ export default function(options = {}) {
 
     app.get('/api/releases/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
+
         const release = await store.getRelease(req.params.id);
         return release ? res.json(release) : next();
       } catch (err) {
@@ -32,10 +36,12 @@ export default function(options = {}) {
 
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
-      if (!req.body.service) return next(Boom.badRequest('service is required'));
-      if (!req.body.version) return next(Boom.badRequest('version is required'));
-
       try {
+        if (!req.user.hasPermission('placeholder', 'releases-write')) return next(Boom.forbidden());
+
+        if (!req.body.service) return next(Boom.badRequest('service is required'));
+        if (!req.body.version) return next(Boom.badRequest('version is required'));
+
         const data = {
           service: {
             name: req.body.service,
@@ -54,6 +60,8 @@ export default function(options = {}) {
 
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: req.user.id, };
         await store.deleteRelease(req.params.id, meta);
         res.status(204).send();
