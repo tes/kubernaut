@@ -36,7 +36,8 @@ export default function(options = {}) {
       const identity = identities.find(i => i.name === name && i.provider === provider && i.type === type && !i.deletedOn);
       if (!identity) return;
 
-      return accounts.find(a => a.id === identity.account);
+      const account = accounts.find(a => a.id === identity.account);
+      return await getAccount(account.id);
     }
 
     async function saveAccount(account, meta) {
@@ -68,7 +69,7 @@ export default function(options = {}) {
     }
 
     async function deleteAccount(id, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (account) {
         account.deletedOn = meta.date;

@@ -1,5 +1,8 @@
 ALTER TABLE account SET LOGGED;
+ALTER TABLE account_role SET LOGGED;
+ALTER TABLE release_template SET LOGGED;
 ALTER TABLE service SET LOGGED;
 ALTER TABLE release SET LOGGED;
-ALTER TABLE release_attribute SET LOGGED;
 ALTER TABLE deployment SET LOGGED;
+ALTER TABLE release_attribute SET LOGGED;
+ALTER TABLE identity SET LOGGED;

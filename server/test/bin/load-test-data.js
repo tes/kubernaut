@@ -1,6 +1,6 @@
 import createSystem from '../../lib/system';
 import Chance from 'chance';
-import { makeDeployment, makeMeta, } from '../factories';
+import { makeAccount, makeDeployment, makeMeta, } from '../factories';
 import pLimit from 'p-limit';
 
 const limit = pLimit(50);
@@ -18,6 +18,8 @@ createSystem()
         await store.unlogged();
         await store.nuke();
 
+        const account = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
+
         // Iterate services inside versions, as creating a release locks based on service name
         const tasks = [];
         for (var v = 1; v <= 10; v++) {
@@ -33,7 +35,7 @@ createSystem()
                 version: `${commit}-${v}`,
               },
             });
-            const meta = makeMeta({ date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000, })), });
+            const meta = makeMeta({ account: account.id, date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000, })), });
 
             tasks.push(limit(async () => {
               const release = await store.saveRelease(data.release, meta);

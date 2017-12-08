@@ -27,7 +27,7 @@ export default function(options = {}) {
     }
 
     async function saveRelease(release, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
 
       const service = await ensureService(release.service, meta);
 
@@ -39,7 +39,7 @@ export default function(options = {}) {
     }
 
     async function ensureService(data, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
       const service = services.find(s => s.name === data.name) || append(services, {
         id: uuid(), name: data.name, createdOn: meta.date, createdBy: meta.account,
       });
@@ -54,7 +54,7 @@ export default function(options = {}) {
     }
 
     async function deleteRelease(id, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
       const release = releases.find(r => r.id === id && !r.deletedOn);
       if (release) {
         release.deletedOn = meta.date;

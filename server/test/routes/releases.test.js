@@ -193,7 +193,6 @@ describe('Releases API', () => {
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
-
     });
 
     it('should reject payloads with invalid manifest', async () => {
@@ -212,9 +211,7 @@ describe('Releases API', () => {
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
-
     });
-
   });
 
   describe('DELETE /api/releases/:id', () => {

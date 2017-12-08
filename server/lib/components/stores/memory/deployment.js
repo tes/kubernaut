@@ -10,7 +10,7 @@ export default function(options = {}) {
     }
 
     async function saveDeployment(deployment, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
       reportMissingRelease(deployment.release);
 
       return append(deployments, {
@@ -19,7 +19,7 @@ export default function(options = {}) {
     }
 
     async function deleteDeployment(id, meta) {
-      reportMissingMetadata(meta)
+      reportMissingMetadata(meta);
       const deployment = deployments.find(r => r.id === id && !r.deletedOn);
       if (deployment) {
         deployment.deletedOn = meta.date;

@@ -22,10 +22,9 @@ export default function(options = {}) {
         name, provider, type,
       ]);
       logger.debug(`Found ${account.rowCount} accounts with identity: ${type}/${name}/${provider}`);
-
       if (account.rowCount === 0) return;
 
-      return toAccount(account.rows[0]);
+      return await getAccount(account.rows[0].id);
     }
 
     async function saveAccount(data, meta) {
