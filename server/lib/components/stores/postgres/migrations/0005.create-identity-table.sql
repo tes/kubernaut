@@ -7,9 +7,9 @@ CREATE TABLE identity (
   provider TEXT NOT NULL,
   type TEXT NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_by TEXT NOT NULL,
+  created_by TEXT NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
-  deleted_by TEXT,
+  deleted_by TEXT REFERENCES account,
   CONSTRAINT identity__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 

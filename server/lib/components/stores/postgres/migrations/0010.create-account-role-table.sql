@@ -5,9 +5,9 @@ CREATE TABLE account_role (
   account TEXT NOT NULL REFERENCES account,
   role TEXT NOT NULL REFERENCES role,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_by TEXT NOT NULL,
+  created_by TEXT NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
-  deleted_by TEXT,
+  deleted_by TEXT REFERENCES account,
   CONSTRAINT account_role__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 

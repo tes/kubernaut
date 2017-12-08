@@ -47,7 +47,7 @@ export default function(options = {}) {
         };
         const meta = {
           date: new Date(),
-          user: 'anonymous',
+          user: req.user.id,
         };
 
         const deployment = await store.saveDeployment(data, meta);
@@ -91,7 +91,7 @@ export default function(options = {}) {
 
     app.delete('/api/deployments/:id', async (req, res, next) => {
       try {
-        await store.deleteDeployment(req.params.id, { date: new Date(), user: 'anonymous', });
+        await store.deleteDeployment(req.params.id, { date: new Date(), user: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);

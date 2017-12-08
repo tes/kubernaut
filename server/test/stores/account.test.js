@@ -35,6 +35,7 @@ describe('Account Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
+      let root;
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -44,8 +45,14 @@ describe('Account Store', () => {
         });
       });
 
-      beforeEach(cb => {
-        store.nuke().then(cb).catch(cb);
+      beforeEach(async cb => {
+        try {
+          await store.nuke();
+          root = await store.saveAccount(makeAccount(), makeMeta({ user: null, }));
+        } catch (err) {
+          cb(err);
+        }
+        cb();
       });
 
       afterAll(cb => {
@@ -220,33 +227,27 @@ describe('Account Store', () => {
 
       describe('List Accounts', () => {
 
-        it('should list accounts, ordered by display name desc', async () => {
+        it('should list accounts, ordered by display name asc', async () => {
 
           const accounts = [
             {
-              data: makeAccount({ displayName: 'a', }),
-              meta: makeMeta({ user: 'first', date: new Date('2015-07-01T10:11:12.000Z'), }),
+              data: makeAccount({ displayName: 'c', }),
             },
             {
-              data: makeAccount({ displayName: 'c', }),
-              meta: makeMeta({ user: 'third', date: new Date('2012-07-01T10:11:12.000Z'), }),
+              data: makeAccount({ displayName: 'a', }),
             },
             {
               data: makeAccount({ displayName: 'b', }),
-              meta: makeMeta({ user: 'second', date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
           ];
 
           await Promise.all(accounts.map(async account => {
-            await saveAccount(account.data, account.meta);
+            await saveAccount(account.data);
           }));
 
-          const results = await listAccounts();
-          const users = ['first', 'second', 'third',];
-          expect(results.length).toBe(users.length);
-          users.forEach((user, index) => {
-            expect(results[index].createdBy).toBe(user);
-          });
+          const results = (await listAccounts()).map(a => a.displayName).filter(n => n !== root.displayName);
+          const ordered = ['a', 'b', 'c',];
+          expect(results).toEqual(ordered);
 
         });
 
@@ -257,12 +258,11 @@ describe('Account Store', () => {
             for (var i = 0; i < 51; i++) {
               accounts.push({
                 data: makeAccount(),
-                meta: makeMeta(),
               });
             }
 
             await Promise.all(accounts.map(async account => {
-              await saveAccount(account.data, account.meta);
+              await saveAccount(account.data);
             }));
           });
 
@@ -278,7 +278,8 @@ describe('Account Store', () => {
 
           it('should page results', async () => {
             const results = await listAccounts(50, 10);
-            expect(results.length).toBe(41);
+            // +1 for the account used to create all the other accounts
+            expect(results.length).toBe(41 + 1);
           });
         });
       });
@@ -424,11 +425,11 @@ describe('Account Store', () => {
         });
       });
 
-      function saveAccount(account = makeAccount(), meta = makeMeta()) {
+      function saveAccount(account = makeAccount(), meta = makeMeta({ user: root.id, })) {
         return store.saveAccount(account, meta);
       }
 
-      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta()) {
+      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ user: root.id, })) {
         return store.ensureAccount(account, identity, meta);
       }
 
@@ -444,23 +445,23 @@ describe('Account Store', () => {
           return store.listAccounts(limit, offset);
       }
 
-      function deleteAccount(id, meta = makeMeta()) {
+      function deleteAccount(id, meta = makeMeta({ user: root.id, })) {
         return store.deleteAccount(id, meta);
       }
 
-      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta()) {
+      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ user: root.id, })) {
         return store.saveIdentity(accountId, identity, meta);
       }
 
-      function deleteIdentity(id, meta = makeMeta()) {
+      function deleteIdentity(id, meta = makeMeta({ user: root.id, })) {
         return store.deleteIdentity(id, meta);
       }
 
-      function grantRole(id, name, meta = makeMeta()) {
+      function grantRole(id, name, meta = makeMeta({ user: root.id, })) {
         return store.grantRole(id, name, meta);
       }
 
-      function revokeRole(id, meta = makeMeta()) {
+      function revokeRole(id, meta = makeMeta({ user: root.id, })) {
         return store.revokeRole(id, meta);
       }
 

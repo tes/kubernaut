@@ -34,7 +34,7 @@ export default function(options = {}) {
         };
         const meta = {
           date: new Date(),
-          user: 'anonymous',
+          user: req.user.id,
         };
 
         const account = await store.saveAccount(data, meta);
@@ -46,7 +46,7 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        await store.deleteAccount(req.params.id, { date: new Date(), user: 'anonymous', });
+        await store.deleteAccount(req.params.id, { date: new Date(), user: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -66,7 +66,7 @@ export default function(options = {}) {
       };
       const meta = {
         date: new Date(),
-        user: 'anonymous',
+        user: req.user.id,
       };
 
       try {
@@ -79,7 +79,7 @@ export default function(options = {}) {
 
     app.delete('/api/identities/:id', async (req, res, next) => {
       try {
-        await store.deleteIdentity(req.params.id, { date: new Date(), user: 'anonymous', });
+        await store.deleteIdentity(req.params.id, { date: new Date(), user: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -91,7 +91,7 @@ export default function(options = {}) {
       if (!req.body.role) return next(Boom.badRequest('role is required'));
 
       try {
-        const account = await store.grantRole(req.body.account, req.body.role, { date: new Date(), user: 'anonymous', });
+        const account = await store.grantRole(req.body.account, req.body.role, { date: new Date(), user: req.user.id, });
         res.json(account);
       } catch (err) {
         next(err);
@@ -100,7 +100,7 @@ export default function(options = {}) {
 
     app.delete('/api/roles/:id', async (req, res, next) => {
       try {
-        await store.revokeRole(req.params.id, { date: new Date(), user: 'anonymous', });
+        await store.revokeRole(req.params.id, { date: new Date(), user: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);

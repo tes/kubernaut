@@ -1,6 +1,6 @@
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeAccount, makeDeployment, makeRelease, makeMeta, } from '../factories';
 
 describe('Deployment Store', () => {
 
@@ -35,6 +35,7 @@ describe('Deployment Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
+      let root;
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -44,8 +45,14 @@ describe('Deployment Store', () => {
         });
       });
 
-      beforeEach(cb => {
-        store.nuke().then(cb).catch(cb);
+      beforeEach(async cb => {
+        try {
+          await store.nuke();
+          root = await store.saveAccount(makeAccount(), makeMeta({ user: null, }));
+        } catch (err) {
+          cb(err);
+        }
+        cb();
       });
 
       afterAll(cb => {
@@ -57,25 +64,20 @@ describe('Deployment Store', () => {
       describe('Save Deployment', () => {
 
         it('should create a deployment', async () => {
-          const release = await store.saveRelease(makeRelease(), makeMeta());
-
+          const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          const meta = makeMeta();
-          const deployment = await store.saveDeployment(data, meta);
+          const deployment = await saveDeployment(data);
 
           expect(deployment).toBeDefined();
           expect(deployment.id).toBeDefined();
-          expect(deployment.createdOn).toBe(meta.date);
-          expect(deployment.createdBy).toBe(meta.user);
         });
 
         it('should permit repeat deployments', async () => {
-          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const release = await saveRelease(makeRelease());
 
           const data = makeDeployment({ release, });
-          const meta = makeMeta();
-          const deployment1 = await store.saveDeployment(data, meta);
-          const deployment2 = await store.saveDeployment(data, meta);
+          const deployment1 = await saveDeployment(data);
+          const deployment2 = await saveDeployment(data);
 
           expect(deployment1.id).not.toBe(deployment2.id);
         });
@@ -84,30 +86,29 @@ describe('Deployment Store', () => {
           const data = makeDeployment({ release: { id: 'missing', }, });
 
           await expect(
-            store.saveDeployment(data, makeMeta())
+            saveDeployment(data)
           ).rejects.toHaveProperty('code', '23502');
         });
 
         it('should report an error if release was deleted', async () => {
-          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          await store.deleteRelease(release.id, makeMeta());
+          await deleteRelease(release.id);
 
           await expect(
-            store.saveDeployment(data, makeMeta())
+            saveDeployment(data)
           ).rejects.toHaveProperty('code', '23502');
         });
-
       });
 
       describe('Get Deployment', () => {
 
         it('should retrieve deployment by id', async () => {
-          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          const meta = makeMeta();
-          const saved = await store.saveDeployment(data, meta);
-          const deployment = await store.getDeployment(saved.id);
+          const meta = makeMeta({ user: root.id, });
+          const saved = await saveDeployment(data, meta);
+          const deployment = await getDeployment(saved.id);
 
           expect(deployment).toBeDefined();
           expect(deployment.id).toBe(saved.id);
@@ -123,7 +124,7 @@ describe('Deployment Store', () => {
         });
 
         it('should return undefined when release not found', async () => {
-          const deployment = await store.getDeployment('missing');
+          const deployment = await getDeployment('missing');
           expect(deployment).toBe(undefined);
         });
       });
@@ -132,13 +133,12 @@ describe('Deployment Store', () => {
 
         it('should soft delete deployment', async () => {
 
-          const release = await store.saveRelease(makeRelease(), makeMeta());
+          const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          const meta = makeMeta();
-          const saved = await store.saveDeployment(data, meta);
+          const saved = await saveDeployment(data);
 
-          await store.deleteDeployment(saved.id, makeMeta());
-          const deployment = await store.getDeployment(data.id);
+          await deleteDeployment(saved.id);
+          const deployment = await getDeployment(data.id);
 
           expect(deployment).toBe(undefined);
         });
@@ -159,7 +159,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: 'third', date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -170,7 +170,7 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ user: 'second', date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -181,7 +181,7 @@ describe('Deployment Store', () => {
                   version: '3',
                 },
               }),
-              meta: makeMeta({ user: 'fourth', date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -192,7 +192,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: 'first', date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -203,7 +203,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: 'sixth', date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -214,23 +214,19 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ user: 'fifth', date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ user: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
           await Promise.all(deployments.map(async record => {
-            const release = await store.saveRelease(record.data.release, makeMeta());
+            const release = await saveRelease(record.data.release);
             const deployment = { ...record.data, release, };
-            await store.saveDeployment(deployment, record.meta);
+            await saveDeployment(deployment, record.meta);
           }));
 
-          const results = await store.listDeployments();
-          const users = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',];
-          expect(results.length).toBe(users.length);
-          users.forEach((user, index) => {
-            expect(results[index].createdBy).toBe(user);
-          });
-
+          const results = (await listDeployments()).map(d => `${d.release.service.name}${d.release.version}`);
+          const ordered = ['b1', 'a2', 'a1', 'a3', 'c2', 'c1',];
+          expect(results).toEqual(ordered);
         });
 
         describe('Pagination', () => {
@@ -241,34 +237,56 @@ describe('Deployment Store', () => {
             for (var i = 0; i < 51; i++) {
               deployments.push({
                 data: makeDeployment(),
-                meta: makeMeta(),
               });
             }
 
             await Promise.all(deployments.map(async record => {
-              const release = await store.saveRelease(record.data.release, makeMeta());
+              const release = await saveRelease(record.data.release);
               const deployment = { ...record.data, release, };
-              await store.saveDeployment(deployment, record.meta);
+              await saveDeployment(deployment);
             }));
           });
 
           it('should limit deployments to 50 by default', async () => {
-            const results = await store.listDeployments();
+            const results = await listDeployments();
             expect(results.length).toBe(50);
           });
 
           it('should limit deployments to the specified number', async () => {
-            const results = await store.listDeployments(10, 0);
+            const results = await listDeployments(10, 0);
             expect(results.length).toBe(10);
           });
 
           it('should page results', async () => {
-            const results = await store.listDeployments(50, 10);
+            const results = await listDeployments(50, 10);
             expect(results.length).toBe(41);
           });
-
         });
       });
+
+      function saveRelease(release = makeRelease(), meta = makeMeta({ user: root.id, })) {
+        return store.saveRelease(release, meta);
+      }
+
+      function saveDeployment(deployment = makeDeployment(), meta = makeMeta({ user: root.id, })) {
+        return store.saveDeployment(deployment, meta);
+      }
+
+      function deleteRelease(id, meta = makeMeta({ user: root.id, })) {
+        return store.deleteRelease(id, meta);
+      }
+
+      function getDeployment(id) {
+        return store.getDeployment(id);
+      }
+
+      function listDeployments(page, limit) {
+        return store.listDeployments(page, limit);
+      }
+
+      function deleteDeployment(id, meta = makeMeta({ user: root.id, })) {
+        return store.deleteDeployment(id, meta);
+      }
     });
   });
 });

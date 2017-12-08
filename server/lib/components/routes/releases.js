@@ -46,7 +46,7 @@ export default function(options = {}) {
         };
         const meta = {
           date: new Date(),
-          user: 'anonymous',
+          user: req.user.id,
         };
 
         const release = await store.saveRelease(data, meta);
@@ -58,7 +58,7 @@ export default function(options = {}) {
 
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
-        await store.deleteRelease(req.params.id, { date: new Date(), user: 'anonymous', });
+        await store.deleteRelease(req.params.id, { date: new Date(), user: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);

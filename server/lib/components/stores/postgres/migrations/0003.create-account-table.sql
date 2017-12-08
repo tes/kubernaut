@@ -6,7 +6,7 @@ CREATE TABLE account (
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by TEXT NULL, -- Root account is created by no-one
   deleted_on TIMESTAMP WITH TIME ZONE,
-  deleted_by TEXT,
+  deleted_by TEXT REFERENCES account,
   CONSTRAINT account__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
