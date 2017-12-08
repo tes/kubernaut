@@ -5,16 +5,7 @@ module.exports = {
     },
     strategies: [
       {
-        id: 'test',
-      },
-      {
-        id: 'bearer',
-        users: [
-          {
-            id: 'machine-user/ava',
-            token: 'ava',
-          },
-        ],
+        id: 'local',
       },
     ],
   },

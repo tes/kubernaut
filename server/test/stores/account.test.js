@@ -167,6 +167,57 @@ describe('Account Store', () => {
 
       });
 
+      describe('Ensure Account', () => {
+
+        it('should return existing account if it already exists', async () => {
+          const accountData = makeAccount();
+          const identityData = makeIdentity();
+          const saved = await saveAccount(accountData);
+          await saveIdentity(saved.id, identityData);
+
+          const account = await ensureAccount(accountData, identityData);
+          expect(account.id).toBe(saved.id);
+        });
+
+        it('should create a new account if the identity doesnt previously exist', async () => {
+          const accountData = makeAccount();
+          const identityData = makeIdentity();
+          const saved = await saveAccount(accountData);
+
+          const account = await ensureAccount(accountData, identityData);
+          expect(account.id).toBeDefined();
+          expect(account.id).not.toBe(saved.id);
+        });
+
+        it('should assign admin role when there are no other active admins', async () => {
+          const account1Data = makeAccount();
+          const identity1Data = makeIdentity();
+          const saved = await saveAccount(account1Data);
+          await saveIdentity(saved.id, identity1Data);
+
+          const account2Data = makeAccount();
+          const identity2Data = makeIdentity();
+          const account = await ensureAccount(account2Data, identity2Data);
+          expect(account.id).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual(['admin',]);
+        });
+
+        it('should assign no roles to a new account when there are already active admins', async () => {
+          const account1Data = makeAccount();
+          const identity1Data = makeIdentity();
+          const saved = await saveAccount(account1Data);
+          await saveIdentity(saved.id, identity1Data);
+          await grantRole(saved.id, 'admin');
+
+          const account2Data = makeAccount();
+          const identity2Data = makeIdentity();
+          const account = await ensureAccount(account2Data, identity2Data);
+          expect(account.id).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual([]);
+        });
+
+      });
+
       describe('List Accounts', () => {
 
         it('should list accounts, ordered by display name desc', async () => {
@@ -236,7 +287,7 @@ describe('Account Store', () => {
 
         it('should create an identity', async () => {
           const account = await saveAccount();
-          const identity = await saveIdentity(account.id, makeIdentity(), makeMeta());
+          const identity = await saveIdentity(account.id);
           expect(identity).toBeDefined();
         });
 
@@ -320,7 +371,7 @@ describe('Account Store', () => {
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
-          expect(account.roles.admin.permissions).toEqual(["role_revoke", "role_grant", "releases_write", "releases_read", "deployments_write", "deployments_read", "client", "accounts_write", "accounts_read",]);
+          expect(account.roles.admin.permissions).toContain('role-grant');
         });
 
         it('should fail if account does not exist', async () => {
@@ -377,6 +428,10 @@ describe('Account Store', () => {
         return store.saveAccount(account, meta);
       }
 
+      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta()) {
+        return store.ensureAccount(account, identity, meta);
+      }
+
       function getAccount(id) {
         return store.getAccount(id);
       }
@@ -393,7 +448,7 @@ describe('Account Store', () => {
         return store.deleteAccount(id, meta);
       }
 
-      function saveIdentity(accountId, identity, meta = makeMeta()) {
+      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta()) {
         return store.saveIdentity(accountId, identity, meta);
       }
 

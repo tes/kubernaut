@@ -6,29 +6,34 @@ import { Strategy as GitHubStrategy, } from 'passport-github';
 */
 module.exports = function() {
 
-  function start({ config, logger, app, passport, }, cb) {
+  function start({ config, logger, app, passport, store, }, cb) {
 
-    logger.info('Using GitHub authentication strategy');
+    logger.info('Using github authentication strategy');
 
     const strategy = new GitHubStrategy({
       clientID: config.client.id,
       clientSecret: config.client.secret,
-      callbackURL: config.callbackUrl,
-    }, (accessToken, refreshToken, profile, cb) => {
-      const user = { id: profile.username, name: profile.displayName, };
-      return cb(null, user);
+      passReqToCallback: true,
+    }, async (req, accessToken, refreshToken, profile, cb) => {
+      try {
+        const profile = { displayName: profile.username, };
+        const identity = { name: profile.username, provider: 'github', 'type': 'OAuth', };
+        const meta = { date: new Date(), user: 'root', };
+        const account = await store.ensureAccount(profile, identity, meta);
+        cb(null, account);
+      } catch (err) {
+        cb(err);
+      }
     });
 
     passport.use(strategy);
 
-    app.get('/auth/github', passport.authenticate('github'));
-
-    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/github', }), (req, res) => {
+    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/', }), (req, res) => {
       res.locals.logger.info(`Authenticated ${req.user.id} using github strategy`);
       res.redirect(req.session.returnTo || '/');
     });
 
-    cb();
+    cb(null, strategy);
   }
 
   return {

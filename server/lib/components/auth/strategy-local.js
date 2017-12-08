@@ -1,4 +1,3 @@
-import { userInfo, } from 'os';
 import { Strategy as CustomStrategy, } from 'passport-custom';
 
 /*
@@ -7,24 +6,27 @@ import { Strategy as CustomStrategy, } from 'passport-custom';
 */
 module.exports = function() {
 
-  function start({ logger, app, passport, }, cb) {
+  function start({ logger, app, passport, store, }, cb) {
 
     logger.info('Using local authentication strategy');
 
-    const strategy = new CustomStrategy((req, cb) => {
-      return cb(null, { id: userInfo().username, });
+    const strategy = new CustomStrategy(async (req, cb) => {
+      try {
+        const profile = { displayName: 'Bob Holness', };
+        const identity = { name: 'blockbusters', provider: 'kubernaut', 'type': 'local', };
+        const meta = { date: new Date(), user: 'root', };
+        const account = await store.ensureAccount(profile, identity, meta);
+        cb(null, account);
+      } catch (err) {
+        cb(err);
+      }
     });
 
     strategy.name = 'local';
 
     passport.use(strategy);
 
-    app.get('/auth/local', passport.authenticate('local'), (req, res) => {
-      res.locals.logger.info(`Authenticated ${req.user.id} using local strategy`);
-      res.redirect(req.session.returnTo || '/');
-    });
-
-    cb();
+    cb(null, strategy);
   }
 
   return {

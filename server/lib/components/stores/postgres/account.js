@@ -44,6 +44,27 @@ export default function(options = {}) {
       return account;
     }
 
+    async function ensureAccount(account, identity, meta) {
+      return await withTransaction(async connection => {
+
+        logger.debug(`Ensuring account: ${account.displayName}`);
+
+        const existing = await findAccount(identity);
+        if (existing) return existing;
+
+        const created = await saveAccount(account, meta);
+        await saveIdentity(created.id, identity, meta);
+
+        if (await countActiveAdminstrators() === 0) {
+          await grantRole(created.id, 'admin', meta);
+        }
+
+        logger.debug(`Ensured account: ${created.displayName}/${created.id}`);
+
+        return await getAccount(created.id);
+      });
+    }
+
     async function listAccounts(limit = 50, offset = 0) {
       logger.debug(`Listing up to ${limit} accounts starting from offset: ${offset}`);
 
@@ -123,7 +144,18 @@ export default function(options = {}) {
       logger.debug(`Revoked role: ${id}`);
     }
 
+    async function countActiveAdminstrators() {
+      logger.debug('Counting active administrators');
+
+      const result = await db.query(SQL.COUNT_ACTIVE_ADMINISTRATORS);
+      const count = parseInt(result.rows[0].active_administrators, 10);
+      logger.debug(`Found ${count} active administrator accounts`);
+
+      return count;
+    }
+
     function toAccount(row, rolesAndPermissionsRows = []) {
+      const roles = toRolesAndPermissions(rolesAndPermissionsRows);
       return {
         id: row.id,
         displayName: row.display_name,
@@ -131,7 +163,12 @@ export default function(options = {}) {
         createdBy: row.created_by,
         deletedOn: row.deleted_on,
         deletedBy: row.deleted_by,
-        roles: toRolesAndPermissions(rolesAndPermissionsRows),
+        roles,
+        hasPermission: function(permission) {
+          return Object.keys(roles).reduce((permissions, name) => {
+            return permissions.concat(roles[name].permissions);
+          }, []).includes(permission);
+        },
       };
     }
 
@@ -144,10 +181,30 @@ export default function(options = {}) {
       }, {});
     }
 
+    async function withTransaction(operations) {
+      logger.debug(`Retrieving db client from the pool`);
+
+      const connection = await db.connect();
+      try {
+        await connection.query('BEGIN');
+        const result = await operations(connection);
+        await connection.query('COMMIT');
+        return result;
+      } catch (err) {
+        await connection.query('ROLLBACK');
+        throw err;
+      } finally {
+        logger.debug(`Returning db client to the pool`);
+        connection.release();
+      }
+    }
+
+
     return cb(null, {
-      saveAccount,
       getAccount,
       findAccount,
+      saveAccount,
+      ensureAccount,
       listAccounts,
       deleteAccount,
       saveIdentity,

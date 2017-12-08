@@ -5,7 +5,7 @@ const APP_ROUTES = /^(?!(?:\/api\/|\/__\/)).*/;
 
 module.exports = function() {
 
-  function start({ app, config, loggerMiddleware, auth, }, cb) {
+  function start({ app, config, loggerMiddleware, }, cb) {
 
     const clientApp = function(status) {
       return (req, res, next) => {
@@ -30,10 +30,10 @@ module.exports = function() {
       /^\/$/,
       '/releases/:release?',
       '/deployments/:deployment?',
-    ], auth('client'), clientApp(200));
+    ], clientApp(200));
 
     // Serve other static resources with logging disabled
-    app.get(APP_ROUTES, loggerMiddleware.disable, auth('client'), express.static('./client/build', {
+    app.get(APP_ROUTES, loggerMiddleware.disable, express.static('./client/build', {
       setHeaders: (res, path) => {
         res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       },

@@ -2,7 +2,7 @@ import eachSeries from 'async/mapSeries';
 
 export default function() {
 
-  let strategies;
+  let components = [];
 
   function start(dependencies, cb) {
 
@@ -12,21 +12,25 @@ export default function() {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    strategies = [];
+    components = [];
 
     eachSeries(config, (strategyConfig, cb) => {
-      const strategy = require(`./strategy-${strategyConfig.id}`)();
-      strategy.start({ ...dependencies, config: strategyConfig, }, err => {
+      const component = require(`./strategy-${strategyConfig.id}`)();
+      component.start({ ...dependencies, config: strategyConfig, }, (err, strategy) => {
         if (err) return cb(err);
-        strategies.push(strategy);
-        cb();
+        components.push(component);
+        cb(null, strategy.name);
       });
-    }, cb);
+    }, (err, strategies) => {
+      if (err) return cb(err);
+      app.use(passport.authenticate(strategies));
+      cb();
+    });
   }
 
   function stop(cb) {
-    eachSeries(strategies, (strategy, cb) => {
-      return strategy.stop ? strategy.stop(cb) : cb();
+    eachSeries(components, (component, cb) => {
+      return component.stop ? component.stop(cb) : cb();
     }, cb);
   }
 

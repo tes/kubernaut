@@ -83,8 +83,8 @@ describe('Accounts API', () => {
         method: 'GET',
         json: true,
       });
-
-      expect(accounts.length).toBe(41);
+      // +1 because kubernaut creates an admin account when running locally
+      expect(accounts.length).toBe(41 + 1);
     });
 
   });

@@ -1,4 +1,5 @@
 import { v4 as uuid, } from 'uuid';
+import intersection from 'lodash.intersection';
 
 export default function(options = {}) {
 
@@ -7,7 +8,7 @@ export default function(options = {}) {
     const { accounts, identities, account_roles, } = tables;
     const roles = {
       admin: {
-        permissions: ["role_revoke", "role_grant", "releases_write", "releases_read", "deployments_write", "deployments_read", "client", "accounts_write", "accounts_read",],
+        permissions: ["role-revoke", "role-grant", "releases-write", "releases-read", "deployments-write", "deployments-read", "client", "accounts-write", "accounts-read",],
       },
     };
 
@@ -30,10 +31,23 @@ export default function(options = {}) {
     }
 
     async function saveAccount(account, meta) {
-
       return append(accounts, {
         ...account, id: uuid(), createdOn: meta.date, createdBy: meta.user,
       });
+    }
+
+    async function ensureAccount(account, identity, meta) {
+      const existing = await findAccount(identity);
+      if (existing) return existing;
+
+      const created = await saveAccount(account, meta);
+      await saveIdentity(created.id, identity, meta);
+
+      if (await countActiveAdminstrators() === 0) {
+        await grantRole(created.id, 'admin', meta);
+      }
+
+      return await getAccount(created.id);
     }
 
     async function listAccounts(limit = 50, offset = 0) {
@@ -67,11 +81,9 @@ export default function(options = {}) {
     }
 
     async function grantRole(accountId, roleName, meta) {
-      const account = accounts.find(a => a.id === accountId && !a.deletedOn);
-      if (!account) throw Object.assign(new Error('Missing Account'), { code: '23502', });
-      if (!roles[roleName]) throw Object.assign(new Error('Missing Role'), { code: '23502', });
-
-      if (account_roles.find(ar => ar.account === accountId && ar.role === roleName && !ar.deletedOn)) return;
+      reportMissingAccount(accountId);
+      reportMissingRole(roleName);
+      if (hasRole(accountId, roleName)) return;
 
       const granted = {
         id: uuid(), account: accountId, role: roleName, createdOn: meta.date, createdBy: meta.user,
@@ -88,12 +100,28 @@ export default function(options = {}) {
       }
     }
 
+    async function countActiveAdminstrators() {
+      return intersection(
+        accounts.filter(a => !a.deletedOn).map(a => a.id),
+        account_roles.filter(ar => ar.role === 'admin' && !ar.deletedOn).map(ar => ar.account),
+        identities.filter(i => !i.deletedOn).map(i => i.account),
+      ).length;
+    }
+
     function reportDuplicateIdentities(identity) {
       if (identities.find(i => i.name === identity.name && i.provider === identity.provider && i.type === identity.type && !i.deletedOn)) throw Object.assign(new Error('Duplicate Identity'), { code: '23505', });
     }
 
     function reportMissingAccount(id) {
       if (!accounts.find(a => a.id === id && !a.deletedOn)) throw Object.assign(new Error('Missing Account'), { code: '23502', });
+    }
+
+    function reportMissingRole(name) {
+      if (!roles[name]) throw Object.assign(new Error('Missing Role'), { code: '23502', });
+    }
+
+    function hasRole(accountId, roleName) {
+      return account_roles.find(ar => ar.account === accountId && ar.role === roleName && !ar.deletedOn);
     }
 
     function byActive(a) {
@@ -110,9 +138,10 @@ export default function(options = {}) {
     }
 
     return cb(null, {
-      saveAccount,
       getAccount,
       findAccount,
+      saveAccount,
+      ensureAccount,
       listAccounts,
       deleteAccount,
       saveIdentity,

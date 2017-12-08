@@ -3,7 +3,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from './test-system';
 
-describe('kubernaut', () => {
+xdescribe('kubernaut', () => {
 
   let system = { stop: cb => cb(), };
   let config;
@@ -51,7 +51,7 @@ describe('kubernaut', () => {
     });
   });
 
-  it('should redirect unauthenticated client app requests', async () => {
+  xit('should redirect unauthenticated client app requests', async () => {
 
     await request({
       url: `http://${config.server.host}:${config.server.port}/`,
