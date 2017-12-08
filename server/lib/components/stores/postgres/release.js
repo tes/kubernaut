@@ -45,11 +45,11 @@ export default function(options) {
       logger.debug(`Ensuring service: ${data.name}`);
 
       const result = await connection.query(SQL.ENSURE_SERVICE, [
-        data.name, meta.date, meta.user,
+        data.name, meta.date, meta.account,
       ]);
 
       const service = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.user,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
       };
 
       logger.debug(`Ensured service: ${service.name}/${service.id}`);
@@ -62,7 +62,7 @@ export default function(options) {
       logger.debug(`Ensuring release template: ${data.checksum}`);
 
       const result = await connection.query(SQL.ENSURE_RELEASE_TEMPLATE, [
-        data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.user,
+        data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.account,
       ]);
 
       const template = {
@@ -79,11 +79,11 @@ export default function(options) {
       logger.debug(`Saving release: ${service.name}/${data.version}`);
 
       const result = await connection.query(SQL.SAVE_RELEASE, [
-        service.id, data.version, template.id, meta.date, meta.user,
+        service.id, data.version, template.id, meta.date, meta.account,
       ]);
 
       const release = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.user,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
       };
 
       logger.debug(`Saved release ${service.name}/${release.version}/${release.id}`);
@@ -126,7 +126,7 @@ export default function(options) {
       await db.query(SQL.DELETE_RELEASE, [
         id,
         meta.date,
-        meta.user,
+        meta.account,
       ]);
       logger.debug(`Deleted release id: ${id}`);
     }

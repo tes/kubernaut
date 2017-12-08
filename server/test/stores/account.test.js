@@ -48,7 +48,7 @@ describe('Account Store', () => {
       beforeEach(async cb => {
         try {
           await store.nuke();
-          root = await store.saveAccount(makeAccount(), makeMeta({ user: null, }));
+          root = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
         } catch (err) {
           cb(err);
         }
@@ -71,7 +71,7 @@ describe('Account Store', () => {
           expect(account).toBeDefined();
           expect(account.id).toBeDefined();
           expect(account.createdOn).toBe(meta.date);
-          expect(account.createdBy).toBe(meta.user);
+          expect(account.createdBy).toBe(meta.account);
         });
 
         it('should permit duplicate display names', async () => {
@@ -96,7 +96,7 @@ describe('Account Store', () => {
           expect(account.id).toBe(saved.id);
           expect(account.displayName).toBe('Foo Bar');
           expect(account.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(account.createdBy).toBe(meta.user);
+          expect(account.createdBy).toBe(meta.account);
         });
 
         it('should return undefined when account not found', async () => {
@@ -425,11 +425,11 @@ describe('Account Store', () => {
         });
       });
 
-      function saveAccount(account = makeAccount(), meta = makeMeta({ user: root.id, })) {
+      function saveAccount(account = makeAccount(), meta = makeMeta({ account: root.id, })) {
         return store.saveAccount(account, meta);
       }
 
-      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ user: root.id, })) {
+      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ account: root.id, })) {
         return store.ensureAccount(account, identity, meta);
       }
 
@@ -445,23 +445,23 @@ describe('Account Store', () => {
           return store.listAccounts(limit, offset);
       }
 
-      function deleteAccount(id, meta = makeMeta({ user: root.id, })) {
+      function deleteAccount(id, meta = makeMeta({ account: root.id, })) {
         return store.deleteAccount(id, meta);
       }
 
-      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ user: root.id, })) {
+      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ account: root.id, })) {
         return store.saveIdentity(accountId, identity, meta);
       }
 
-      function deleteIdentity(id, meta = makeMeta({ user: root.id, })) {
+      function deleteIdentity(id, meta = makeMeta({ account: root.id, })) {
         return store.deleteIdentity(id, meta);
       }
 
-      function grantRole(id, name, meta = makeMeta({ user: root.id, })) {
+      function grantRole(id, name, meta = makeMeta({ account: root.id, })) {
         return store.grantRole(id, name, meta);
       }
 
-      function revokeRole(id, meta = makeMeta({ user: root.id, })) {
+      function revokeRole(id, meta = makeMeta({ account: root.id, })) {
         return store.revokeRole(id, meta);
       }
 

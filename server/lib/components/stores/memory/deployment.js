@@ -14,7 +14,7 @@ export default function(options = {}) {
       reportMissingRelease(deployment.release);
 
       return append(deployments, {
-        ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.user,
+        ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.account,
       });
     }
 
@@ -22,7 +22,7 @@ export default function(options = {}) {
       const deployment = deployments.find(r => r.id === id && !r.deletedOn);
       if (deployment) {
         deployment.deletedOn = meta.date;
-        deployment.deletedBy = meta.user;
+        deployment.deletedBy = meta.account;
       }
     }
 

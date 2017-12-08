@@ -32,13 +32,13 @@ export default function(options = {}) {
       reportDuplicateReleaseVersions(release);
 
       return append(releases, {
-        ...release, id: uuid(), service, createdOn: meta.date, createdBy: meta.user,
+        ...release, id: uuid(), service, createdOn: meta.date, createdBy: meta.account,
       });
     }
 
     async function ensureService(data, meta) {
       const service = services.find(s => s.name === data.name) || append(services, {
-        id: uuid(), name: data.name, createdOn: meta.date, createdBy: meta.user,
+        id: uuid(), name: data.name, createdOn: meta.date, createdBy: meta.account,
       });
       return service;
     }
@@ -54,7 +54,7 @@ export default function(options = {}) {
       const release = releases.find(r => r.id === id && !r.deletedOn);
       if (release) {
         release.deletedOn = meta.date;
-        release.deletedBy = meta.user;
+        release.deletedBy = meta.account;
       }
     }
 

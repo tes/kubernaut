@@ -114,7 +114,7 @@ function makeRelease(overrides = {}) {
 function makeMeta(overrides = {}) {
   return merge({
     date: chance.date(),
-    user: chance.first().toLowerCase(),
+    account: chance.first().toLowerCase(),
   }, overrides);
 }
 

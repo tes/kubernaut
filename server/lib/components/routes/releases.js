@@ -44,11 +44,7 @@ export default function(options = {}) {
           template: await getTemplate(req.file.buffer, res.locals.logger),
           attributes: req.body,
         };
-        const meta = {
-          date: new Date(),
-          user: req.user.id,
-        };
-
+        const meta = { date: new Date(), account: req.user.id, };
         const release = await store.saveRelease(data, meta);
         res.json({ id: release.id, });
       } catch (err) {
@@ -58,7 +54,8 @@ export default function(options = {}) {
 
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
-        await store.deleteRelease(req.params.id, { date: new Date(), user: req.user.id, });
+        const meta = { date: new Date(), account: req.user.id, };
+        await store.deleteRelease(req.params.id, meta);
         res.status(204).send();
       } catch (err) {
         next(err);

@@ -48,7 +48,7 @@ describe('Release Store', () => {
       beforeEach(async cb => {
         try {
           await store.nuke();
-          root = await store.saveAccount(makeAccount(), makeMeta({ user: null, }));
+          root = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
         } catch (err) {
           cb(err);
         }
@@ -94,7 +94,7 @@ describe('Release Store', () => {
 
         it('should retrieve release by id', async () => {
           const data = makeRelease();
-          const meta = makeMeta({ user: root.id, });
+          const meta = makeMeta({ account: root.id, });
           const saved = await saveRelease(data, meta);
           const release = await getRelease(saved.id);
 
@@ -108,7 +108,7 @@ describe('Release Store', () => {
           expect(release.template.source.json).toEqual(data.template.source.json);
           expect(release.template.checksum).toBe(data.template.checksum);
           expect(release.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(release.createdBy).toBe(meta.user);
+          expect(release.createdBy).toBe(meta.account);
           expect(release.attributes.template).toBe(data.attributes.template);
           expect(release.attributes.image).toBe(data.attributes.image);
         });
@@ -185,7 +185,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -194,7 +194,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -203,7 +203,7 @@ describe('Release Store', () => {
                 },
                 version: '3',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -212,7 +212,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -221,7 +221,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -230,7 +230,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -283,7 +283,7 @@ describe('Release Store', () => {
         });
       });
 
-      function saveRelease(release = makeRelease(), meta = makeMeta({ user: root.id, })) {
+      function saveRelease(release = makeRelease(), meta = makeMeta({ account: root.id, })) {
         return store.saveRelease(release, meta);
       }
 
@@ -295,7 +295,7 @@ describe('Release Store', () => {
         return store.findRelease(criteria);
       }
 
-      function deleteRelease(id, meta = makeMeta({ user: root.id, })) {
+      function deleteRelease(id, meta = makeMeta({ account: root.id, })) {
         return store.deleteRelease(id, meta);
       }
 

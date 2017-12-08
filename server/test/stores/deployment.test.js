@@ -48,7 +48,7 @@ describe('Deployment Store', () => {
       beforeEach(async cb => {
         try {
           await store.nuke();
-          root = await store.saveAccount(makeAccount(), makeMeta({ user: null, }));
+          root = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
         } catch (err) {
           cb(err);
         }
@@ -106,7 +106,7 @@ describe('Deployment Store', () => {
         it('should retrieve deployment by id', async () => {
           const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          const meta = makeMeta({ user: root.id, });
+          const meta = makeMeta({ account: root.id, });
           const saved = await saveDeployment(data, meta);
           const deployment = await getDeployment(saved.id);
 
@@ -120,7 +120,7 @@ describe('Deployment Store', () => {
           expect(deployment.release.template.source.json).toEqual(saved.release.template.source.json);
           expect(deployment.release.template.checksum).toBe(saved.release.template.checksum);
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(deployment.createdBy).toBe(meta.user);
+          expect(deployment.createdBy).toBe(meta.account);
         });
 
         it('should return undefined when release not found', async () => {
@@ -159,7 +159,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -170,7 +170,7 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -181,7 +181,7 @@ describe('Deployment Store', () => {
                   version: '3',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -192,7 +192,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -203,7 +203,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -214,7 +214,7 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ user: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -264,15 +264,15 @@ describe('Deployment Store', () => {
         });
       });
 
-      function saveRelease(release = makeRelease(), meta = makeMeta({ user: root.id, })) {
+      function saveRelease(release = makeRelease(), meta = makeMeta({ account: root.id, })) {
         return store.saveRelease(release, meta);
       }
 
-      function saveDeployment(deployment = makeDeployment(), meta = makeMeta({ user: root.id, })) {
+      function saveDeployment(deployment = makeDeployment(), meta = makeMeta({ account: root.id, })) {
         return store.saveDeployment(deployment, meta);
       }
 
-      function deleteRelease(id, meta = makeMeta({ user: root.id, })) {
+      function deleteRelease(id, meta = makeMeta({ account: root.id, })) {
         return store.deleteRelease(id, meta);
       }
 
@@ -284,7 +284,7 @@ describe('Deployment Store', () => {
         return store.listDeployments(page, limit);
       }
 
-      function deleteDeployment(id, meta = makeMeta({ user: root.id, })) {
+      function deleteDeployment(id, meta = makeMeta({ account: root.id, })) {
         return store.deleteDeployment(id, meta);
       }
     });

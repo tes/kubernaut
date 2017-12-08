@@ -14,12 +14,21 @@ export default function(options = {}) {
 
     async function getAccount(id) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
-      if (account) return {
+      if (!account) return;
+
+      const accountRoles = account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {
+        result[accountRole.role] = { name: accountRole.role, permissions: roles[accountRole.role].permissions.slice(), };
+        return result;
+      }, {});
+
+      return {
         ...account,
-        roles: account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {
-          result[accountRole.role] = { name: accountRole.role, permissions: roles[accountRole.role].permissions.slice(), };
-          return result;
-        }, {}),
+        roles: accountRoles,
+        hasPermission: function(namespace, permission) {
+          return Object.keys(accountRoles).reduce((permissions, name) => {
+            return permissions.concat(accountRoles[name].permissions);
+          }, []).includes(permission);
+        },
       };
     }
 
@@ -32,7 +41,7 @@ export default function(options = {}) {
 
     async function saveAccount(account, meta) {
       return append(accounts, {
-        ...account, id: uuid(), createdOn: meta.date, createdBy: meta.user,
+        ...account, id: uuid(), createdOn: meta.date, createdBy: meta.account,
       });
     }
 
@@ -60,7 +69,7 @@ export default function(options = {}) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (account) {
         account.deletedOn = meta.date;
-        account.deletedBy = meta.user;
+        account.deletedBy = meta.account;
       }
     }
 
@@ -68,7 +77,7 @@ export default function(options = {}) {
       reportDuplicateIdentities(identity);
       reportMissingAccount(id);
       return append(identities, {
-        ...identity, id: uuid(), account: id, createdOn: meta.date, createdBy: meta.user,
+        ...identity, id: uuid(), account: id, createdOn: meta.date, createdBy: meta.account,
       });
     }
 
@@ -76,7 +85,7 @@ export default function(options = {}) {
       const identity = identities.find(i => i.id === id && !i.deletedOn);
       if (identity) {
         identity.deletedOn = meta.date;
-        identity.deletedBy = meta.user;
+        identity.deletedBy = meta.account;
       }
     }
 
@@ -86,7 +95,7 @@ export default function(options = {}) {
       if (hasRole(accountId, roleName)) return;
 
       const granted = {
-        id: uuid(), account: accountId, role: roleName, createdOn: meta.date, createdBy: meta.user,
+        id: uuid(), account: accountId, role: roleName, createdOn: meta.date, createdBy: meta.account,
       };
 
       return append(account_roles, granted);
@@ -96,7 +105,7 @@ export default function(options = {}) {
       const accountRole = account_roles.find(ar => ar.id === id && !ar.deletedOn);
       if (accountRole) {
         accountRole.deletedOn = meta.date;
-        accountRole.deletedBy = meta.user;
+        accountRole.deletedBy = meta.account;
       }
     }
 

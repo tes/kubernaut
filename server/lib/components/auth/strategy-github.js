@@ -18,7 +18,7 @@ module.exports = function() {
       try {
         const profile = { displayName: profile.username, };
         const identity = { name: profile.username, provider: 'github', 'type': 'OAuth', };
-        const meta = { date: new Date(), user: 'root', };
+        const meta = { date: new Date(), account: 'root', };
         const account = await store.ensureAccount(profile, identity, meta);
         cb(null, account);
       } catch (err) {

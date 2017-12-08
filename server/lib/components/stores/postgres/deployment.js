@@ -18,11 +18,11 @@ export default function(options) {
       logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.context}`);
 
       const result = await db.query(SQL.SAVE_DEPLOYMENT, [
-        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.user,
+        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account,
       ]);
 
       const deployment = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.user,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
       };
 
       logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context}/${deployment.id}`);
@@ -46,9 +46,7 @@ export default function(options) {
     async function deleteDeployment(id, meta) {
       logger.debug(`Deleting deployment id: ${id}`);
       await db.query(SQL.DELETE_DEPLOYMENT, [
-        id,
-        meta.date,
-        meta.user,
+        id, meta.date, meta.account,
       ]);
     }
 

@@ -45,11 +45,7 @@ export default function(options = {}) {
           manifest: await getManifest(release, res.locals.logger),
           release,
         };
-        const meta = {
-          date: new Date(),
-          user: req.user.id,
-        };
-
+        const meta = { date: new Date(), account: req.user.id, };
         const deployment = await store.saveDeployment(data, meta);
         await kubernetes.apply(deployment.context, deployment.manifest.yaml, res.locals.logger);
 
@@ -91,7 +87,8 @@ export default function(options = {}) {
 
     app.delete('/api/deployments/:id', async (req, res, next) => {
       try {
-        await store.deleteDeployment(req.params.id, { date: new Date(), user: req.user.id, });
+        const meta = { date: new Date(), account: req.user.id, };
+        await store.deleteDeployment(req.params.id, meta);
         res.status(204).send();
       } catch (err) {
         next(err);
