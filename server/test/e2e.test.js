@@ -3,7 +3,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from './test-system';
 
-xdescribe('kubernaut', () => {
+describe('kubernaut', () => {
 
   let system = { stop: cb => cb(), };
   let config;
@@ -51,27 +51,10 @@ xdescribe('kubernaut', () => {
     });
   });
 
-  xit('should redirect unauthenticated client app requests', async () => {
-
-    await request({
-      url: `http://${config.server.host}:${config.server.port}/`,
-      resolveWithFullResponse: true,
-      followRedirect: false,
-    }).then(() => {
-        throw new Error('Should have failed with 302');
-    }).catch(errors.StatusCodeError, (reason) => {
-      expectStatus(reason.response, 302);
-      expect(reason.response.headers.location).toBe('/auth/test');
-    });
-  });
-
   it('should respond to client app requests', async () => {
-
-    const jar = await login();
 
     const res = await request({
       url: `http://${config.server.host}:${config.server.port}/`,
-      jar,
       resolveWithFullResponse: true,
       followRedirect: false,
     });
@@ -101,11 +84,8 @@ xdescribe('kubernaut', () => {
 
   it('should respond to releases requests', async () => {
 
-    const jar = await login();
-
     const res = await request({
       url: `http://${config.server.host}:${config.server.port}/releases`,
-      jar,
       resolveWithFullResponse: true,
       followRedirect: false,
     });
@@ -121,11 +101,8 @@ xdescribe('kubernaut', () => {
 
   it('should respond to deployments requests', async () => {
 
-    const jar = await login();
-
     const res = await request({
       url: `http://${config.server.host}:${config.server.port}/deployments`,
-      jar,
       resolveWithFullResponse: true,
       followRedirect: false,
     });
@@ -148,12 +125,4 @@ xdescribe('kubernaut', () => {
     if (value) expect(res.headers[name].toLowerCase()).toBe(value);
   }
 
-  async function login() {
-    const jar = request.jar();
-    await request({
-      url: `http://${config.server.host}:${config.server.port}/auth/test`,
-      jar,
-    });
-    return jar;
-  }
 });
