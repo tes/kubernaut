@@ -8,7 +8,7 @@ module.exports = function() {
 
   function start({ logger, app, passport, store, }, cb) {
 
-    logger.info('Using local authentication strategy');
+    logger.info('Initialising local authentication strategy');
 
     const strategy = new CustomStrategy(async (req, cb) => {
       try {
@@ -26,7 +26,7 @@ module.exports = function() {
 
     passport.use(strategy);
 
-    cb(null, strategy);
+    cb(null, { name: strategy.name, app: true, api: true, });
   }
 
   return {

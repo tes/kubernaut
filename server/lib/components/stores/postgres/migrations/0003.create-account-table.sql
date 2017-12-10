@@ -3,6 +3,7 @@ START TRANSACTION;
 CREATE TABLE account (
   id TEXT PRIMARY KEY,
   display_name TEXT NOT NULL,
+  avatar TEXT,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by TEXT NULL, -- Root account is created by no-one
   deleted_on TIMESTAMP WITH TIME ZONE,

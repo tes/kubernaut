@@ -5,7 +5,9 @@ const APP_ROUTES = /^(?!(?:\/api\/|\/__\/)).*/;
 
 module.exports = function() {
 
-  function start({ app, config, loggerMiddleware, }, cb) {
+  function start({ app, config, loggerMiddleware, auth, passport, }, cb) {
+
+    app.use(APP_ROUTES, auth('app'));
 
     const clientApp = function(status) {
       return (req, res, next) => {

@@ -5,7 +5,9 @@ import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, }, cb) {
+  function start({ pkg, app, store, kubernetes, auth, }, cb) {
+
+    app.use('/api/deployments', auth('api'));
 
     app.get('/api/deployments', async (req, res, next) => {
       try {

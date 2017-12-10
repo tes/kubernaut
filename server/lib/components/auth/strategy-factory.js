@@ -19,13 +19,26 @@ export default function() {
       component.start({ ...dependencies, config: strategyConfig, }, (err, strategy) => {
         if (err) return cb(err);
         components.push(component);
-        cb(null, strategy.name);
+        cb(null, strategy);
       });
     }, (err, strategies) => {
       if (err) return cb(err);
-      app.use(passport.authenticate(strategies));
-      cb();
+      cb(null, middleware(getAuthenticationsMethods(strategies)));
     });
+
+    function getAuthenticationsMethods(strategies) {
+      return strategies.reduce((results, entry) => {
+        if (entry.app) results.app.push(entry.name);
+        if (entry.api) results.api.push(entry.name);
+        return results;
+      }, { app: [], api: [], });
+    }
+
+    function middleware(authenticationMethods) {
+      return function(method) {
+        return passport.authenticate(authenticationMethods[method]);
+      };
+    }
   }
 
   function stop(cb) {

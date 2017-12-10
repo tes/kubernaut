@@ -11,7 +11,7 @@ export function fetchDeployments(options = { quiet: false, }) {
 
     try {
       const url = '/api/deployments';
-      const res = await fetch(url, { method: 'GET', timeout: options.timeout, });
+      const res = await fetch(url, { method: 'GET', timeout: options.timeout, credentials: 'same-origin', });
       if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
       data = await res.json();
     } catch(error) {

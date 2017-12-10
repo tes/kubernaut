@@ -31,7 +31,7 @@ export default function(options = {}) {
       logger.debug(`Saving account: ${data.displayName}`);
 
       const result = await db.query(SQL.SAVE_ACCOUNT, [
-        data.displayName, meta.date, meta.account,
+        data.displayName, data.avatar, meta.date, meta.account,
       ]);
 
       const account = {
@@ -158,6 +158,7 @@ export default function(options = {}) {
       return {
         id: row.id,
         displayName: row.display_name,
+        avatar: row.avatar,
         createdOn: row.created_on,
         createdBy: row.created_by,
         deletedOn: row.deleted_on,

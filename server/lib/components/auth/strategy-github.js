@@ -8,7 +8,7 @@ module.exports = function() {
 
   function start({ config, logger, app, passport, store, }, cb) {
 
-    logger.info('Using github authentication strategy');
+    logger.info('Initialising github authentication strategy');
 
     const strategy = new GitHubStrategy({
       clientID: config.client.id,
@@ -16,10 +16,10 @@ module.exports = function() {
       passReqToCallback: true,
     }, async (req, accessToken, refreshToken, profile, cb) => {
       try {
-        const profile = { displayName: profile.username, };
-        const identity = { name: profile.username, provider: 'github', 'type': 'OAuth', };
+        const personal = { displayName: profile.displayName || profile.username, avatar: profile.photos.map(p => p.value)[0], };
+        const identity = { name: profile.id, provider: profile.provider, 'type': 'OAuth', };
         const meta = { date: new Date(), account: 'root', };
-        const account = await store.ensureAccount(profile, identity, meta);
+        const account = await store.ensureAccount(personal, identity, meta);
         cb(null, account);
       } catch (err) {
         cb(err);
@@ -33,7 +33,7 @@ module.exports = function() {
       res.redirect(req.session.returnTo || '/');
     });
 
-    cb(null, strategy);
+    cb(null, { name: strategy.name, app: true, api: false, });
   }
 
   return {

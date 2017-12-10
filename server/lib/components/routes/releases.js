@@ -8,7 +8,9 @@ const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, checksum, }, cb) {
+  function start({ pkg, app, store, checksum, auth, }, cb) {
+
+    app.use('/api/releases', auth('api'));
 
     app.get('/api/releases', async (req, res, next) => {
       try {

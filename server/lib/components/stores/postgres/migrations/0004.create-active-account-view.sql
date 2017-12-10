@@ -4,6 +4,7 @@ CREATE VIEW active_account__vw AS
 SELECT
   a.id,
   a.display_name,
+  a.avatar,
   a.created_on,
   a.created_by
 FROM

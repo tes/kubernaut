@@ -4,4 +4,4 @@ import passport from './passport';
 
 module.exports = new System({ name: 'auth', })
   .add('passport', passport()).dependsOn('config', 'logger')
-  .add('auth.strategies', strategyFactory()).dependsOn('config', 'logger', 'app', 'session', 'passport', 'logger.middleware', 'store');
+  .add('auth', strategyFactory()).dependsOn('config', 'logger', 'app', 'session', 'passport', 'logger.middleware', 'store');

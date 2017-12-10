@@ -3,7 +3,11 @@ import Boom from 'boom';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, loggerMiddleware, store, }, cb) {
+  function start({ pkg, app, loggerMiddleware, store, auth, }, cb) {
+
+    app.use('/api/accounts', auth('api'));
+    app.use('/api/identities', auth('api'));
+    app.use('/api/roles', auth('api'));
 
     app.get('/api/accounts', async (req, res, next) => {
       try {
