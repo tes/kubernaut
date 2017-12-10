@@ -11,25 +11,14 @@ module.exports = {
     transport: 'human',
   },
   postgres: {
-    hostname: 'localhost',
+    host: 'localhost',
     database: 'postgres',
     user: 'postgres',
   },
-  routes: {
-  },
-  server: {
-    port: 3001,
-  },
   session: {
-    store: 'postgres',
     secret: 'secret',
   },
   store: {
     unsafe: true,
-  },
-  transports: {
-    human: {
-      level: 'debug',
-    },
   },
 };
