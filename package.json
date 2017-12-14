@@ -17,7 +17,7 @@
     "test-client-i": "cd client; npm run test-i",
     "load-test-data": "babel-node ./server/test/bin/load-test-data.js",
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
-    "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files",
+    "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files && rsync -avv --include '.marvrc' --include '*/' --exclude='*' server/lib server/build && echo '\nCurse you github.com/babel/babel/issues/5052 !!!!\n'",
     "build-client": "cd client; npm run build",
     "prepush": "IMAGE=kubernaut TAG=$(git rev-parse --short HEAD)-local docker-compose run --rm --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
     "lint": "eslint ."

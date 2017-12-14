@@ -3,7 +3,7 @@ from node:8-alpine
 ENV HOME=/config
 ENV NODE_ENV=production
 
-RUN apk add -U --no-cache curl ca-certificates tcpdump python make g++
+RUN apk add -U --no-cache curl ca-certificates tcpdump python make g++ rsync
 
 RUN npm config set color false
 RUN npm config set registry https://registry.npmjs.org/
