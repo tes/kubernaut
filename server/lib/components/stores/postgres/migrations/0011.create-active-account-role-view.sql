@@ -2,18 +2,15 @@ START TRANSACTION;
 
 CREATE VIEW active_account_role__vw AS
 SELECT
-  ar.id,
-  ar.account,
-  ar.role,
-  ar.created_on,
-  ar.created_by
+  ar.*
 FROM
   account_role ar,
-  role r
+  active_account__vw a
 WHERE
   ar.deleted_on IS NULL AND
-  ar.role = r.id
+  ar.account = a.id
 ORDER BY
+  ar.created_on DESC,
   ar.id DESC
 ;
 

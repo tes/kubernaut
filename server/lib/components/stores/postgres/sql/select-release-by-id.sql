@@ -1,17 +1,19 @@
 SELECT
-  ar.id,
-  ar.service_id,
-  ar.service_name,
-  ar.version,
+  r.id,
+  r.version,
+  r.template,
+  r.created_on,
+  r.created_by,
+  s.id AS service_id,
+  s.name AS service_name,
   rt.id as template_id,
   rt.source_yaml as template_source_yaml,
   rt.source_json as template_source_json,
-  rt.checksum as template_checksum,
-  ar.created_on,
-  ar.created_by
+  rt.checksum as template_checksum
 FROM
-  active_release__vw ar, release_template rt
+  active_release__vw r, release_template rt, service s
 WHERE
-  ar.id = $1 AND
-  rt.id = ar.template
+  r.id = $1 AND
+  r.service = s.id AND
+  r.template = rt.id
 ;

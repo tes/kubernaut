@@ -115,10 +115,6 @@ describe('Deployment Store', () => {
           expect(deployment.release.service.id).toBe(saved.release.service.id);
           expect(deployment.release.service.name).toBe(saved.release.service.name);
           expect(deployment.release.version).toBe(saved.release.version);
-          expect(deployment.release.template.id).toBe(saved.release.template.id);
-          expect(deployment.release.template.source.yaml).toBe(saved.release.template.source.yaml);
-          expect(deployment.release.template.source.json).toEqual(saved.release.template.source.json);
-          expect(deployment.release.template.checksum).toBe(saved.release.template.checksum);
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(deployment.createdBy).toBe(meta.account);
         });

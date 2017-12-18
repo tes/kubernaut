@@ -1,21 +1,22 @@
 SELECT
-  ad.id,
-  ad.context,
-  ad.service_id,
-  ad.service_name,
-  ad.service_created_on,
-  ad.service_created_by,
-  ad.release_id,
-  ad.release_version,
-  ad.release_created_on,
-  ad.release_created_by,
-  ad.created_on,
-  ad.created_by
+  d.id,
+  d.context,
+  d.created_on,
+  d.created_by,
+  s.id AS service_id,
+  s.name AS service_name,
+  r.id AS release_id,
+  r.version AS release_version
 FROM
-  active_deployment__vw ad
+  active_deployment__vw d,
+  service s,
+  release r
+WHERE
+  d.release = r.id AND
+  r.service = s.id
 ORDER BY
-  ad.created_on DESC,
-  ad.id DESC
+  d.created_on DESC,
+  d.id DESC
 LIMIT
   $1
 OFFSET

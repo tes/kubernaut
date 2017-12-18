@@ -2,21 +2,14 @@ START TRANSACTION;
 
 CREATE VIEW active_identity__vw AS
 SELECT
-  i.id,
-  i.account,
-  i.name,
-  i.provider,
-  i.type,
-  i.created_on,
-  i.created_by
+  i.*
 FROM
   identity i
 WHERE
   i.deleted_on IS NULL
 ORDER BY
-  i.name DESC,
-  i.provider DESC,
-  i.type DESC
+  i.created_by ASC,
+  i.id
 ;
 
 COMMIT;

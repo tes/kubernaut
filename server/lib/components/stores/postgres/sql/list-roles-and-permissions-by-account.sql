@@ -1,21 +1,16 @@
 SELECT
-  aar.id,
   r.name AS role_name,
-  p.name AS permission_name,
-  aar.created_on,
-  aar.created_by
+  p.name AS permission_name
 FROM
-  active_account__vw aa,
-  active_account_role__vw aar,
+  active_account_role__vw ar,
   role r,
   role_permission rp,
   permission p
 WHERE
-  aa.id = $1 AND
-  aa.id = aar.account AND
-  r.id = aar.role AND
-  r.id = rp.role AND
-  p.id = rp.permission
+  ar.account = $1 AND
+  ar.role = r.id AND
+  ar.role = rp.role AND
+  rp.permission = p.id
 ORDER BY
   r.name DESC,
   p.name DESC

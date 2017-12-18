@@ -62,25 +62,9 @@ export default function(options) {
           id: row.release_id,
           service: {
             id: row.service_id,
-            name: row.service_name,
-            createdOn: row.service_created_on,
-            createdBy: row.service_created_by,
-            deletedOn: row.service_deleted_on,
-            deletedBy: row.service_deleted_by,
+            name: row.service_name
           },
           version: row.release_version,
-          template: row.release_template_id ? {
-            id: row.release_template_id,
-            source: {
-              yaml: row.release_template_source_yaml,
-              json: row.release_template_source_json,
-            },
-            checksum: row.release_template_checksum,
-          } : undefined,
-          createdOn: row.release_created_on,
-          createdBy: row.release_created_by,
-          deletedOn: row.release_deleted_on,
-          deletedBy: row.release_deleted_by,
         },
         createdOn: row.created_on,
         createdBy: row.created_by,
