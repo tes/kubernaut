@@ -6,7 +6,7 @@ export default function(options = {}) {
       Object.keys(tables).forEach(name => {
         tables[name].length = 0;
       });
-      tables.accounts.push({ id: 'root', displayName: 'root', createdOn: new Date(), createdBy: null })
+      tables.accounts.push({ id: 'root', displayName: 'root', createdOn: new Date(), createdBy: null, });
     }
 
     cb(null, {

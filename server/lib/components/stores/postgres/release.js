@@ -17,11 +17,14 @@ export default function(options) {
       });
     }
 
-    async function findRelease({ name, version, }) {
-      logger.debug(`Finding release by name: ${name}, version: ${version}`);
+    async function findRelease({ name, namespace, version, }) {
+      logger.debug(`Finding release by name: ${name}, namespace: ${namespace}, version: ${version}`);
 
-      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [name, version,]);
-      logger.debug(`Found ${release.rowCount} releases with name: ${name}, version: ${version}`);
+      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [
+        name, namespace, version,
+      ]);
+
+      logger.debug(`Found ${release.rowCount} releases with name: ${name}, namespace: ${namespace}, version: ${version}`);
 
       if (release.rowCount === 0) return;
 
@@ -173,6 +176,10 @@ export default function(options) {
         service: {
           id: row.service_id,
           name: row.service_name,
+          namespace: {
+            id: row.namespace_id,
+            name: row.namespace_name,
+          },
         },
         version: row.version,
         template: row.template_id ? {

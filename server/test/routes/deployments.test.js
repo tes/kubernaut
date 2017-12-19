@@ -2,7 +2,6 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import kubernetes from '../../lib/components/kubernetes/kubernetes-stub';
 import { makeDeployment, makeRelease, makeMeta, } from '../factories';
 
 describe('Deployments API', () => {
@@ -10,36 +9,35 @@ describe('Deployments API', () => {
   let config;
   let system = { stop: cb => cb(), };
   let store = { nuke: new Promise(cb => cb()), };
+  let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
-  const contexts = {
-    test: {
-      manifests: [],
-      deployments: [],
-    },
-  };
 
   beforeAll(cb => {
     system = createSystem()
     .set('config.overrides', { server: { port: 13002, }, })
-    .set('contexts', contexts)
-    .set('kubernetes', kubernetes()).dependsOn('contexts')
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
+      kubernetes = components.kubernetes;
       cb();
     });
   });
 
-  beforeEach(cb => {
-    store.nuke().then(cb);
+  beforeEach(async cb => {
+    try {
+      await store.nuke();
+      await kubernetes.nuke();
+    } catch (err) {
+      cb(err);
+    }
+    cb();
   });
 
   afterEach(() => {
     loggerOptions.suppress = false;
-    contexts.test = { manifests: [], deployments: [], };
   });
 
   afterAll(cb => {
@@ -148,8 +146,9 @@ describe('Deployments API', () => {
         method: 'POST',
         json: {
           context: 'test',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       });
 
@@ -168,16 +167,12 @@ describe('Deployments API', () => {
     it('should report manifest compilation errors', async () => {
 
       const release = makeRelease({
-        service: {
-          name: 'foo',
-        },
         template: {
           source: {
             yaml: '"{{#whatever}}"',
             json: {},
           },
         },
-        version: '22',
       });
       await store.saveRelease(release, makeMeta());
 
@@ -188,8 +183,9 @@ describe('Deployments API', () => {
         method: 'POST',
         json: {
           context: 'test',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       }).then(() => {
         throw new Error('Should have failed with 500');
@@ -204,6 +200,9 @@ describe('Deployments API', () => {
       const release = makeRelease({
         service: {
           name: 'foo',
+          namespace: {
+            name: 'default',
+          },
         },
         version: '22',
       });
@@ -214,26 +213,22 @@ describe('Deployments API', () => {
         method: 'POST',
         json: {
           context: 'test',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       });
 
       expect(response.id).toBeDefined();
 
-      expect(contexts.test.manifests.length).toBe(1);
-      expect(contexts.test.manifests[0].length).toBe(3);
-      expect(contexts.test.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
+      expect(kubernetes.getContexts().test.manifests.length).toBe(1);
+      expect(kubernetes.getContexts().test.manifests[0].length).toBe(3);
+      expect(kubernetes.getContexts().test.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
     });
 
     it('should optionally redirect to status page', async () => {
 
-      const release = makeRelease({
-        service: {
-          name: 'foo',
-        },
-        version: '22',
-      });
+      const release = makeRelease();
       await store.saveRelease(release, makeMeta());
 
       await request({
@@ -246,8 +241,9 @@ describe('Deployments API', () => {
         followRedirect: false,
         json: {
           context: 'test',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       }).then(() => {
         throw new Error('Should have redirected with 303');
@@ -267,6 +263,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           service: 'foo',
+          namespace: 'bar',
           version: '22',
         },
       }).then(() => {
@@ -287,6 +284,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           context: 'test',
+          namespace: 'bar',
           version: '22',
         },
       }).then(() => {
@@ -294,6 +292,27 @@ describe('Deployments API', () => {
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('service is required');
+      });
+    });
+
+    it('should reject payloads without a namespace', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          context: 'test',
+          service: 'foo',
+          version: '22',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('namespace is required');
       });
     });
 
@@ -308,6 +327,7 @@ describe('Deployments API', () => {
         json: {
           context: 'test',
           service: 'foo',
+          namespace: 'bar',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -319,12 +339,7 @@ describe('Deployments API', () => {
 
     it('should reject payloads a missing context', async () => {
 
-      const release = makeRelease({
-        service: {
-          name: 'foo',
-        },
-        version: '22',
-      });
+      const release = makeRelease();
       await store.saveRelease(release, makeMeta());
 
       loggerOptions.suppress = true;
@@ -335,18 +350,28 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           context: 'missing',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('Context missing was not found');
+        expect(reason.response.body.message).toBe('context missing was not found');
       });
     });
 
-    it('should reject payloads without a matching release', async () => {
+    it('should reject payloads a missing namespace', async () => {
+
+      const release = makeRelease({
+        service: {
+          namespace: {
+            name: 'missing',
+          },
+        },
+      });
+      await store.saveRelease(release, makeMeta());
 
       loggerOptions.suppress = true;
 
@@ -356,16 +381,47 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           context: 'test',
-          service: 'foo',
-          version: '22',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: release.version,
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('Release foo/22 was not found');
+        expect(reason.response.body.message).toBe('namespace missing was not found');
       });
     });
+
+    it('should reject payloads without a matching release', async () => {
+
+      const release = makeRelease({
+        service: {
+          name: 'foo',
+        },
+        version: '22',
+      });
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          context: 'test',
+          service: release.service.name,
+          namespace: release.service.namespace.name,
+          version: 'missing',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('release foo/missing was not found');
+      });
+    });
+
   });
 
   describe('GET /api/deployments/:id/status', () => {
@@ -374,7 +430,7 @@ describe('Deployments API', () => {
 
       const saved = await saveDeployment();
 
-      contexts.test.deployments.push({
+      kubernetes.getContexts().test.deployments.push({
         name: saved.release.service.name,
         status: 'success',
       });
@@ -395,7 +451,7 @@ describe('Deployments API', () => {
 
       const saved = await saveDeployment();
 
-      contexts.test.deployments.push({
+      kubernetes.getContexts().test.deployments.push({
         name: saved.release.service.name,
         status: 'failed',
       });

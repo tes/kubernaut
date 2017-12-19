@@ -8,7 +8,7 @@ const upload = multer({ storage: storage, });
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, checksum, auth, }, cb) {
+  function start({ pkg, app, store, checksum, kubernetes, auth, }, cb) {
 
     app.use('/api/releases', auth('api'));
 

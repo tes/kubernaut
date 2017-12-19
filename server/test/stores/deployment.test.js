@@ -1,6 +1,6 @@
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeAccount, makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeDeployment, makeRelease, makeMeta, } from '../factories';
 
 describe('Deployment Store', () => {
 

@@ -2,14 +2,19 @@ import { safeLoadAll, } from 'js-yaml';
 
 export default function(options = {}) {
 
-  const defautContexts = {
-    test: {
-      manifests: [],
-      deployments: [],
-    },
-  };
+  function defaultContexts() {
+    return {
+      test: {
+        manifests: [],
+        deployments: [],
+        namespaces: [{
+          name: 'default',
+        },],
+      },
+    };
+  }
 
-  function start({ contexts = defautContexts, }, cb) {
+  function start({ contexts = defaultContexts(), }, cb) {
 
     function apply(context, manifest) {
       return new Promise((resolve, reject) => {
@@ -22,6 +27,13 @@ export default function(options = {}) {
     function checkContext(context) {
       return new Promise((resolve) => {
         resolve(Object.keys(contexts).includes(context));
+      });
+    }
+
+    function checkNamespace(context, namespace) {
+      return new Promise((resolve, reject) => {
+        if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
+        resolve(!!contexts[context].namespaces.find(n => n.name === namespace));
       });
     }
 
@@ -43,11 +55,22 @@ export default function(options = {}) {
       });
     }
 
+    function getContexts() {
+      return contexts;
+    }
+
+    async function nuke() {
+      contexts = defaultContexts();
+    }
+
     return cb(null, {
       apply,
       checkContext,
       checkDeployment,
+      checkNamespace,
       rolloutStatus,
+      getContexts,
+      nuke,
     });
   }
 

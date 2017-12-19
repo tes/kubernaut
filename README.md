@@ -122,13 +122,13 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 ## Kubernaut Domain Model
 
 <pre>
-                               ┌───────────────────┐
-                               │                   │
-                               │                   │
-                               │      Service      │
-                               │                   │
-                               │                   │
-                               └───────────────────┘
+                               ┌───────────────────┐        ┌───────────────────┐
+                               │                   │        │                   │
+                               │                   │\       │                   │
+                               │      Service      │────────│     Namespace     │
+                               │                   │/       │                   │
+                               │                   │        │                   │
+                               └───────────────────┘        └───────────────────┘
                                          │
                                          │
                                          │
@@ -154,6 +154,13 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
                                │                   │
                                └───────────────────┘
 </pre>
+
+### Namespace
+A logical grouping of services. Useful for supporting services with duplicate names and for applying access controls
+
+| Property  | Description |
+|-----------|-------------|
+| name      | the namespace name, e.g. payments |
 
 
 ### Service

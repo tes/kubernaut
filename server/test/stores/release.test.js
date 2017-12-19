@@ -1,6 +1,6 @@
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeAccount, makeRelease, makeMeta, } from '../factories';
+import { makeRelease, makeMeta, } from '../factories';
 
 describe('Release Store', () => {
 
@@ -169,6 +169,7 @@ describe('Release Store', () => {
           expect(release.id).toBe(saved.id);
           expect(release.service.id).toBe(saved.service.id);
           expect(release.service.name).toBe(data.service.name);
+          expect(release.service.namespace.name).toBe(data.service.namespace.name);
           expect(release.version).toBe(data.version);
           expect(release.template.id).toBe(saved.template.id);
           expect(release.template.source.yaml).toBe(data.template.source.yaml);
@@ -188,43 +189,37 @@ describe('Release Store', () => {
 
       describe('Find Release', () => {
 
-        it('should find a release by service name and version', async () => {
-          const data = makeRelease({
-            service: {
-              name: 'foo',
-            },
-            version: '22',
-          });
+        it('should find a release by service name, namespace and release version', async () => {
+          const data = makeRelease();
           const saved = await saveRelease(data);
-          const release = await findRelease({ name: 'foo', version: '22', });
+          const release = await findRelease({ name: data.service.name, namespace: data.service.namespace.name, version: data.version, });
 
           expect(release).toBeDefined();
           expect(release.id).toBe(saved.id);
         });
 
         it('should return undefined when service not found', async () => {
-          const data = makeRelease({
-            service: {
-              name: 'foo',
-            },
-            version: '22',
-          });
+          const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: 'bar', version: '22', });
+          const release = await findRelease({ name: 'missing', namespace: data.service.namespace.name, version: data.version, });
+          expect(release).toBe(undefined);
+        });
+
+
+        it('should return undefined when namespace not found', async () => {
+          const data = makeRelease();
+          await saveRelease(data);
+
+          const release = await findRelease({ name: data.service.name, namespace: 'missing', version: data.version, });
           expect(release).toBe(undefined);
         });
 
         it('should return undefined when version not found', async () => {
-          const data = makeRelease({
-            service: {
-              name: 'foo',
-            },
-            version: '22',
-          });
+          const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: 'foo', version: '23', });
+          const release = await findRelease({ name: data.service.name, namespace: data.service.namespace.name, version: 'missing', });
           expect(release).toBe(undefined);
         });
       });

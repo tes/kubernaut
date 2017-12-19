@@ -36,19 +36,22 @@ export default function(options = {}) {
 
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
-
       try {
         if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
 
         if (!req.body.context) return next(Boom.badRequest('context is required'));
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
 
-        const release = await store.findRelease({ name: req.body.service, version: req.body.version, });
-        if (!release) return next(Boom.badRequest(`Release ${req.body.service}/${req.body.version} was not found`));
+        const release = await store.findRelease({ name: req.body.service, namespace: req.body.namespace, version: req.body.version, });
+        if (!release) return next(Boom.badRequest(`release ${req.body.service}/${req.body.version} was not found`));
 
         const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
-        if (!contextOk) return next(Boom.badRequest(`Context ${req.body.context} was not found`));
+        if (!contextOk) return next(Boom.badRequest(`context ${req.body.context} was not found`));
+
+        const namespaceOk = await kubernetes.checkNamespace(req.body.context, req.body.namespace, res.locals.logger);
+        if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.namespace} was not found`));
 
         const data = {
           context: req.body.context,

@@ -11,6 +11,7 @@ describe('Releases API', () => {
   let config;
   let system = { stop: cb => cb(), };
   let store = { nuke: new Promise(cb => cb()), };
+  let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
 
@@ -22,12 +23,19 @@ describe('Releases API', () => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
+      kubernetes = components.kubernetes;
       cb();
     });
   });
 
-  beforeEach(cb => {
-    store.nuke().then(cb);
+  beforeEach(async cb => {
+    try {
+      await store.nuke();
+      await kubernetes.nuke();
+    } catch (err) {
+      cb(err);
+    }
+    cb();
   });
 
   afterEach(() => {
@@ -142,6 +150,7 @@ describe('Releases API', () => {
 
       expect(release).toBeDefined();
       expect(release.service.name).toBe(formData.service);
+      expect(release.service.namespace.name).toBe(formData.namespace);
       expect(release.version).toBe(formData.version);
       expect(release.template.source.yaml).toBeDefined();
       expect(release.template.source.json).toBeDefined();

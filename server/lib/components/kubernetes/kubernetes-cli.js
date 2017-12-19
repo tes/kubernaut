@@ -27,6 +27,10 @@ export default function(options = {}) {
       return check(['config', 'get-contexts', context,], logger);
     }
 
+    function checkNamespace(context, namespace, logger) {
+      return check(['--context', context, 'get', 'namespace', name,], logger);
+    }
+
     function checkDeployment(context, name, logger) {
       return check(['--context', context, 'get', 'deployment', name,], logger);
     }
@@ -55,6 +59,7 @@ export default function(options = {}) {
     return cb(null, {
       apply,
       checkContext,
+      checkNamespace,
       checkDeployment,
       rolloutStatus,
     });

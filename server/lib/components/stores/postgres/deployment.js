@@ -62,7 +62,7 @@ export default function(options) {
           id: row.release_id,
           service: {
             id: row.service_id,
-            name: row.service_name
+            name: row.service_name,
           },
           version: row.release_version,
         },

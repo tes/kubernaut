@@ -19,7 +19,8 @@ FROM
   namespace n
 WHERE
   s.name = $1 AND
-  r.version = $2 AND
+  n.name = $2 AND
+  r.version = $3 AND
   r.service = s.id AND
   s.namespace = n.id AND
   r.template = rt.id

@@ -18,8 +18,13 @@ export default function(options = {}) {
       return { ...release, service, };
     }
 
-    async function findRelease({ name, version, }) {
-      const release = releases.find(r => r.service.name === name && r.version === version && !r.deletedOn);
+    async function findRelease({ name, namespace, version, }) {
+      const release = releases.find(r =>
+        r.service.name === name &&
+        r.service.namespace.name === namespace &&
+        r.version === version &&
+        !r.deletedOn
+      );
       if (!release) return;
 
       const service = services.find(s => s.id === release.service.id);
