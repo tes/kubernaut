@@ -39,14 +39,18 @@ export default function(options = {}) {
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
       try {
-        if (!req.user.hasPermission('placeholder', 'releases-write')) return next(Boom.forbidden());
-
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
+
+        if (!req.user.hasPermission(req.body.namespace, 'releases-write')) return next(Boom.forbidden());
 
         const data = {
           service: {
             name: req.body.service,
+            namespace: {
+              name: req.body.namespace,
+            },
           },
           version: req.body.version,
           template: await getTemplate(req.file.buffer, res.locals.logger),

@@ -87,15 +87,18 @@ function makeDeployment(overrides = {}) {
 }
 
 function makeRelease(overrides = {}) {
-  const name = get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-'));
+  const service = {
+    name: get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-')),
+    namespace: {
+      name: get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-'))
+    }
+  };
   const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
   const yaml = get(overrides, 'template.source.yaml', sampleTemplate);
   const json = get(overrides, 'template.source.json', yaml2json(yaml));
 
   return merge({
-    service: {
-      name,
-    },
+    service,
     version,
     template: {
       source: {
@@ -106,7 +109,7 @@ function makeRelease(overrides = {}) {
     },
     attributes: {
       template: `${chance.word().toLowerCase()}.yaml`,
-      image: `registry/repo/${name}:${version}`,
+      image: `registry/repo/${service.name}:${version}`,
     },
   }, overrides);
 }
@@ -123,6 +126,7 @@ function makeReleaseForm(overrides = {}) {
   const data = makeRelease();
 
   return merge({
+    namespace: data.service.namespace.name,
     service: data.service.name,
     version: data.version,
     image: data.attributes.image,

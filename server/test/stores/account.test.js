@@ -35,7 +35,6 @@ describe('Account Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
-      let root;
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -48,7 +47,6 @@ describe('Account Store', () => {
       beforeEach(async cb => {
         try {
           await store.nuke();
-          root = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
         } catch (err) {
           cb(err);
         }
@@ -245,7 +243,7 @@ describe('Account Store', () => {
             await saveAccount(account.data);
           }));
 
-          const results = (await listAccounts()).map(a => a.displayName).filter(n => n !== root.displayName);
+          const results = (await listAccounts()).filter(a => a.id !== 'root').map(a => a.displayName);
           const ordered = ['a', 'b', 'c',];
           expect(results).toEqual(ordered);
 
@@ -277,9 +275,8 @@ describe('Account Store', () => {
           });
 
           it('should page results', async () => {
-            const results = await listAccounts(50, 10);
-            // +1 for the account used to create all the other accounts
-            expect(results.length).toBe(41 + 1);
+            const results = (await listAccounts(50, 10)).filter(a => a.id !== 'root');
+            expect(results.length).toBe(41);
           });
         });
       });
@@ -425,11 +422,11 @@ describe('Account Store', () => {
         });
       });
 
-      function saveAccount(account = makeAccount(), meta = makeMeta({ account: root.id, })) {
+      function saveAccount(account = makeAccount(), meta = makeMeta({ account: 'root', })) {
         return store.saveAccount(account, meta);
       }
 
-      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ account: root.id, })) {
+      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ account: 'root', })) {
         return store.ensureAccount(account, identity, meta);
       }
 
@@ -445,23 +442,23 @@ describe('Account Store', () => {
           return store.listAccounts(limit, offset);
       }
 
-      function deleteAccount(id, meta = makeMeta({ account: root.id, })) {
+      function deleteAccount(id, meta = makeMeta({ account: 'root', })) {
         return store.deleteAccount(id, meta);
       }
 
-      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ account: root.id, })) {
+      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ account: 'root', })) {
         return store.saveIdentity(accountId, identity, meta);
       }
 
-      function deleteIdentity(id, meta = makeMeta({ account: root.id, })) {
+      function deleteIdentity(id, meta = makeMeta({ account: 'root', })) {
         return store.deleteIdentity(id, meta);
       }
 
-      function grantRole(id, name, meta = makeMeta({ account: root.id, })) {
+      function grantRole(id, name, meta = makeMeta({ account: 'root', })) {
         return store.grantRole(id, name, meta);
       }
 
-      function revokeRole(id, meta = makeMeta({ account: root.id, })) {
+      function revokeRole(id, meta = makeMeta({ account: 'root', })) {
         return store.revokeRole(id, meta);
       }
 

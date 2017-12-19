@@ -41,7 +41,7 @@ describe('Accounts API', () => {
     beforeEach(async () => {
 
       const accounts = [];
-      for (var i = 0; i < 51; i++) {
+      for (var i = 0; i < 60; i++) {
         accounts.push({
           data: makeAccount(),
           meta: makeMeta(),
@@ -77,14 +77,17 @@ describe('Accounts API', () => {
 
     it('should page results', async () => {
 
+      // Offset is 22 because root account is automatically created
+      // and while using local auth strategy an admin account will
+      // also be created
+
       const accounts = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts`,
-        qs: { limit: 50, offset: 10, },
+        qs: { limit: 50, offset: 22, },
         method: 'GET',
         json: true,
       });
-      // +1 because kubernaut creates an admin account when running locally
-      expect(accounts.length).toBe(41 + 1);
+      expect(accounts.length).toBe(40);
     });
 
   });

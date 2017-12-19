@@ -149,6 +149,20 @@ describe('Releases API', () => {
       expect(release.attributes.image).toBe(formData.image);
     });
 
+    it('should reject payloads without a namespace', async () => {
+
+      const formData = makeReleaseForm();
+      delete formData.namespace;
+
+      loggerOptions.suppress = true;
+
+      await expect(request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        method: 'POST',
+        formData,
+      })).rejects.toHaveProperty('statusCode', 400);
+    });
+
     it('should reject payloads without a service', async () => {
 
       const formData = makeReleaseForm();

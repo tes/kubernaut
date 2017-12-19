@@ -35,7 +35,6 @@ describe('Release Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
-      let root;
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
@@ -48,7 +47,6 @@ describe('Release Store', () => {
       beforeEach(async cb => {
         try {
           await store.nuke();
-          root = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
         } catch (err) {
           cb(err);
         }
@@ -69,23 +67,92 @@ describe('Release Store', () => {
           expect(release.id).toBeDefined();
         });
 
-        it('should prevent duplicate release versions', async () => {
+        it('should prevent duplicate releases', async () => {
           const data = makeRelease({
             service: {
-              name: 'duplicate-release-version',
-            }, version: '123',
+              name: 'same-service',
+              namespace: {
+                name: 'same-namespace',
+              },
+            },
+            version: 'same-version',
           });
+
           await saveRelease(data);
           await expect(
             saveRelease(data)
           ).rejects.toHaveProperty('code', '23505');
         });
 
-        it('should permit multiple release versions', async () => {
-          const data1 = makeRelease({ name: 'multiple-release-versions', version: '1', });
+        it('should permit differently named services in the same namespace to have the same release version', async () => {
+          const data1 = makeRelease({
+            service: {
+              name: 'service-1',
+              namespace: {
+                name: 'same-namespace',
+              },
+            },
+            version: 'same-version',
+          });
           await saveRelease(data1);
 
-          const data2 = makeRelease({ name: 'multiple-release-versions', version: '2', });
+          const data2 = makeRelease({
+            service: {
+              name: 'service-2',
+              namespace: {
+                name: 'same-namespace',
+              },
+            },
+            version: 'same-version',
+          });
+          await saveRelease(data2);
+        });
+
+        it('should permit similarly named services in different namespaces to have the same release version', async () => {
+          const data1 = makeRelease({
+            service: {
+              name: 'same-service',
+              namespace: {
+                name: 'namespace-1',
+              },
+            },
+            version: 'same-version',
+          });
+          await saveRelease(data1);
+
+          const data2 = makeRelease({
+            service: {
+              name: 'same-service',
+              namespace: {
+                name: 'namespace-2',
+              },
+            },
+            version: 'same-version',
+          });
+          await saveRelease(data2);
+        });
+
+        it('should permit multiple releases of a service', async () => {
+          const data1 = makeRelease({
+            service: {
+              name: 'same-service',
+              namespace: {
+                name: 'same-namespace',
+              },
+            },
+            version: 'version-1',
+          });
+          await saveRelease(data1);
+
+          const data2 = makeRelease({
+            service: {
+              name: 'same-service',
+              namespace: {
+                name: 'same-namespace',
+              },
+            },
+            version: 'version-2',
+          });
           await saveRelease(data2);
         });
       });
@@ -94,7 +161,7 @@ describe('Release Store', () => {
 
         it('should retrieve release by id', async () => {
           const data = makeRelease();
-          const meta = makeMeta({ account: root.id, });
+          const meta = makeMeta({ account: 'root', });
           const saved = await saveRelease(data, meta);
           const release = await getRelease(saved.id);
 
@@ -185,7 +252,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -194,7 +261,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -203,7 +270,7 @@ describe('Release Store', () => {
                 },
                 version: '3',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -212,7 +279,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -221,7 +288,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -230,7 +297,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ account: root.id, date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeMeta({ account: 'root', date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -283,7 +350,7 @@ describe('Release Store', () => {
         });
       });
 
-      function saveRelease(release = makeRelease(), meta = makeMeta({ account: root.id, })) {
+      function saveRelease(release = makeRelease(), meta = makeMeta({ account: 'root', })) {
         return store.saveRelease(release, meta);
       }
 
@@ -295,7 +362,7 @@ describe('Release Store', () => {
         return store.findRelease(criteria);
       }
 
-      function deleteRelease(id, meta = makeMeta({ account: root.id, })) {
+      function deleteRelease(id, meta = makeMeta({ account: 'root', })) {
         return store.deleteRelease(id, meta);
       }
 
