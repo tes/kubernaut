@@ -112,6 +112,7 @@ describe('Deployment Store', () => {
           expect(deployment.id).toBe(saved.id);
           expect(deployment.release.service.id).toBe(saved.release.service.id);
           expect(deployment.release.service.name).toBe(saved.release.service.name);
+          expect(deployment.release.service.namespace.name).toBe(saved.release.service.namespace.name);
           expect(deployment.release.version).toBe(saved.release.version);
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(deployment.createdBy).toBe(meta.account);
@@ -216,7 +217,7 @@ describe('Deployment Store', () => {
             return saveRelease(record.data.release).then(release => {
               const deployment = { ...record.data, release, };
               return saveDeployment(deployment, record.meta);
-            })
+            });
           }));
 
           const results = (await listDeployments()).map(d => `${d.release.service.name}${d.release.version}`);

@@ -63,6 +63,10 @@ export default function(options) {
           service: {
             id: row.service_id,
             name: row.service_name,
+            namespace: {
+              id: row.namespace_id,
+              name: row.namespace_name,
+            },
           },
           version: row.release_version,
         },
