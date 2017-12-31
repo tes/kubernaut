@@ -13,6 +13,7 @@ describe('ReleasesTable', () => {
     expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__heading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__heading__created').text()).toBe('Created');
+    expect(wrapper.find('.releases-table__heading__namespace-name').text()).toBe('Namespace');
     expect(wrapper.find('.releases-table__heading__service-name').text()).toBe('Service');
     expect(wrapper.find('.releases-table__heading__version').text()).toBe('Version');
   });
@@ -36,6 +37,9 @@ describe('ReleasesTable', () => {
         createdOn: new Date('2017-07-01T16:15:14.000Z'),
         service: {
           name: 'svc-awesome',
+          namespace: {
+            name: 'svc-ns',
+          },
         },
         version: `v${i+1}`,
       };
@@ -50,6 +54,7 @@ describe('ReleasesTable', () => {
     expect(row.prop('id')).toBe('release-1');
     expect(row.find('.releases-table__body__row__created__on').find(Human).prop('date')).toBe(releases[0].createdOn);
     expect(row.find('.releases-table__body__row__created__ago').find(Ago).prop('date')).toBe(releases[0].createdOn);
+    expect(row.find('.releases-table__body__row__namespace-name').text()).toBe(releases[0].service.namespace.name);
     expect(row.find('.releases-table__body__row__service-name').text()).toBe(releases[0].service.name);
     expect(row.find('.releases-table__body__row__version').text()).toBe(releases[0].version);
   });

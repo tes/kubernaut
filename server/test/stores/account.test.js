@@ -239,8 +239,8 @@ describe('Account Store', () => {
             },
           ];
 
-          await Promise.all(accounts.map(async account => {
-            await saveAccount(account.data);
+          await Promise.all(accounts.map(account => {
+            return saveAccount(account.data);
           }));
 
           const results = (await listAccounts()).filter(a => a.id !== 'root').map(a => a.displayName);

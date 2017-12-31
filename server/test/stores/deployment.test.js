@@ -212,10 +212,11 @@ describe('Deployment Store', () => {
             },
           ];
 
-          await Promise.all(deployments.map(async record => {
-            const release = await saveRelease(record.data.release);
-            const deployment = { ...record.data, release, };
-            await saveDeployment(deployment, record.meta);
+          await Promise.all(deployments.map(record => {
+            return saveRelease(record.data.release).then(release => {
+              const deployment = { ...record.data, release, };
+              return saveDeployment(deployment, record.meta);
+            })
           }));
 
           const results = (await listDeployments()).map(d => `${d.release.service.name}${d.release.version}`);

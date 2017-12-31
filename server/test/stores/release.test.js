@@ -296,8 +296,8 @@ describe('Release Store', () => {
             },
           ];
 
-          await Promise.all(releases.map(async release => {
-            await saveRelease(release.data, release.meta);
+          await Promise.all(releases.map(release => {
+            return saveRelease(release.data, release.meta);
           }));
 
           const results = (await listReleases()).map(r => `${r.service.name}${r.version}`);
