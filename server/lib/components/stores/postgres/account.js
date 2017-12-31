@@ -116,8 +116,8 @@ export default function(options = {}) {
       logger.debug(`Granting role: ${roleName} to account: ${accountId}`);
 
       try {
-        const result = await db.query(SQL.SAVE_ACCOUNT_ROLE, [
-          accountId, roleName, meta.date, meta.account,
+        const result = await db.query(SQL.ENSURE_ACCOUNT_ROLE, [
+          accountId, roleName, null, meta.date, meta.account,
         ]);
 
         const granted = {

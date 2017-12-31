@@ -5,13 +5,25 @@ SELECT
   ar.*
 FROM
   account_role ar,
+  active_account__vw a,
+  active_namespace__vw n
+WHERE
+  ar.deleted_on IS NULL AND
+  ar.account = a.id AND
+  ar.namespace = n.id
+UNION
+SELECT
+  ar.*
+FROM
+  account_role ar,
   active_account__vw a
 WHERE
   ar.deleted_on IS NULL AND
-  ar.account = a.id
+  ar.account = a.id AND
+  ar.namespace IS NULL
 ORDER BY
-  ar.created_on DESC,
-  ar.id DESC
+  created_on DESC,
+  id DESC
 ;
 
 COMMIT;
