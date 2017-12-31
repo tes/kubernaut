@@ -221,9 +221,9 @@ describe('Deployments API', () => {
 
       expect(response.id).toBeDefined();
 
-      expect(kubernetes.getContexts().test.manifests.length).toBe(1);
-      expect(kubernetes.getContexts().test.manifests[0].length).toBe(3);
-      expect(kubernetes.getContexts().test.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
+      expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(3);
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
     });
 
     it('should optionally redirect to status page', async () => {
@@ -430,7 +430,7 @@ describe('Deployments API', () => {
 
       const saved = await saveDeployment();
 
-      kubernetes.getContexts().test.deployments.push({
+      kubernetes.getContexts().test.namespaces.default.deployments.push({
         name: saved.release.service.name,
         status: 'success',
       });
@@ -451,7 +451,7 @@ describe('Deployments API', () => {
 
       const saved = await saveDeployment();
 
-      kubernetes.getContexts().test.deployments.push({
+      kubernetes.getContexts().test.namespaces.default.deployments.push({
         name: saved.release.service.name,
         status: 'failed',
       });

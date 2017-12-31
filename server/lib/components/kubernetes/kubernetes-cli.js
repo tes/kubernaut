@@ -31,12 +31,12 @@ export default function(options = {}) {
       return check(['--context', context, 'get', 'namespace', name,], logger);
     }
 
-    function checkDeployment(context, name, logger) {
-      return check(['--context', context, 'get', 'deployment', name,], logger);
+    function checkDeployment(context, namespace, name, logger) {
+      return check(['--context', context, '--namespace', namespace, 'get', 'deployment', name,], logger);
     }
 
-    function rolloutStatus(context, name, logger) {
-      return check(['--context', context, 'rollout', 'status', `deployments/${name}`,], logger);
+    function rolloutStatus(context, namespace, name, logger) {
+      return check(['--context', context, '--namespace', namespace, 'rollout', 'status', `deployments/${name}`,], logger);
     }
 
     function check(args, logger) {

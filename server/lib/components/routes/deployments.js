@@ -60,7 +60,7 @@ export default function(options = {}) {
         };
         const meta = { date: new Date(), account: req.user.id, };
         const deployment = await store.saveDeployment(data, meta);
-        await kubernetes.apply(deployment.context, deployment.manifest.yaml, res.locals.logger);
+        await kubernetes.apply(deployment.context, deployment.release.service.namespace.name, deployment.manifest.yaml, res.locals.logger);
 
         if (req.query.wait === 'true') {
           res.redirect(303, `/api/deployments/${deployment.id}/status`);
@@ -85,10 +85,10 @@ export default function(options = {}) {
         const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
         if (!contextOk) return next(Boom.internal(`Context ${deployment.context} was not found`));
 
-        const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.name, res.locals.logger);
+        const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
         if (!deploymentOk) return next(Boom.internal(`Deployment ${deployment.release.service.name} was not found`));
 
-        const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.name, res.locals.logger);
+        const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
 
         return ok ? res.status(200).json({
           id: deployment.id,

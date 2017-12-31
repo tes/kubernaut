@@ -5,21 +5,23 @@ export default function(options = {}) {
   function defaultContexts() {
     return {
       test: {
-        manifests: [],
-        deployments: [],
-        namespaces: [{
-          name: 'default',
-        },],
+        namespaces: {
+          'default': {
+            manifests: [],
+            deployments: [],
+          },
+        },
       },
     };
   }
 
   function start({ contexts = defaultContexts(), }, cb) {
 
-    function apply(context, manifest) {
+    function apply(context, namespace, manifest) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
-        contexts[context].manifests.push(safeLoadAll(manifest));
+        if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
+        contexts[context].namespaces[namespace].manifests.push(safeLoadAll(manifest));
         resolve();
       });
     }
@@ -33,22 +35,24 @@ export default function(options = {}) {
     function checkNamespace(context, namespace) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
-        resolve(!!contexts[context].namespaces.find(n => n.name === namespace));
+        resolve(Object.keys(contexts[context].namespaces).includes(namespace));
       });
     }
 
-    function checkDeployment(context, deployment) {
+    function checkDeployment(context, namespace, name) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
-        resolve(!!contexts[context].deployments.find(d => d.name === deployment));
+        if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
+        resolve(!!contexts[context].namespaces[namespace].deployments.find(d => d.name === name));
       });
     }
 
-    function rolloutStatus(context, name) {
+    function rolloutStatus(context, namespace, name) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
+        if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
 
-        const deployment = contexts[context].deployments.find(d => d.name === name);
+        const deployment = contexts[context].namespaces[namespace].deployments.find(d => d.name === name);
         if (!deployment) return reject(new Error(`Unknown deployment: ${name}`));
 
         resolve(deployment.status === 'success');
