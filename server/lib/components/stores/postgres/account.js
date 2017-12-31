@@ -54,7 +54,7 @@ export default function(options = {}) {
         const created = await saveAccount(account, meta);
         await saveIdentity(created.id, identity, meta);
 
-        if (await countActiveAdminstrators() === 0) {
+        if (await countActiveGlobalAdminstrators() === 0) {
           await grantRole(created.id, 'admin', meta);
         }
 
@@ -143,12 +143,12 @@ export default function(options = {}) {
       logger.debug(`Revoked role: ${id}`);
     }
 
-    async function countActiveAdminstrators() {
-      logger.debug('Counting active administrators');
+    async function countActiveGlobalAdminstrators() {
+      logger.debug('Counting active global administrators');
 
-      const result = await db.query(SQL.COUNT_ACTIVE_ADMINISTRATORS);
-      const count = parseInt(result.rows[0].active_administrators, 10);
-      logger.debug(`Found ${count} active administrator accounts`);
+      const result = await db.query(SQL.COUNT_ACTIVE_GLOBAL_ADMINISTRATORS);
+      const count = parseInt(result.rows[0].active_global_administrators, 10);
+      logger.debug(`Found ${count} active global administrator accounts`);
 
       return count;
     }
