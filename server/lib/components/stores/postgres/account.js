@@ -28,9 +28,13 @@ export default function(options = {}) {
     }
 
     async function saveAccount(data, meta) {
+      return _saveAccount(db, data, meta);
+    }
+
+    async function _saveAccount(connection, data, meta) {
       logger.debug(`Saving account: ${data.displayName}`);
 
-      const result = await db.query(SQL.SAVE_ACCOUNT, [
+      const result = await connection.query(SQL.SAVE_ACCOUNT, [
         data.displayName, data.avatar, meta.date, meta.account,
       ]);
 
@@ -43,25 +47,27 @@ export default function(options = {}) {
       return account;
     }
 
-    async function ensureAccount(account, identity, meta) {
-      return await withTransaction(async connection => {
+    async function ensureAccount(data, identity, meta) {
 
-        logger.debug(`Ensuring account: ${account.displayName}`);
+      logger.debug(`Ensuring account: ${data.displayName}`);
 
-        const existing = await findAccount(identity);
-        if (existing) return existing;
+      const existing = await findAccount(identity);
+      if (existing) return existing;
 
-        const created = await saveAccount(account, meta);
-        await saveIdentity(created.id, identity, meta);
-
-        if (await countActiveGlobalAdminstrators() === 0) {
-          await grantRole(created.id, 'admin', meta);
+      const created = await withTransaction(async connection => {
+        const saved = await _saveAccount(connection, data, meta);
+        await _saveIdentity(connection, saved.id, identity, meta);
+        if (await _countActiveGlobalAdminstrators(connection) === 0) {
+          await _grantRole(connection, saved.id, 'admin', meta);
         }
+        return saved;
+      })
 
-        logger.debug(`Ensured account: ${created.displayName}/${created.id}`);
+      const account = await getAccount(created.id);
 
-        return await getAccount(created.id);
-      });
+      logger.debug(`Ensured account: ${account.displayName}/${account.id}`);
+
+      return account;
     }
 
     async function listAccounts(limit = 50, offset = 0) {
@@ -87,9 +93,13 @@ export default function(options = {}) {
     }
 
     async function saveIdentity(id, data, meta) {
+      return _saveIdentity(db, id, data, meta);
+    }
+
+    async function _saveIdentity(connection, id, data, meta) {
       logger.debug(`Saving identity: ${data.type}/${data.provider}/${data.name} for account ${id}`);
 
-      const result = await db.query(SQL.SAVE_IDENTITY, [
+      const result = await connection.query(SQL.SAVE_IDENTITY, [
         id, data.name, data.provider, data.type, meta.date, meta.account,
       ]);
 
@@ -113,10 +123,14 @@ export default function(options = {}) {
     }
 
     async function grantRole(accountId, roleName, meta) {
+      return _grantRole(db, accountId, roleName, meta);
+    }
+
+    async function _grantRole(connection, accountId, roleName, meta) {
       logger.debug(`Granting role: ${roleName} to account: ${accountId}`);
 
       try {
-        const result = await db.query(SQL.ENSURE_ACCOUNT_ROLE, [
+        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE, [
           accountId, roleName, null, meta.date, meta.account,
         ]);
 
@@ -143,10 +157,10 @@ export default function(options = {}) {
       logger.debug(`Revoked role: ${id}`);
     }
 
-    async function countActiveGlobalAdminstrators() {
+    async function _countActiveGlobalAdminstrators(connection) {
       logger.debug('Counting active global administrators');
 
-      const result = await db.query(SQL.COUNT_ACTIVE_GLOBAL_ADMINISTRATORS);
+      const result = await connection.query(SQL.COUNT_ACTIVE_GLOBAL_ADMINISTRATORS);
       const count = parseInt(result.rows[0].active_global_administrators, 10);
       logger.debug(`Found ${count} active global administrator accounts`);
 
