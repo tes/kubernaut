@@ -14,10 +14,8 @@
   font-style: italic;
 }
 
-.releases-table .releases-table__body__row__service-name {
-  white-space: nowrap;
-}
-
+.releases-table .releases-table__body__row__namespace-name,
+.releases-table .releases-table__body__row__service-name,
 .releases-table .releases-table__body__row__version {
   white-space: nowrap;
 }

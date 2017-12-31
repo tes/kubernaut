@@ -13,6 +13,7 @@ describe('DeploymentsTable', () => {
     expect(wrapper.is('.deployments-table')).toBe(true);
     expect(wrapper.find('.deployments-table__heading').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__heading__created').text()).toBe('Created');
+    expect(wrapper.find('.deployments-table__heading__namespace-name').text()).toBe('Namespace');
     expect(wrapper.find('.deployments-table__heading__service-name').text()).toBe('Service');
     expect(wrapper.find('.deployments-table__heading__version').text()).toBe('Version');
     expect(wrapper.find('.deployments-table__heading__context').text()).toBe('Context');
@@ -39,6 +40,9 @@ describe('DeploymentsTable', () => {
         release: {
           service: {
             name: 'svc-awesome',
+            namespace: {
+              name: 'svc-ns',
+            },
           },
           version: `v${i+1}`,
         },
@@ -54,6 +58,7 @@ describe('DeploymentsTable', () => {
     expect(row.prop('id')).toBe('deployment-1');
     expect(row.find('.deployments-table__body__row__created__on').find(Human).prop('date')).toBe(deployments[0].createdOn);
     expect(row.find('.deployments-table__body__row__created__ago').find(Ago).prop('date')).toBe(deployments[0].createdOn);
+    expect(row.find('.deployments-table__body__row__namespace-name').text()).toBe(deployments[0].release.service.namespace.name);
     expect(row.find('.deployments-table__body__row__service-name').text()).toBe(deployments[0].release.service.name);
     expect(row.find('.deployments-table__body__row__version').text()).toBe(deployments[0].release.version);
     expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments[0].context);

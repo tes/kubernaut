@@ -41,6 +41,7 @@ class DeploymentsTable extends Component {
               <span className="deployments-table__body__row__created__on"><Human date={deployment.createdOn} /></span>
               <span className="deployments-table__body__row__created__ago"><Ago date={deployment.createdOn} /></span>
             </td>
+            <td className='deployments-table__body__row__namespace-name'>{deployment.release.service.namespace.name}</td>
             <td className='deployments-table__body__row__service-name'>{deployment.release.service.name}</td>
             <td className='deployments-table__body__row__version'>{deployment.release.version}</td>
             <td className='deployments-table__body__row__context'>{deployment.context}</td>
@@ -56,6 +57,7 @@ class DeploymentsTable extends Component {
         <thead className='deployments-table__heading'>
           <tr>
             <th className='deployments-table__heading__created'>Created</th>
+            <th className='deployments-table__heading__namespace-name'>Namespace</th>
             <th className='deployments-table__heading__service-name'>Service</th>
             <th className='deployments-table__heading__version'>Version</th>
             <th className='deployments-table__heading__context'>Context</th>

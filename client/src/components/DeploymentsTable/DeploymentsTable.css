@@ -14,10 +14,8 @@
   font-style: italic;
 }
 
-.deployments-table .deployments-table__body__row__service-name {
-  white-space: nowrap;
-}
-
+.deployments-table .deployments-table__body__row__namespace-name,
+.deployments-table .deployments-table__body__row__service-name,
 .deployments-table .deployments-table__body__row__version {
   white-space: nowrap;
 }
