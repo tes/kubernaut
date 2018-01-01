@@ -97,7 +97,7 @@ export default function(options = {}) {
 
       try {
         const meta = { date: new Date(), account: req.user.id, };
-        const account = await store.grantRole(req.body.account, req.body.role, meta);
+        const account = await store.grantRole(req.body.account, req.body.role, null, meta);
         res.json(account);
       } catch (err) {
         next(err);

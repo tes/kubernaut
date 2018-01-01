@@ -58,10 +58,10 @@ export default function(options = {}) {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
         if (await _countActiveGlobalAdminstrators(connection) === 0) {
-          await _grantRole(connection, saved.id, 'admin', meta);
+          await _grantRole(connection, saved.id, 'admin', null, meta);
         }
         return saved;
-      })
+      });
 
       const account = await getAccount(created.id);
 
@@ -122,29 +122,55 @@ export default function(options = {}) {
       logger.debug(`Deleted identity id: ${id}`);
     }
 
-    async function grantRole(accountId, roleName, meta) {
-      return _grantRole(db, accountId, roleName, meta);
+    async function grantRole(accountId, roleName, namespaceName, meta) {
+      return withTransaction(async connection => {
+        return _grantRole(connection, accountId, roleName, namespaceName, meta);
+      });
     }
 
-    async function _grantRole(connection, accountId, roleName, meta) {
-      logger.debug(`Granting role: ${roleName} to account: ${accountId}`);
+    async function _grantRole(connection, accountId, roleName, namespaceName, meta) {
+      logger.debug(`Granting role: ${roleName} on namespace: ${namespaceName} to account: ${accountId}`);
 
-      try {
+      return await Promise.all([
+        connection.query(SQL.SELECT_ACCOUNT_BY_ID, [ accountId, ]),
+        connection.query(SQL.SELECT_ROLE_BY_NAME, [ roleName, ]),
+        connection.query(SQL.SELECT_NAMESPACE_BY_NAME, [ namespaceName, ]),
+      ]).then(([ accountResult, roleResult, namespaceResult, ]) => {
+        return {
+          accountId: getAccountId(accountResult, accountId),
+          roleId: getRoleId(roleResult, roleName),
+          namespaceId: getNamespaceId(namespaceResult, namespaceName),
+        };
+      }).then(async ({ accountId, roleId, namespaceId, }) => {
         const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE, [
-          accountId, roleName, null, meta.date, meta.account,
+          accountId, roleId, namespaceId, meta.date, meta.account,
         ]);
-
         const granted = {
           id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account,
         };
 
-        logger.debug(`Granted role: ${granted.name}/${granted.id} to account: ${accountId}`);
+        logger.debug(`Granted role: ${granted.name}/${granted.id} on namespace: ${namespaceName} to account: ${accountId}`);
 
         return granted;
-      } catch(err) {
-        if (err.code === '23505') return logger.debug(`Ignoring duplicate role: ${roleName} for account: ${accountId}`);
-        throw err;
-      }
+      });
+    }
+
+    function getAccountId(result, accountId) {
+      const id = result.rowCount ? result.rows[0].id : null;
+      if (!id) throw new Error(`Invalid accountId: ${accountId}`);
+      return id;
+    }
+
+    function getRoleId(result, name) {
+      const id = result.rowCount ? result.rows[0].id : null;
+      if (!id) throw new Error(`Invalid role: ${name}`);
+      return id;
+    }
+
+    function getNamespaceId(result, name) {
+      const id = result.rowCount ? result.rows[0].id : null;
+      if (!id && name) throw new Error(`Invalid namespace: ${name}`);
+      return id;
     }
 
     async function revokeRole(id, meta) {
@@ -180,16 +206,24 @@ export default function(options = {}) {
         roles,
         hasPermission: function(namespace, permission) {
           return Object.keys(roles).reduce((permissions, name) => {
+            if (!roles[name].namespaces.includes('*') || !roles[name].namespaces.includes(namespace)) return permissions;
             return permissions.concat(roles[name].permissions);
           }, []).includes(permission);
+        },
+        permittedNamespaces: function(permission) {
+          return Object.keys(roles).reduce((namespaces, name) => {
+            if (!roles[name].permissions.includes(permission)) return namespaces;
+            return namespaces.concat(roles[name].namespaces);
+          }, []);
         },
       };
     }
 
     function toRolesAndPermissions(rows) {
       return rows.reduce((roles, row) => {
-        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], };
+        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
+        entry.namespaces.push(row.namespace_name || '*');
         roles[row.role_name] = entry;
         return roles;
       }, {});

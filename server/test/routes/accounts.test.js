@@ -376,7 +376,7 @@ describe('Accounts API', () => {
     it('should delete a role', async () => {
 
       const saved = await store.saveAccount(makeAccount(), makeMeta());
-      const role = await store.grantRole(saved.id, 'admin', makeMeta());
+      const role = await store.grantRole(saved.id, 'admin', null, makeMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/roles/${role.id}`,
