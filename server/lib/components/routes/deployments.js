@@ -29,7 +29,7 @@ export default function(options = {}) {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
         if (!req.user.hasPermission(deployment.release.service.namespace.name, 'deployments-read')) return next(Boom.forbidden());
-        return deployment ? res.json(deployment) : next();
+        res.json(deployment);
       } catch (err) {
         next(err);
       }
