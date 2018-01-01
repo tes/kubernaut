@@ -1,4 +1,5 @@
 import SQL from './sql';
+import uniq from 'lodash.uniq';
 
 export default function(options = {}) {
   function start({ config, logger, postgres: db, }, cb) {
@@ -206,7 +207,7 @@ export default function(options = {}) {
         roles,
         hasPermission: function(namespace, permission) {
           return Object.keys(roles).reduce((permissions, name) => {
-            if (!roles[name].namespaces.includes('*') || !roles[name].namespaces.includes(namespace)) return permissions;
+            if (!(roles[name].namespaces.includes('*') || roles[name].namespaces.includes(namespace))) return permissions;
             return permissions.concat(roles[name].permissions);
           }, []).includes(permission);
         },
@@ -223,7 +224,7 @@ export default function(options = {}) {
       return rows.reduce((roles, row) => {
         const entry = roles[row.role_name] || { name: row.role_name, permissions: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
-        entry.namespaces.push(row.namespace_name || '*');
+        entry.namespaces = uniq(entry.namespaces.concat(row.namespace_name || '*'));
         roles[row.role_name] = entry;
         return roles;
       }, {});
