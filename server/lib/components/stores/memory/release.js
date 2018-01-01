@@ -34,8 +34,7 @@ export default function(options = {}) {
     async function saveRelease(release, meta) {
       reportMissingMetadata(meta);
 
-      const namespace = await ensureNamespace(release.service.namespace, meta);
-      const service = await ensureService(release.service, namespace, meta);
+      const service = await ensureService(release.service, release.service.namespace.name, meta);
 
       reportDuplicateReleaseVersions(release);
 
@@ -44,18 +43,13 @@ export default function(options = {}) {
       });
     }
 
-    async function ensureNamespace(data, meta) {
+    async function ensureService(data, namespaceName, meta) {
       reportMissingMetadata(meta);
+      reportMissingNamespace(namespaceName);
 
-      return namespaces.find(n => n.name === data.name) || append(namespaces, {
-        id: uuid(), name: data.name, createdOn: meta.date, createdBy: meta.account,
-      });
-    }
+      const namespace = namespaces.find(n => n.name === namespaceName && !n.deletedOn);
 
-    async function ensureService(data, namespace, meta) {
-      reportMissingMetadata(meta);
-
-      return services.find(s => s.name === data.name && s.namespace.name === data.namespace.name) || append(services, {
+      return services.find(s => s.name === data.name && s.namespace.name === namespace.name) || append(services, {
         id: uuid(), name: data.name, namespace, createdOn: meta.date, createdBy: meta.account,
       });
     }
@@ -83,6 +77,10 @@ export default function(options = {}) {
         r.version === release.version &&
         !r.deletedOn)
       ) throw Object.assign(new Error('Duplicate Release'), { code: '23505', });
+    }
+
+    function reportMissingNamespace(name) {
+      if (!namespaces.find(n => n.name === name && !n.deletedOn)) throw Object.assign(new Error('Missing namespace'), { code: '23502', });
     }
 
     function reportMissingMetadata(meta) {

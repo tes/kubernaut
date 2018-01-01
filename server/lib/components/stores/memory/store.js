@@ -7,6 +7,7 @@ export default function(options = {}) {
         tables[name].length = 0;
       });
       tables.accounts.push({ id: 'root', displayName: 'root', createdOn: new Date(), createdBy: null, });
+      tables.namespaces.push({ id: 'default', name: 'default', createdOn: new Date(), createdBy: 'root', });
     }
 
     cb(null, {

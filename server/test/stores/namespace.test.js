@@ -161,7 +161,7 @@ describe('Namespace Store', () => {
             return saveNamespace(namespace.data, namespace.meta);
           }));
 
-          const results = (await listNamespaces()).map(n => n.name);
+          const results = (await listNamespaces()).filter(n => n.name !== 'default').map(n => n.name);
           expect(results).toEqual(['a', 'b', 'c',]);
         });
 
@@ -171,12 +171,15 @@ describe('Namespace Store', () => {
             const namespaces = [];
             for (var i = 0; i < 51; i++) {
               namespaces.push({
-                data: makeNamespace(),
+                data: makeNamespace({
+                  // Must be alphebetically greater than 'default'
+                  name: `x-namespace-${i}`,
+                }),
               });
             }
 
             await Promise.all(namespaces.map(async namespace => {
-              await saveNamespace(namespace.data);
+              return saveNamespace(namespace.data);
             }));
           });
 
@@ -190,9 +193,9 @@ describe('Namespace Store', () => {
             expect(results.length).toBe(10);
           });
 
-          it('should page results', async () => {
+          it('should page namespaces list', async () => {
             const results = await listNamespaces(50, 10);
-            expect(results.length).toBe(41);
+            expect(results.length).toBe(42);
           });
         });
       });

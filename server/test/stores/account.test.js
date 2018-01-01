@@ -244,7 +244,7 @@ describe('Account Store', () => {
             return saveAccount(account.data);
           }));
 
-          const results = (await listAccounts()).filter(a => a.id !== 'root').map(a => a.displayName);
+          const results = (await listAccounts()).filter(a => a.displayName !== 'root').map(a => a.displayName);
           const ordered = ['a', 'b', 'c',];
           expect(results).toEqual(ordered);
 
@@ -256,12 +256,15 @@ describe('Account Store', () => {
             const accounts = [];
             for (var i = 0; i < 51; i++) {
               accounts.push({
-                data: makeAccount(),
+                data: makeAccount({
+                  // Must be alphebetically greater than 'root'
+                  displayName: `x-account-${i}`,
+                }),
               });
             }
 
             await Promise.all(accounts.map(async account => {
-              await saveAccount(account.data);
+              return saveAccount(account.data);
             }));
           });
 
@@ -275,9 +278,9 @@ describe('Account Store', () => {
             expect(results.length).toBe(10);
           });
 
-          it('should page results', async () => {
-            const results = (await listAccounts(50, 10)).filter(a => a.id !== 'root');
-            expect(results.length).toBe(41);
+          it('should page accounts list', async () => {
+            const results = (await listAccounts(50, 10));
+            expect(results.length).toBe(42);
           });
         });
       });
@@ -374,7 +377,7 @@ describe('Account Store', () => {
           expect(account.roles.admin.namespaces).toContain('*');
         });
 
-        xit('should grant namespaced role to account', async () => {
+        it('should grant namespaced role to account', async () => {
           const saved = await saveAccount();
 
           const role = await grantRole(saved.id, 'admin', 'default');

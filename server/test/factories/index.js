@@ -55,7 +55,7 @@ const merge = pm.compile({
 
 function makeNamespace(overrides = {}) {
   return merge({
-    name: chance.word().toLowerCase(),
+    name: chance.word({ length: 32, }).toLowerCase(),
   }, overrides);
 }
 

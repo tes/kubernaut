@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeNamespace, makeDeployment, makeRelease, makeMeta, } from '../factories';
 
 describe('Deployments API', () => {
 
@@ -364,13 +364,15 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject payloads a missing namespace', async () => {
+    it('should reject payloads with a missing namespace', async () => {
+
+      const namespace = await store.saveNamespace(makeNamespace({
+        name: 'missing',
+      }), makeMeta());
 
       const release = makeRelease({
         service: {
-          namespace: {
-            name: 'missing',
-          },
+          namespace,
         },
       });
       await store.saveRelease(release, makeMeta());

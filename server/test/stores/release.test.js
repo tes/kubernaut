@@ -1,6 +1,6 @@
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeRelease, makeMeta, } from '../factories';
+import { makeNamespace, makeRelease, makeMeta, } from '../factories';
 
 describe('Release Store', () => {
 
@@ -69,12 +69,11 @@ describe('Release Store', () => {
         });
 
         it('should prevent duplicate releases', async () => {
+          const namespace = await saveNamespace(makeNamespace({ name: 'same-namespace', }));
           const data = makeRelease({
             service: {
               name: 'same-service',
-              namespace: {
-                name: 'same-namespace',
-              },
+              namespace,
             },
             version: 'same-version',
           });
@@ -86,12 +85,11 @@ describe('Release Store', () => {
         });
 
         it('should permit differently named services in the same namespace to have the same release version', async () => {
+          const namespace = await saveNamespace(makeNamespace({ name: 'same-namespace', }));
           const data1 = makeRelease({
             service: {
               name: 'service-1',
-              namespace: {
-                name: 'same-namespace',
-              },
+              namespace,
             },
             version: 'same-version',
           });
@@ -100,9 +98,7 @@ describe('Release Store', () => {
           const data2 = makeRelease({
             service: {
               name: 'service-2',
-              namespace: {
-                name: 'same-namespace',
-              },
+              namespace,
             },
             version: 'same-version',
           });
@@ -110,6 +106,9 @@ describe('Release Store', () => {
         });
 
         it('should permit similarly named services in different namespaces to have the same release version', async () => {
+          await saveNamespace(makeNamespace({ name: 'namespace-1', }));
+          await saveNamespace(makeNamespace({ name: 'namespace-2', }));
+
           const data1 = makeRelease({
             service: {
               name: 'same-service',
@@ -137,9 +136,6 @@ describe('Release Store', () => {
           const data1 = makeRelease({
             service: {
               name: 'same-service',
-              namespace: {
-                name: 'same-namespace',
-              },
             },
             version: 'version-1',
           });
@@ -148,9 +144,6 @@ describe('Release Store', () => {
           const data2 = makeRelease({
             service: {
               name: 'same-service',
-              namespace: {
-                name: 'same-namespace',
-              },
             },
             version: 'version-2',
           });
@@ -325,7 +318,7 @@ describe('Release Store', () => {
             }
 
             await Promise.all(releases.map(async release => {
-              await saveRelease(release.data);
+              return saveRelease(release.data);
             }));
           });
 
@@ -339,12 +332,16 @@ describe('Release Store', () => {
             expect(results.length).toBe(10);
           });
 
-          it('should page results', async () => {
+          it('should page releases list', async () => {
             const results = await listReleases(50, 10);
             expect(results.length).toBe(41);
           });
         });
       });
+
+      function saveNamespace(namespace = makeNamespace(), meta = makeMeta({ account: 'root', })) {
+        return store.saveNamespace(namespace, meta);
+      }
 
       function saveRelease(release = makeRelease(), meta = makeMeta({ account: 'root', })) {
         return store.saveRelease(release, meta);

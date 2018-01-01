@@ -35,8 +35,7 @@ export default function(options) {
 
     async function saveRelease(data, meta) {
       return await withTransaction(async connection => {
-        const namespace = await _ensureNamespace(connection, data.service.namespace, meta);
-        const service = await _ensureService(connection, data.service, namespace, meta);
+        const service = await _ensureService(connection, data.service, data.service.namespace.name, meta);
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
@@ -44,36 +43,19 @@ export default function(options) {
       });
     }
 
-    async function _ensureNamespace(connection, data, meta) {
-
-      logger.debug(`Ensuring namespace: ${data.name}`);
-
-      const result = await connection.query(SQL.ENSURE_NAMESPACE, [
-        data.name, meta.date, meta.account,
-      ]);
-
-      const namespace = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
-      };
-
-      logger.debug(`Ensured namespace: ${namespace.name}/${namespace.id}`);
-
-      return namespace;
-    }
-
     async function _ensureService(connection, data, namespace, meta) {
 
-      logger.debug(`Ensuring service: ${data.name}`);
+      logger.debug(`Ensuring service: ${namespace}/${data.name}`);
 
       const result = await connection.query(SQL.ENSURE_SERVICE, [
-        data.name, namespace.id, meta.date, meta.account,
+        data.name, namespace, meta.date, meta.account,
       ]);
 
       const service = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
       };
 
-      logger.debug(`Ensured service: ${service.name}/${service.id}`);
+      logger.debug(`Ensured service: ${namespace}/${service.name}/${service.id}`);
 
       return service;
     }

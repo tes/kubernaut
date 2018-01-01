@@ -240,7 +240,7 @@ describe('Deployment Store', () => {
             await Promise.all(deployments.map(async record => {
               const release = await saveRelease(record.data.release);
               const deployment = { ...record.data, release, };
-              await saveDeployment(deployment);
+              return saveDeployment(deployment);
             }));
           });
 
@@ -254,7 +254,7 @@ describe('Deployment Store', () => {
             expect(results.length).toBe(10);
           });
 
-          it('should page results', async () => {
+          it('should page deployments list', async () => {
             const results = await listDeployments(50, 10);
             expect(results.length).toBe(41);
           });
@@ -284,6 +284,7 @@ describe('Deployment Store', () => {
       function deleteDeployment(id, meta = makeMeta({ account: 'root', })) {
         return store.deleteDeployment(id, meta);
       }
+
     });
   });
 });

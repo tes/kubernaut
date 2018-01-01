@@ -27,7 +27,7 @@ $$
 DECLARE
   id text;
 BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext(checksum));
+  PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_release_template_' || checksum));
 
   SELECT release_template.id INTO id FROM release_template WHERE release_template.checksum = ensure_release_template.checksum;
   IF NOT FOUND THEN

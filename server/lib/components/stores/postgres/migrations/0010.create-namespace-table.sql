@@ -18,35 +18,4 @@ CREATE INDEX namespace__created_on__idx ON namespace (
   created_on DESC
 );
 
-CREATE FUNCTION ensure_namespace (
-  name TEXT,
-  created_on TIMESTAMP WITH TIME ZONE,
-  created_by TEXT
-) RETURNS text AS
-$$
-DECLARE
-  id text;
-BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_namespace_' || name));
-
-  SELECT namespace.id INTO id FROM namespace WHERE namespace.name = ensure_namespace.name;
-  IF NOT FOUND THEN
-    INSERT INTO namespace (
-      id,
-      name,
-      created_on,
-      created_by
-    ) values (
-      uuid_generate_v4(),
-      name,
-      created_on,
-      created_by
-    ) RETURNING namespace.id INTO id;
-  END IF;
-
-  RETURN id;
-END;
-$$
-LANGUAGE 'plpgsql';
-
 COMMIT;
