@@ -11,7 +11,7 @@ export default function(options = {}) {
 
     app.get('/api/deployments', async (req, res, next) => {
       try {
-        const namespaces = req.user.permittedNamespaces('deployments-read')
+        const namespaces = req.user.permittedNamespaces('deployments-read');
         if (namespaces.length === 0) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;

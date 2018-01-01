@@ -14,7 +14,7 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        const namespaces = req.user.permittedNamespaces('releases-read')
+        const namespaces = req.user.permittedNamespaces('releases-read');
         if (namespaces.length === 0) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;

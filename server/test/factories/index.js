@@ -53,6 +53,12 @@ const merge = pm.compile({
     deepClone,
   ], });
 
+function makeNamespace(overrides = {}) {
+  return merge({
+    name: chance.word().toLowerCase(),
+  }, overrides);
+}
+
 function makeIdentity(overrides = {}) {
   return merge({
     name: chance.word().toLowerCase(),
@@ -140,4 +146,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };
+export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };

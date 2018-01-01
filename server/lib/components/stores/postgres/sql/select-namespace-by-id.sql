@@ -6,5 +6,5 @@ SELECT
 FROM
   active_namespace__vw n
 WHERE
-  n.name = $1
+  n.id = $1
 ;
