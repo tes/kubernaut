@@ -1,4 +1,5 @@
 import Chance from 'chance';
+import { v4 as uuid, } from 'uuid';
 import get from 'lodash.get';
 import fs from 'fs';
 import path from 'path';
@@ -55,7 +56,7 @@ const merge = pm.compile({
 
 function makeNamespace(overrides = {}) {
   return merge({
-    name: chance.word({ length: 32, }).toLowerCase(),
+    name: chance.word({ length: 32, }),
   }, overrides);
 }
 
@@ -121,10 +122,11 @@ function makeRelease(overrides = {}) {
 }
 
 function makeMeta(overrides = {}) {
+  const account = overrides.account === 'root' ? '00000000-0000-0000-0000-000000000000' : overrides.account;
   return merge({
     date: chance.date(),
-    account: chance.first().toLowerCase(),
-  }, overrides);
+    account: uuid(),
+  }, overrides, { account: account, });
 }
 
 function makeReleaseForm(overrides = {}) {

@@ -6,8 +6,8 @@ export default function(options = {}) {
       Object.keys(tables).forEach(name => {
         tables[name].length = 0;
       });
-      tables.accounts.push({ id: 'root', displayName: 'root', createdOn: new Date(), createdBy: null, });
-      tables.namespaces.push({ id: 'default', name: 'default', createdOn: new Date(), createdBy: 'root', });
+      tables.accounts.push({ id: '00000000-0000-0000-0000-000000000000', displayName: 'root', createdOn: new Date(), createdBy: null, });
+      tables.namespaces.push({ id: '00000000-0000-0000-0000-000000000000', name: 'default', createdOn: new Date(), createdBy: '00000000-0000-0000-0000-000000000000', });
     }
 
     cb(null, {

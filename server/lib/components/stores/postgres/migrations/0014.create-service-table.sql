@@ -1,13 +1,13 @@
 START TRANSACTION;
 
 CREATE TABLE service (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
-  namespace TEXT NOT NULL REFERENCES namespace,
+  namespace UUID NOT NULL REFERENCES namespace,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_by TEXT NOT NULL REFERENCES account,
+  created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
-  deleted_by TEXT REFERENCES account,
+  deleted_by UUID REFERENCES account,
   CONSTRAINT service__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
@@ -21,9 +21,9 @@ CREATE INDEX service__created_on__idx ON service (
 
 CREATE FUNCTION ensure_service (
   name TEXT,
-  namespace TEXT,
+  namespace UUID,
   created_on TIMESTAMP WITH TIME ZONE,
-  created_by TEXT
+  created_by UUID
 ) RETURNS text AS
 $$
 DECLARE

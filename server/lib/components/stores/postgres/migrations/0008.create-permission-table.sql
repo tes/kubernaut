@@ -1,7 +1,7 @@
 START TRANSACTION;
 
 CREATE TABLE permission (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT
 );

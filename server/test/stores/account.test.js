@@ -1,3 +1,4 @@
+import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
 import { makeIdentity, makeAccount, makeMeta, } from '../factories';
@@ -99,7 +100,7 @@ describe('Account Store', () => {
         });
 
         it('should return undefined when account not found', async () => {
-          const account = await getAccount('missing');
+          const account = await getAccount(uuid());
           expect(account).toBe(undefined);
         });
 
@@ -346,7 +347,7 @@ describe('Account Store', () => {
           const data = makeIdentity();
 
           await expect(
-            saveIdentity('missing', data)
+            saveIdentity(uuid(), data)
           ).rejects.toHaveProperty('code', '23502');
         });
 
@@ -391,9 +392,10 @@ describe('Account Store', () => {
         });
 
         it('should fail if account does not exist', async () => {
+          const id = uuid();
           await expect(
-            grantRole('missing', 'admin', null)
-          ).rejects.toHaveProperty('message', 'Invalid accountId: missing');
+            grantRole(id, 'admin', null)
+          ).rejects.toHaveProperty('message', `Invalid accountId: ${id}`);
         });
 
         it('should fail if role does not exist', async () => {
@@ -435,7 +437,7 @@ describe('Account Store', () => {
         });
 
         it('should tolerate missing role', async () => {
-          await revokeRole('missing');
+          await revokeRole(uuid());
         });
 
         it('should tolerate previously revoked role', async () => {

@@ -1,3 +1,4 @@
+import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
 import { makeNamespace, makeMeta, } from '../factories';
@@ -96,7 +97,7 @@ describe('Namespace Store', () => {
         });
 
         it('should return undefined when namespace not found', async () => {
-          const namespace = await getNamespace('missing');
+          const namespace = await getNamespace(uuid());
           expect(namespace).toBe(undefined);
         });
       });

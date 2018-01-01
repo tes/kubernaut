@@ -1,3 +1,4 @@
+import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
 import { makeDeployment, makeRelease, makeMeta, } from '../factories';
@@ -82,7 +83,7 @@ describe('Deployment Store', () => {
         });
 
         it('should report an error if release does not exist', async () => {
-          const data = makeDeployment({ release: { id: 'missing', }, });
+          const data = makeDeployment({ release: { id: uuid(), }, });
 
           await expect(
             saveDeployment(data)
@@ -120,7 +121,7 @@ describe('Deployment Store', () => {
         });
 
         it('should return undefined when release not found', async () => {
-          const deployment = await getDeployment('missing');
+          const deployment = await getDeployment(uuid());
           expect(deployment).toBe(undefined);
         });
       });

@@ -18,7 +18,7 @@ createSystem()
         await store.unlogged();
         await store.nuke();
 
-        const account = await store.saveAccount(makeAccount(), makeMeta({ account: null, }));
+        const account = await store.saveAccount(makeAccount(), makeMeta({ account: 'root', }));
 
         // Iterate services inside versions, as creating a release locks based on service name
         const tasks = [];

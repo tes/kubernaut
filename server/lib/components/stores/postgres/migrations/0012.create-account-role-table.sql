@@ -1,14 +1,14 @@
 START TRANSACTION;
 
 CREATE TABLE account_role (
-  id TEXT PRIMARY KEY,
-  account TEXT NOT NULL REFERENCES account ON DELETE CASCADE,
-  role TEXT NOT NULL REFERENCES role ON DELETE CASCADE,
-  namespace TEXT REFERENCES namespace ON DELETE CASCADE,
+  id UUID PRIMARY KEY,
+  account UUID NOT NULL REFERENCES account ON DELETE CASCADE,
+  role UUID NOT NULL REFERENCES role ON DELETE CASCADE,
+  namespace UUID REFERENCES namespace ON DELETE CASCADE,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_by TEXT NOT NULL REFERENCES account,
+  created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
-  deleted_by TEXT REFERENCES account,
+  deleted_by UUID REFERENCES account,
   CONSTRAINT account_role__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
 );
 
@@ -29,11 +29,11 @@ CREATE INDEX account_role__namespace__idx ON account_role (
 );
 
 CREATE FUNCTION ensure_account_role (
-  account TEXT,
-  role TEXT,
-  namespace TEXT,
+  account UUID,
+  role UUID,
+  namespace UUID,
   created_on TIMESTAMP WITH TIME ZONE,
-  created_by TEXT
+  created_by UUID
 ) RETURNS text AS
 $$
 DECLARE

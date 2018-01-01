@@ -1,3 +1,4 @@
+import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
 import { makeNamespace, makeRelease, makeMeta, } from '../factories';
@@ -176,7 +177,7 @@ describe('Release Store', () => {
         });
 
         it('should return undefined when release not found', async () => {
-          const release = await getRelease('missing');
+          const release = await getRelease(uuid());
           expect(release).toBe(undefined);
         });
       });
