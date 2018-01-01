@@ -21,11 +21,12 @@ describe('Deployment Store', () => {
             },
           },
         })
+        .remove('server')
+        .remove('store.namespace')
         .remove('store.release')
         .remove('store.deployment')
         .remove('store.account')
-        .include(postgres)
-        .remove('server'),
+        .include(postgres),
     },
   ];
 

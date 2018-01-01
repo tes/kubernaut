@@ -22,7 +22,8 @@ describe('Account Store', () => {
           },
         })
         .remove('server')
-        .remove('store.account')
+        .remove('store.namespace')
+        .remove('store.release')
         .remove('store.deployment')
         .remove('store.account')
         .include(postgres),

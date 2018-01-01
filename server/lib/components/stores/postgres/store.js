@@ -2,7 +2,7 @@ import SQL from './sql';
 
 export default function(options = {}) {
 
-  function start({ config, logger, account, release, deployment, postgres: db, }, cb) {
+  function start({ config, logger, namespace, account, release, deployment, postgres: db, }, cb) {
 
     db.on('error', err => {
       logger.warn(err, 'Database client errored and was evicted from the pool');
@@ -21,6 +21,7 @@ export default function(options = {}) {
     }
 
     cb(null, {
+      ...namespace,
       ...account,
       ...release,
       ...deployment,

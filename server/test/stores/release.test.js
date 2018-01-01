@@ -22,9 +22,10 @@ describe('Release Store', () => {
           },
         })
         .remove('server')
+        .remove('store.namespace')
         .remove('store.release')
         .remove('store.deployment')
-        .remove('store.acount')
+        .remove('store.account')
         .include(postgres),
     },
   ];
