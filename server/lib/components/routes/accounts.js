@@ -11,8 +11,6 @@ export default function(options = {}) {
 
     app.get('/api/accounts', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-read')) return next(Boom.forbidden());
-
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const accounts = await store.listAccounts(limit, offset);
@@ -24,8 +22,6 @@ export default function(options = {}) {
 
     app.get('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-read')) return next(Boom.forbidden());
-
         const account = await store.getAccount(req.params.id);
         return account ? res.json(account) : next();
       } catch (err) {
@@ -35,10 +31,7 @@ export default function(options = {}) {
 
     app.post('/api/accounts', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
-
         if (!req.body.displayName) return next(Boom.badRequest('displayName is required'));
-
         const data = { displayName: req.body.displayName, };
         const meta = { date: new Date(), account: req.user.id, };
         const account = await store.saveAccount(data, meta);
@@ -50,8 +43,6 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
-
         await store.deleteAccount(req.params.id, { date: new Date(), account: req.user.id, });
         res.status(204).send();
       } catch (err) {
@@ -61,8 +52,6 @@ export default function(options = {}) {
 
     app.post('/api/identities', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
-
         if (!req.body.account) return next(Boom.badRequest('account is required'));
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.provider) return next(Boom.badRequest('provider is required'));
@@ -79,8 +68,6 @@ export default function(options = {}) {
 
     app.delete('/api/identities/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
-
         await store.deleteIdentity(req.params.id, { date: new Date(), account: req.user.id, });
         res.status(204).send();
       } catch (err) {
@@ -89,8 +76,6 @@ export default function(options = {}) {
     });
 
     app.post('/api/roles', bodyParser.json(), async (req, res, next) => {
-
-      if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
 
       if (!req.body.account) return next(Boom.badRequest('account is required'));
       if (!req.body.role) return next(Boom.badRequest('role is required'));
@@ -105,9 +90,6 @@ export default function(options = {}) {
     });
 
     app.delete('/api/roles/:id', async (req, res, next) => {
-
-      if (!req.user.hasPermission('placeholder', 'accounts-write')) return next(Boom.forbidden());
-
       try {
         await store.revokeRole(req.params.id, { date: new Date(), account: req.user.id, });
         res.status(204).send();

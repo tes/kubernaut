@@ -114,7 +114,9 @@ describe('Deployments API', () => {
       expect(deployment.id).toBe(saved.id);
     });
 
-    it('should return 404 for missing deployments', async () => {
+    it('should return 403 for missing deployments', async () => {
+
+      loggerOptions.suppress = true;
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments/does-not-exist`,
@@ -122,9 +124,9 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 404');
+        throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
+        expect(reason.response.statusCode).toBe(403);
       });
     });
   });
@@ -510,7 +512,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should return 404 for missing deployments [kubernaut]', async () => {
+    it('should return 403 for missing deployments [kubernaut]', async () => {
 
       loggerOptions.suppress = true;
 
@@ -520,9 +522,9 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 404');
+        throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
+        expect(reason.response.statusCode).toBe(403);
       });
     });
   });

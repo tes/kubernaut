@@ -11,12 +11,13 @@ export default function(options = {}) {
 
     app.get('/api/deployments', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'deployments-read')) return next(Boom.forbidden());
+        const namespaces = req.user.permittedNamespaces('deployments-read')
+        if (namespaces.length === 0) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+        const deployments = await store.listDeployments(limit, offset); // TODO limit to permitted namesapces
 
-        const deployments = await store.listDeployments(limit, offset);
         res.json(deployments);
       } catch (err) {
         next(err);
@@ -25,10 +26,39 @@ export default function(options = {}) {
 
     app.get('/api/deployments/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'deployments-read')) return next(Boom.forbidden());
-
         const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next(Boom.forbidden());
+        if (!req.user.hasPermission(deployment.release.service.namespace.name, 'deployments-read')) return next(Boom.forbidden());
         return deployment ? res.json(deployment) : next();
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/deployments/:id/status', async (req, res, next) => {
+
+      req.setTimeout(0);
+
+      try {
+        const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next(Boom.forbidden());
+        if (!req.user.hasPermission(deployment.release.service.namespace.name, 'deployments-read')) return next(Boom.forbidden());
+
+        const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
+        if (!contextOk) return next(Boom.internal(`Context ${deployment.context} was not found`));
+
+        const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
+        if (!deploymentOk) return next(Boom.internal(`Deployment ${deployment.release.service.name} was not found`));
+
+        const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
+
+        return ok ? res.status(200).json({
+          id: deployment.id,
+          status: 'success',
+        }) : res.status(502).json({
+          id: deployment.id,
+          status: 'failed',
+        });
       } catch (err) {
         next(err);
       }
@@ -37,12 +67,12 @@ export default function(options = {}) {
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
       try {
-        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
-
         if (!req.body.context) return next(Boom.badRequest('context is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
+
+        if (!req.user.hasPermission(req.body.namespace, 'deployments-write')) return next(Boom.forbidden());
 
         const release = await store.findRelease({ name: req.body.service, namespace: req.body.namespace, version: req.body.version, });
         if (!release) return next(Boom.badRequest(`release ${req.body.service}/${req.body.version} was not found`));
@@ -72,39 +102,11 @@ export default function(options = {}) {
       }
     });
 
-    app.get('/api/deployments/:id/status', async (req, res, next) => {
-
-      req.setTimeout(0);
-
-      try {
-        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
-
-        const deployment = await store.getDeployment(req.params.id);
-        if (!deployment) return next();
-
-        const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
-        if (!contextOk) return next(Boom.internal(`Context ${deployment.context} was not found`));
-
-        const deploymentOk = await kubernetes.checkDeployment(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
-        if (!deploymentOk) return next(Boom.internal(`Deployment ${deployment.release.service.name} was not found`));
-
-        const ok = await kubernetes.rolloutStatus(deployment.context, deployment.release.service.namespace.name, deployment.release.service.name, res.locals.logger);
-
-        return ok ? res.status(200).json({
-          id: deployment.id,
-          status: 'success',
-        }) : res.status(502).json({
-          id: deployment.id,
-          status: 'failed',
-        });
-      } catch (err) {
-        next(err);
-      }
-    });
-
     app.delete('/api/deployments/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'deployments-write')) return next(Boom.forbidden());
+        const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next(Boom.forbidden());
+        if (!req.user.hasPermission(deployment.release.service.namespace.name, 'deployments-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user.id, };
         await store.deleteDeployment(req.params.id, meta);

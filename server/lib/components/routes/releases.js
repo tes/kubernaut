@@ -14,11 +14,13 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
+        const namespaces = req.user.permittedNamespaces('releases-read')
+        if (namespaces.length === 0) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const releases = await store.listReleases(limit, offset);
+        const releases = await store.listReleases(limit, offset); // TODO limit to permitted namesapces
+
         res.json(releases);
       } catch (err) {
         next(err);
@@ -27,10 +29,10 @@ export default function(options = {}) {
 
     app.get('/api/releases/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
-
         const release = await store.getRelease(req.params.id);
-        return release ? res.json(release) : next();
+        if (!release) return next(Boom.forbidden());
+        if (!req.user.hasPermission(release.service.namespace.name, 'releases-read')) return next(Boom.forbidden());
+        res.json(release);
       } catch (err) {
         next(err);
       }
@@ -66,7 +68,9 @@ export default function(options = {}) {
 
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('placeholder', 'releases-read')) return next(Boom.forbidden());
+        const release = await store.getRelease(req.params.id);
+        if (!release) return next(Boom.forbidden());
+        if (!req.user.hasPermission(release.service.namespace.name, 'releases-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user.id, };
         await store.deleteRelease(req.params.id, meta);
