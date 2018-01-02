@@ -4,8 +4,9 @@ export default function(options = {}) {
 
   function start(cb) {
 
-    function apply(context, manifest, namespace, logger) {
+    function apply(context, namespace, manifest, logger) {
       return new Promise((resolve, reject) => {
+        console.log(['--context', context, '--namespace', namespace, 'apply', '--filename', '-',])
         const kubectl = spawn('kubectl', ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',]);
         kubectl.stdout.on('data', data => {
           logger.info(data.toString().trim());
