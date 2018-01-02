@@ -28,7 +28,7 @@ export default function(options = {}) {
     }
 
     function checkNamespace(context, namespace, logger) {
-      return check(['--context', context, 'get', 'namespace', name,], logger);
+      return check(['--context', context, 'get', 'namespace', namespace,], logger);
     }
 
     function checkDeployment(context, namespace, name, logger) {
