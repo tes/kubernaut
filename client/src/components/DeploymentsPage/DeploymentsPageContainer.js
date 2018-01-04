@@ -14,8 +14,8 @@ function mapStateToProps(state, props) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    fetchDeployments: () => {
-      dispatch(fetchDeployments());
+    fetchDeployments: (options) => {
+      dispatch(fetchDeployments(options));
     },
   };
 }

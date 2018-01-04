@@ -11,7 +11,11 @@ export default function(state = { data: { limit: 0, offset: 0, count: 0, items: 
     case FETCH_RELEASES_ERROR: {
       return {
         ...state,
-        data: action.data,
+        data: {
+          ...action.data,
+          pages: action.data.limit ? Math.ceil(action.data.count / action.data.limit) : 0,
+          currentPage: action.data.limit ? Math.floor(action.data.offset / action.data.limit) + 1 : 0,
+        },
         meta: {
           error: action.error,
           loading: !!action.loading,

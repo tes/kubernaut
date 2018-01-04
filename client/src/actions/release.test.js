@@ -20,7 +20,7 @@ describe('Release Actions', () => {
 
   it('should fetch releases', async () => {
 
-    fetchMock.mock('/api/releases', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
+    fetchMock.mock('/api/releases?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
 
     await dispatchReleasesActions();
 
@@ -30,25 +30,25 @@ describe('Release Actions', () => {
 
   it('should tolerate errors fetching articles', async () => {
 
-    fetchMock.mock('/api/releases', 500, );
+    fetchMock.mock('/api/releases?limit=50&offset=0', 500, );
 
     await dispatchReleasesActions();
 
-    expectReleasesError('/api/releases returned 500 Internal Server Error');
+    expectReleasesError('/api/releases?limit=50&offset=0 returned 500 Internal Server Error');
   });
 
   it('should tolerate failures fetching articles', async () => {
 
-    fetchMock.mock('/api/releases', 403, );
+    fetchMock.mock('/api/releases?limit=50&offset=0', 403, );
 
     await dispatchReleasesActions();
 
-    expectReleasesError('/api/releases returned 403 Forbidden');
+    expectReleasesError('/api/releases?limit=50&offset=0 returned 403 Forbidden');
   });
 
   it('should timeout fetching article', async () => {
 
-    fetchMock.mock('/api/releases', {
+    fetchMock.mock('/api/releases?limit=50&offset=0', {
       throws: new Error('simulate network timeout'),
     });
 
@@ -57,9 +57,9 @@ describe('Release Actions', () => {
     expectReleasesError('simulate network timeout');
   });
 
-  async function dispatchReleasesActions() {
+  async function dispatchReleasesActions(_options) {
     const store = mockStore({});
-    const options = { quiet: true, };
+    const options = Object.assign({ page: 1, limit: 50, quiet: true, }, _options);
     await store.dispatch(fetchReleases(options));
     actions = store.getActions();
     expect(actions).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('Release Actions', () => {
   function expectReleasesRequest() {
     expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(FETCH_RELEASES_REQUEST);
-    expect(actions[0].data).toMatchObject({ limit: 0, offset: 0, count: 0, items: [], });
+    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
     expect(actions[0].loading).toBe(true);
   }
 
@@ -84,7 +84,7 @@ describe('Release Actions', () => {
   function expectReleasesError(msg) {
     expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(FETCH_RELEASES_ERROR);
-    expect(actions[1].data).toMatchObject({ limit: 0, offset: 0, count: 0, items: [], });
+    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
     expect(actions[1].error.message).toBe(msg);
   }
 

@@ -10,7 +10,6 @@ describe('ReleasesTable', () => {
 
     const wrapper = renderReleasesTable();
 
-    expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__heading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__heading__created').text()).toBe('Created');
     expect(wrapper.find('.releases-table__heading__namespace-name').text()).toBe('Namespace');
@@ -20,10 +19,9 @@ describe('ReleasesTable', () => {
 
   it('should render empty table', () => {
 
-    const releases = { limit: 0, offset: 0, count: 0, items: [], };
+    const releases = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
     const wrapper = renderReleasesTable({ releases, });
 
-    expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
     expect(wrapper.find('.releases-table__body__row').text()).toBe('There are no releases');
@@ -45,10 +43,9 @@ describe('ReleasesTable', () => {
         version: `v${i+1}`,
       };
     }, 50);
-    const releases = { limit: 50, offset: 0, count: items.length, items, };
+    const releases = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
     const wrapper = renderReleasesTable({ releases, });
 
-    expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(50);
     const row = wrapper.find('.releases-table__body__row').at(0);
@@ -65,7 +62,6 @@ describe('ReleasesTable', () => {
 
     const wrapper = renderReleasesTable({ loading: true, });
 
-    expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
     expect(wrapper.find('.releases-table__body__row').text()).toBe('Loading releases…');
@@ -75,7 +71,6 @@ describe('ReleasesTable', () => {
 
     const wrapper = renderReleasesTable({ error: new Error(), });
 
-    expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
     expect(wrapper.find('.releases-table__body__row').text()).toBe('Error loading releases');

@@ -10,12 +10,12 @@ class ReleasesPage extends Component {
   }
 
   render() {
-    const { error, loading, releases, } = this.props;
+    const { error, loading, releases, fetchReleases, } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <ReleasesTable releases={releases.data} loading={loading} error={error} />
+          <ReleasesTable releases={releases.data} loading={loading} error={error} fetchReleases={fetchReleases} />
         </div>
       </div>
     );

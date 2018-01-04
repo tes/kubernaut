@@ -10,12 +10,12 @@ class DeploymentsPage extends Component {
   }
 
   render() {
-    const { error, loading, deployments, } = this.props;
+    const { error, loading, deployments, fetchDeployments, } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <DeploymentsTable deployments={deployments.data} loading={loading} error={error} />
+          <DeploymentsTable deployments={deployments.data} loading={loading} error={error} fetchDeployments={fetchDeployments} />
         </div>
       </div>
     );

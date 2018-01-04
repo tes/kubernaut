@@ -1,4 +1,5 @@
 import React, { Component, } from 'react';
+import { Pagination, } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { Human, Ago, } from '../DisplayDate';
 import './ReleasesTable.css';
@@ -6,7 +7,32 @@ import './ReleasesTable.css';
 class ReleasesTable extends Component {
 
   render() {
-    const { error = null, loading = false, releases = {}, } = this.props;
+    const { error = null, loading = false, releases = {}, fetchReleases, } = this.props;
+
+    const handleSelectPage = (page) => {
+      fetchReleases({ page, limit: releases.limit, });
+    };
+
+    const pagination = () =>
+      <div className='text-center'>
+        <Pagination
+          className='releases-table-pagination'
+          items={releases.pages}
+          activePage={releases.currentPage}
+          onSelect={handleSelectPage}
+        />
+      </div>
+    ;
+
+    const noPagination = () =>
+      <div className='text-center'>
+        <Pagination
+          className='releases-table-pagination invisible'
+          items={1}
+        />
+      </div>
+    ;
+
 
     const errorTableBody = () =>
       <tbody className='releases-table__body releases-table__body--error'>
@@ -52,24 +78,38 @@ class ReleasesTable extends Component {
 
 
     return (
-      <table className='releases-table table table-condensed table-hover'>
-        <thead className='releases-table__heading'>
-          <tr>
-            <th className='releases-table__heading__created'>Created</th>
-            <th className='releases-table__heading__namespace-name'>Namespace</th>
-            <th className='releases-table__heading__service-name'>Service</th>
-            <th className='releases-table__heading__version'>Version</th>
-          </tr>
-        </thead>
+      <div>
         {
           (() => {
-            if (error) return errorTableBody();
-            else if (loading) return loadingTableBody();
-            else if (!releases.count) return emptyTableBody();
-            else return releasesTableBody();
+            if (releases.count > releases.limit) return pagination();
+            else return noPagination();
           })()
         }
-      </table>
+        <table className='releases-table table table-condensed table-hover'>
+          <thead className='releases-table__heading'>
+            <tr>
+              <th className='releases-table__heading__created'>Created</th>
+              <th className='releases-table__heading__namespace-name'>Namespace</th>
+              <th className='releases-table__heading__service-name'>Service</th>
+              <th className='releases-table__heading__version'>Version</th>
+            </tr>
+          </thead>
+          {
+            (() => {
+              if (error) return errorTableBody();
+              else if (loading) return loadingTableBody();
+              else if (!releases.count) return emptyTableBody();
+              else return releasesTableBody();
+            })()
+          }
+        </table>
+        {
+          (() => {
+            if (releases.count > releases.limit) return pagination();
+            else return noPagination();
+          })()
+        }
+      </div>
     );
   }
 }
@@ -80,9 +120,12 @@ ReleasesTable.propTypes = {
   releases: PropTypes.shape({
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
+    pages: PropTypes.number.isRequired,
+    currentPage: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),
+  fetchReleases: PropTypes.func,
 };
 
 export default ReleasesTable;
