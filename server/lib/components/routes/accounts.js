@@ -13,8 +13,8 @@ export default function(options = {}) {
       try {
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const accounts = await store.listAccounts(limit, offset);
-        res.json(accounts);
+        const result = await store.listAccounts(limit, offset);
+        res.json(result);
       } catch (err) {
         next(err);
       }

@@ -5,7 +5,7 @@ export const FETCH_RELEASES_ERROR = 'FETCH_RELEASES_ERROR';
 export function fetchReleases(options = { quiet: false, }) {
   return async (dispatch) => {
 
-    let data = [];
+    let data = { limit: 0, offset: 0, count: 0, items: [], };
 
     dispatch({ type: FETCH_RELEASES_REQUEST, data, loading: true, });
 

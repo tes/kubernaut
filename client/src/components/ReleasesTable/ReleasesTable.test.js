@@ -20,7 +20,8 @@ describe('ReleasesTable', () => {
 
   it('should render empty table', () => {
 
-    const wrapper = renderReleasesTable({ releases: [], });
+    const releases = { limit: 0, offset: 0, count: 0, items: [], };
+    const wrapper = renderReleasesTable({ releases, });
 
     expect(wrapper.is('.releases-table')).toBe(true);
     expect(wrapper.find('.releases-table__body--empty').exists()).toBe(true);
@@ -31,7 +32,7 @@ describe('ReleasesTable', () => {
 
   it('should render table with data', () => {
 
-    const releases = R.times((i) => {
+    const items = R.times((i) => {
       return {
         id: `release-${i+1}`,
         createdOn: new Date('2017-07-01T16:15:14.000Z'),
@@ -44,6 +45,7 @@ describe('ReleasesTable', () => {
         version: `v${i+1}`,
       };
     }, 50);
+    const releases = { limit: 50, offset: 0, count: items.length, items, };
     const wrapper = renderReleasesTable({ releases, });
 
     expect(wrapper.is('.releases-table')).toBe(true);
@@ -52,11 +54,11 @@ describe('ReleasesTable', () => {
     const row = wrapper.find('.releases-table__body__row').at(0);
 
     expect(row.prop('id')).toBe('release-1');
-    expect(row.find('.releases-table__body__row__created__on').find(Human).prop('date')).toBe(releases[0].createdOn);
-    expect(row.find('.releases-table__body__row__created__ago').find(Ago).prop('date')).toBe(releases[0].createdOn);
-    expect(row.find('.releases-table__body__row__namespace-name').text()).toBe(releases[0].service.namespace.name);
-    expect(row.find('.releases-table__body__row__service-name').text()).toBe(releases[0].service.name);
-    expect(row.find('.releases-table__body__row__version').text()).toBe(releases[0].version);
+    expect(row.find('.releases-table__body__row__created__on').find(Human).prop('date')).toBe(releases.items[0].createdOn);
+    expect(row.find('.releases-table__body__row__created__ago').find(Ago).prop('date')).toBe(releases.items[0].createdOn);
+    expect(row.find('.releases-table__body__row__namespace-name').text()).toBe(releases.items[0].service.namespace.name);
+    expect(row.find('.releases-table__body__row__service-name').text()).toBe(releases.items[0].service.name);
+    expect(row.find('.releases-table__body__row__version').text()).toBe(releases.items[0].version);
   });
 
   it('should render table while loading', () => {

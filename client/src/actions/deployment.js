@@ -5,7 +5,7 @@ export const FETCH_DEPLOYMENTS_ERROR = 'FETCH_DEPLOYMENTS_ERROR';
 export function fetchDeployments(options = { quiet: false, }) {
   return async (dispatch) => {
 
-    let data = [];
+    let data = { limit: 0, offset: 0, count: 0, items: [], };
 
     dispatch({ type: FETCH_DEPLOYMENTS_REQUEST, data, loading: true, });
 

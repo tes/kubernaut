@@ -60,10 +60,13 @@ describe('Accounts API', () => {
         json: true,
       });
 
-      expect(accounts.length).toBe(50);
+      expect(accounts.count).toBe(62);
+      expect(accounts.offset).toBe(0);
+      expect(accounts.limit).toBe(50);
+      expect(accounts.items.length).toBe(50);
     });
 
-    it('should limit results', async () => {
+    it('should limit accounts list', async () => {
 
       const accounts = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts`,
@@ -72,10 +75,13 @@ describe('Accounts API', () => {
         json: true,
       });
 
-      expect(accounts.length).toBe(40);
+      expect(accounts.count).toBe(62);
+      expect(accounts.offset).toBe(0);
+      expect(accounts.limit).toBe(40);
+      expect(accounts.items.length).toBe(40);
     });
 
-    it('should page results', async () => {
+    it('should page accounts list', async () => {
 
       // Offset is 22 because root account is automatically created
       // and while using local auth strategy an admin account will
@@ -87,7 +93,11 @@ describe('Accounts API', () => {
         method: 'GET',
         json: true,
       });
-      expect(accounts.length).toBe(40);
+
+      expect(accounts.count).toBe(62);
+      expect(accounts.offset).toBe(22);
+      expect(accounts.limit).toBe(50);
+      expect(accounts.items.length).toBe(40);
     });
 
   });

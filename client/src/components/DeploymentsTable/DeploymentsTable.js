@@ -6,36 +6,36 @@ import './DeploymentsTable.css';
 class DeploymentsTable extends Component {
 
   render() {
-    const { error = null, loading = false, deployments = [], } = this.props;
+    const { error = null, loading = false, deployments = {}, } = this.props;
 
-    const errorTableBody = (
+    const errorTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--error'>
         <tr className='deployments-table__body__row'>
           <td className='deployments-table__body__row__info' colSpan='4'>Error loading deployments</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const loadingTableBody = (
+    const loadingTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--loading'>
         <tr className='deployments-table__body__row'>
           <td className='deployments-table__body__row__info' colSpan='4'>Loading deployments…</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const emptyTableBody = (
+    const emptyTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--empty'>
         <tr className='deployments-table__body__row'>
           <td className='deployments-table__body__row__info' colSpan='4'>There are no deployments</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const DeploymentsTableBody = (
+    const DeploymentsTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--data'>
       {
-        deployments.map(deployment => {
+        deployments.items.map(deployment => {
           return <tr className='deployments-table__body__row' key={deployment.id} id={deployment.id} >
             <td className='deployments-table__body__row__created'>
               <span className="deployments-table__body__row__created__on"><Human date={deployment.createdOn} /></span>
@@ -49,7 +49,7 @@ class DeploymentsTable extends Component {
         })
       }
       </tbody>
-    );
+    ;
 
 
     return (
@@ -65,10 +65,10 @@ class DeploymentsTable extends Component {
         </thead>
         {
           (() => {
-            if (error) return errorTableBody;
-            else if (loading) return loadingTableBody;
-            else if (deployments.length === 0) return emptyTableBody;
-            else return DeploymentsTableBody;
+            if (error) return errorTableBody();
+            else if (loading) return loadingTableBody();
+            else if (!deployments.count) return emptyTableBody();
+            else return DeploymentsTableBody();
           })()
         }
       </table>
@@ -79,7 +79,12 @@ class DeploymentsTable extends Component {
 DeploymentsTable.propTypes = {
   error: PropTypes.object,
   loading: PropTypes.bool,
-  deployments: PropTypes.array,
+  deployments: PropTypes.shape({
+    limit: PropTypes.number.isRequired,
+    offset: PropTypes.number.isRequired,
+    count: PropTypes.number.isRequired,
+    items: PropTypes.array.isRequired,
+  }),
 };
 
 export default DeploymentsTable;

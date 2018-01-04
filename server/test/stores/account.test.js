@@ -245,10 +245,27 @@ describe('Account Store', () => {
             return saveAccount(account.data);
           }));
 
-          const results = (await listAccounts()).filter(a => a.displayName !== 'root').map(a => a.displayName);
-          const ordered = ['a', 'b', 'c',];
-          expect(results).toEqual(ordered);
+          const results = await listAccounts();
+          expect(results.items.map(a => a.displayName)).toEqual(['a', 'b', 'c', 'root',]);
+          expect(results.count).toBe(4);
+          expect(results.limit).toBe(50);
+          expect(results.offset).toBe(0);
+        });
 
+        it('should exclude inactive accounts', async () => {
+          const results1 = await listAccounts();
+          expect(results1.items.length).toBe(1);
+          expect(results1.count).toBe(1);
+
+          const saved = await saveAccount(makeAccount());
+          const results2 = await listAccounts();
+          expect(results2.items.length).toBe(2);
+          expect(results2.count).toBe(2);
+
+          await deleteAccount(saved.id);
+          const results3 = await listAccounts();
+          expect(results3.items.length).toBe(1);
+          expect(results3.count).toBe(1);
         });
 
         describe('Pagination', () => {
@@ -271,17 +288,26 @@ describe('Account Store', () => {
 
           it('should limit accounts to 50 by default', async () => {
             const results = await listAccounts();
-            expect(results.length).toBe(50);
+            expect(results.items.length).toBe(50);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(0);
           });
 
           it('should limit accounts to the specified number', async () => {
             const results = await listAccounts(10, 0);
-            expect(results.length).toBe(10);
+            expect(results.items.length).toBe(10);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(10);
+            expect(results.offset).toBe(0);
           });
 
           it('should page accounts list', async () => {
             const results = (await listAccounts(50, 10));
-            expect(results.length).toBe(42);
+            expect(results.items.length).toBe(42);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(10);
           });
         });
       });
@@ -466,7 +492,7 @@ describe('Account Store', () => {
       }
 
       function listAccounts(limit, offset) {
-          return store.listAccounts(limit, offset);
+        return store.listAccounts(limit, offset);
       }
 
       function deleteAccount(id, meta = makeMeta({ account: 'root', })) {

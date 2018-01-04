@@ -39,6 +39,8 @@ export default function(options = {}) {
         data.displayName, data.avatar, meta.date, meta.account,
       ]);
 
+      await connection.query(SQL.REFRESH_ENTITY_COUNT);
+
       const account = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
       };
@@ -74,13 +76,17 @@ export default function(options = {}) {
     async function listAccounts(limit = 50, offset = 0) {
       logger.debug(`Listing up to ${limit} accounts starting from offset: ${offset}`);
 
-      const result = await db.query(SQL.LIST_ACCOUNTS, [
-        limit, offset,
-      ]);
-
-      logger.debug(`Found ${result.rowCount} accounts`);
-
-      return result.rows.map(row => toAccount(row));
+      return withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.LIST_ACCOUNTS, [ limit, offset, ]),
+          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'account', ]),
+        ]).then(([accountResult, countResult,]) => {
+          const items = accountResult.rows.map(row => toAccount(row));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} accounts`);
+          return { limit, offset, count, items, };
+        });
+      });
     }
 
     async function deleteAccount(id, meta) {
@@ -90,6 +96,7 @@ export default function(options = {}) {
         meta.date,
         meta.account,
       ]);
+      await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted account id: ${id}`);
     }
 

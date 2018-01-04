@@ -162,8 +162,24 @@ describe('Namespace Store', () => {
             return saveNamespace(namespace.data, namespace.meta);
           }));
 
-          const results = (await listNamespaces()).filter(n => n.name !== 'default').map(n => n.name);
-          expect(results).toEqual(['a', 'b', 'c',]);
+          const results = await listNamespaces();
+          expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c', 'default',]);
+          expect(results.count).toBe(4);
+          expect(results.limit).toBe(50);
+          expect(results.offset).toBe(0);
+        });
+
+        it('should exclude inactive namespaces', async () => {
+          const results1 = await listNamespaces();
+          expect(results1.count).toBe(1);
+
+          const saved = await saveNamespace(makeNamespace());
+          const results2 = await listNamespaces();
+          expect(results2.count).toBe(2);
+
+          await deleteNamespace(saved.id);
+          const results3 = await listNamespaces();
+          expect(results3.count).toBe(1);
         });
 
         describe('Pagination', () => {
@@ -186,17 +202,26 @@ describe('Namespace Store', () => {
 
           it('should limit namespaces to 50 by default', async () => {
             const results = await listNamespaces();
-            expect(results.length).toBe(50);
+            expect(results.items.length).toBe(50);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(0);
           });
 
           it('should limit namespaces to the specified number', async () => {
             const results = await listNamespaces(10, 0);
-            expect(results.length).toBe(10);
+            expect(results.items.length).toBe(10);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(10);
+            expect(results.offset).toBe(0);
           });
 
           it('should page namespaces list', async () => {
             const results = await listNamespaces(50, 10);
-            expect(results.length).toBe(42);
+            expect(results.items.length).toBe(42);
+            expect(results.count).toBe(52);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(10);
           });
         });
       });

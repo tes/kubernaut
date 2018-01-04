@@ -295,17 +295,67 @@ describe('Release Store', () => {
             return saveRelease(release.data, release.meta);
           }));
 
-          const results = (await listReleases()).map(r => `${r.service.name}${r.version}`);
-          expect(results).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
+          const results = await listReleases();
+          expect(results.items.map(r => `${r.service.name}${r.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
+          expect(results.count).toBe(6);
+          expect(results.limit).toBe(50);
+          expect(results.offset).toBe(0);
         });
 
         it('should return slim release', async () => {
           await saveRelease(makeRelease());
 
           const releases = await listReleases();
-          expect(releases.length).toBe(1);
-          expect(releases[0].template).toBe(undefined);
-          expect(Object.keys(releases[0].attributes).length).toBe(0);
+          expect(releases.items.length).toBe(1);
+          expect(releases.items[0].template).toBe(undefined);
+          expect(Object.keys(releases.items[0].attributes).length).toBe(0);
+        });
+
+        it('should exclude inactive releases', async () => {
+          const results1 = await listReleases();
+          expect(results1.count).toBe(0);
+
+          const saved = await saveRelease();
+          const results2 = await listReleases();
+          expect(results2.count).toBe(1);
+
+          await deleteRelease(saved.id);
+          const results3 = await listReleases();
+          expect(results3.count).toBe(0);
+        });
+
+        // Enable when we can get, delete and list services
+        xit('should exclude deleted services from release count', async () => {
+          const release = await saveRelease(makeRelease({
+            service: {
+              name: 'doomed',
+            },
+          }));
+
+          const results1 = await listReleases();
+          expect(results1.count).toBe(1);
+
+          await deleteService(release.service.id);
+          const results2 = await listReleases();
+          expect(results2.count).toBe(0);
+
+          function deleteService() {}
+        });
+
+        it('should exclude deleted namespaces from release count', async () => {
+          const namespace = await saveNamespace(makeNamespace());
+          await saveRelease(makeRelease({
+            service: {
+              namespace,
+            },
+          }));
+
+          const results1 = await listReleases();
+          expect(results1.count).toBe(1);
+
+          await deleteNamespace(namespace.id);
+          const results2 = await listReleases();
+          expect(results2.count).toBe(0);
         });
 
         describe('Pagination', () => {
@@ -325,17 +375,26 @@ describe('Release Store', () => {
 
           it('should limit releases to 50 by default', async () => {
             const results = await listReleases();
-            expect(results.length).toBe(50);
+            expect(results.items.length).toBe(50);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(0);
           });
 
           it('should limit releases to the specified number', async () => {
             const results = await listReleases(10, 0);
-            expect(results.length).toBe(10);
+            expect(results.items.length).toBe(10);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(10);
+            expect(results.offset).toBe(0);
           });
 
           it('should page releases list', async () => {
             const results = await listReleases(50, 10);
-            expect(results.length).toBe(41);
+            expect(results.items.length).toBe(41);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(10);
           });
         });
       });
@@ -362,6 +421,10 @@ describe('Release Store', () => {
 
       function listReleases(page, limit) {
         return store.listReleases(page, limit);
+      }
+
+      function deleteNamespace(id, meta = makeMeta({ account: 'root', })) {
+        return store.deleteNamespace(id, meta);
       }
 
     });

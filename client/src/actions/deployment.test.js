@@ -18,9 +18,9 @@ describe('Deployment Actions', () => {
     fetchMock.restore();
   });
 
-  it('should fetch releases', async () => {
+  it('should fetch deployments', async () => {
 
-    fetchMock.mock('/api/deployments', [1, 2, 3,]);
+    fetchMock.mock('/api/deployments', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
 
     await dispatchDeploymentsActions();
 
@@ -68,20 +68,23 @@ describe('Deployment Actions', () => {
   function expectDeploymentsRequest() {
     expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(FETCH_DEPLOYMENTS_REQUEST);
-    expect(actions[0].data).toMatchObject([]);
+    expect(actions[0].data).toMatchObject({ limit: 0, offset: 0, count: 0, items: [], });
     expect(actions[0].loading).toBe(true);
   }
 
-  function expectDeploymentsSuccess(releases) {
+  function expectDeploymentsSuccess(deployments) {
     expect(Object.keys(actions[1]).length).toBe(2);
     expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_SUCCESS);
-    expect(actions[1].data).toMatchObject(releases);
+    expect(actions[1].data.items).toMatchObject(deployments);
+    expect(actions[1].data.count).toBe(deployments.length);
+    expect(actions[1].data.limit).toBe(50);
+    expect(actions[1].data.offset).toBe(0);
   }
 
   function expectDeploymentsError(msg) {
     expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_ERROR);
-    expect(actions[1].data).toMatchObject([]);
+    expect(actions[1].data).toMatchObject({ limit: 0, offset: 0, count: 0, items: [], });
     expect(actions[1].error.message).toBe(msg);
   }
 

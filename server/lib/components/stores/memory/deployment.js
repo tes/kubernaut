@@ -12,9 +12,10 @@ export default function(options = {}) {
     async function saveDeployment(deployment, meta) {
       reportMissingMetadata(meta);
       reportMissingRelease(deployment.release);
+      const release = releases.find(r => r.id === deployment.release.id);
 
       return append(deployments, {
-        ...deployment, id: uuid(), createdOn: meta.date, createdBy: meta.account,
+        ...deployment, release, id: uuid(), createdOn: meta.date, createdBy: meta.account,
       });
     }
 
@@ -28,10 +29,10 @@ export default function(options = {}) {
     }
 
     async function listDeployments(limit = 50, offset = 0) {
-      return deployments.filter(byActive)
-        .sort(byMostRecent)
-        .map(toSlimDeployment)
-        .slice(offset, offset + limit);
+      const active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
     }
 
     function reportMissingRelease(release) {
@@ -43,7 +44,10 @@ export default function(options = {}) {
     }
 
     function byActive(d) {
-      return !d.deletedOn && !d.release.deletedOn && !d.release.service.deletedOn;
+      return !d.deletedOn &&
+             !d.release.deletedOn &&
+             !d.release.service.deletedOn &&
+             !d.release.service.namespace.deletedOn;
     }
 
     function getTimeForSort(date) {

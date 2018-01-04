@@ -6,10 +6,6 @@ export default function(options = {}) {
 
     const { namespaces, services, releases, } = tables;
 
-    async function getService(id) {
-      return services.find(s => s.id === id && !s.deletedOn);
-    }
-
     async function getRelease(id) {
       const release = releases.find(r => r.id === id && !r.deletedOn);
       if (!release) return;
@@ -47,7 +43,7 @@ export default function(options = {}) {
       reportMissingMetadata(meta);
       reportMissingNamespace(namespaceName);
 
-      const namespace = namespaces.find(n => n.name === namespaceName && !n.deletedOn);
+      const namespace = namespaces.find(n => n.name === namespaceName);
 
       return services.find(s => s.name === data.name && s.namespace.name === namespace.name) || append(services, {
         id: uuid(), name: data.name, namespace, createdOn: meta.date, createdBy: meta.account,
@@ -55,10 +51,10 @@ export default function(options = {}) {
     }
 
     async function listReleases(limit = 50, offset = 0) {
-      return releases.filter(byActive)
-        .map(toSlimRelease)
-        .sort(byMostRecent)
-        .slice(offset, offset + limit);
+      const active = releases.filter(byActive).map(toSlimRelease).sort(byMostRecent);
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
     }
 
     async function deleteRelease(id, meta) {
@@ -94,7 +90,9 @@ export default function(options = {}) {
     }
 
     function byActive(r) {
-      return !r.deletedOn && !getService(r.service).deletedOn;
+      return !r.deletedOn &&
+             !r.service.deletedOn &&
+             !r.service.namespace.deletedOn;
     }
 
     function getTimeForSort(date) {
@@ -111,9 +109,9 @@ export default function(options = {}) {
     }
 
     return cb(null, {
+      saveRelease,
       getRelease,
       findRelease,
-      saveRelease,
       listReleases,
       deleteRelease,
     });

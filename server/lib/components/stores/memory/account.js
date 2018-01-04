@@ -77,9 +77,10 @@ export default function(options = {}) {
     }
 
     async function listAccounts(limit = 50, offset = 0) {
-      return accounts.filter(byActive)
-        .sort(byDisplayName)
-        .slice(offset, offset + limit);
+      const active = accounts.filter(byActive).sort(byDisplayName);
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
     }
 
     async function deleteAccount(id, meta) {
@@ -179,10 +180,10 @@ export default function(options = {}) {
     }
 
     return cb(null, {
-      getAccount,
-      findAccount,
       saveAccount,
       ensureAccount,
+      getAccount,
+      findAccount,
       listAccounts,
       deleteAccount,
       saveIdentity,

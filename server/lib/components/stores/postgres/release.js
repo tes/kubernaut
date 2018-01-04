@@ -39,6 +39,7 @@ export default function(options) {
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
+        await connection.query(SQL.REFRESH_ENTITY_COUNT);
         return { ...release, service, template, attributes, };
       });
     }
@@ -115,13 +116,17 @@ export default function(options) {
 
       logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
 
-      const result = await db.query(SQL.LIST_RELEASES, [
-        limit, offset,
-      ]);
-
-      logger.debug(`Found ${result.rowCount} releases`);
-
-      return result.rows.map(row => toRelease(row));
+      return withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.LIST_RELEASES, [ limit, offset, ]),
+          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'release', ]),
+        ]).then(([releaseResult, countResult,]) => {
+          const items = releaseResult.rows.map(row => toRelease(row));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} releases`);
+          return { limit, offset, count, items, };
+        });
+      });
     }
 
     async function deleteRelease(id, meta) {
@@ -131,6 +136,7 @@ export default function(options) {
         meta.date,
         meta.account,
       ]);
+      await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted release id: ${id}`);
     }
 

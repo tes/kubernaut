@@ -21,7 +21,8 @@ describe('DeploymentsTable', () => {
 
   it('should render empty table', () => {
 
-    const wrapper = renderDeploymentsTable({ deployments: [], });
+    const deployments = { limit: 0, offset: 0, count: 0, items: [], };
+    const wrapper = renderDeploymentsTable({ deployments, });
 
     expect(wrapper.is('.deployments-table')).toBe(true);
     expect(wrapper.find('.deployments-table__body--empty').exists()).toBe(true);
@@ -32,7 +33,7 @@ describe('DeploymentsTable', () => {
 
   it('should render table with data', () => {
 
-    const deployments = R.times((i) => {
+    const items = R.times((i) => {
       return {
         id: `deployment-${i+1}`,
         context: 'test',
@@ -48,6 +49,7 @@ describe('DeploymentsTable', () => {
         },
       };
     }, 50);
+    const deployments = { limit: 50, offset: 0, count: items.length, items, };
     const wrapper = renderDeploymentsTable({ deployments, });
 
     expect(wrapper.is('.deployments-table')).toBe(true);
@@ -56,12 +58,12 @@ describe('DeploymentsTable', () => {
     const row = wrapper.find('.deployments-table__body__row').at(0);
 
     expect(row.prop('id')).toBe('deployment-1');
-    expect(row.find('.deployments-table__body__row__created__on').find(Human).prop('date')).toBe(deployments[0].createdOn);
-    expect(row.find('.deployments-table__body__row__created__ago').find(Ago).prop('date')).toBe(deployments[0].createdOn);
-    expect(row.find('.deployments-table__body__row__namespace-name').text()).toBe(deployments[0].release.service.namespace.name);
-    expect(row.find('.deployments-table__body__row__service-name').text()).toBe(deployments[0].release.service.name);
-    expect(row.find('.deployments-table__body__row__version').text()).toBe(deployments[0].release.version);
-    expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments[0].context);
+    expect(row.find('.deployments-table__body__row__created__on').find(Human).prop('date')).toBe(deployments.items[0].createdOn);
+    expect(row.find('.deployments-table__body__row__created__ago').find(Ago).prop('date')).toBe(deployments.items[0].createdOn);
+    expect(row.find('.deployments-table__body__row__namespace-name').text()).toBe(deployments.items[0].release.service.namespace.name);
+    expect(row.find('.deployments-table__body__row__service-name').text()).toBe(deployments.items[0].release.service.name);
+    expect(row.find('.deployments-table__body__row__version').text()).toBe(deployments.items[0].release.version);
+    expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments.items[0].context);
   });
 
   it('should render table while loading', () => {

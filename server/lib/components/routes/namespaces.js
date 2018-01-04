@@ -13,9 +13,9 @@ export default function(options = {}) {
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const namespaces = await store.listNamespaces(limit, offset);
+        const result = await store.listNamespaces(limit, offset);
 
-        res.json(namespaces);
+        res.json(result);
       } catch (err) {
         next(err);
       }

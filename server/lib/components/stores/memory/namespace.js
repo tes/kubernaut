@@ -26,9 +26,10 @@ export default function(options) {
     }
 
     async function listNamespaces(limit = 50, offset = 0) {
-      return namespaces.filter(byActive)
-        .sort(byName)
-        .slice(offset, offset + limit);
+      const active = namespaces.filter(byActive).sort(byName);
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
     }
 
     async function deleteNamespace(id, meta) {
@@ -62,9 +63,9 @@ export default function(options) {
     }
 
     return cb(null, {
+      saveNamespace,
       getNamespace,
       findNamespace,
-      saveNamespace,
       listNamespaces,
       deleteNamespace,
     });

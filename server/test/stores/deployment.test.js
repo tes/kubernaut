@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeNamespace, makeDeployment, makeRelease, makeMeta, } from '../factories';
 
 describe('Deployment Store', () => {
 
@@ -222,9 +222,75 @@ describe('Deployment Store', () => {
             });
           }));
 
-          const results = (await listDeployments()).map(d => `${d.release.service.name}${d.release.version}`);
-          const ordered = ['b1', 'a2', 'a1', 'a3', 'c2', 'c1',];
-          expect(results).toEqual(ordered);
+          const results = await listDeployments();
+          expect(results.items.map(d => `${d.release.service.name}${d.release.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
+          expect(results.count).toBe(6);
+          expect(results.limit).toBe(50);
+          expect(results.offset).toBe(0);
+        });
+
+
+        it('should count active deployments', async () => {
+          const release = await saveRelease(makeRelease());
+
+          const results1 = await listDeployments();
+          expect(results1.count).toBe(0);
+
+          const saved = await saveDeployment(makeDeployment({ release, }));
+          const results2 = await listDeployments();
+          expect(results2.count).toBe(1);
+
+          await deleteDeployment(saved.id);
+          const results3 = await listDeployments();
+          expect(results3.count).toBe(0);
+        });
+
+        it('should exclude deleted releases from deployment count', async () => {
+          const release = await saveRelease(makeRelease());
+
+          await saveDeployment(makeDeployment({ release, }));
+          const results1 = await listDeployments();
+          expect(results1.count).toBe(1);
+
+          await deleteRelease(release.id);
+          const results2 = await listDeployments();
+          expect(results2.count).toBe(0);
+        });
+
+        // Enable when we can get, delete and list services
+        xit('should exclude deleted services from deployment count', async () => {
+          const release = await saveRelease(makeRelease({
+            service: {
+              name: 'doomed',
+            },
+          }));
+
+          await saveDeployment(makeDeployment({ release, }));
+          const results1 = await listDeployments();
+          expect(results1.count).toBe(1);
+
+          await deleteService(release.service.id);
+          const results2 = await listDeployments();
+          expect(results2.count).toBe(0);
+
+          function deleteService() {}
+        });
+
+        it('should exclude deleted namespaces from deployment count', async () => {
+          const namespace = await saveNamespace(makeNamespace());
+          const release = await saveRelease(makeRelease({
+            service: {
+              namespace,
+            },
+          }));
+
+          await saveDeployment(makeDeployment({ release, }));
+          const results1 = await listDeployments();
+          expect(results1.count).toBe(1);
+
+          await deleteNamespace(namespace.id);
+          const results2 = await listDeployments();
+          expect(results2.count).toBe(0);
         });
 
         describe('Pagination', () => {
@@ -243,24 +309,37 @@ describe('Deployment Store', () => {
               const deployment = { ...record.data, release, };
               return saveDeployment(deployment);
             }));
-          });
+          }, 20000);
 
           it('should limit deployments to 50 by default', async () => {
             const results = await listDeployments();
-            expect(results.length).toBe(50);
+            expect(results.items.length).toBe(50);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(0);
           });
 
           it('should limit deployments to the specified number', async () => {
             const results = await listDeployments(10, 0);
-            expect(results.length).toBe(10);
+            expect(results.items.length).toBe(10);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(10);
+            expect(results.offset).toBe(0);
           });
 
           it('should page deployments list', async () => {
             const results = await listDeployments(50, 10);
-            expect(results.length).toBe(41);
+            expect(results.items.length).toBe(41);
+            expect(results.count).toBe(51);
+            expect(results.limit).toBe(50);
+            expect(results.offset).toBe(10);
           });
         });
       });
+
+      function saveNamespace(namespace = makeNamespace(), meta = makeMeta({ account: 'root', })) {
+        return store.saveNamespace(namespace, meta);
+      }
 
       function saveRelease(release = makeRelease(), meta = makeMeta({ account: 'root', })) {
         return store.saveRelease(release, meta);
@@ -284,6 +363,10 @@ describe('Deployment Store', () => {
 
       function deleteDeployment(id, meta = makeMeta({ account: 'root', })) {
         return store.deleteDeployment(id, meta);
+      }
+
+      function deleteNamespace(id, meta = makeMeta({ account: 'root', })) {
+        return store.deleteNamespace(id, meta);
       }
 
     });

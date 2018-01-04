@@ -19,9 +19,9 @@ export default function(options = {}) {
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const releases = await store.listReleases(limit, offset); // TODO limit to permitted namesapces
+        const result = await store.listReleases(limit, offset); // TODO limit to permitted namesapces
 
-        res.json(releases);
+        res.json(result);
       } catch (err) {
         next(err);
       }

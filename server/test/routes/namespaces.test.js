@@ -68,10 +68,13 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.length).toBe(50);
+      expect(namespaces.count).toBe(52);
+      expect(namespaces.offset).toBe(0);
+      expect(namespaces.limit).toBe(50);
+      expect(namespaces.items.length).toBe(50);
     });
 
-    it('should limit results', async () => {
+    it('should limit namespaces list', async () => {
 
       const namespaces = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
@@ -80,10 +83,13 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.length).toBe(40);
+      expect(namespaces.count).toBe(52);
+      expect(namespaces.offset).toBe(0);
+      expect(namespaces.limit).toBe(40);
+      expect(namespaces.items.length).toBe(40);
     });
 
-    it('should page results', async () => {
+    it('should page namepaces list', async () => {
 
       const namespaces = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
@@ -92,7 +98,10 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.length).toBe(42);
+      expect(namespaces.count).toBe(52);
+      expect(namespaces.offset).toBe(10);
+      expect(namespaces.limit).toBe(50);
+      expect(namespaces.items.length).toBe(42);
     });
 
   });

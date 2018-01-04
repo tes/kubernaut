@@ -70,10 +70,13 @@ describe('Deployments API', () => {
         json: true,
       });
 
-      expect(deployments.length).toBe(50);
+      expect(deployments.count).toBe(51);
+      expect(deployments.offset).toBe(0);
+      expect(deployments.limit).toBe(50);
+      expect(deployments.items.length).toBe(50);
     });
 
-    it('should limit results', async () => {
+    it('should limit deployments list', async () => {
 
       const deployments = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -82,10 +85,13 @@ describe('Deployments API', () => {
         json: true,
       });
 
-      expect(deployments.length).toBe(40);
+      expect(deployments.count).toBe(51);
+      expect(deployments.offset).toBe(0);
+      expect(deployments.limit).toBe(40);
+      expect(deployments.items.length).toBe(40);
     });
 
-    it('should page results', async () => {
+    it('should page deployments list', async () => {
 
       const deployments = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -94,7 +100,10 @@ describe('Deployments API', () => {
         json: true,
       });
 
-      expect(deployments.length).toBe(41);
+      expect(deployments.count).toBe(51);
+      expect(deployments.offset).toBe(10);
+      expect(deployments.limit).toBe(50);
+      expect(deployments.items.length).toBe(41);
     });
 
   });

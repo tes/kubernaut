@@ -70,10 +70,13 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(releases.length).toBe(50);
+      expect(releases.count).toBe(51);
+      expect(releases.offset).toBe(0);
+      expect(releases.limit).toBe(50);
+      expect(releases.items.length).toBe(50);
     });
 
-    it('should limit results', async () => {
+    it('should limit releases list', async () => {
 
       const releases = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases`,
@@ -82,7 +85,10 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(releases.length).toBe(40);
+      expect(releases.count).toBe(51);
+      expect(releases.offset).toBe(0);
+      expect(releases.limit).toBe(40);
+      expect(releases.items.length).toBe(40);
     });
 
     it('should page results', async () => {
@@ -94,7 +100,10 @@ describe('Releases API', () => {
         json: true,
       });
 
-      expect(releases.length).toBe(41);
+      expect(releases.count).toBe(51);
+      expect(releases.offset).toBe(10);
+      expect(releases.limit).toBe(50);
+      expect(releases.items.length).toBe(41);
     });
 
   });

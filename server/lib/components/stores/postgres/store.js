@@ -25,6 +25,7 @@ export default function(options = {}) {
       ...account,
       ...release,
       ...deployment,
+      db: config.unsafe ? db : undefined,
       nuke : config.unsafe ? nuke : undefined,
       logged: config.unsafe ? logged : undefined,
       unlogged: config.unsafe ? unlogged : undefined,

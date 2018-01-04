@@ -6,36 +6,36 @@ import './ReleasesTable.css';
 class ReleasesTable extends Component {
 
   render() {
-    const { error = null, loading = false, releases = [], } = this.props;
+    const { error = null, loading = false, releases = {}, } = this.props;
 
-    const errorTableBody = (
+    const errorTableBody = () =>
       <tbody className='releases-table__body releases-table__body--error'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info' colSpan='3'>Error loading releases</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const loadingTableBody = (
+    const loadingTableBody = () =>
       <tbody className='releases-table__body releases-table__body--loading'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info' colSpan='3'>Loading releases…</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const emptyTableBody = (
+    const emptyTableBody = () =>
       <tbody className='releases-table__body releases-table__body--empty'>
         <tr className='releases-table__body__row'>
           <td className='releases-table__body__row__info' colSpan='3'>There are no releases</td>
         </tr>
       </tbody>
-    );
+    ;
 
-    const releasesTableBody = (
+    const releasesTableBody = () =>
       <tbody className='releases-table__body releases-table__body--data'>
       {
-        releases.map(release => {
+        releases.items.map(release => {
           return <tr className='releases-table__body__row' key={release.id} id={release.id} >
             <td className='releases-table__body__row__created'>
               <span className="releases-table__body__row__created__on"><Human date={release.createdOn} /></span>
@@ -48,7 +48,7 @@ class ReleasesTable extends Component {
         })
       }
       </tbody>
-    );
+    ;
 
 
     return (
@@ -63,10 +63,10 @@ class ReleasesTable extends Component {
         </thead>
         {
           (() => {
-            if (error) return errorTableBody;
-            else if (loading) return loadingTableBody;
-            else if (releases.length === 0) return emptyTableBody;
-            else return releasesTableBody;
+            if (error) return errorTableBody();
+            else if (loading) return loadingTableBody();
+            else if (!releases.count) return emptyTableBody();
+            else return releasesTableBody();
           })()
         }
       </table>
@@ -77,7 +77,12 @@ class ReleasesTable extends Component {
 ReleasesTable.propTypes = {
   error: PropTypes.object,
   loading: PropTypes.bool,
-  releases: PropTypes.array,
+  releases: PropTypes.shape({
+    limit: PropTypes.number.isRequired,
+    offset: PropTypes.number.isRequired,
+    count: PropTypes.number.isRequired,
+    items: PropTypes.array.isRequired,
+  }),
 };
 
 export default ReleasesTable;
