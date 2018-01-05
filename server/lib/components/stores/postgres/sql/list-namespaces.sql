@@ -1,6 +1,8 @@
 SELECT
   n.id,
-  n.name
+  n.name,
+  n.created_on,
+  n.created_by
 FROM
   active_namespace__vw n
 ORDER BY

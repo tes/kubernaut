@@ -14,11 +14,14 @@ const Navigation = () => {
         </Navbar.Brand>
       </Navbar.Header>
       <Nav>
+        <LinkContainer to="/namespaces">
+          <NavItem eventKey={1}>Namespaces</NavItem>
+        </LinkContainer>
         <LinkContainer to="/releases">
-          <NavItem eventKey={1}>Releases</NavItem>
+          <NavItem eventKey={2}>Releases</NavItem>
         </LinkContainer>
         <LinkContainer to="/deployments">
-          <NavItem eventKey={2}>Deployments</NavItem>
+          <NavItem eventKey={3}>Deployments</NavItem>
         </LinkContainer>
       </Nav>
     </Navbar>

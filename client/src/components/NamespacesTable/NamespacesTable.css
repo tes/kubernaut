@@ -1,0 +1,21 @@
+.namespaces-table .namespaces-table__body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.namespaces-table .namespaces-table__heading__created {
+  width: 350px;
+}
+
+.namespaces-table .namespaces-table__body__row__created .namespaces-table__body__row__created__on {
+  margin-right: 20px;
+}
+
+.namespaces-table .namespaces-table__body__row__created .namespaces-table__body__row__created__ago {
+  font-style: italic;
+}
+
+.namespaces-table .namespaces-table__body__row__namespace-name,
+.namespaces-table .namespaces-table__body__row__service-name,
+.namespaces-table .namespaces-table__body__row__version {
+  white-space: nowrap;
+}

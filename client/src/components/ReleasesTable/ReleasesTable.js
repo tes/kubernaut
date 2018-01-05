@@ -54,12 +54,6 @@ class ReleasesTable extends Component {
 
     return (
       <div>
-        <TablePagination
-          totalPages={releases.pages}
-          currentPage={releases.currentPage}
-          pageSize={releases.limit}
-          fetchContent={fetchReleases}
-        />
         <table className='releases-table table table-condensed table-hover'>
           <thead className='releases-table__heading'>
             <tr>

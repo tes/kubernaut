@@ -54,12 +54,6 @@ class DeploymentsTable extends Component {
 
     return (
       <div>
-        <TablePagination
-          totalPages={deployments.pages}
-          currentPage={deployments.currentPage}
-          pageSize={deployments.limit}
-          fetchContent={fetchDeployments}
-        />
         <table className='deployments-table table table-condensed table-hover'>
           <thead className='deployments-table__heading'>
             <tr>
