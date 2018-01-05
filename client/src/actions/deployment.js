@@ -2,10 +2,10 @@ export const FETCH_DEPLOYMENTS_REQUEST = 'FETCH_DEPLOYMENTS_REQUEST';
 export const FETCH_DEPLOYMENTS_SUCCESS = 'FETCH_DEPLOYMENTS_SUCCESS';
 export const FETCH_DEPLOYMENTS_ERROR = 'FETCH_DEPLOYMENTS_ERROR';
 
-export function fetchDeployments(options = { page: 1, limit: 50, quiet: false, }) {
+export function fetchDeployments(options = { page: 1, pageSize: 50, quiet: false, }) {
   return async (dispatch) => {
-    const limit = options.limit;
-    const offset = (options.page - 1) * options.limit;
+    const limit = options.pageSize;
+    const offset = (options.page - 1) * options.pageSize;
     let data = { limit, offset, count: 0, items: [], };
     dispatch({ type: FETCH_DEPLOYMENTS_REQUEST, data, loading: true, });
 

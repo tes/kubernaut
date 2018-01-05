@@ -1,6 +1,6 @@
 import React, { Component, } from 'react';
-import { Pagination, } from 'react-bootstrap';
 import PropTypes from 'prop-types';
+import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
 import './DeploymentsTable.css';
 
@@ -8,30 +8,6 @@ class DeploymentsTable extends Component {
 
   render() {
     const { error = null, loading = false, deployments = {}, fetchDeployments, } = this.props;
-
-    const handleSelectPage = (page) => {
-      fetchDeployments({ page, limit: deployments.limit, });
-    };
-
-    const pagination = () =>
-      <div className='text-center'>
-        <Pagination
-          className='deployments-table-pagination'
-          items={deployments.pages}
-          activePage={deployments.currentPage}
-          onSelect={handleSelectPage}
-        />
-      </div>
-    ;
-
-    const noPagination = () =>
-      <div className='text-center'>
-        <Pagination
-          className='deployments-table-pagination invisible'
-          items={1}
-        />
-      </div>
-    ;
 
     const errorTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--error'>
@@ -76,15 +52,14 @@ class DeploymentsTable extends Component {
       </tbody>
     ;
 
-
     return (
       <div>
-        {
-          (() => {
-            if (deployments.count > deployments.limit) return pagination();
-            else return noPagination();
-          })()
-        }
+        <TablePagination
+          totalPages={deployments.pages}
+          currentPage={deployments.currentPage}
+          pageSize={deployments.limit}
+          fetchContent={fetchDeployments}
+        />
         <table className='deployments-table table table-condensed table-hover'>
           <thead className='deployments-table__heading'>
             <tr>
@@ -104,12 +79,12 @@ class DeploymentsTable extends Component {
             })()
           }
         </table>
-        {
-          (() => {
-            if (deployments.count > deployments.limit) return pagination();
-            else return noPagination();
-          })()
-        }
+        <TablePagination
+          totalPages={deployments.pages}
+          currentPage={deployments.currentPage}
+          pageSize={deployments.limit}
+          fetchContent={fetchDeployments}
+        />
       </div>
     );
   }

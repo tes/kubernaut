@@ -59,7 +59,7 @@ describe('Release Actions', () => {
 
   async function dispatchReleasesActions(_options) {
     const store = mockStore({});
-    const options = Object.assign({ page: 1, limit: 50, quiet: true, }, _options);
+    const options = Object.assign({ page: 1, pageSize: 50, quiet: true, }, _options);
     await store.dispatch(fetchReleases(options));
     actions = store.getActions();
     expect(actions).toHaveLength(2);
