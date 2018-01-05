@@ -11,13 +11,14 @@ import Header from './components/Header';
 import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import NamespacesPage from './components/NamespacesPage';
+import AccountsPage from './components/AccountsPage';
 import HomePage from './components/HomePage';
 
 // Reducers
 import releases from './reducers/releases';
 import deployments from './reducers/deployments';
 import namespaces from './reducers/namespaces';
-
+import accounts from './reducers/accounts';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -41,6 +42,7 @@ const store = createStore(combineReducers({
   releases,
   deployments,
   namespaces,
+  accounts,
 }), initialState, composeWithDevTools(
   applyMiddleware(thunk)
 ));
@@ -63,6 +65,9 @@ class App extends Component {
                 } />
                 <Route exact path='/namespaces' render={() =>
                   <NamespacesPage />
+                } />
+                <Route exact path='/accounts' render={() =>
+                  <AccountsPage />
                 } />
                 <Route path='/' render={() =>
                   <HomePage />

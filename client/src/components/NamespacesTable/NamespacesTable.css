@@ -14,8 +14,6 @@
   font-style: italic;
 }
 
-.namespaces-table .namespaces-table__body__row__namespace-name,
-.namespaces-table .namespaces-table__body__row__service-name,
-.namespaces-table .namespaces-table__body__row__version {
+.namespaces-table .namespaces-table__body__row__namespace-name {
   white-space: nowrap;
 }

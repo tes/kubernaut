@@ -1,0 +1,19 @@
+.accounts-table .accounts-table__body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.accounts-table .accounts-table__heading__created {
+  width: 350px;
+}
+
+.accounts-table .accounts-table__body__row__created .accounts-table__body__row__created__on {
+  margin-right: 20px;
+}
+
+.accounts-table .accounts-table__body__row__created .accounts-table__body__row__created__ago {
+  font-style: italic;
+}
+
+.accounts-table .accounts-table__body__row__display-name {
+  white-space: nowrap;
+}

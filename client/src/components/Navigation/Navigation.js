@@ -17,11 +17,14 @@ const Navigation = () => {
         <LinkContainer to="/namespaces">
           <NavItem eventKey={1}>Namespaces</NavItem>
         </LinkContainer>
+        <LinkContainer to="/accounts">
+          <NavItem eventKey={2}>Accounts</NavItem>
+        </LinkContainer>
         <LinkContainer to="/releases">
-          <NavItem eventKey={2}>Releases</NavItem>
+          <NavItem eventKey={3}>Releases</NavItem>
         </LinkContainer>
         <LinkContainer to="/deployments">
-          <NavItem eventKey={3}>Deployments</NavItem>
+          <NavItem eventKey={4}>Deployments</NavItem>
         </LinkContainer>
       </Nav>
     </Navbar>
