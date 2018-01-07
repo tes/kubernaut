@@ -3,12 +3,12 @@ import uniq from 'lodash.uniq';
 import Account from '../../../domain/Account';
 
 export default function(options = {}) {
-  function start({ config, logger, postgres: db, }, cb) {
+  function start({ config, logger, db, }, cb) {
 
     async function getAccount(id) {
       logger.debug(`Getting account by id: ${id}`);
 
-      return await Promise.all([
+      return Promise.all([
         db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
         db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
       ]).then(([accountResult, rolesAndPermissionsResult, ]) => {
@@ -26,7 +26,7 @@ export default function(options = {}) {
       logger.debug(`Found ${account.rowCount} accounts with identity: ${type}/${name}/${provider}`);
       if (account.rowCount === 0) return;
 
-      return await getAccount(account.rows[0].id);
+      return getAccount(account.rows[0].id);
     }
 
     async function saveAccount(data, meta) {
@@ -58,7 +58,7 @@ export default function(options = {}) {
       const existing = await findAccount(identity);
       if (existing) return existing;
 
-      const created = await withTransaction(async connection => {
+      const created = await db.withTransaction(async connection => {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
         if (await _countActiveGlobalAdminstrators(connection) === 0) {
@@ -77,7 +77,7 @@ export default function(options = {}) {
     async function listAccounts(limit = 50, offset = 0) {
       logger.debug(`Listing up to ${limit} accounts starting from offset: ${offset}`);
 
-      return withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         return Promise.all([
           connection.query(SQL.LIST_ACCOUNTS, [ limit, offset, ]),
           connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'account', ]),
@@ -132,7 +132,7 @@ export default function(options = {}) {
     }
 
     async function grantRole(accountId, roleName, namespaceName, meta) {
-      return withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         return _grantRole(connection, accountId, roleName, namespaceName, meta);
       });
     }
@@ -140,7 +140,7 @@ export default function(options = {}) {
     async function _grantRole(connection, accountId, roleName, namespaceName, meta) {
       logger.debug(`Granting role: ${roleName} on namespace: ${namespaceName} to account: ${accountId}`);
 
-      return await Promise.all([
+      return Promise.all([
         connection.query(SQL.SELECT_ACCOUNT_BY_ID, [ accountId, ]),
         connection.query(SQL.SELECT_ROLE_BY_NAME, [ roleName, ]),
         connection.query(SQL.SELECT_NAMESPACE_BY_NAME, [ namespaceName, ]),
@@ -225,25 +225,6 @@ export default function(options = {}) {
         return roles;
       }, {});
     }
-
-    async function withTransaction(operations) {
-      logger.debug(`Retrieving db client from the pool`);
-
-      const connection = await db.connect();
-      try {
-        await connection.query('BEGIN');
-        const result = await operations(connection);
-        await connection.query('COMMIT');
-        return result;
-      } catch (err) {
-        await connection.query('ROLLBACK');
-        throw err;
-      } finally {
-        logger.debug(`Returning db client to the pool`);
-        connection.release();
-      }
-    }
-
 
     return cb(null, {
       getAccount,

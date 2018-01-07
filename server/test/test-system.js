@@ -8,6 +8,7 @@ export default function() {
   return system()
       .set('clock', clock())
       .remove('postgres')
+      .remove('db')
       .remove('migrator')
       .set('session', memorySession()).dependsOn('config', 'logger')
       .set('kubernetes', kubernetes()).dependsOn('config', 'logger')

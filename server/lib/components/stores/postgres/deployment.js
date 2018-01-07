@@ -7,7 +7,7 @@ import Deployment from '../../../domain/Deployment';
 
 export default function(options) {
 
-  function start({ config, logger, postgres: db, }, cb) {
+  function start({ config, logger, db, }, cb) {
 
     async function getDeployment(id) {
       logger.debug(`Getting deployment by id: ${id}`);
@@ -41,7 +41,7 @@ export default function(options) {
 
       logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
 
-      return withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         return Promise.all([
           connection.query(SQL.LIST_DEPLOYMENTS, [ limit, offset, ]),
           connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'deployment', ]),
@@ -60,24 +60,6 @@ export default function(options) {
         id, meta.date, meta.account,
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
-    }
-
-    async function withTransaction(operations) {
-      logger.debug(`Retrieving db client from the pool`);
-
-      const connection = await db.connect();
-      try {
-        await connection.query('BEGIN');
-        const result = await operations(connection);
-        await connection.query('COMMIT');
-        return result;
-      } catch (err) {
-        await connection.query('ROLLBACK');
-        throw err;
-      } finally {
-        logger.debug(`Returning db client to the pool`);
-        connection.release();
-      }
     }
 
     function toDeployment(row) {

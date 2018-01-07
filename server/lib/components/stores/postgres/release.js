@@ -6,13 +6,13 @@ import Release from '../../../domain/Release';
 
 export default function(options) {
 
-  function start({ config, logger, postgres: db, }, cb) {
+  function start({ config, logger, db, }, cb) {
 
     async function getRelease(id) {
 
       logger.debug(`Getting release by id: ${id}`);
 
-      return await Promise.all([
+      return Promise.all([
         db.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
         db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
       ]).then(([releaseResult, attributesResult,]) => {
@@ -38,7 +38,7 @@ export default function(options) {
     }
 
     async function saveRelease(data, meta) {
-      return await withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         const service = await _ensureService(connection, data.service, data.service.namespace.name, meta);
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
@@ -120,7 +120,7 @@ export default function(options) {
 
       logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
 
-      return withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         return Promise.all([
           connection.query(SQL.LIST_RELEASES, [ limit, offset, ]),
           connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'release', ]),
@@ -142,24 +142,6 @@ export default function(options) {
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted release id: ${id}`);
-    }
-
-    async function withTransaction(operations) {
-      logger.debug(`Retrieving db client from the pool`);
-
-      const connection = await db.connect();
-      try {
-        await connection.query('BEGIN');
-        const result = await operations(connection);
-        await connection.query('COMMIT');
-        return result;
-      } catch (err) {
-        await connection.query('ROLLBACK');
-        throw err;
-      } finally {
-        logger.debug(`Returning db client to the pool`);
-        connection.release();
-      }
     }
 
     function toRelease(row, attributeRows = []) {

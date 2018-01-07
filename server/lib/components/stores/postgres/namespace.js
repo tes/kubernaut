@@ -3,7 +3,7 @@ import Namespace from '../../../domain/Namespace';
 
 export default function(options) {
 
-  function start({ config, logger, postgres: db, }, cb) {
+  function start({ config, logger, db, }, cb) {
 
     async function getNamespace(id) {
       logger.debug(`Getting namespace by id: ${id}`);
@@ -48,7 +48,7 @@ export default function(options) {
 
       logger.debug(`Listing up to ${limit} namespaces starting from offset: ${offset}`);
 
-      return withTransaction(async connection => {
+      return db.withTransaction(async connection => {
         return Promise.all([
           connection.query(SQL.LIST_NAMESPACES, [ limit, offset, ]),
           connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'namespace', ]),
@@ -80,25 +80,6 @@ export default function(options) {
         createdBy: row.created_by,
       });
     }
-
-    async function withTransaction(operations) {
-      logger.debug(`Retrieving db client from the pool`);
-
-      const connection = await db.connect();
-      try {
-        await connection.query('BEGIN');
-        const result = await operations(connection);
-        await connection.query('COMMIT');
-        return result;
-      } catch (err) {
-        await connection.query('ROLLBACK');
-        throw err;
-      } finally {
-        logger.debug(`Returning db client to the pool`);
-        connection.release();
-      }
-    }
-
 
     return cb(null, {
       getNamespace,
