@@ -1,14 +1,18 @@
 SELECT
-  au.id,
-  au.display_name,
-  au.created_on,
-  au.created_by
+  a.id,
+  a.display_name,
+  a.created_on,
+  c.id AS created_by_id,
+  c.display_name AS created_by_display_name
 FROM
-  active_account__vw au
+  active_account__vw a,
+  account c
+WHERE
+  a.created_by = c.id
 ORDER BY
-  au.display_name ASC,
-  au.created_on DESC,
-  au.id DESC
+  a.display_name ASC,
+  a.created_on DESC,
+  a.id DESC
 LIMIT
   $1
 OFFSET

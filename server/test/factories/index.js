@@ -129,11 +129,21 @@ function makeDeployment(overrides = {}) {
 }
 
 function makeMeta(overrides = {}) {
-  const account = overrides.account === 'root' ? '00000000-0000-0000-0000-000000000000' : overrides.account;
   return merge({
     date: chance.date(),
-    account: uuid(),
-  }, overrides, { account: account, });
+    account: new Account({
+      id: uuid(),
+      displayName: chance.name(),
+    }),
+  }, overrides);
+}
+
+function makeRootMeta(overrides = {}) {
+  const account = new Account({
+    id: '00000000-0000-0000-0000-000000000000',
+    displayName: 'root',
+  });
+  return merge({ date: chance.date(), }, overrides, { account, });
 }
 
 function makeReleaseForm(overrides = {}) {
@@ -155,4 +165,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeReleaseForm, };
+export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };

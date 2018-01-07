@@ -37,13 +37,13 @@ export default function(options = {}) {
       logger.debug(`Saving account: ${data.displayName}`);
 
       const result = await connection.query(SQL.SAVE_ACCOUNT, [
-        data.displayName, data.avatar, meta.date, meta.account,
+        data.displayName, data.avatar, meta.date, meta.account.id,
       ]);
 
       await connection.query(SQL.REFRESH_ENTITY_COUNT);
 
       const account = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       logger.debug(`Saved account: ${account.displayName}/${account.id}`);
@@ -95,7 +95,7 @@ export default function(options = {}) {
       await db.query(SQL.DELETE_ACCOUNT, [
         id,
         meta.date,
-        meta.account,
+        meta.account.id,
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted account id: ${id}`);
@@ -109,11 +109,11 @@ export default function(options = {}) {
       logger.debug(`Saving identity: ${data.type}/${data.provider}/${data.name} for account ${id}`);
 
       const result = await connection.query(SQL.SAVE_IDENTITY, [
-        id, data.name, data.provider, data.type, meta.date, meta.account,
+        id, data.name, data.provider, data.type, meta.date, meta.account.id,
       ]);
 
       const identity = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       logger.debug(`Saved identity: ${data.type}/${data.provider}/${data.name}/${result.rows[0].id} for account ${id}`);
@@ -124,9 +124,7 @@ export default function(options = {}) {
     async function deleteIdentity(id, meta) {
       logger.debug(`Deleting identity id: ${id}`);
       await db.query(SQL.DELETE_IDENTITY, [
-        id,
-        meta.date,
-        meta.account,
+        id, meta.date, meta.account.id,
       ]);
       logger.debug(`Deleted identity id: ${id}`);
     }
@@ -152,10 +150,10 @@ export default function(options = {}) {
         };
       }).then(async ({ accountId, roleId, namespaceId, }) => {
         const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE, [
-          accountId, roleId, namespaceId, meta.date, meta.account,
+          accountId, roleId, namespaceId, meta.date, meta.account.id,
         ]);
         const granted = {
-          id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account,
+          id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
         };
 
         logger.debug(`Granted role: ${granted.name}/${granted.id} on namespace: ${namespaceName} to account: ${accountId}`);
@@ -186,7 +184,7 @@ export default function(options = {}) {
       logger.debug(`Revoking role: ${id}`);
 
       await db.query(SQL.DELETE_ACCOUNT_ROLE, [
-        id, meta.date, meta.account,
+        id, meta.date, meta.account.id,
       ]);
 
       logger.debug(`Revoked role: ${id}`);
@@ -205,13 +203,13 @@ export default function(options = {}) {
     function toAccount(row, rolesAndPermissionsRows = []) {
       const roles = toRolesAndPermissions(rolesAndPermissionsRows);
       return new Account({
-        id: row.id,
-        displayName: row.display_name,
+        id: row.id,        displayName: row.display_name,
         avatar: row.avatar,
         createdOn: row.created_on,
-        createdBy: row.created_by,
-        deletedOn: row.deleted_on,
-        deletedBy: row.deleted_by,
+        createdBy: new Account({
+          id: row.created_by_id,
+          displayName: row.created_by_display_name,
+        }),
         roles,
       });
     }

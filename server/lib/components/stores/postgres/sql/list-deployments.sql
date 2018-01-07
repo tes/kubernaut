@@ -2,7 +2,8 @@ SELECT
   d.id,
   d.context,
   d.created_on,
-  d.created_by,
+  c.id AS created_by_id,
+  c.display_name AS created_by_display_name,
   r.id AS release_id,
   r.version AS release_version,
   s.id AS service_id,
@@ -13,9 +14,11 @@ FROM
   active_deployment__vw d,
   release r,
   service s,
-  namespace n
+  namespace n,
+  account c
 WHERE
   d.release = r.id AND
+  d.created_by = c.id AND
   r.service = s.id AND
   s.namespace = n.id
 ORDER BY

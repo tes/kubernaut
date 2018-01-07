@@ -14,7 +14,7 @@ module.exports = function() {
       try {
         const profile = { displayName: 'Bob Holness', };
         const identity = { name: 'blockbusters', provider: 'kubernaut', 'type': 'local', };
-        const meta = { date: new Date(), account: '00000000-0000-0000-0000-000000000000', };
+        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000', }, };
         const account = await store.ensureAccount(profile, identity, meta);
         cb(null, account);
       } catch (err) {

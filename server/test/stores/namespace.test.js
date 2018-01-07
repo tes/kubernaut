@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeMeta, } from '../factories';
+import { makeNamespace, makeRootMeta, } from '../factories';
 
 describe('Namespace Store', () => {
 
@@ -86,7 +86,7 @@ describe('Namespace Store', () => {
 
         it('should retrieve namespace by id', async () => {
           const data = makeNamespace();
-          const meta = makeMeta({ account: 'root', });
+          const meta = makeRootMeta();
           const saved = await saveNamespace(data, meta);
           const namespace = await getNamespace(saved.id);
 
@@ -94,7 +94,8 @@ describe('Namespace Store', () => {
           expect(namespace.id).toBe(saved.id);
           expect(namespace.name).toBe(data.name);
           expect(namespace.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(namespace.createdBy).toBe(meta.account);
+          expect(namespace.createdBy.id).toBe(meta.account.id);
+          expect(namespace.createdBy.displayName).toBe(meta.account.displayName);
         });
 
         it('should return undefined when namespace not found', async () => {
@@ -143,19 +144,19 @@ describe('Namespace Store', () => {
               data: makeNamespace({
                 name: 'a',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeNamespace({
                 name: 'c',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeNamespace({
                 name: 'b',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -227,7 +228,7 @@ describe('Namespace Store', () => {
         });
       });
 
-      function saveNamespace(namespace = makeNamespace(), meta = makeMeta({ account: 'root', })) {
+      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
         return store.saveNamespace(namespace, meta);
       }
 
@@ -239,7 +240,7 @@ describe('Namespace Store', () => {
         return store.findNamespace(criteria);
       }
 
-      function deleteNamespace(id, meta = makeMeta({ account: 'root', })) {
+      function deleteNamespace(id, meta = makeRootMeta()) {
         return store.deleteNamespace(id, meta);
       }
 

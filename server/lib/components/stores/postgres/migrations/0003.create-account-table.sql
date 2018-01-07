@@ -6,7 +6,7 @@ CREATE TABLE account (
   avatar TEXT,
   is_root BOOLEAN NOT NULL DEFAULT false,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_by UUID NULL, -- Root account is created by no-one
+  created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by UUID REFERENCES account,
   CONSTRAINT account__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))

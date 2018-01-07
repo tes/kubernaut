@@ -3,7 +3,8 @@ SELECT
   r.version,
   r.template,
   r.created_on,
-  r.created_by,
+  c.id AS created_by_id,
+  c.display_name AS created_by_display_name,
   s.id AS service_id,
   s.name AS service_name,
   n.id AS namespace_id,
@@ -16,12 +17,14 @@ FROM
   active_release__vw r,
   release_template rt,
   service s,
-  namespace n
+  namespace n,
+  account c
 WHERE
   s.name = $1 AND
   n.name = $2 AND
   r.version = $3 AND
   r.service = s.id AND
-  s.namespace = n.id AND
-  r.template = rt.id
+  r.created_by = c.id AND
+  r.template = rt.id AND
+  s.namespace = n.id
 ;

@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeRelease, makeMeta, } from '../factories';
+import { makeNamespace, makeRelease, makeRootMeta, } from '../factories';
 
 describe('Release Store', () => {
 
@@ -156,7 +156,7 @@ describe('Release Store', () => {
 
         it('should retrieve release by id', async () => {
           const data = makeRelease();
-          const meta = makeMeta({ account: 'root', });
+          const meta = makeRootMeta();
           const saved = await saveRelease(data, meta);
           const release = await getRelease(saved.id);
 
@@ -171,7 +171,8 @@ describe('Release Store', () => {
           expect(release.template.source.json).toEqual(data.template.source.json);
           expect(release.template.checksum).toBe(data.template.checksum);
           expect(release.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(release.createdBy).toBe(meta.account);
+          expect(release.createdBy.id).toBe(meta.account.id);
+          expect(release.createdBy.displayName).toBe(meta.account.displayName);
           expect(release.attributes.template).toBe(data.attributes.template);
           expect(release.attributes.image).toBe(data.attributes.image);
         });
@@ -242,7 +243,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -251,7 +252,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -260,7 +261,7 @@ describe('Release Store', () => {
                 },
                 version: '3',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -269,7 +270,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -278,7 +279,7 @@ describe('Release Store', () => {
                 },
                 version: '1',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeRelease({
@@ -287,7 +288,7 @@ describe('Release Store', () => {
                 },
                 version: '2',
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -399,11 +400,11 @@ describe('Release Store', () => {
         });
       });
 
-      function saveNamespace(namespace = makeNamespace(), meta = makeMeta({ account: 'root', })) {
+      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
         return store.saveNamespace(namespace, meta);
       }
 
-      function saveRelease(release = makeRelease(), meta = makeMeta({ account: 'root', })) {
+      function saveRelease(release = makeRelease(), meta = makeRootMeta()) {
         return store.saveRelease(release, meta);
       }
 
@@ -415,7 +416,7 @@ describe('Release Store', () => {
         return store.findRelease(criteria);
       }
 
-      function deleteRelease(id, meta = makeMeta({ account: 'root', })) {
+      function deleteRelease(id, meta = makeRootMeta()) {
         return store.deleteRelease(id, meta);
       }
 
@@ -423,7 +424,7 @@ describe('Release Store', () => {
         return store.listReleases(page, limit);
       }
 
-      function deleteNamespace(id, meta = makeMeta({ account: 'root', })) {
+      function deleteNamespace(id, meta = makeRootMeta()) {
         return store.deleteNamespace(id, meta);
       }
 

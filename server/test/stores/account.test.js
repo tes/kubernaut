@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeIdentity, makeAccount, makeMeta, } from '../factories';
+import { makeIdentity, makeAccount, makeRootMeta, } from '../factories';
 
 describe('Account Store', () => {
 
@@ -64,14 +64,9 @@ describe('Account Store', () => {
       describe('Save Account', () => {
 
         it('should create an account', async () => {
-          const data = makeAccount();
-          const meta = makeMeta();
-          const account = await saveAccount(data, meta);
-
+          const account = await saveAccount();
           expect(account).toBeDefined();
           expect(account.id).toBeDefined();
-          expect(account.createdOn).toBe(meta.date);
-          expect(account.createdBy).toBe(meta.account);
         });
 
         it('should permit duplicate display names', async () => {
@@ -88,7 +83,7 @@ describe('Account Store', () => {
 
         it('should retrieve account by id', async () => {
           const data = makeAccount({ displayName: 'Foo Bar', });
-          const meta = makeMeta();
+          const meta = makeRootMeta();
           const saved = await saveAccount(data, meta);
           const account = await getAccount(saved.id);
 
@@ -96,7 +91,7 @@ describe('Account Store', () => {
           expect(account.id).toBe(saved.id);
           expect(account.displayName).toBe('Foo Bar');
           expect(account.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(account.createdBy).toBe(meta.account);
+          expect(account.createdBy.id).toBe(meta.account.id);
         });
 
         it('should return undefined when account not found', async () => {
@@ -475,11 +470,11 @@ describe('Account Store', () => {
         });
       });
 
-      function saveAccount(account = makeAccount(), meta = makeMeta({ account: 'root', })) {
+      function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
         return store.saveAccount(account, meta);
       }
 
-      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeMeta({ account: 'root', })) {
+      function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeRootMeta(), ) {
         return store.ensureAccount(account, identity, meta);
       }
 
@@ -495,23 +490,23 @@ describe('Account Store', () => {
         return store.listAccounts(limit, offset);
       }
 
-      function deleteAccount(id, meta = makeMeta({ account: 'root', })) {
+      function deleteAccount(id, meta = makeRootMeta(), ) {
         return store.deleteAccount(id, meta);
       }
 
-      function saveIdentity(accountId, identity = makeIdentity(), meta = makeMeta({ account: 'root', })) {
+      function saveIdentity(accountId, identity = makeIdentity(), meta = makeRootMeta(), ) {
         return store.saveIdentity(accountId, identity, meta);
       }
 
-      function deleteIdentity(id, meta = makeMeta({ account: 'root', })) {
+      function deleteIdentity(id, meta = makeRootMeta(), ) {
         return store.deleteIdentity(id, meta);
       }
 
-      function grantRole(id, name, namespace, meta = makeMeta({ account: 'root', })) {
+      function grantRole(id, name, namespace, meta = makeRootMeta(), ) {
         return store.grantRole(id, name, namespace, meta);
       }
 
-      function revokeRole(id, meta = makeMeta({ account: 'root', })) {
+      function revokeRole(id, meta = makeRootMeta(), ) {
         return store.revokeRole(id, meta);
       }
 

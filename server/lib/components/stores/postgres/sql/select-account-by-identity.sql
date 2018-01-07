@@ -1,15 +1,18 @@
 SELECT
-  aa.id,
-  aa.display_name,
-  aa.avatar,
-  aa.created_on,
-  aa.created_by
+  a.id,
+  a.display_name,
+  a.avatar,
+  a.created_on,
+  c.id AS created_by_id,
+  c.display_name AS created_by_display_name
 FROM
-  active_account__vw aa,
-  active_identity__vw ai
+  active_account__vw a,
+  active_identity__vw i,
+  account c
 WHERE
-  aa.id = ai.account AND
-  ai.name = $1 AND
-  ai.provider = $2 AND
-  ai.type = $3
+  a.id = i.account AND
+  a.created_by = c.id AND
+  i.name = $1 AND
+  i.provider = $2 AND
+  i.type = $3
 ;

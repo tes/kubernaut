@@ -3,6 +3,7 @@ import Namespace from '../../../domain/Namespace';
 import Service from '../../../domain/Service';
 import ReleaseTemplate from '../../../domain/ReleaseTemplate';
 import Release from '../../../domain/Release';
+import Account from '../../../domain/Account';
 
 export default function(options) {
 
@@ -53,11 +54,11 @@ export default function(options) {
       logger.debug(`Ensuring service: ${namespace}/${data.name}`);
 
       const result = await connection.query(SQL.ENSURE_SERVICE, [
-        data.name, namespace, meta.date, meta.account,
+        data.name, namespace, meta.date, meta.account.id,
       ]);
 
       const service = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       logger.debug(`Ensured service: ${namespace}/${service.name}/${service.id}`);
@@ -70,7 +71,7 @@ export default function(options) {
       logger.debug(`Ensuring release template: ${data.checksum}`);
 
       const result = await connection.query(SQL.ENSURE_RELEASE_TEMPLATE, [
-        data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.account,
+        data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.account.id,
       ]);
 
       const template = {
@@ -87,11 +88,11 @@ export default function(options) {
       logger.debug(`Saving release: ${service.name}/${data.version}`);
 
       const result = await connection.query(SQL.SAVE_RELEASE, [
-        service.id, data.version, template.id, meta.date, meta.account,
+        service.id, data.version, template.id, meta.date, meta.account.id,
       ]);
 
       const release = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       logger.debug(`Saved release ${service.name}/${release.version}/${release.id}`);
@@ -136,9 +137,7 @@ export default function(options) {
     async function deleteRelease(id, meta) {
       logger.debug(`Deleting release id: ${id}`);
       await db.query(SQL.DELETE_RELEASE, [
-        id,
-        meta.date,
-        meta.account,
+        id, meta.date, meta.account.id,
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted release id: ${id}`);
@@ -166,9 +165,10 @@ export default function(options) {
           return { ...attributes, [row.name]: row.value, };
         }, {}),
         createdOn: row.created_on,
-        createdBy: row.created_by,
-        deletedOn: row.deleted_on,
-        deletedBy: row.deleted_by,
+        createdBy: new Account({
+          id: row.created_by_id,
+          displayName: row.created_by_display_name,
+        }),
       });
     }
 

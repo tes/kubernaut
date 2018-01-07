@@ -4,6 +4,8 @@ import Service from '../../../domain/Service';
 import Release from '../../../domain/Release';
 import Manifest from '../../../domain/Manifest';
 import Deployment from '../../../domain/Deployment';
+import Account from '../../../domain/Account';
+
 
 export default function(options) {
 
@@ -23,11 +25,11 @@ export default function(options) {
       logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.context}`);
 
       const result = await db.query(SQL.SAVE_DEPLOYMENT, [
-        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account,
+        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
       ]);
 
       const deployment = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       await db.query(SQL.REFRESH_ENTITY_COUNT);
@@ -57,7 +59,7 @@ export default function(options) {
     async function deleteDeployment(id, meta) {
       logger.debug(`Deleting deployment id: ${id}`);
       await db.query(SQL.DELETE_DEPLOYMENT, [
-        id, meta.date, meta.account,
+        id, meta.date, meta.account.id,
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
     }
@@ -83,9 +85,10 @@ export default function(options) {
           version: row.release_version,
         }),
         createdOn: row.created_on,
-        createdBy: row.created_by,
-        deletedOn: row.deleted_on,
-        deletedBy: row.deleted_by,
+        createdBy: new Account({
+          id: row.created_by_id,
+          displayName: row.created_by_display_name,
+        }),
       });
     }
 

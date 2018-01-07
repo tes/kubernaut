@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeNamespace, makeDeployment, makeRelease, makeRootMeta, } from '../factories';
 
 describe('Deployment Store', () => {
 
@@ -106,7 +106,7 @@ describe('Deployment Store', () => {
         it('should retrieve deployment by id', async () => {
           const release = await saveRelease(makeRelease());
           const data = makeDeployment({ release, });
-          const meta = makeMeta({ account: 'root', });
+          const meta = makeRootMeta();
           const saved = await saveDeployment(data, meta);
           const deployment = await getDeployment(saved.id);
 
@@ -117,7 +117,8 @@ describe('Deployment Store', () => {
           expect(deployment.release.service.namespace.name).toBe(saved.release.service.namespace.name);
           expect(deployment.release.version).toBe(saved.release.version);
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
-          expect(deployment.createdBy).toBe(meta.account);
+          expect(deployment.createdBy.id).toBe(meta.account.id);
+          expect(deployment.createdBy.displayName).toBe(meta.account.displayName);
         });
 
         it('should return undefined when release not found', async () => {
@@ -156,7 +157,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2014-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -167,7 +168,7 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2015-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -178,7 +179,7 @@ describe('Deployment Store', () => {
                   version: '3',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2013-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -189,7 +190,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2016-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2016-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -200,7 +201,7 @@ describe('Deployment Store', () => {
                   version: '1',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2011-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2011-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeDeployment({
@@ -211,7 +212,7 @@ describe('Deployment Store', () => {
                   version: '2',
                 },
               }),
-              meta: makeMeta({ account: 'root', date: new Date('2012-07-01T10:11:12.000Z'), }),
+              meta: makeRootMeta({ date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -337,19 +338,19 @@ describe('Deployment Store', () => {
         });
       });
 
-      function saveNamespace(namespace = makeNamespace(), meta = makeMeta({ account: 'root', })) {
+      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
         return store.saveNamespace(namespace, meta);
       }
 
-      function saveRelease(release = makeRelease(), meta = makeMeta({ account: 'root', })) {
+      function saveRelease(release = makeRelease(), meta = makeRootMeta()) {
         return store.saveRelease(release, meta);
       }
 
-      function saveDeployment(deployment = makeDeployment(), meta = makeMeta({ account: 'root', })) {
+      function saveDeployment(deployment = makeDeployment(), meta = makeRootMeta()) {
         return store.saveDeployment(deployment, meta);
       }
 
-      function deleteRelease(id, meta = makeMeta({ account: 'root', })) {
+      function deleteRelease(id, meta = makeRootMeta()) {
         return store.deleteRelease(id, meta);
       }
 
@@ -361,11 +362,11 @@ describe('Deployment Store', () => {
         return store.listDeployments(page, limit);
       }
 
-      function deleteDeployment(id, meta = makeMeta({ account: 'root', })) {
+      function deleteDeployment(id, meta = makeRootMeta()) {
         return store.deleteDeployment(id, meta);
       }
 
-      function deleteNamespace(id, meta = makeMeta({ account: 'root', })) {
+      function deleteNamespace(id, meta = makeRootMeta()) {
         return store.deleteNamespace(id, meta);
       }
 

@@ -1,5 +1,6 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
+import Account from '../../../domain/Account';
 
 export default function(options) {
 
@@ -30,13 +31,13 @@ export default function(options) {
       logger.debug(`Saving namespace: ${data.name}`);
 
       const result = await db.query(SQL.SAVE_NAMESPACE, [
-        data.name, meta.date, meta.account,
+        data.name, meta.date, meta.account.id,
       ]);
 
       await db.query(SQL.REFRESH_ENTITY_COUNT);
 
       const namespace = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account,
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
       logger.debug(`Saved namespace: ${namespace.name}/${namespace.id}`);
@@ -64,9 +65,7 @@ export default function(options) {
     async function deleteNamespace(id, meta) {
       logger.debug(`Deleting namespace id: ${id}`);
       await db.query(SQL.DELETE_NAMESPACE, [
-        id,
-        meta.date,
-        meta.account,
+        id, meta.date, meta.account.id,
       ]);
       await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted namespace id: ${id}`);
@@ -77,7 +76,10 @@ export default function(options) {
         id: row.id,
         name: row.name,
         createdOn: row.created_on,
-        createdBy: row.created_by,
+        createdBy: new Account({
+          id: row.created_by_id,
+          displayName: row.created_by_display_name,
+        }),
       });
     }
 

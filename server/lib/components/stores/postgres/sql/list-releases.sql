@@ -2,7 +2,8 @@ SELECT
   r.id,
   r.version,
   r.created_on,
-  r.created_by,
+  c.id AS created_by_id,
+  c.display_name AS created_by_display_name,
   s.id AS service_id,
   s.name AS service_name,
   n.id AS namespace_id,
@@ -10,9 +11,11 @@ SELECT
 FROM
   active_release__vw r,
   service s,
-  namespace n
+  namespace n,
+  account c
 WHERE
   r.service = s.id AND
+  r.created_by = c.id AND
   s.namespace = n.id
 ORDER BY
   r.created_on DESC,
