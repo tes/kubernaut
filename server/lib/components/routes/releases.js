@@ -58,7 +58,7 @@ export default function(options = {}) {
           template: await getTemplate(req.file.buffer, res.locals.logger),
           attributes: req.body,
         };
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const release = await store.saveRelease(data, meta);
         res.json({ id: release.id, });
       } catch (err) {
@@ -72,7 +72,7 @@ export default function(options = {}) {
         if (!release) return next(Boom.forbidden());
         if (!req.user.hasPermission(release.service.namespace.name, 'releases-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteRelease(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

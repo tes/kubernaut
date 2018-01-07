@@ -39,10 +39,10 @@ export default function(options = {}) {
 
         if (!req.user.hasPermission('*', 'namespaces-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: req.user.id, };
         const data = {
           name: req.body.name,
         };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const namespace = await store.saveNamespace(data, meta);
         res.json(namespace);
       } catch (err) {
@@ -54,7 +54,7 @@ export default function(options = {}) {
       try {
         if (!req.user.hasPermission('*', 'namespaces-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteNamespace(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

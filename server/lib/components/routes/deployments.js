@@ -88,7 +88,7 @@ export default function(options = {}) {
           manifest: await getManifest(release, res.locals.logger),
           release,
         };
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const deployment = await store.saveDeployment(data, meta);
         await kubernetes.apply(deployment.context, deployment.release.service.namespace.name, deployment.manifest.yaml, res.locals.logger);
 
@@ -108,7 +108,7 @@ export default function(options = {}) {
         if (!deployment) return next(Boom.forbidden());
         if (!req.user.hasPermission(deployment.release.service.namespace.name, 'deployments-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteDeployment(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

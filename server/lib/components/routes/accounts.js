@@ -33,7 +33,7 @@ export default function(options = {}) {
       try {
         if (!req.body.displayName) return next(Boom.badRequest('displayName is required'));
         const data = { displayName: req.body.displayName, };
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const account = await store.saveAccount(data, meta);
         res.json(account);
       } catch (err) {
@@ -43,7 +43,8 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        await store.deleteAccount(req.params.id, { date: new Date(), account: req.user.id, });
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        await store.deleteAccount(req.params.id, meta);
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -58,7 +59,7 @@ export default function(options = {}) {
         if (!req.body.type) return next(Boom.badRequest('type is required'));
 
         const data = { name: req.body.name, provider: req.body.provider, type: req.body.type, };
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const identity = await store.saveIdentity(req.body.account, data, meta);
         res.json(identity);
       } catch (err) {
@@ -81,7 +82,7 @@ export default function(options = {}) {
       if (!req.body.role) return next(Boom.badRequest('role is required'));
 
       try {
-        const meta = { date: new Date(), account: req.user.id, };
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
         const account = await store.grantRole(req.body.account, req.body.role, null, meta);
         res.json(account);
       } catch (err) {
