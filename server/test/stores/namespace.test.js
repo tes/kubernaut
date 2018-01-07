@@ -52,6 +52,7 @@ describe('Namespace Store', () => {
         } catch (err) {
           cb(err);
         }
+
         cb();
       });
 
