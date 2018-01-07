@@ -59,7 +59,7 @@ class NamespacesTable extends Component {
           <thead className='namespaces-table__heading'>
             <tr>
               <th className='namespaces-table__heading__created-date'>Created</th>
-              <th className='namespaces-table__heading__namespace-name'>Namespace</th>
+              <th className='namespaces-table__heading__namespace-name'>Name</th>
               <th className='namespaces-table__heading__created-by'>Created By</th>
             </tr>
           </thead>

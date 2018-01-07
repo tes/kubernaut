@@ -12,7 +12,7 @@ describe('NamespacesTable', () => {
 
     expect(wrapper.find('.namespaces-table__heading').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__heading__created-date').text()).toBe('Created');
-    expect(wrapper.find('.namespaces-table__heading__namespace-name').text()).toBe('Namespace');
+    expect(wrapper.find('.namespaces-table__heading__namespace-name').text()).toBe('Name');
     expect(wrapper.find('.namespaces-table__heading__created-by').text()).toBe('Created By');
   });
 
