@@ -1,5 +1,10 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
+import Service from '../../../domain/Service';
+import ReleaseTemplate from '../../../domain/ReleaseTemplate';
+import Release from '../../../domain/Release';
+import Manifest from '../../../domain/Manifest';
+import Deployment from '../../../domain/Deployment';
 
 export default function(options) {
 
@@ -77,30 +82,30 @@ export default function(options) {
     }
 
     function toDeployment(row) {
-      return {
+      return new Deployment({
         id: row.id,
         context: row.context,
-        manifest: {
+        manifest: new Manifest({
           yaml: row.manifest_yaml,
           json: row.manifest_json,
-        },
-        release: {
+        }),
+        release: new Release({
           id: row.release_id,
-          service: {
+          service: new Service({
             id: row.service_id,
             name: row.service_name,
             namespace: new Namespace({
               id: row.namespace_id,
               name: row.namespace_name,
             }),
-          },
+          }),
           version: row.release_version,
-        },
+        }),
         createdOn: row.created_on,
         createdBy: row.created_by,
         deletedOn: row.deleted_on,
         deletedBy: row.deleted_by,
-      };
+      });
     }
 
     return cb(null, {

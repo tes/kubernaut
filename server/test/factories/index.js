@@ -13,6 +13,8 @@ import Namespace from '../../lib/domain/Namespace';
 import Service from '../../lib/domain/Service';
 import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
 import Release from '../../lib/domain/Release';
+import Manifest from '../../lib/domain/Manifest';
+import Deployment from '../../lib/domain/Deployment';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -82,22 +84,6 @@ function makeAccount(overrides = {}) {
   }, overrides);
 }
 
-function makeDeployment(overrides = {}) {
-  const release = makeRelease(overrides.release);
-  const yaml = get(overrides, 'manifest.yaml', hogan.compile(release.template.source.yaml).render(release.attributes));
-  const json = get(overrides, 'manifest.json', yaml2json(yaml));
-  const context = get(overrides, 'context', chance.name().toLowerCase().replace(/\s/g, '-'));
-
-  return merge({
-    context,
-    manifest: {
-      yaml,
-      json,
-    },
-    release,
-  }, overrides);
-}
-
 function makeService(overrides = {}) {
   return new Service(merge({
     name: chance.name().toLowerCase().replace(/\s/g, '-'),
@@ -125,6 +111,19 @@ function makeRelease(overrides = {}) {
       template: `${chance.word().toLowerCase()}.yaml`,
       image: `registry/repo/${service.name}:${version}`,
     },
+  }, overrides));
+}
+
+function makeDeployment(overrides = {}) {
+  const release = makeRelease(overrides.release);
+  const yaml = get(overrides, 'manifest.yaml', hogan.compile(release.template.source.yaml).render(release.attributes));
+  const json = get(overrides, 'manifest.json', yaml2json(yaml));
+  const context = get(overrides, 'context', chance.name().toLowerCase().replace(/\s/g, '-'));
+
+  return new Deployment(merge({
+    context,
+    manifest: new Manifest({ yaml, json, }),
+    release,
   }, overrides));
 }
 
