@@ -1,4 +1,5 @@
 import React, { Component, } from 'react';
+import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
@@ -12,7 +13,7 @@ class NamespacesTable extends Component {
     const errorTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--error'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>Error loading namespaces</td>
+          <td className='namespaces-table__body__row__info' colSpan='3'>Error loading namespaces</td>
         </tr>
       </tbody>
     ;
@@ -20,7 +21,7 @@ class NamespacesTable extends Component {
     const loadingTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--loading'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>Loading namespaces…</td>
+          <td className='namespaces-table__body__row__info' colSpan='3'>Loading namespaces…</td>
         </tr>
       </tbody>
     ;
@@ -28,7 +29,7 @@ class NamespacesTable extends Component {
     const emptyTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--empty'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>There are no namespaces</td>
+          <td className='namespaces-table__body__row__info' colSpan='3'>There are no namespaces</td>
         </tr>
       </tbody>
     ;
@@ -38,11 +39,14 @@ class NamespacesTable extends Component {
       {
         namespaces.items.map(namespace => {
           return <tr className='namespaces-table__body__row' key={namespace.id} id={namespace.id} >
-            <td className='namespaces-table__body__row__created'>
-              <span className="namespaces-table__body__row__created__on"><Human date={namespace.createdOn} /></span>
-              <span className="namespaces-table__body__row__created__ago"><Ago date={namespace.createdOn} /></span>
+            <td className='namespaces-table__body__row__created-date'>
+              <span className='namespaces-table__body__row__created-date__on'><Human date={namespace.createdOn} /></span>
+              <span className='namespaces-table__body__row__created-date__ago'><Ago date={namespace.createdOn} /></span>
             </td>
             <td className='namespaces-table__body__row__namespace-name'>{namespace.name}</td>
+            <td className='namespaces-table__body__row__created-by'>
+              <Link to={`/accounts/${namespace.createdBy.id}`}>{namespace.createdBy.displayName}</Link>
+            </td>
           </tr>;
         })
       }
@@ -54,8 +58,9 @@ class NamespacesTable extends Component {
         <table className='namespaces-table table table-condensed table-hover'>
           <thead className='namespaces-table__heading'>
             <tr>
-              <th className='namespaces-table__heading__created'>Created</th>
+              <th className='namespaces-table__heading__created-date'>Created</th>
               <th className='namespaces-table__heading__namespace-name'>Namespace</th>
+              <th className='namespaces-table__heading__created-by'>Created By</th>
             </tr>
           </thead>
           {

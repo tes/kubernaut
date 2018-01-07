@@ -2,15 +2,15 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.deployments-table .deployments-table__heading__created {
+.deployments-table .deployments-table__heading__created-date {
   width: 350px;
 }
 
-.deployments-table .deployments-table__body__row__created .deployments-table__body__row__created__on {
+.deployments-table .deployments-table__body__row__created-date .deployments-table__body__row__created-date__on {
   margin-right: 20px;
 }
 
-.deployments-table .deployments-table__body__row__created .deployments-table__body__row__created__ago {
+.deployments-table .deployments-table__body__row__created-date .deployments-table__body__row__created-date__ago {
   font-style: italic;
 }
 
@@ -18,4 +18,8 @@
 .deployments-table .deployments-table__body__row__service-name,
 .deployments-table .deployments-table__body__row__version {
   white-space: nowrap;
+}
+
+.deployments-table .deployments-table__heading__created-by {
+  width: 200px;
 }

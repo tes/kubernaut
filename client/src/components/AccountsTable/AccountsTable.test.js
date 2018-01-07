@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, } from 'react-router-dom';
 import { shallow, } from 'enzyme';
 import R from 'ramda';
 import AccountsTable from './AccountsTable';
@@ -11,8 +12,9 @@ describe('AccountsTable', () => {
     const wrapper = renderAccountsTable();
 
     expect(wrapper.find('.accounts-table__heading').exists()).toBe(true);
-    expect(wrapper.find('.accounts-table__heading__created').text()).toBe('Created');
+    expect(wrapper.find('.accounts-table__heading__created-date').text()).toBe('Created');
     expect(wrapper.find('.accounts-table__heading__display-name').text()).toBe('Name');
+    expect(wrapper.find('.accounts-table__heading__created-by').text()).toBe('Created By');
   });
 
   it('should render empty table', () => {
@@ -31,8 +33,12 @@ describe('AccountsTable', () => {
     const items = R.times((i) => {
       return {
         id: `account-${i+1}`,
-        createdOn: new Date('2017-07-01T16:15:14.000Z'),
         displayName: 'Bob Holness',
+        createdOn: new Date('2017-07-01T16:15:14.000Z'),
+        createdBy: {
+          id: '123',
+          displayName: 'Roy Walker',
+        },
       };
     }, 50);
     const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
@@ -43,9 +49,11 @@ describe('AccountsTable', () => {
     const row = wrapper.find('.accounts-table__body__row').at(0);
 
     expect(row.prop('id')).toBe('account-1');
-    expect(row.find('.accounts-table__body__row__created__on').find(Human).prop('date')).toBe(accounts.items[0].createdOn);
-    expect(row.find('.accounts-table__body__row__created__ago').find(Ago).prop('date')).toBe(accounts.items[0].createdOn);
+    expect(row.find('.accounts-table__body__row__created-date__on').find(Human).prop('date')).toBe(accounts.items[0].createdOn);
+    expect(row.find('.accounts-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(accounts.items[0].createdOn);
     expect(row.find('.accounts-table__body__row__display-name').text()).toBe(accounts.items[0].displayName);
+    expect(row.find('.accounts-table__body__row__created-by').find(Link).prop('to')).toBe(`/accounts/${accounts.items[0].createdBy.id}`);
+    expect(row.find('.accounts-table__body__row__created-by').find(Link).prop('children')).toBe(accounts.items[0].createdBy.displayName);
   });
 
   it('should render table while loading', () => {

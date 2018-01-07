@@ -1,4 +1,5 @@
 import React, { Component, } from 'react';
+import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
@@ -12,7 +13,7 @@ class AccountsTable extends Component {
     const errorTableBody = () =>
       <tbody className='accounts-table__body accounts-table__body--error'>
         <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='4'>Error loading accounts</td>
+          <td className='accounts-table__body__row__info' colSpan='3'>Error loading accounts</td>
         </tr>
       </tbody>
     ;
@@ -20,7 +21,7 @@ class AccountsTable extends Component {
     const loadingTableBody = () =>
       <tbody className='accounts-table__body accounts-table__body--loading'>
         <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='4'>Loading accounts…</td>
+          <td className='accounts-table__body__row__info' colSpan='3'>Loading accounts…</td>
         </tr>
       </tbody>
     ;
@@ -28,7 +29,7 @@ class AccountsTable extends Component {
     const emptyTableBody = () =>
       <tbody className='accounts-table__body accounts-table__body--empty'>
         <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='4'>There are no accounts</td>
+          <td className='accounts-table__body__row__info' colSpan='3'>There are no accounts</td>
         </tr>
       </tbody>
     ;
@@ -38,11 +39,14 @@ class AccountsTable extends Component {
       {
         accounts.items.map(account => {
           return <tr className='accounts-table__body__row' key={account.id} id={account.id} >
-            <td className='accounts-table__body__row__created'>
-              <span className="accounts-table__body__row__created__on"><Human date={account.createdOn} /></span>
-              <span className="accounts-table__body__row__created__ago"><Ago date={account.createdOn} /></span>
+            <td className='accounts-table__body__row__created-date'>
+              <span className="accounts-table__body__row__created-date__on"><Human date={account.createdOn} /></span>
+              <span className="accounts-table__body__row__created-date__ago"><Ago date={account.createdOn} /></span>
             </td>
             <td className='accounts-table__body__row__display-name'>{account.displayName}</td>
+            <td className='accounts-table__body__row__created-by'>
+              <Link to={`/accounts/${account.createdBy.id}`}>{account.createdBy.displayName}</Link>
+            </td>
           </tr>;
         })
       }
@@ -54,8 +58,9 @@ class AccountsTable extends Component {
         <table className='accounts-table table table-condensed table-hover'>
           <thead className='accounts-table__heading'>
             <tr>
-              <th className='accounts-table__heading__created'>Created</th>
+              <th className='accounts-table__heading__created-date'>Created</th>
               <th className='accounts-table__heading__display-name'>Name</th>
+              <th className='accounts-table__heading__created-by'>Created By</th>
             </tr>
           </thead>
           {
