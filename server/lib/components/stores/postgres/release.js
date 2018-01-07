@@ -1,5 +1,8 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
+import Service from '../../../domain/Service';
+import ReleaseTemplate from '../../../domain/ReleaseTemplate';
+import Release from '../../../domain/Release';
 
 export default function(options) {
 
@@ -160,33 +163,31 @@ export default function(options) {
     }
 
     function toRelease(row, attributeRows = []) {
-      return {
+      return new Release({
         id: row.id,
-        service: {
+        service: new Service({
           id: row.service_id,
           name: row.service_name,
           namespace: new Namespace({
             id: row.namespace_id,
             name: row.namespace_name,
           }),
-        },
+        }),
         version: row.version,
-        template: row.template_id ? {
+        template: row.template_id ? new ReleaseTemplate({
           id: row.template_id,
-          source: {
-            yaml: row.template_source_yaml,
-            json: row.template_source_json,
-          },
+          yaml: row.template_source_yaml,
+          json: row.template_source_json,
           checksum: row.template_checksum,
-        } : undefined,
+        }) : undefined,
+        attributes: attributeRows.reduce((attributes, row) => {
+          return { ...attributes, [row.name]: row.value, };
+        }, {}),
         createdOn: row.created_on,
         createdBy: row.created_by,
         deletedOn: row.deleted_on,
         deletedBy: row.deleted_by,
-        attributes: attributeRows.reduce((attributes, row) => {
-          return { ...attributes, [row.name]: row.value, };
-        }, {}),
-      };
+      });
     }
 
     return cb(null, {

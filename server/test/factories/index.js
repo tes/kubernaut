@@ -10,6 +10,9 @@ import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 import Namespace from '../../lib/domain/Namespace';
+import Service from '../../lib/domain/Service';
+import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
+import Release from '../../lib/domain/Release';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -95,32 +98,34 @@ function makeDeployment(overrides = {}) {
   }, overrides);
 }
 
-function makeRelease(overrides = {}) {
-  const service = {
-    name: get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-')),
+function makeService(overrides = {}) {
+  return new Service(merge({
+    name: chance.name().toLowerCase().replace(/\s/g, '-'),
     namespace: new Namespace({
       name: 'default',
     }),
-  };
+  }, overrides));
+}
+
+function makeRelease(overrides = {}) {
+  const service = makeService(overrides.service);
   const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
   const yaml = get(overrides, 'template.source.yaml', sampleTemplate);
   const json = get(overrides, 'template.source.json', yaml2json(yaml));
 
-  return merge({
+  return new Release(merge({
     service,
     version,
-    template: {
-      source: {
-        yaml,
-        json,
-      },
+    template: new ReleaseTemplate({
+      yaml,
+      json,
       checksum: highwayhash.asHexString(key, Buffer.from(yaml)),
-    },
+    }),
     attributes: {
       template: `${chance.word().toLowerCase()}.yaml`,
       image: `registry/repo/${service.name}:${version}`,
     },
-  }, overrides);
+  }, overrides));
 }
 
 function makeMeta(overrides = {}) {
