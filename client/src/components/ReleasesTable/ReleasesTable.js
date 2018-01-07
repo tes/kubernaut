@@ -43,9 +43,9 @@ class ReleasesTable extends Component {
               <span className="releases-table__body__row__created-date__on"><Human date={release.createdOn} /></span>
               <span className="releases-table__body__row__created-date__ago"><Ago date={release.createdOn} /></span>
             </td>
-            <td className='releases-table__body__row__namespace-name'>{release.service.namespace.name}</td>
             <td className='releases-table__body__row__service-name'>{release.service.name}</td>
             <td className='releases-table__body__row__version'>{release.version}</td>
+            <td className='releases-table__body__row__namespace-name'>{release.service.namespace.name}</td>
             <td className='releases-table__body__row__created-by'>
               <Link to={`/accounts/${release.createdBy.id}`}>{release.createdBy.displayName}</Link>
             </td>
@@ -62,9 +62,9 @@ class ReleasesTable extends Component {
           <thead className='releases-table__heading'>
             <tr>
               <th className='releases-table__heading__created-date'>Created</th>
-              <th className='releases-table__heading__namespace-name'>Namespace</th>
               <th className='releases-table__heading__service-name'>Service</th>
               <th className='releases-table__heading__version'>Version</th>
+              <th className='releases-table__heading__namespace-name'>Namespace</th>
               <th className='releases-table__heading__created-by'>Created By</th>
             </tr>
           </thead>
