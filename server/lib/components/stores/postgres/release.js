@@ -39,14 +39,17 @@ export default function(options) {
     }
 
     async function saveRelease(data, meta) {
-      return db.withTransaction(async connection => {
+      const release = await db.withTransaction(async connection => {
         const service = await _ensureService(connection, data.service, data.service.namespace.name, meta);
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
-        await connection.query(SQL.REFRESH_ENTITY_COUNT);
         return { ...release, service, template, attributes, };
       });
+
+      await db.refreshEntityCount();
+
+      return release;
     }
 
     async function _ensureService(connection, data, namespace, meta) {
@@ -139,7 +142,7 @@ export default function(options) {
       await db.query(SQL.DELETE_RELEASE, [
         id, meta.date, meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
       logger.debug(`Deleted release id: ${id}`);
     }
 

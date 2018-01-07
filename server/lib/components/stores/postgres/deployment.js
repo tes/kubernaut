@@ -32,7 +32,7 @@ export default function(options) {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
 
       logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context}/${deployment.id}`);
 
@@ -61,7 +61,7 @@ export default function(options) {
       await db.query(SQL.DELETE_DEPLOYMENT, [
         id, meta.date, meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
     }
 
     function toDeployment(row) {

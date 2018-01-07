@@ -36,12 +36,18 @@ describe('Account Store', () => {
     describe(`${suite.name} Store`, () => {
 
       let system = { stop: cb => cb(), };
-      let store = { nuke: () => new Promise(cb => cb()), };
+      let store = { nuke: () => {}, };
+      let db = {
+        refreshEntityCount: () => {},
+        enableRefreshEntityCount: () => {},
+        disableRefreshEntityCount: () => {},
+      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
+          db = components.db || db;
           cb();
         });
       });
@@ -276,9 +282,11 @@ describe('Account Store', () => {
               });
             }
 
+            db.disableRefreshEntityCount();
             await Promise.all(accounts.map(async account => {
               return saveAccount(account.data);
             }));
+            await db.enableRefreshEntityCount();
           });
 
           it('should limit accounts to 50 by default', async () => {

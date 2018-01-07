@@ -34,7 +34,7 @@ export default function(options) {
         data.name, meta.date, meta.account.id,
       ]);
 
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
 
       const namespace = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,

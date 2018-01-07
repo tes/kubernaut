@@ -37,11 +37,17 @@ describe('Deployment Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
+      let db = {
+        refreshEntityCount: () => {},
+        enableRefreshEntityCount: () => {},
+        disableRefreshEntityCount: () => {},
+      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
+          db = components.db || db;
           cb();
         });
       });
@@ -305,12 +311,14 @@ describe('Deployment Store', () => {
               });
             }
 
+            db.disableRefreshEntityCount();
             await Promise.all(deployments.map(async record => {
               const release = await saveRelease(record.data.release);
               const deployment = { ...record.data, release, };
               return saveDeployment(deployment);
             }));
-          }, 20000);
+            await db.enableRefreshEntityCount();
+          });
 
           it('should limit deployments to 50 by default', async () => {
             const results = await listDeployments();

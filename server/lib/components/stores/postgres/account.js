@@ -40,7 +40,7 @@ export default function(options = {}) {
         data.displayName, data.avatar, meta.date, meta.account.id,
       ]);
 
-      await connection.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
 
       const account = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
@@ -97,7 +97,7 @@ export default function(options = {}) {
         meta.date,
         meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
+      await db.refreshEntityCount();
       logger.debug(`Deleted account id: ${id}`);
     }
 

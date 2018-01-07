@@ -1,6 +1,10 @@
+import SQL from './sql';
+
 export default function(options = {}) {
 
-  function start({ config, logger, postgres, }, cb) {
+  function start({ config = {}, logger, postgres, }, cb) {
+
+    let _refreshEntityCountDisabled = false;
 
     postgres.on('error', err => {
       logger.warn(err, 'Database client errored and was evicted from the pool');
@@ -8,6 +12,20 @@ export default function(options = {}) {
 
     async function query(...args) {
       return postgres.query.apply(postgres, args);
+    }
+
+    async function refreshEntityCount() {
+      if (_refreshEntityCountDisabled) return;
+      return postgres.query(SQL.REFRESH_ENTITY_COUNT);
+    }
+
+    async function enableRefreshEntityCount() {
+      _refreshEntityCountDisabled = false;
+      await refreshEntityCount();
+    }
+
+    function disableRefreshEntityCount() {
+      _refreshEntityCountDisabled = true;
     }
 
     async function withTransaction(operations) {
@@ -28,6 +46,9 @@ export default function(options = {}) {
     cb(null, {
       query,
       withTransaction,
+      refreshEntityCount,
+      enableRefreshEntityCount,
+      disableRefreshEntityCount,
     });
   }
 
