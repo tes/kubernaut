@@ -1,4 +1,5 @@
 import SQL from './sql';
+import Namespace from '../../../domain/Namespace';
 
 export default function(options) {
 
@@ -88,10 +89,10 @@ export default function(options) {
           service: {
             id: row.service_id,
             name: row.service_name,
-            namespace: {
+            namespace: new Namespace({
               id: row.namespace_id,
               name: row.namespace_name,
-            },
+            }),
           },
           version: row.release_version,
         },

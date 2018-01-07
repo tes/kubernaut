@@ -9,6 +9,8 @@ import pm from 'power-merge';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
+import Namespace from '../../lib/domain/Namespace';
+
 const key = crypto.randomBytes(32);
 const chance = new Chance();
 const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
@@ -55,9 +57,9 @@ const merge = pm.compile({
   ], });
 
 function makeNamespace(overrides = {}) {
-  return merge({
+  return new Namespace(merge({
     name: chance.word({ length: 32, }),
-  }, overrides);
+  }, overrides));
 }
 
 function makeIdentity(overrides = {}) {
@@ -96,9 +98,9 @@ function makeDeployment(overrides = {}) {
 function makeRelease(overrides = {}) {
   const service = {
     name: get(overrides, 'service.name', chance.name().toLowerCase().replace(/\s/g, '-')),
-    namespace: {
+    namespace: new Namespace({
       name: 'default',
-    },
+    }),
   };
   const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
   const yaml = get(overrides, 'template.source.yaml', sampleTemplate);

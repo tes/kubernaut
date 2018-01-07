@@ -1,4 +1,5 @@
 import SQL from './sql';
+import Namespace from '../../../domain/Namespace';
 
 export default function(options) {
 
@@ -72,12 +73,12 @@ export default function(options) {
     }
 
     function toNamespace(row) {
-      return {
+      return new Namespace({
         id: row.id,
         name: row.name,
         createdOn: row.created_on,
         createdBy: row.created_by,
-      };
+      });
     }
 
     async function withTransaction(operations) {
