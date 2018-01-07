@@ -1,7 +1,6 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
 import Service from '../../../domain/Service';
-import ReleaseTemplate from '../../../domain/ReleaseTemplate';
 import Release from '../../../domain/Release';
 import Manifest from '../../../domain/Manifest';
 import Deployment from '../../../domain/Deployment';

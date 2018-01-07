@@ -1,6 +1,6 @@
 export default class Deployment {
 
-  constructor({ id, release, context, manifest, createdOn, createdBy, deletedOn, deletedBy }) {
+  constructor({ id, release, context, manifest, createdOn, createdBy, deletedOn, deletedBy, }) {
     this.id = id;
     this.release = release;
     this.context = context;

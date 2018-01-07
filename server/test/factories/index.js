@@ -15,6 +15,7 @@ import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
 import Release from '../../lib/domain/Release';
 import Manifest from '../../lib/domain/Manifest';
 import Deployment from '../../lib/domain/Deployment';
+import Account from '../../lib/domain/Account';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -78,10 +79,10 @@ function makeIdentity(overrides = {}) {
 function makeAccount(overrides = {}) {
   const first = chance.first();
   const last = chance.last();
-  return merge({
+  return new Account(merge({
     displayName: `${first} ${last}`,
     roles: [],
-  }, overrides);
+  }, overrides));
 }
 
 function makeService(overrides = {}) {

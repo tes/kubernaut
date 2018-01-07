@@ -1,4 +1,5 @@
 import { v4 as uuid, } from 'uuid';
+import Namespace from '../../../domain/Namespace';
 
 export default function(options) {
 
@@ -11,18 +12,16 @@ export default function(options) {
     }
 
     async function findNamespace({ name, }) {
-      const namespace = namespaces.find(n => n.name === name && !n.deletedOn);
-      if (!namespace) return;
-      return { ...namespace, };
+      return namespaces.find(n => n.name === name && !n.deletedOn);
     }
 
     async function saveNamespace(namespace, meta) {
       reportMissingMetadata(meta);
       reportDuplicateNamespaces(namespace);
 
-      return append(namespaces, {
+      return append(namespaces, new Namespace({
         ...namespace, id: uuid(), createdOn: meta.date, createdBy: meta.account,
-      });
+      }));
     }
 
     async function listNamespaces(limit = 50, offset = 0) {

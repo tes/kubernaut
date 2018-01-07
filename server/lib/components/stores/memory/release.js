@@ -1,53 +1,58 @@
 import { v4 as uuid, } from 'uuid';
+import Service from '../../../domain/Service';
+import Release from '../../../domain/Release';
+
 
 export default function(options = {}) {
 
-  function start({ tables, }, cb) {
+  function start({ tables, namespaces, }, cb) {
 
-    const { namespaces, services, releases, } = tables;
+    const { services, releases, } = tables;
 
     async function getRelease(id) {
-      const release = releases.find(r => r.id === id && !r.deletedOn);
-      if (!release) return;
-
-      const service = services.find(s => s.id === release.service.id);
-      return { ...release, service, };
+      return releases.find(r =>
+        r.id === id &&
+        !r.deletedOn &&
+        !r.service.deletedOn &&
+        !r.service.namespace.deletedOn);
     }
 
     async function findRelease({ name, namespace, version, }) {
-      const release = releases.find(r =>
+      return releases.find(r =>
         r.service.name === name &&
         r.service.namespace.name === namespace &&
         r.version === version &&
-        !r.deletedOn
+        !r.deletedOn &&
+        !r.service.deletedOn &&
+        !r.service.namespace.deletedOn
       );
-      if (!release) return;
-
-      const service = services.find(s => s.id === release.service.id);
-      return { ...release, service, };
     }
 
     async function saveRelease(release, meta) {
       reportMissingMetadata(meta);
 
-      const service = await ensureService(release.service, release.service.namespace.name, meta);
+      const service = await ensureService(release.service, meta);
 
       reportDuplicateReleaseVersions(release);
 
-      return append(releases, {
+      return append(releases, new Release({
         ...release, id: uuid(), service, createdOn: meta.date, createdBy: meta.account,
-      });
+      }));
     }
 
-    async function ensureService(data, namespaceName, meta) {
+    async function findService(name) {
+      return services.find(s => s.name === name && !s.deletedOn);
+    }
+
+    async function ensureService(data, meta) {
       reportMissingMetadata(meta);
-      reportMissingNamespace(namespaceName);
 
-      const namespace = namespaces.find(n => n.name === namespaceName);
+      const namespace = await namespaces.findNamespace({ name: data.namespace.name, });
+      if (!namespace) throw Object.assign(new Error('Missing namespace'), { code: '23502', });
 
-      return services.find(s => s.name === data.name && s.namespace.name === namespace.name) || append(services, {
+      return await findService(data.name) || append(services, new Service({
         id: uuid(), name: data.name, namespace, createdOn: meta.date, createdBy: meta.account,
-      });
+      }));
     }
 
     async function listReleases(limit = 50, offset = 0) {
@@ -59,7 +64,7 @@ export default function(options = {}) {
 
     async function deleteRelease(id, meta) {
       reportMissingMetadata(meta);
-      const release = releases.find(r => r.id === id && !r.deletedOn);
+      const release = await getRelease(id);
       if (release) {
         release.deletedOn = meta.date;
         release.deletedBy = meta.account;
@@ -73,10 +78,6 @@ export default function(options = {}) {
         r.version === release.version &&
         !r.deletedOn)
       ) throw Object.assign(new Error('Duplicate Release'), { code: '23505', });
-    }
-
-    function reportMissingNamespace(name) {
-      if (!namespaces.find(n => n.name === name && !n.deletedOn)) throw Object.assign(new Error('Missing namespace'), { code: '23502', });
     }
 
     function reportMissingMetadata(meta) {

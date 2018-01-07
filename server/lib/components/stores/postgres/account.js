@@ -1,5 +1,6 @@
 import SQL from './sql';
 import uniq from 'lodash.uniq';
+import Account from '../../../domain/Account';
 
 export default function(options = {}) {
   function start({ config, logger, postgres: db, }, cb) {
@@ -203,7 +204,7 @@ export default function(options = {}) {
 
     function toAccount(row, rolesAndPermissionsRows = []) {
       const roles = toRolesAndPermissions(rolesAndPermissionsRows);
-      return {
+      return new Account({
         id: row.id,
         displayName: row.display_name,
         avatar: row.avatar,
@@ -212,19 +213,7 @@ export default function(options = {}) {
         deletedOn: row.deleted_on,
         deletedBy: row.deleted_by,
         roles,
-        hasPermission: function(namespace, permission) {
-          return Object.keys(roles).reduce((permissions, name) => {
-            if (!(roles[name].namespaces.includes('*') || roles[name].namespaces.includes(namespace))) return permissions;
-            return permissions.concat(roles[name].permissions);
-          }, []).includes(permission);
-        },
-        permittedNamespaces: function(permission) {
-          return Object.keys(roles).reduce((namespaces, name) => {
-            if (!roles[name].permissions.includes(permission)) return namespaces;
-            return namespaces.concat(roles[name].namespaces);
-          }, []);
-        },
-      };
+      });
     }
 
     function toRolesAndPermissions(rows) {

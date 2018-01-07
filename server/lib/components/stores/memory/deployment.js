@@ -1,27 +1,35 @@
 import { v4 as uuid, } from 'uuid';
+import Deployment from '../../../domain/Deployment';
 
 export default function(options = {}) {
-  function start({ tables, }, cb) {
+  function start({ tables, releases, }, cb) {
 
-    const { deployments, releases, } = tables;
+    const { deployments, } = tables;
 
     async function getDeployment(id) {
-      return deployments.find(d => d.id === id && !d.deletedOn);
+      return deployments.find(
+        d => d.id === id &&
+        !d.deletedOn &&
+        !d.release.deletedOn &&
+        !d.release.service.deletedOn &&
+        !d.release.service.namespace.deletedOn);
     }
 
     async function saveDeployment(deployment, meta) {
       reportMissingMetadata(meta);
-      reportMissingRelease(deployment.release);
-      const release = releases.find(r => r.id === deployment.release.id);
 
-      return append(deployments, {
+      const release = await releases.getRelease(deployment.release.id);
+      if (!release) throw Object.assign(new Error('Missing Release'), { code: '23502', });
+
+      return append(deployments, new Deployment({
         ...deployment, release, id: uuid(), createdOn: meta.date, createdBy: meta.account,
-      });
+      }));
     }
 
     async function deleteDeployment(id, meta) {
       reportMissingMetadata(meta);
-      const deployment = deployments.find(r => r.id === id && !r.deletedOn);
+
+      const deployment = await getDeployment(id);
       if (deployment) {
         deployment.deletedOn = meta.date;
         deployment.deletedBy = meta.account;
@@ -33,10 +41,6 @@ export default function(options = {}) {
       const count = active.length;
       const items = active.slice(offset, offset + limit);
       return { limit, offset, count, items, };
-    }
-
-    function reportMissingRelease(release) {
-      if (!releases.find(r => r.id === release.id && !r.deletedOn)) throw Object.assign(new Error('Missing Release'), { code: '23502', });
     }
 
     function reportMissingMetadata(meta) {

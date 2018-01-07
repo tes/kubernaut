@@ -1,11 +1,12 @@
 import { v4 as uuid, } from 'uuid';
 import intersection from 'lodash.intersection';
+import Account from '../../../domain/Account';
 
 export default function(options = {}) {
 
-  function start({ tables, }, cb) {
+  function start({ tables, namespaces, }, cb) {
 
-    const { namespaces, accounts, identities, account_roles, } = tables;
+    const { accounts, identities, account_roles, } = tables;
     const roles = {
       admin: {
         permissions: [
@@ -29,21 +30,7 @@ export default function(options = {}) {
         return result;
       }, {});
 
-      return {
-        ...account,
-        roles: accountRoles,
-        hasPermission: function(namespace, permission) {
-          return Object.keys(accountRoles).reduce((permissions, name) => {
-            return permissions.concat(accountRoles[name].permissions);
-          }, []).includes(permission);
-        },
-        permittedNamespaces: function(permission) {
-          return Object.keys(accountRoles).reduce((namespaces, name) => {
-            if (!accountRoles[name].permissions.includes(permission)) return namespaces;
-            return namespaces.concat(accountRoles[name].namespaces);
-          }, []);
-        },
-      };
+      return new Account({ ...account, roles: accountRoles, });
     }
 
     async function findAccount({ name, provider, type, }) {
@@ -55,9 +42,9 @@ export default function(options = {}) {
     }
 
     async function saveAccount(account, meta) {
-      return append(accounts, {
+      return append(accounts, new Account({
         ...account, id: uuid(), createdOn: meta.date, createdBy: meta.account,
-      });
+      }));
     }
 
     async function ensureAccount(account, identity, meta) {
@@ -114,7 +101,7 @@ export default function(options = {}) {
       reportMissingMetadata(meta);
       reportMissingAccount(accountId);
       reportMissingRole(roleName);
-      reportMissingNamespace(namespaceName);
+      await reportMissingNamespace(namespaceName);
 
       if (hasRole(accountId, roleName)) return;
 
@@ -158,8 +145,10 @@ export default function(options = {}) {
       if (!roles[name]) throw Object.assign(new Error(`Invalid role: ${name}`));
     }
 
-    function reportMissingNamespace(name) {
-      if (name && !namespaces.find(n => n.name === name && !n.deletedOn)) throw Object.assign(Object.assign(new Error(`Invalid namespace: ${name}`), { code: '23502', }));
+    async function reportMissingNamespace(name) {
+      if (!name) return;
+      const namespace = await namespaces.findNamespace({ name, });
+      if (!namespace) throw Object.assign(new Error(`Invalid namespace: ${name}`));
     }
 
     function hasRole(accountId, roleName) {
