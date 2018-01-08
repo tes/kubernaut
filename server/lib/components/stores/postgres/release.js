@@ -13,12 +13,14 @@ export default function(options) {
 
       logger.debug(`Getting release by id: ${id}`);
 
-      return Promise.all([
-        db.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
-        db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
-      ]).then(([releaseResult, attributesResult,]) => {
-        logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
-        return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
+      return await db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
+          connection.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
+        ]).then(([releaseResult, attributesResult,]) => {
+          logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
+          return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
+        });
       });
     }
 

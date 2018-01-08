@@ -10,12 +10,12 @@ class NamespacesPage extends Component {
   }
 
   render() {
-    const { error, loading, namespaces, fetchNamespaces, } = this.props;
+    const { namespaces, fetchNamespaces, } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <NamespacesTable namespaces={namespaces.data} loading={loading} error={error} fetchNamespaces={fetchNamespaces} />
+          <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespaces} />
         </div>
       </div>
     );

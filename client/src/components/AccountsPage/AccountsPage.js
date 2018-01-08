@@ -10,12 +10,12 @@ class AccountsPage extends Component {
   }
 
   render() {
-    const { error, loading, accounts, fetchAccounts, } = this.props;
+    const { accounts, fetchAccounts, } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <AccountsTable accounts={accounts.data} loading={loading} error={error} fetchAccounts={fetchAccounts} />
+          <AccountsTable accounts={accounts.data} loading={accounts.meta.loading} error={accounts.meta.error} fetchAccounts={fetchAccounts} />
         </div>
       </div>
     );

@@ -13,7 +13,7 @@ class DeploymentsTable extends Component {
     const errorTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--error'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='6'>Error loading deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='7'>Error loading deployments</td>
         </tr>
       </tbody>
     ;
@@ -21,7 +21,7 @@ class DeploymentsTable extends Component {
     const loadingTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--loading'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='6'>Loading deployments…</td>
+          <td className='deployments-table__body__row__info' colSpan='7'>Loading deployments…</td>
         </tr>
       </tbody>
     ;
@@ -29,12 +29,12 @@ class DeploymentsTable extends Component {
     const emptyTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--empty'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='6'>There are no deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='7'>There are no deployments</td>
         </tr>
       </tbody>
     ;
 
-    const DeploymentsTableBody = () =>
+    const deploymentsTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--data'>
       {
         deployments.items.map(deployment => {
@@ -50,6 +50,7 @@ class DeploymentsTable extends Component {
             <td className='deployments-table__body__row__created-by'>
               <Link to={`/accounts/${deployment.createdBy.id}`}>{deployment.createdBy.displayName}</Link>
             </td>
+            <td className='deployments-table__body__row__actions'><Link to={`/deployments/${deployment.id}`}><i className="fa fa-link" aria-hidden="true"></i></Link></td>
           </tr>;
         })
       }
@@ -67,6 +68,7 @@ class DeploymentsTable extends Component {
               <th className='deployments-table__heading__namespace-name'>Namespace</th>
               <th className='deployments-table__heading__context'>Context</th>
               <th className='deployments-table__heading__created-by'>Created By</th>
+              <th className='deployments-table__heading__actions'>&nbsp;</th>
             </tr>
           </thead>
           {
@@ -74,7 +76,7 @@ class DeploymentsTable extends Component {
               if (error) return errorTableBody();
               else if (loading) return loadingTableBody();
               else if (!deployments.count) return emptyTableBody();
-              else return DeploymentsTableBody();
+              else return deploymentsTableBody();
             })()
           }
         </table>

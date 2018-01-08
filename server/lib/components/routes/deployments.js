@@ -90,7 +90,7 @@ export default function(options = {}) {
         };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const deployment = await store.saveDeployment(data, meta);
-        await kubernetes.apply(deployment.context, deployment.release.service.namespace.name, deployment.manifest.yaml, res.locals.logger);
+        await kubernetes.apply(deployment);
 
         if (req.query.wait === 'true') {
           res.redirect(303, `/api/deployments/${deployment.id}/status`);

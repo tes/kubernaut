@@ -23,3 +23,7 @@
 .deployments-table .deployments-table__heading__created-by {
   width: 200px;
 }
+
+.deployments-table .deployments-table__heading__actions {
+  width: 31px;
+}

@@ -10,6 +10,7 @@ import { composeWithDevTools, } from 'redux-devtools-extension';
 import Header from './components/Header';
 import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
+import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import NamespacesPage from './components/NamespacesPage';
 import AccountsPage from './components/AccountsPage';
 import HomePage from './components/HomePage';
@@ -17,6 +18,7 @@ import HomePage from './components/HomePage';
 // Reducers
 import releases from './reducers/releases';
 import deployments from './reducers/deployments';
+import deployment from './reducers/deployment';
 import namespaces from './reducers/namespaces';
 import accounts from './reducers/accounts';
 
@@ -41,6 +43,7 @@ const initialState = {};
 const store = createStore(combineReducers({
   releases,
   deployments,
+  deployment,
   namespaces,
   accounts,
 }), initialState, composeWithDevTools(
@@ -62,6 +65,9 @@ class App extends Component {
                 } />
                 <Route exact path='/deployments' render={() =>
                   <DeploymentsPage />
+                } />
+                <Route exact path='/deployments/:deploymentId' render={({ match, }) =>
+                  <DeploymentDetailsPage deploymentId={match.params.deploymentId} />
                 } />
                 <Route exact path='/namespaces' render={() =>
                   <NamespacesPage />

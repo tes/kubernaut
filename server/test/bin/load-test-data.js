@@ -1,6 +1,6 @@
 import createSystem from '../../lib/system';
 import Chance from 'chance';
-import { makeAccount, makeDeployment, makeMeta, makeRootMeta, } from '../factories';
+import { makeAccount, makeDeployment, makeDeploymentLogEntry, makeMeta, makeRootMeta, } from '../factories';
 import pLimit from 'p-limit';
 
 const limit = pLimit(50);
@@ -43,6 +43,8 @@ createSystem()
                 ...data,
                 release,
               }, meta);
+              const deploymentLogEntry = makeDeploymentLogEntry({ deployment: deployment, });
+              await store.saveDeploymentLogEntry(deploymentLogEntry);
               console.log(`Inserted ${deployment.release.service.name}/${deployment.release.version}/${deployment.id}`); // eslint-disable-line no-console
             }));
           }

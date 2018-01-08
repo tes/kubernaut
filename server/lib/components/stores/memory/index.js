@@ -6,7 +6,7 @@ import deployment from './deployment';
 import store from './store';
 
 module.exports = new System({ name: 'stores/memory', })
-  .add('tables', { account_roles: [], identities: [], accounts: [], namespaces: [], services: [], releases: [], deployments: [], })
+  .add('tables', { account_roles: [], identities: [], accounts: [], namespaces: [], services: [], releases: [], deployments: [], deploymentLogEntries: [], })
   .add('store.namespace', namespace()).dependsOn('config', 'logger', 'tables')
   .add('store.account', account()).dependsOn('config', 'logger', 'tables', { component: 'store.namespace', destination: 'namespaces', })
   .add('store.release', release()).dependsOn('config', 'logger', 'tables', { component: 'store.namespace', destination: 'namespaces', }, )

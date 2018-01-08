@@ -1,18 +1,33 @@
 import { v4 as uuid, } from 'uuid';
 import Deployment from '../../../domain/Deployment';
+import DeploymentLogEntry from '../../../domain/DeploymentLogEntry';
+
 
 export default function(options = {}) {
   function start({ tables, releases, }, cb) {
 
-    const { deployments, } = tables;
+    const { deployments, deploymentLogEntries, } = tables;
+    let deploymentLogSequence = 0;
 
-    async function getDeployment(id) {
-      return deployments.find(
-        d => d.id === id &&
+    function _getDeployment(id) {
+      return deployments.find(d =>
+        d.id === id &&
         !d.deletedOn &&
         !d.release.deletedOn &&
         !d.release.service.deletedOn &&
         !d.release.service.namespace.deletedOn);
+    }
+
+    function _listDeploymentLogEntries(id) {
+      return deploymentLogEntries.filter(e =>
+        e.deployment.id === id
+      ).sort(byLeastRecent);
+    }
+
+    async function getDeployment(id) {
+      const deployment = _getDeployment(id);
+      const log = _listDeploymentLogEntries(id);
+      return deployment ? new Deployment({ ...deployment, log, }) : undefined;
     }
 
     async function saveDeployment(deployment, meta) {
@@ -26,10 +41,16 @@ export default function(options = {}) {
       }));
     }
 
+    async function saveDeploymentLogEntry(logEntry) {
+      return append(deploymentLogEntries, new DeploymentLogEntry({
+        ...logEntry, id: uuid(), sequence: deploymentLogSequence++,
+      }));
+    }
+
     async function deleteDeployment(id, meta) {
       reportMissingMetadata(meta);
 
-      const deployment = await getDeployment(id);
+      const deployment = _getDeployment(id);
       if (deployment) {
         deployment.deletedOn = meta.date;
         deployment.deletedBy = meta.account;
@@ -64,6 +85,11 @@ export default function(options = {}) {
              b.id.localeCompare(a.id);
     }
 
+    function byLeastRecent(a, b) {
+      return getTimeForSort(a.writtenOn) - getTimeForSort(b.writtenOn) ||
+             a.sequence - b.sequence;
+    }
+
     function toSlimDeployment(deployment) {
       const release = { ...deployment.release, template: undefined, attribtes: {}, };
       return { ...deployment, release, };
@@ -76,6 +102,7 @@ export default function(options = {}) {
 
     return cb(null, {
       saveDeployment,
+      saveDeploymentLogEntry,
       getDeployment,
       listDeployments,
       deleteDeployment,

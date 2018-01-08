@@ -1,6 +1,7 @@
 START TRANSACTION;
 
 -- DELETE appears faster than truncate on small tables
+DELETE FROM deployment_log_entry;
 DELETE FROM deployment;
 DELETE FROM release_template;
 DELETE FROM release_attribute;

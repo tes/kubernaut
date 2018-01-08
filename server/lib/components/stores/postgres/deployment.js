@@ -4,8 +4,8 @@ import Service from '../../../domain/Service';
 import Release from '../../../domain/Release';
 import Manifest from '../../../domain/Manifest';
 import Deployment from '../../../domain/Deployment';
+import DeploymentLogEntry from '../../../domain/DeploymentLogEntry';
 import Account from '../../../domain/Account';
-
 
 export default function(options) {
 
@@ -14,11 +14,15 @@ export default function(options) {
     async function getDeployment(id) {
       logger.debug(`Getting deployment by id: ${id}`);
 
-      const deploymentResult = await db.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]);
-
-      logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
-
-      return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0]) : undefined;
+      return await db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]),
+          connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id,]),
+        ]).then(([deploymentResult, logEntryResult,]) => {
+          logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
+          return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], logEntryResult.rows) : undefined;
+        });
+      });
     }
 
     async function saveDeployment(data, meta) {
@@ -37,6 +41,22 @@ export default function(options) {
       logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context}/${deployment.id}`);
 
       return deployment;
+    }
+
+    async function saveDeploymentLogEntry(data) {
+      logger.debug(`Saving deployment log entry: ${data.deployment.id}`);
+
+      const result = await db.query(SQL.SAVE_DEPLOYMENT_LOG_ENTRY, [
+        data.deployment.id, data.writtenOn, data.writtenTo, data.content,
+      ]);
+
+      const deploymentLogEntry = {
+        ...data, id: result.rows[0].id,
+      };
+
+      logger.debug(`Saved deployment log entry: ${data.deployment.id}/${deploymentLogEntry.id}`);
+
+      return deploymentLogEntry;
     }
 
     async function listDeployments(limit = 50, offset = 0) {
@@ -64,13 +84,21 @@ export default function(options) {
       await db.refreshEntityCount();
     }
 
-    function toDeployment(row) {
+    function toDeployment(row, logRows = []) {
       return new Deployment({
         id: row.id,
         context: row.context,
         manifest: new Manifest({
           yaml: row.manifest_yaml,
           json: row.manifest_json,
+        }),
+        log: logRows.map(row => {
+          return new DeploymentLogEntry({
+            id: row.id,            sequence: row.sequence,
+            writtenOn: row.written_on,
+            writtenTo: row.written_to,
+            content: row.content,
+          });
         }),
         release: new Release({
           id: row.release_id,
@@ -94,6 +122,7 @@ export default function(options) {
 
     return cb(null, {
       saveDeployment,
+      saveDeploymentLogEntry,
       getDeployment,
       deleteDeployment,
       listDeployments,

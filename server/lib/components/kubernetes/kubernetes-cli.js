@@ -1,23 +1,31 @@
 import { spawn, } from 'child_process';
+import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 
 export default function(options = {}) {
 
-  function start(cb) {
+  function start({ store, }, cb) {
 
-    function apply(context, namespace, manifest, logger) {
-      return new Promise((resolve, reject) => {
-        const kubectl = spawn('kubectl', ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',]);
-        kubectl.stdout.on('data', data => {
-          logger.info(data.toString().trim());
+    function apply(deployment) {
+      const context = deployment.context;
+      const namespace = deployment.release.service.namespace.name;
+      const manifest = deployment.manifest.yaml;
+      return new Promise(async (resolve, reject) => {
+        const args = ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',];
+        const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')}`, });
+        await store.saveDeploymentLogEntry(entry);
+        const kubectl = spawn('kubectl', args);
+        kubectl.stdout.on('data', async data => {
+          const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdout', content: data.toString().trim(), });
+          await store.saveDeploymentLogEntry(entry);
         });
-        kubectl.stderr.on('data', data => {
-          logger.error(data.toString().trim());
+        kubectl.stderr.on('data', async data => {
+          const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stderr', content: data.toString().trim(), });
+          await store.saveDeploymentLogEntry(entry);
         });
-        kubectl.on('close', (code) => {
+        kubectl.on('close', code => {
           return code === 0 ? resolve() : reject(new Error(`kubectl apply exited with code ${code}`));
         });
         kubectl.on('error', reject);
-
         kubectl.stdin.write(manifest);
         kubectl.stdin.end();
       });

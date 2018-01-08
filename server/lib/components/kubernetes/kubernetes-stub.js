@@ -17,7 +17,10 @@ export default function(options = {}) {
 
   function start({ contexts = defaultContexts(), }, cb) {
 
-    function apply(context, namespace, manifest) {
+    function apply(deployment) {
+      const context = deployment.context;
+      const namespace = deployment.release.service.namespace.name;
+      const manifest = deployment.manifest.yaml;
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));

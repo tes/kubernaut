@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeDeployment, makeRelease, makeRootMeta, } from '../factories';
+import { makeNamespace, makeDeployment, makeDeploymentLogEntry, makeRelease, makeRootMeta, } from '../factories';
 
 describe('Deployment Store', () => {
 
@@ -107,6 +107,19 @@ describe('Deployment Store', () => {
         });
       });
 
+      describe('Save Deployment Log Entry', () => {
+
+        it('should create deployment log entries', async () => {
+          const release = await saveRelease(makeRelease());
+          const deployment = await saveDeployment(makeDeployment({ release, }));
+          const data = makeDeploymentLogEntry({ deployment, });
+          const logEntry = await saveDeploymentLogEntry(data);
+
+          expect(logEntry).toBeDefined();
+          expect(logEntry.id).toBeDefined();
+        });
+      });
+
       describe('Get Deployment', () => {
 
         it('should retrieve deployment by id', async () => {
@@ -130,6 +143,64 @@ describe('Deployment Store', () => {
         it('should return undefined when release not found', async () => {
           const deployment = await getDeployment(uuid());
           expect(deployment).toBe(undefined);
+        });
+
+        it('should retrieve deployment log entries', async () => {
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, });
+          const meta = makeRootMeta();
+          const saved = await saveDeployment(data, meta);
+
+          const logEntries = [
+            makeDeploymentLogEntry({
+              deployment: saved,
+              writtenOn: new Date('2014-07-01T10:11:12.000Z'),
+              writtenTo: 'stdin',
+              content: 'Message 1',
+            }),
+            makeDeploymentLogEntry({
+              deployment: saved,
+              writtenOn: new Date('2014-07-01T10:11:12.000Z'),
+              writtenTo: 'stdin',
+              content: 'Message 2',
+            }),
+            makeDeploymentLogEntry({
+              deployment: saved,
+              writtenOn: new Date('2014-07-01T10:11:14.000Z'),
+              writtenTo: 'stderr',
+              content: 'Message 4',
+            }),
+            makeDeploymentLogEntry({
+              deployment: saved,
+              writtenOn: new Date('2014-07-01T10:11:13.000Z'),
+              writtenTo: 'stdout',
+              content: 'Message 3',
+            }),
+          ];
+
+          for (const logEntry of logEntries) {
+            await saveDeploymentLogEntry(logEntry);
+          }
+
+          const deployment = await getDeployment(saved.id);
+          expect(deployment).toBeDefined();
+          expect(deployment.log.length).toBe(4);
+
+          expect(deployment.log[0].writtenOn.toISOString()).toBe('2014-07-01T10:11:12.000Z');
+          expect(deployment.log[0].writtenTo).toBe('stdin');
+          expect(deployment.log[0].content).toBe('Message 1');
+
+          expect(deployment.log[1].writtenOn.toISOString()).toBe('2014-07-01T10:11:12.000Z');
+          expect(deployment.log[1].writtenTo).toBe('stdin');
+          expect(deployment.log[1].content).toBe('Message 2');
+
+          expect(deployment.log[2].writtenOn.toISOString()).toBe('2014-07-01T10:11:13.000Z');
+          expect(deployment.log[2].writtenTo).toBe('stdout');
+          expect(deployment.log[2].content).toBe('Message 3');
+
+          expect(deployment.log[3].writtenOn.toISOString()).toBe('2014-07-01T10:11:14.000Z');
+          expect(deployment.log[3].writtenTo).toBe('stderr');
+          expect(deployment.log[3].content).toBe('Message 4');
         });
       });
 
@@ -356,6 +427,10 @@ describe('Deployment Store', () => {
 
       function saveDeployment(deployment = makeDeployment(), meta = makeRootMeta()) {
         return store.saveDeployment(deployment, meta);
+      }
+
+      function saveDeploymentLogEntry(deploymentLogEntry = makeDeploymentLogEntry()) {
+        return store.saveDeploymentLogEntry(deploymentLogEntry);
       }
 
       function deleteRelease(id, meta = makeRootMeta()) {

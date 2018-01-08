@@ -15,6 +15,7 @@ import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
 import Release from '../../lib/domain/Release';
 import Manifest from '../../lib/domain/Manifest';
 import Deployment from '../../lib/domain/Deployment';
+import DeploymentLogEntry from '../../lib/domain/DeploymentLogEntry';
 import Account from '../../lib/domain/Account';
 
 const key = crypto.randomBytes(32);
@@ -128,6 +129,17 @@ function makeDeployment(overrides = {}) {
   }, overrides));
 }
 
+function makeDeploymentLogEntry(overrides = {}) {
+  const deployment = makeDeployment(overrides.deployment);
+
+  return new DeploymentLogEntry(merge({
+    writtenTo: chance.pickone(['stdin', 'stdout', 'stderr',]),
+    writtenOn: chance.date(),
+    content: chance.sentence(),
+    deployment,
+  }, overrides));
+}
+
 function makeMeta(overrides = {}) {
   return merge({
     date: chance.date(),
@@ -165,4 +177,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };
+export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeDeploymentLogEntry, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };
