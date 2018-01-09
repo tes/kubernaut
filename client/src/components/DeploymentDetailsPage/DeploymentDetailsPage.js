@@ -93,6 +93,14 @@ class DeploymentDetailsPage extends Component {
             </table>
           </div>
         </div>
+        <div className='row'>
+          <div className='col-md-12'>
+            <h2>Kubernetes Manifest</h2>
+          </div>
+          <div className='col-md-12'>
+            <pre>{deployment.manifest.yaml}</pre>
+          </div>
+        </div>
       </div>
     ;
 
