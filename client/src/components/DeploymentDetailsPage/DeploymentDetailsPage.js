@@ -79,13 +79,13 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-12'>
-            <table className='log-table table table-condensed'>
+            <table className='log-table table table-condensed '>
               <tbody>
               {
                 deployment.log.map(entry => {
                   return <tr key={entry.id} className={`log-table__body log-table__body__row--${entry.writtenTo}`}>
                     <td className='log-table__body__row__written-on'><Human date={entry.writtenOn} /></td>
-                    <td className='log-table__body__row__content'>${entry.content}</td>
+                    <td className='log-table__body__row__content'>{entry.content}</td>
                   </tr>;
                 })
               }

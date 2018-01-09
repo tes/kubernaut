@@ -22,8 +22,8 @@ createSystem()
 
         // Iterate services inside versions, as creating a release locks based on service name
         const tasks = [];
-        for (var v = 1; v <= 10; v++) {
-          for (var s = 0; s < 10; s++) {
+        for (let v = 1; v <= 10; v++) {
+          for (let s = 0; s < 10; s++) {
             const name = `service-${chance.word()}-${chance.word()}`;
             const commit = chance.hash().substr(0, 6);
             const data = makeDeployment({
@@ -39,12 +39,14 @@ createSystem()
 
             tasks.push(limit(async () => {
               const release = await store.saveRelease(data.release, meta);
-              const deployment = await store.saveDeployment({
-                ...data,
-                release,
-              }, meta);
-              const deploymentLogEntry = makeDeploymentLogEntry({ deployment: deployment, });
-              await store.saveDeploymentLogEntry(deploymentLogEntry);
+              const deployment = await store.saveDeployment({ ...data, release, }, meta);
+              const logEntries = [];
+              for (let l = 0; l < 5; l++) {
+                logEntries.push(makeDeploymentLogEntry({ deployment: deployment, }));
+              }
+              for (const logEntry of logEntries) {
+                await store.saveDeploymentLogEntry(logEntry);
+              }
               console.log(`Inserted ${deployment.release.service.name}/${deployment.release.version}/${deployment.id}`); // eslint-disable-line no-console
             }));
           }
