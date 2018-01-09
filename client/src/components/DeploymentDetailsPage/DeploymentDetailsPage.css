@@ -3,6 +3,10 @@
   white-space: nowrap;
 }
 
+.log-table .log-table__body__row__written-on {
+  width: 250px;
+}
+
 .log-table .log-table__body__row--stdin {
   color: blue;
 }
