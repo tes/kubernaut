@@ -1,3 +1,4 @@
+import apm from 'elastic-apm-node/start';
 import system from './lib/system';
 import runner from 'systemic-domain-runner';
 

@@ -53,6 +53,8 @@ spec:
         env:
         - name: APP_ENV
           value: live
+        - name: APP_VERSION
+          value: "{{version}}"
         volumeMounts:
         - name: kubectl-config
           mountPath: "/config/.kube"
