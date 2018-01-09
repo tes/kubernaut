@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link, } from 'react-router-dom';
 import { shallow, } from 'enzyme';
 import R from 'ramda';
 import NamespacesTable from './NamespacesTable';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, NamespaceLink, } from '../Links';
 
 describe('NamespacesTable', () => {
 
@@ -47,9 +47,8 @@ describe('NamespacesTable', () => {
     expect(row.prop('id')).toBe('namespace-1');
     expect(row.find('.namespaces-table__body__row__created-date__on').find(Human).prop('date')).toBe(namespaces.items[0].createdOn);
     expect(row.find('.namespaces-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(namespaces.items[0].createdOn);
-    expect(row.find('.namespaces-table__body__row__namespace-name').text()).toBe(namespaces.items[0].name);
-    expect(row.find('.namespaces-table__body__row__created-by').find(Link).prop('to')).toBe(`/accounts/${namespaces.items[0].createdBy.id}`);
-    expect(row.find('.namespaces-table__body__row__created-by').find(Link).prop('children')).toBe(namespaces.items[0].createdBy.displayName);
+    expect(row.find('.namespaces-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(namespaces.items[0]);
+    expect(row.find('.namespaces-table__body__row__created-by').find(AccountLink).prop('account')).toBe(namespaces.items[0].createdBy);
   });
 
   it('should render table while loading', () => {

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link, } from 'react-router-dom';
 import { shallow, } from 'enzyme';
 import R from 'ramda';
 import AccountsTable from './AccountsTable';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, } from '../Links';
 
 describe('AccountsTable', () => {
 
@@ -52,8 +52,7 @@ describe('AccountsTable', () => {
     expect(row.find('.accounts-table__body__row__created-date__on').find(Human).prop('date')).toBe(accounts.items[0].createdOn);
     expect(row.find('.accounts-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(accounts.items[0].createdOn);
     expect(row.find('.accounts-table__body__row__display-name').text()).toBe(accounts.items[0].displayName);
-    expect(row.find('.accounts-table__body__row__created-by').find(Link).prop('to')).toBe(`/accounts/${accounts.items[0].createdBy.id}`);
-    expect(row.find('.accounts-table__body__row__created-by').find(Link).prop('children')).toBe(accounts.items[0].createdBy.displayName);
+    expect(row.find('.accounts-table__body__row__created-by').find(AccountLink).prop('account')).toBe(accounts.items[0].createdBy);
   });
 
   it('should render table while loading', () => {

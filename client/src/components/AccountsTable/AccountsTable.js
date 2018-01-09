@@ -1,8 +1,8 @@
 import React, { Component, } from 'react';
-import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, } from '../Links';
 import './AccountsTable.css';
 
 class AccountsTable extends Component {
@@ -45,7 +45,7 @@ class AccountsTable extends Component {
             </td>
             <td className='accounts-table__body__row__display-name'>{account.displayName}</td>
             <td className='accounts-table__body__row__created-by'>
-              <Link to={`/accounts/${account.createdBy.id}`}>{account.createdBy.displayName}</Link>
+              <AccountLink account={account.createdBy} />
             </td>
           </tr>;
         })

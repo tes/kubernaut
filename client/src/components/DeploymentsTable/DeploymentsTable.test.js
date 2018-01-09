@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link, } from 'react-router-dom';
 import { shallow, } from 'enzyme';
 import R from 'ramda';
 import DeploymentsTable from './DeploymentsTable';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, DeploymentLink, } from '../Links';
+
 
 describe('DeploymentsTable', () => {
 
@@ -63,12 +64,12 @@ describe('DeploymentsTable', () => {
     expect(row.prop('id')).toBe('deployment-1');
     expect(row.find('.deployments-table__body__row__created-date__on').find(Human).prop('date')).toBe(deployments.items[0].createdOn);
     expect(row.find('.deployments-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(deployments.items[0].createdOn);
-    expect(row.find('.deployments-table__body__row__namespace-name').text()).toBe(deployments.items[0].release.service.namespace.name);
-    expect(row.find('.deployments-table__body__row__service-name').text()).toBe(deployments.items[0].release.service.name);
-    expect(row.find('.deployments-table__body__row__version').text()).toBe(deployments.items[0].release.version);
+    expect(row.find('.deployments-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(deployments.items[0].release.service.namespace);
+    expect(row.find('.deployments-table__body__row__service-name').find(ServiceLink).prop('service')).toBe(deployments.items[0].release.service);
+    expect(row.find('.deployments-table__body__row__version').find(ReleaseLink).prop('release')).toBe(deployments.items[0].release);
     expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments.items[0].context);
-    expect(row.find('.deployments-table__body__row__created-by').find(Link).prop('to')).toBe(`/accounts/${deployments.items[0].createdBy.id}`);
-    expect(row.find('.deployments-table__body__row__created-by').find(Link).prop('children')).toBe(deployments.items[0].createdBy.displayName);
+    expect(row.find('.deployments-table__body__row__created-by').find(AccountLink).prop('account')).toBe(deployments.items[0].createdBy);
+    expect(row.find('.deployments-table__body__row__actions').find(DeploymentLink).prop('deployment')).toBe(deployments.items[0]);
   });
 
   it('should render table while loading', () => {

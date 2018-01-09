@@ -1,8 +1,8 @@
 import React, { Component, } from 'react';
-import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, NamespaceLink, } from '../Links';
 import './NamespacesTable.css';
 
 class NamespacesTable extends Component {
@@ -43,10 +43,8 @@ class NamespacesTable extends Component {
               <span className='namespaces-table__body__row__created-date__on'><Human date={namespace.createdOn} /></span>
               <span className='namespaces-table__body__row__created-date__ago'><Ago date={namespace.createdOn} /></span>
             </td>
-            <td className='namespaces-table__body__row__namespace-name'>{namespace.name}</td>
-            <td className='namespaces-table__body__row__created-by'>
-              <Link to={`/accounts/${namespace.createdBy.id}`}>{namespace.createdBy.displayName}</Link>
-            </td>
+            <td className='namespaces-table__body__row__namespace-name'><NamespaceLink namespace={namespace} /></td>
+            <td className='namespaces-table__body__row__created-by'><AccountLink account={namespace.createdBy} /></td>
           </tr>;
         })
       }

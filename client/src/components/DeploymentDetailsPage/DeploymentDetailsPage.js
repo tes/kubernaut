@@ -1,7 +1,7 @@
 import React, { Component, } from 'react';
 import PropTypes from 'prop-types';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, } from '../Links';
+import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, } from '../Links';
 import './DeploymentDetailsPage.css';
 
 class DeploymentDetailsPage extends Component {
@@ -28,7 +28,7 @@ class DeploymentDetailsPage extends Component {
             <span className='details__label'>Service:</span>
           </div>
           <div className='col-md-10'>
-            <span>{deployment.release.service.name}</span>
+            <span><ServiceLink service={deployment.release.service} /></span>
           </div>
         </div>
         <div className='row'>
@@ -36,7 +36,7 @@ class DeploymentDetailsPage extends Component {
             <span className='details__label'>Version:</span>
           </div>
           <div className='col-md-10'>
-            <span>{deployment.release.version}</span>
+            <span><ReleaseLink release={deployment.release} /></span>
           </div>
         </div>
         <div className='row'>
@@ -44,7 +44,7 @@ class DeploymentDetailsPage extends Component {
             <span className='details__label'>Namespace:</span>
           </div>
           <div className='col-md-10'>
-            <span>{deployment.release.service.namespace.name}</span>
+            <span><NamespaceLink namespace={deployment.release.service.namespace} /></span>
           </div>
         </div>
         <div className='row'>

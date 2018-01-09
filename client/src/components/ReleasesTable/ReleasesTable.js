@@ -1,8 +1,8 @@
 import React, { Component, } from 'react';
-import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, } from '../Links';
 import './ReleasesTable.css';
 
 class ReleasesTable extends Component {
@@ -43,12 +43,10 @@ class ReleasesTable extends Component {
               <span className="releases-table__body__row__created-date__on"><Human date={release.createdOn} /></span>
               <span className="releases-table__body__row__created-date__ago"><Ago date={release.createdOn} /></span>
             </td>
-            <td className='releases-table__body__row__service-name'>{release.service.name}</td>
-            <td className='releases-table__body__row__version'>{release.version}</td>
-            <td className='releases-table__body__row__namespace-name'>{release.service.namespace.name}</td>
-            <td className='releases-table__body__row__created-by'>
-              <Link to={`/accounts/${release.createdBy.id}`}>{release.createdBy.displayName}</Link>
-            </td>
+            <td className='releases-table__body__row__service-name'><ServiceLink service={release.service} /></td>
+            <td className='releases-table__body__row__version'><ReleaseLink release={release} /></td>
+            <td className='releases-table__body__row__namespace-name'><NamespaceLink namespace={release.service.namespace} /></td>
+            <td className='releases-table__body__row__created-by'><AccountLink account={release.createdBy} /></td>
           </tr>;
         })
       }

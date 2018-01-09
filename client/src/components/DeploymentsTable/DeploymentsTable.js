@@ -1,9 +1,8 @@
 import React, { Component, } from 'react';
-import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, } from '../Links';
+import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, DeploymentLink, } from '../Links';
 import './DeploymentsTable.css';
 
 class DeploymentsTable extends Component {
@@ -44,14 +43,14 @@ class DeploymentsTable extends Component {
               <span className="deployments-table__body__row__created-date__on"><Human date={deployment.createdOn} /></span>
               <span className="deployments-table__body__row__created-date__ago"><Ago date={deployment.createdOn} /></span>
             </td>
-            <td className='deployments-table__body__row__service-name'>{deployment.release.service.name}</td>
-            <td className='deployments-table__body__row__version'>{deployment.release.version}</td>
-            <td className='deployments-table__body__row__namespace-name'>{deployment.release.service.namespace.name}</td>
+            <td className='deployments-table__body__row__service-name'><ServiceLink service={deployment.release.service} /></td>
+            <td className='deployments-table__body__row__version'><ReleaseLink release={deployment.release} /></td>
+            <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.release.service.namespace} /></td>
             <td className='deployments-table__body__row__context'>{deployment.context}</td>
             <td className='deployments-table__body__row__created-by'>
               <AccountLink account={deployment.createdBy} />
             </td>
-            <td className='deployments-table__body__row__actions'><Link to={`/deployments/${deployment.id}`}><i className="fa fa-external-link" aria-hidden="true"></i></Link></td>
+            <td className='deployments-table__body__row__actions'><DeploymentLink deployment={deployment} icon='external-link' /></td>
           </tr>;
         })
       }
