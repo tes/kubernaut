@@ -3,6 +3,7 @@ import { Link, } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, } from '../Links';
 import './DeploymentsTable.css';
 
 class DeploymentsTable extends Component {
@@ -48,9 +49,9 @@ class DeploymentsTable extends Component {
             <td className='deployments-table__body__row__namespace-name'>{deployment.release.service.namespace.name}</td>
             <td className='deployments-table__body__row__context'>{deployment.context}</td>
             <td className='deployments-table__body__row__created-by'>
-              <Link to={`/accounts/${deployment.createdBy.id}`}>{deployment.createdBy.displayName}</Link>
+              <AccountLink account={deployment.createdBy} />
             </td>
-            <td className='deployments-table__body__row__actions'><Link to={`/deployments/${deployment.id}`}><i className="fa fa-link" aria-hidden="true"></i></Link></td>
+            <td className='deployments-table__body__row__actions'><Link to={`/deployments/${deployment.id}`}><i className="fa fa-external-link" aria-hidden="true"></i></Link></td>
           </tr>;
         })
       }

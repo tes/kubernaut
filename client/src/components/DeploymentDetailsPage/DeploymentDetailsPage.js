@@ -1,5 +1,8 @@
 import React, { Component, } from 'react';
 import PropTypes from 'prop-types';
+import { Human, Ago, } from '../DisplayDate';
+import { AccountLink, } from '../Links';
+import './DeploymentDetailsPage.css';
 
 class DeploymentDetailsPage extends Component {
 
@@ -19,32 +22,92 @@ class DeploymentDetailsPage extends Component {
     ;
 
     const deploymentDetails = () =>
-      <div className='row'>
-        <div className='col-12'>
-          <div>Service: {deployment.release.service.name}</div>
-          <div>Version: {deployment.release.version}</div>
-          <div>Namespace: {deployment.release.service.namespace.name}</div>
-          <div>Created On: {deployment.createdOn}</div>
-          <div>Created By: {deployment.createdBy.displayName}</div>
-          <h3>Deployment Log</h3>
-          {
-            deployment.log.map(entry => {
-              return <div key={entry.id}>
-                <div>{entry.writtenOn}</div>
-                <div>{entry.writtenTo}</div>
-                <div>{entry.content}</div>
-              </div>;
-            })
-          }
+      <div className='details'>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Service:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.release.service.name}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Version:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.release.version}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Namespace:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.release.service.namespace.name}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Context:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.context}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Created On:</span>
+          </div>
+          <div className='col-md-10'>
+            <span><Human date={deployment.createdOn} /></span>&nbsp;
+            <span>(<Ago date={deployment.createdOn} />)</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Created By:</span>
+          </div>
+          <div className='col-md-10'>
+            <span><AccountLink account={deployment.createdBy} /></span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-12'>
+            <h2>Deployment Log</h2>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-12'>
+            <table className='log-table table table-condensed'>
+              <tbody>
+              {
+                deployment.log.map(entry => {
+                  return <tr key={entry.id} className={`log-table__body log-table__body__row--${entry.writtenTo}`}>
+                    <td className='log-table__body__row__written-on'><Human date={entry.writtenOn} /></td>
+                    <td className='log-table__body__row__content'>${entry.content}</td>
+                  </tr>;
+                })
+              }
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     ;
 
-    return (() => {
-      if (meta.error) return errorDetails();
-      else if (meta.loading || !deployment) return loadingDetails();
-      else return deploymentDetails();
-    })();
+    return (
+      <div>
+        <h2>Deployment Details</h2>
+        {
+          (() => {
+            if (meta.error) return errorDetails();
+            else if (meta.loading || !deployment) return loadingDetails();
+            else return deploymentDetails();
+          })()
+        }
+      </div>
+    );
   }
 }
 
