@@ -11,7 +11,7 @@ export default function(options = {}) {
       const manifest = deployment.manifest.yaml;
       return new Promise(async (resolve, reject) => {
         const args = ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',];
-        const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')}`, });
+        const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')} \${KUBERNETES_MANIFEST}`, });
         await store.saveDeploymentLogEntry(entry);
         const kubectl = spawn('kubectl', args);
         kubectl.stdout.on('data', async data => {
