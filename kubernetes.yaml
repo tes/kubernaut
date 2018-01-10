@@ -65,7 +65,7 @@ spec:
           mountPath: "/opt/kubernaut/secrets"
           readOnly: true
         - name: elastic-apm-node
-          mountPath: "/opt/kubernaut/elastic-apm-node.js"
+          mountPath: "/opt/kubernaut"
           readOnly: true
       volumes:
         - name: kubectl-config
