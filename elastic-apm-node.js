@@ -6,9 +6,9 @@ module.exports = {
 
   ignoreUrls: [
     '/status',
-    /^\/__\//i
+    /^\/__\//i,
   ],
 
   flushInterval: 15,
-  maxQueueSize: 1024
+  maxQueueSize: 1024,
 };
