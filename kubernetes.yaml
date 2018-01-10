@@ -53,6 +53,8 @@ spec:
         env:
         - name: APP_ENV
           value: live
+        - name: APP_NAME
+          value: "{{service}}"
         - name: APP_VERSION
           value: "{{version}}"
         volumeMounts:
@@ -62,6 +64,9 @@ spec:
         - name: kubernaut-config
           mountPath: "/opt/kubernaut/secrets"
           readOnly: true
+        - name: elastic-apm-node
+          mountPath: "/opt/kubernaut/elastic-apm-node.js"
+          readOnly: true
       volumes:
         - name: kubectl-config
           secret:
@@ -69,3 +74,6 @@ spec:
         - name: kubernaut-config
           secret:
             secretName: kubernaut
+        - name: elastic-apm-node
+          secret:
+            secretName: elastic-apm
