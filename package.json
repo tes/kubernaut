@@ -51,6 +51,7 @@
     "chalk": "^2.1.0",
     "confabulous": "^1.5.3",
     "connect-pg-simple": "^4.2.1",
+    "elastic-apm-node": "^0.10.0",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",
     "highwayhash": "^2.2.0",

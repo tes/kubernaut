@@ -1,3 +1,4 @@
+import './lib/preload';
 import system from './lib/system';
 import runner from 'systemic-domain-runner';
 
