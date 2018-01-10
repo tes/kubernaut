@@ -1,6 +1,4 @@
-if (process.env.ELASTIC_APM_CONFIG_FILE || process.env.ELASTIC_APM_APP_NAME) {
-  require('elastic-apm-node/start');
-}
+import './lib/preload';
 import system from './lib/system';
 import runner from 'systemic-domain-runner';
 
