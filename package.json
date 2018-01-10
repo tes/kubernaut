@@ -19,8 +19,10 @@
     "build": "concurrently 'npm run build-server' 'npm run build-client'",
     "build-server": "rm -rf server/build && babel --out-dir server/build ./server --source-maps --copy-files && rsync -avv --include '.marvrc' --include '*/' --exclude='*' server/lib server/build && echo '\nCurse you github.com/babel/babel/issues/5052 !!!!\n'",
     "build-client": "cd client; npm run build",
+    "precommit": "npm run lint && npm run check-package-lock",
     "prepush": "IMAGE=kubernaut TAG=$(git rev-parse --short HEAD)-local docker-compose run --rm --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check-package-lock": "grep -qc tescloud package-lock.json; test $? -gt 0"
   },
   "author": "TES",
   "license": "UNLICENSED",
