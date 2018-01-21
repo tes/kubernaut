@@ -61,8 +61,9 @@ export default function(options = {}) {
       const created = await db.withTransaction(async connection => {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
-        if (await _countActiveGlobalAdminstrators(connection) === 0) {
-          await _grantRole(connection, saved.id, 'admin', null, meta);
+        const counts = await _countActiveGlobalAdminstrators(connection);
+        if (counts.namespace === 0) {
+          await _grantRoleOnNamespace(connection, saved.id, 'admin', null, meta);
         }
         return saved;
       });
@@ -129,13 +130,13 @@ export default function(options = {}) {
       logger.debug(`Deleted identity id: ${id}`);
     }
 
-    async function grantRole(accountId, roleName, namespaceName, meta) {
+    async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
       return db.withTransaction(async connection => {
-        return _grantRole(connection, accountId, roleName, namespaceName, meta);
+        return _grantRoleOnNamespace(connection, accountId, roleName, namespaceName, meta);
       });
     }
 
-    async function _grantRole(connection, accountId, roleName, namespaceName, meta) {
+    async function _grantRoleOnNamespace(connection, accountId, roleName, namespaceName, meta) {
       logger.debug(`Granting role: ${roleName} on namespace: ${namespaceName} to account: ${accountId}`);
 
       return Promise.all([
@@ -149,7 +150,7 @@ export default function(options = {}) {
           namespaceId: getNamespaceId(namespaceResult, namespaceName),
         };
       }).then(async ({ accountId, roleId, namespaceId, }) => {
-        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE, [
+        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_NAMESPACE, [
           accountId, roleId, namespaceId, meta.date, meta.account.id,
         ]);
         const granted = {
@@ -180,30 +181,34 @@ export default function(options = {}) {
       return id;
     }
 
-    async function revokeRole(id, meta) {
-      logger.debug(`Revoking role: ${id}`);
+    async function revokeRoleOnNamespace(id, meta) {
+      logger.debug(`Revoking role: ${id} on namespace`);
 
-      await db.query(SQL.DELETE_ACCOUNT_ROLE, [
+      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_NAMESPACE, [
         id, meta.date, meta.account.id,
       ]);
 
-      logger.debug(`Revoked role: ${id}`);
+      logger.debug(`Revoked role: ${id} on namespace`);
     }
 
     async function _countActiveGlobalAdminstrators(connection) {
       logger.debug('Counting active global administrators');
 
       const result = await connection.query(SQL.COUNT_ACTIVE_GLOBAL_ADMINISTRATORS);
-      const count = parseInt(result.rows[0].active_global_administrators, 10);
-      logger.debug(`Found ${count} active global administrator accounts`);
+      const counts = {
+        registry: parseInt(result.rows[0].registry, 10),
+        namespace: parseInt(result.rows[0].namespace, 10),
+      };
+      logger.debug(`Found ${counts.registry}/${counts.namespace} active global administrator accounts`);
 
-      return count;
+      return counts;
     }
 
     function toAccount(row, rolesAndPermissionsRows = []) {
       const roles = toRolesAndPermissions(rolesAndPermissionsRows);
       return new Account({
-        id: row.id,        displayName: row.display_name,
+        id: row.id,
+        displayName: row.display_name,
         avatar: row.avatar,
         createdOn: row.created_on,
         createdBy: new Account({
@@ -218,7 +223,7 @@ export default function(options = {}) {
       return rows.reduce((roles, row) => {
         const entry = roles[row.role_name] || { name: row.role_name, permissions: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
-        entry.namespaces = uniq(entry.namespaces.concat(row.namespace_name || '*'));
+        entry.namespaces = uniq(entry.namespaces.concat(row.subject_name || '*'));
         roles[row.role_name] = entry;
         return roles;
       }, {});
@@ -233,8 +238,8 @@ export default function(options = {}) {
       deleteAccount,
       saveIdentity,
       deleteIdentity,
-      grantRole,
-      revokeRole,
+      grantRoleOnNamespace,
+      revokeRoleOnNamespace,
     });
   }
 

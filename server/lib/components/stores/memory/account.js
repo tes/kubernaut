@@ -63,7 +63,7 @@ export default function(options = {}) {
       await saveIdentity(created.id, identity, meta);
 
       if (await countActiveAdminstrators() === 0) {
-        await grantRole(created.id, 'admin', null, meta);
+        await grantRoleOnNamespace(created.id, 'admin', null, meta);
       }
 
       return await getAccount(created.id);
@@ -103,7 +103,7 @@ export default function(options = {}) {
       }
     }
 
-    async function grantRole(accountId, roleName, namespaceName, meta) {
+    async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
       reportMissingMetadata(meta);
       reportMissingAccount(accountId);
       reportMissingRole(roleName);
@@ -118,7 +118,7 @@ export default function(options = {}) {
       return append(account_roles, granted);
     }
 
-    async function revokeRole(id, meta) {
+    async function revokeRoleOnNamespace(id, meta) {
       reportMissingMetadata(meta);
       const accountRole = account_roles.find(ar => ar.id === id && !ar.deletedOn);
       if (accountRole) {
@@ -183,8 +183,8 @@ export default function(options = {}) {
       deleteAccount,
       saveIdentity,
       deleteIdentity,
-      grantRole,
-      revokeRole,
+      grantRoleOnNamespace,
+      revokeRoleOnNamespace,
     });
   }
 

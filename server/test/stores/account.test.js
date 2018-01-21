@@ -6,11 +6,11 @@ import { makeIdentity, makeAccount, makeRootMeta, } from '../factories';
 describe('Account Store', () => {
 
   const suites = [
-    {
-      name: 'Memory',
-      system: createSystem()
-        .remove('server'),
-    },
+    // {
+    //   name: 'Memory',
+    //   system: createSystem()
+    //     .remove('server'),
+    // },
     {
       name: 'Postgres',
       system: createSystem()
@@ -216,7 +216,7 @@ describe('Account Store', () => {
           const identity1Data = makeIdentity();
           const saved = await saveAccount(account1Data);
           await saveIdentity(saved.id, identity1Data);
-          await grantRole(saved.id, 'admin', null);
+          await grantRoleOnNamespace(saved.id, 'admin', null);
 
           const account2Data = makeAccount();
           const identity2Data = makeIdentity();
@@ -398,7 +398,7 @@ describe('Account Store', () => {
         it('should grant global role to account', async () => {
           const saved = await saveAccount();
 
-          const role = await grantRole(saved.id, 'admin', null);
+          const role = await grantRoleOnNamespace(saved.id, 'admin', null);
           expect(role.id).toBeDefined();
 
           const account = await getAccount(saved.id);
@@ -411,7 +411,7 @@ describe('Account Store', () => {
         it('should grant namespaced role to account', async () => {
           const saved = await saveAccount();
 
-          const role = await grantRole(saved.id, 'admin', 'default');
+          const role = await grantRoleOnNamespace(saved.id, 'admin', 'default');
           expect(role.id).toBeDefined();
 
           const account = await getAccount(saved.id);
@@ -424,28 +424,28 @@ describe('Account Store', () => {
         it('should fail if account does not exist', async () => {
           const id = uuid();
           await expect(
-            grantRole(id, 'admin', null)
+            grantRoleOnNamespace(id, 'admin', null)
           ).rejects.toHaveProperty('message', `Invalid accountId: ${id}`);
         });
 
         it('should fail if role does not exist', async () => {
           const saved = await saveAccount();
           await expect(
-            grantRole(saved.id, 'missing', null)
+            grantRoleOnNamespace(saved.id, 'missing', null)
           ).rejects.toHaveProperty('message', 'Invalid role: missing');
         });
 
         it('should fail if namespace does not exist', async () => {
           const saved = await saveAccount();
           await expect(
-            grantRole(saved.id, 'admin', 'missing')
+            grantRoleOnNamespace(saved.id, 'admin', 'missing')
           ).rejects.toHaveProperty('message', 'Invalid namespace: missing');
         });
 
         it('should tolerate duplicate roles', async () => {
           const saved = await saveAccount();
-          await grantRole(saved.id, 'admin', null);
-          await grantRole(saved.id, 'admin', null);
+          await grantRoleOnNamespace(saved.id, 'admin', null);
+          await grantRoleOnNamespace(saved.id, 'admin', null);
 
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
@@ -458,8 +458,8 @@ describe('Account Store', () => {
 
         it('should revoke role from account', async () => {
           const saved = await saveAccount();
-          const role = await grantRole(saved.id, 'admin', null);
-          await revokeRole(role.id);
+          const role = await grantRoleOnNamespace(saved.id, 'admin', null);
+          await revokeRoleOnNamespace(role.id);
 
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
@@ -467,15 +467,15 @@ describe('Account Store', () => {
         });
 
         it('should tolerate missing role', async () => {
-          await revokeRole(uuid());
+          await revokeRoleOnNamespace(uuid());
         });
 
         it('should tolerate previously revoked role', async () => {
           const account = await saveAccount();
 
-          const role = await grantRole(account.id, 'admin', null);
-          await revokeRole(role.id);
-          await revokeRole(role.id);
+          const role = await grantRoleOnNamespace(account.id, 'admin', null);
+          await revokeRoleOnNamespace(role.id);
+          await revokeRoleOnNamespace(role.id);
         });
       });
 
@@ -511,12 +511,12 @@ describe('Account Store', () => {
         return store.deleteIdentity(id, meta);
       }
 
-      function grantRole(id, name, namespace, meta = makeRootMeta(), ) {
-        return store.grantRole(id, name, namespace, meta);
+      function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
+        return store.grantRoleOnNamespace(id, name, namespace, meta);
       }
 
-      function revokeRole(id, meta = makeRootMeta(), ) {
-        return store.revokeRole(id, meta);
+      function revokeRoleOnNamespace(id, meta = makeRootMeta(), ) {
+        return store.revokeRoleOnNamespace(id, meta);
       }
 
     });

@@ -1,5 +1,5 @@
 UPDATE
-  account_role
+  account_role_registry
 SET
   deleted_on = $2,
   deleted_by = $3

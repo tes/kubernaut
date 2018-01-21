@@ -83,7 +83,7 @@ export default function(options = {}) {
 
       try {
         const meta = { date: new Date(), account: { id: req.user.id, }, };
-        const account = await store.grantRole(req.body.account, req.body.role, null, meta);
+        const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, null, meta);
         res.json(account);
       } catch (err) {
         next(err);
@@ -92,7 +92,7 @@ export default function(options = {}) {
 
     app.delete('/api/roles/:id', async (req, res, next) => {
       try {
-        await store.revokeRole(req.params.id, { date: new Date(), account: req.user.id, });
+        await store.revokeRoleOnNamespace(req.params.id, { date: new Date(), account: req.user.id, });
         res.status(204).send();
       } catch (err) {
         next(err);
