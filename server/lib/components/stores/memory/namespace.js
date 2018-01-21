@@ -53,7 +53,7 @@ export default function(options) {
     }
 
     function reportDuplicateNamespaces(namespace) {
-      if (namespaces.find(n => n.name === namespace.name && !n.deletedOn)) throw Object.assign(new Error('Duplicate Namespace'), { code: '23505', });
+      if (namespaces.find(n => n.name === namespace.name && !n.deletedOn)) throw Object.assign(new Error('Duplicate namespace'), { code: '23505', });
     }
 
     function append(collection, item) {

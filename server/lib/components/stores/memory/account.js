@@ -10,8 +10,14 @@ export default function(options = {}) {
     const roles = {
       admin: {
         permissions: [
-          "role-revoke", "role-grant", "releases-write", "releases-read", "deployments-write", "deployments-read", "client", "accounts-write", "accounts-read", "namespaces-write", "namespaces-read",
-          ],
+          "role-revoke", "role-grant",
+          "releases-write", "releases-read",
+          "deployments-write", "deployments-read",
+          "client",
+          "accounts-write", "accounts-read",
+          "namespaces-write", "namespaces-read",
+          "registries-write", "registries-read",
+        ],
       },
     };
 

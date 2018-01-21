@@ -9,6 +9,7 @@ import pm from 'power-merge';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
+import Registry from '../../lib/domain/Registry';
 import Namespace from '../../lib/domain/Namespace';
 import Service from '../../lib/domain/Service';
 import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
@@ -62,6 +63,12 @@ const merge = pm.compile({
     shallow,
     deepClone,
   ], });
+
+function makeRegistry(overrides = {}) {
+  return new Registry(merge({
+    name: chance.word({ length: 32, }),
+  }, overrides));
+}
 
 function makeNamespace(overrides = {}) {
   return new Namespace(merge({
@@ -177,4 +184,4 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeNamespace, makeIdentity, makeAccount, makeDeployment, makeDeploymentLogEntry, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };
+export { makeRegistry, makeNamespace, makeIdentity, makeAccount, makeDeployment, makeDeploymentLogEntry, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };

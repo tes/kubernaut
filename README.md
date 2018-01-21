@@ -52,7 +52,7 @@ Kubernaut uses dependency injection called [systemic](https://www.npmjs.com/pack
 #### The Client
 The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate. The aim is to keep the entry barrier as low as possible.
 
-## Kubernaut Workflow
+## Kubernaut Release Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
 │                    │ Kubernetes Manifest Template │
@@ -63,6 +63,7 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 │                    ├──────────────────────────────┘
 │                    │
 └────────────────────┘
+           │
            │
            │
            ▼
@@ -77,23 +78,21 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 └────────────────────┘
            │
            │
+           │
            ▼
 ┌────────────────────┐
 │                    │
 │                    │
-│                    │ docker image
+│                    │ Docker image
 │      Jenkins       │──────────────────────┐
 │                    │                      │
 │                    │                      │
 │                    │                      │
-├────────────────────┤                      │
-│ Release │  Deploy  │                      │
 └────────────────────┘                      │
-     │          │                           │
-     │          │                           │
-     │          │                           │
-     │          │                           │
-     ▼          ▼                           ▼
+          │ Manifest template               │
+          │ Release attributes              │
+          │                                 │
+          ▼                                 ▼
 ┌────────────────────┐           ┌────────────────────┐
 │                    │           │                    │
 │                    │           │                    │
@@ -103,14 +102,31 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 │                    │           │                    │
 │                    │           │                    │
 └────────────────────┘           └────────────────────┘
-           │                                │
-           │                                │
+</pre>
+
+## Kubernaut Deployment Workflow
+<pre>
+           │ Release
+           │ Namespace
+           │
+           ▼
+┌────────────────────┐           ┌────────────────────┐
+│                    │           │                    │
+│                    │           │                    │
+│                    │           │                    │
+│     Kubernaut      │           │  Docker Registry   │
+│                    │           │                    │
+│                    │           │                    │
+│                    │           │                    │
+└────────────────────┘           └────────────────────┘
+           │ Manifest                       │
+           │ Namespace                      │
            │                                │
            ▼                                │
 ┌────────────────────┐                      │
 │                    │                      │
 │                    │                      │
-│                    │  docker image        │
+│                    │  Docker image        │
 │ Kubernets Cluster  │◀─────────────────────┘
 │                    │
 │                    │
@@ -125,7 +141,7 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
                                ┌───────────────────┐        ┌───────────────────┐
                                │                   │        │                   │
                                │                   │\       │                   │
-                               │      Service      │────────│     Namespace     │
+                               │      Service      │────────│     Registry      │
                                │                   │/       │                   │
                                │                   │        │                   │
                                └───────────────────┘        └───────────────────┘
@@ -146,21 +162,21 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
                                          │
                                          │
                                         ╱│╲
-                               ┌───────────────────┐
-                               │                   │
-                               │                   │
-                               │    Deployment     │
-                               │                   │
-                               │                   │
-                               └───────────────────┘
+                               ┌───────────────────┐        ┌───────────────────┐        ┌───────────────────┐
+                               │                   │        │                   │        │                   │
+                               │                   │\       │                   │\       │                   │
+                               │    Deployment     │────────│     Namespace     │────────│     Cluster       │
+                               │                   │/       │                   │/       │                   │
+                               │                   │        │                   │        │                   │
+                               └───────────────────┘        └───────────────────┘        └───────────────────┘
 </pre>
 
-### Namespace
+### Registry
 A logical grouping of services. Useful for supporting services with duplicate names and for applying access controls
 
 | Property  | Description |
 |-----------|-------------|
-| name      | the namespace name, e.g. payments |
+| name      | the registry name, e.g. payments |
 
 
 ### Service
@@ -201,21 +217,9 @@ A release of an app / micro service
 | context   | The kubernetes context which defines the target cluster |
 
 
-## Kubernaut User Model
+## Kubernaut Permissions Model
 
 <pre>
-┌───────────────────┐            ┌───────────────────┐           ┌───────────────────┐
-│                   │            │                   │           │                   │
-│                   │╲          ╱│                   │╲         ╱│                   │
-│      Account      │────────────│       Role        │───────────│    Permission     │
-│                   │╱          ╲│                   │╱         ╲│                   │
-│                   │            │                   │           │                   │
-└───────────────────┘            └───────────────────┘           └───────────────────┘
-           │
-           │
-           │
-           │
-          ╱│╲
 ┌───────────────────┐
 │                   │
 │                   │
@@ -223,6 +227,26 @@ A release of an app / micro service
 │                   │
 │                   │
 └───────────────────┘
+         ╲│╱
+          │
+          │
+          │
+┌───────────────────┐            ┌───────────────────┐           ┌───────────────────┐
+│                   │            │                   │           │                   │
+│                   │╲          ╱│                   │╲         ╱│                   │
+│      Account      │────────────│       Role        │───────────│    Permission     │
+│                   │╱    │     ╲│                   │╱         ╲│                   │
+│                   │     │      │                   │           │                   │
+└───────────────────┘     │      └───────────────────┘           └───────────────────┘
+                          │
+                          │
+                ┌───────────────────┐
+                │                   │
+                │                   │
+                │     Subject       │
+                │                   │
+                │                   │
+                └───────────────────┘
 </pre>
 
 
@@ -254,8 +278,207 @@ Account identities (e.g. cressie176/github, machine_user/token)
 | name          | The permission name, e.g. read_release, write_release, etc |
 | description   | A description of the permission |
 
+## Subject
+Subject may be a [Registry](#registry) or a [Namespace](#namespace)
+
 
 ## Kubernaut API
+
+### GET /api/registries
+Lists all active registries
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| limit  | Query   | No        | 50      | Limits the number of items returned in the response |
+| offset | Query   | No        | 0       | Sets the items offset |
+
+#### Sample Request
+```
+GET /api/registries?limit=50&offset=0
+```
+
+#### Sample Response
+```json
+{
+  "limit": 50,
+  "offset": 0,
+  "count": 1,
+  "items": [
+    {
+      "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+      "name": "default"
+    }
+  ]
+}
+```
+
+### GET /api/registries/:id
+Gets a single registry
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The registry id |
+
+#### Sample Request
+```
+GET /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+### POST /api/registries
+Creates a new registry
+
+#### Sample Request
+```
+POST /api/registries
+```
+```json
+{
+  "name": "default"
+}
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+### DELETE /api/registries/:id
+Deletes a registry
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The registry id |
+
+#### Sample Request
+```
+DELETE /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+#### Expected Status Codes
+| Status | Meaning |
+|--------|---------|
+| 204    | Registry was deleted |
+
+
+### GET /api/namespaces
+Lists all active namespaces
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| limit  | Query   | No        | 50      | Limits the number of items returned in the response |
+| offset | Query   | No        | 0       | Sets the items offset |
+
+#### Sample Request
+```
+GET /api/namespaces?limit=50&offset=0
+```
+
+#### Sample Response
+```json
+{
+  "limit": 50,
+  "offset": 0,
+  "count": 1,
+  "items": [
+    {
+      "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+      "name": "default"
+    }
+  ]
+}
+```
+
+### GET /api/namespaces/:id
+Gets a single namespace
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The namespace id |
+
+#### Sample Request
+```
+GET /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+### POST /api/namespaces
+Creates a new namespace
+
+#### Sample Request
+```
+POST /api/namespaces
+```
+```json
+{
+  "name": "default"
+}
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+### DELETE /api/namespaces/:id
+Deletes a namespace
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The namespace id |
+
+#### Sample Request
+```
+DELETE /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
+```
+
+#### Sample Response
+```json
+{
+  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
+  "name": "default"
+}
+```
+
+#### Expected Status Codes
+| Status | Meaning |
+|--------|---------|
+| 204    | Namespace was deleted |
+
 
 ### GET /api/releases
 Lists all active releases
@@ -281,6 +504,7 @@ Deploys a release using the specified context
 ### GET /api/deployments/:id/status
 Returns the status of a deployment (blocks until known)
 
+#### Expected Status Codes
 | Status | Meaning |
 |--------|---------|
 | 200    | Deployment met all the conditions of the deployment strategy |
@@ -342,4 +566,3 @@ Grants a role to a user account
 Revokes a role from a user account
 
 
-Bump

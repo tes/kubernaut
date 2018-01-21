@@ -4,6 +4,8 @@ INSERT INTO permission (id, name, description) VALUES
   (uuid_generate_v4(), 'client', 'Grants access to the UI'),
   (uuid_generate_v4(), 'namespaces-read', 'Grants read access to the namespaces api'),
   (uuid_generate_v4(), 'namespaces-write', 'Grants write access to the namespaces api'),
+  (uuid_generate_v4(), 'registries-read', 'Grants read access to the registries api'),
+  (uuid_generate_v4(), 'registries-write', 'Grants write access to the registries api'),
   (uuid_generate_v4(), 'accounts-read', 'Grants read access to the accounts api'),
   (uuid_generate_v4(), 'accounts-write', 'Grants write access to the accounts api'),
   (uuid_generate_v4(), 'releases-read', 'Grants read access to the releases api'),
