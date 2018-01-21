@@ -5,10 +5,10 @@ SELECT
   s.*
 FROM
   service s,
-  active_namespace__vw n
+  active_registry__vw sr
 WHERE
   s.deleted_on IS NULL AND
-  s.namespace = n.id
+  s.registry = sr.id
 ORDER BY
   s.created_on DESC,
   s.id DESC

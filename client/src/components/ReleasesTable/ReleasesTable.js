@@ -2,7 +2,7 @@ import React, { Component, } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, } from '../Links';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, } from '../Links';
 import './ReleasesTable.css';
 
 class ReleasesTable extends Component {
@@ -45,7 +45,7 @@ class ReleasesTable extends Component {
             </td>
             <td className='releases-table__body__row__service-name'><ServiceLink service={release.service} /></td>
             <td className='releases-table__body__row__version'><ReleaseLink release={release} /></td>
-            <td className='releases-table__body__row__namespace-name'><NamespaceLink namespace={release.service.namespace} /></td>
+            <td className='releases-table__body__row__registry-name'><RegistryLink registry={release.service.registry} /></td>
             <td className='releases-table__body__row__created-by'><AccountLink account={release.createdBy} /></td>
           </tr>;
         })
@@ -62,7 +62,7 @@ class ReleasesTable extends Component {
               <th className='releases-table__heading__created-date'>Created</th>
               <th className='releases-table__heading__service-name'>Service</th>
               <th className='releases-table__heading__version'>Version</th>
-              <th className='releases-table__heading__namespace-name'>Namespace</th>
+              <th className='releases-table__heading__registry-name'>Registry</th>
               <th className='releases-table__heading__created-by'>Created By</th>
             </tr>
           </thead>

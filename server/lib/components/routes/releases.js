@@ -14,12 +14,12 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        const namespaces = req.user.permittedNamespaces('releases-read');
-        if (namespaces.length === 0) return next(Boom.forbidden());
+        const registries = req.user.permittedRegistry('releases-read');
+        if (registries.length === 0) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.listReleases(limit, offset); // TODO limit to permitted namesapces
+        const result = await store.listReleases(limit, offset); // TODO limit to permitted registries
 
         res.json(result);
       } catch (err) {
@@ -31,7 +31,7 @@ export default function(options = {}) {
       try {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(Boom.forbidden());
-        if (!req.user.hasPermission(release.service.namespace.name, 'releases-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnRegistry(release.service.registry.name, 'releases-read')) return next(Boom.forbidden());
         res.json(release);
       } catch (err) {
         next(err);
@@ -41,17 +41,17 @@ export default function(options = {}) {
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
 
       try {
-        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+        if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
 
-        if (!req.user.hasPermission(req.body.namespace, 'releases-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'releases-write')) return next(Boom.forbidden());
 
         const data = {
           service: {
             name: req.body.service,
-            namespace: {
-              name: req.body.namespace,
+            registry: {
+              name: req.body.registry,
             },
           },
           version: req.body.version,
@@ -70,7 +70,7 @@ export default function(options = {}) {
       try {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(Boom.forbidden());
-        if (!req.user.hasPermission(release.service.namespace.name, 'releases-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnRegistry(release.service.registry.name, 'releases-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteRelease(req.params.id, meta);

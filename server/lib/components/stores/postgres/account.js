@@ -62,6 +62,9 @@ export default function(options = {}) {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
         const counts = await _countActiveGlobalAdminstrators(connection);
+        if (counts.registry === 0) {
+          await _grantRoleOnRegistry(connection, saved.id, 'admin', null, meta);
+        }
         if (counts.namespace === 0) {
           await _grantRoleOnNamespace(connection, saved.id, 'admin', null, meta);
         }
@@ -130,6 +133,49 @@ export default function(options = {}) {
       logger.debug(`Deleted identity id: ${id}`);
     }
 
+    async function grantRoleOnRegistry(accountId, roleName, registryName, meta) {
+      return db.withTransaction(async connection => {
+        return _grantRoleOnRegistry(connection, accountId, roleName, registryName, meta);
+      });
+    }
+
+    async function _grantRoleOnRegistry(connection, accountId, roleName, registryName, meta) {
+      logger.debug(`Granting role: ${roleName} on registry: ${registryName} to account: ${accountId}`);
+
+      return Promise.all([
+        connection.query(SQL.SELECT_ACCOUNT_BY_ID, [ accountId, ]),
+        connection.query(SQL.SELECT_ROLE_BY_NAME, [ roleName, ]),
+        connection.query(SQL.SELECT_REGISTRY_BY_NAME, [ registryName, ]),
+      ]).then(([ accountResult, roleResult, registryResult, ]) => {
+        return {
+          accountId: getAccountId(accountResult, accountId),
+          roleId: getRoleId(roleResult, roleName),
+          registryId: getRegistryId(registryResult, registryName),
+        };
+      }).then(async ({ accountId, roleId, registryId, }) => {
+        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_REGISTRY, [
+          accountId, roleId, registryId, meta.date, meta.account.id,
+        ]);
+        const granted = {
+          id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
+        };
+
+        logger.debug(`Granted role: ${granted.name}/${granted.id} on registry: ${registryName} to account: ${accountId}`);
+
+        return granted;
+      });
+    }
+
+    async function revokeRoleOnRegistry(id, meta) {
+      logger.debug(`Revoking role: ${id} on registry`);
+
+      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_REGISTRY, [
+        id, meta.date, meta.account.id,
+      ]);
+
+      logger.debug(`Revoked role: ${id} on registry`);
+    }
+
     async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
       return db.withTransaction(async connection => {
         return _grantRoleOnNamespace(connection, accountId, roleName, namespaceName, meta);
@@ -150,7 +196,7 @@ export default function(options = {}) {
           namespaceId: getNamespaceId(namespaceResult, namespaceName),
         };
       }).then(async ({ accountId, roleId, namespaceId, }) => {
-        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_NAMESPACE, [
+        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_NAMESPACE, [
           accountId, roleId, namespaceId, meta.date, meta.account.id,
         ]);
         const granted = {
@@ -161,6 +207,16 @@ export default function(options = {}) {
 
         return granted;
       });
+    }
+
+    async function revokeRoleOnNamespace(id, meta) {
+      logger.debug(`Revoking role: ${id} on namespace`);
+
+      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_NAMESPACE, [
+        id, meta.date, meta.account.id,
+      ]);
+
+      logger.debug(`Revoked role: ${id} on namespace`);
     }
 
     function getAccountId(result, accountId) {
@@ -175,20 +231,16 @@ export default function(options = {}) {
       return id;
     }
 
+    function getRegistryId(result, name) {
+      const id = result.rowCount ? result.rows[0].id : null;
+      if (!id && name) throw new Error(`Invalid registry: ${name}`);
+      return id;
+    }
+
     function getNamespaceId(result, name) {
       const id = result.rowCount ? result.rows[0].id : null;
       if (!id && name) throw new Error(`Invalid namespace: ${name}`);
       return id;
-    }
-
-    async function revokeRoleOnNamespace(id, meta) {
-      logger.debug(`Revoking role: ${id} on namespace`);
-
-      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_NAMESPACE, [
-        id, meta.date, meta.account.id,
-      ]);
-
-      logger.debug(`Revoked role: ${id} on namespace`);
     }
 
     async function _countActiveGlobalAdminstrators(connection) {
@@ -220,10 +272,15 @@ export default function(options = {}) {
     }
 
     function toRolesAndPermissions(rows) {
+      const differentiatorCollections = {
+        registry: 'registries',
+        namespace: 'namespaces',
+      };
       return rows.reduce((roles, row) => {
-        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], namespaces: [], };
+        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
-        entry.namespaces = uniq(entry.namespaces.concat(row.subject_name || '*'));
+        const collection = differentiatorCollections[row.differentiator];
+        entry[collection] = uniq(entry[collection].concat(row.subject_name || '*'));
         roles[row.role_name] = entry;
         return roles;
       }, {});
@@ -238,6 +295,8 @@ export default function(options = {}) {
       deleteAccount,
       saveIdentity,
       deleteIdentity,
+      grantRoleOnRegistry,
+      revokeRoleOnRegistry,
       grantRoleOnNamespace,
       revokeRoleOnNamespace,
     });

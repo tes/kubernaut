@@ -161,7 +161,7 @@ describe('Releases API', () => {
 
       expect(release).toBeDefined();
       expect(release.service.name).toBe(formData.service);
-      expect(release.service.namespace.name).toBe(formData.namespace);
+      expect(release.service.registry.name).toBe(formData.registry);
       expect(release.version).toBe(formData.version);
       expect(release.template.source.yaml).toBeDefined();
       expect(release.template.source.json).toBeDefined();
@@ -169,10 +169,10 @@ describe('Releases API', () => {
       expect(release.attributes.image).toBe(formData.image);
     });
 
-    it('should reject payloads without a namespace', async () => {
+    it('should reject payloads without a registry', async () => {
 
       const formData = makeReleaseForm();
-      delete formData.namespace;
+      delete formData.registry;
 
       loggerOptions.suppress = true;
 

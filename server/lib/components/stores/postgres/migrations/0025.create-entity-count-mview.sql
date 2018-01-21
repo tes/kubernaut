@@ -2,47 +2,43 @@ BEGIN;
 
 CREATE MATERIALIZED VIEW entity_count__mvw (
   entity,
-  registry,
-  namespace,
+  owner,
   count
 ) AS
 
-SELECT 'registry', '*', '*', count(*)
+SELECT 'registry', '*', count(*)
 FROM active_registry__vw
 UNION
-  SELECT 'namespace', '*', '*', count(*)
+  SELECT 'namespace', '*', count(*)
   FROM active_namespace__vw
 UNION
-  SELECT 'account', '*', '*', count(*)
+  SELECT 'account', '*', count(*)
   FROM active_account__vw
 UNION
-  SELECT 'service', '*', '*', count(*)
+  SELECT 'service', '*', count(*)
   FROM active_service__vw
 UNION
-  SELECT 'release', '*', '*', count(*)
+  SELECT 'release', '*', count(*)
   FROM active_release__vw
 UNION
-  SELECT 'deployment', '*', '*', count(*)
+  SELECT 'deployment', '*', count(*)
   FROM active_deployment__vw
 UNION
-  SELECT 'service', n.name, '*', count(*)
-  FROM active_service__vw s, namespace n
-  WHERE
-    s.namespace = n.id
-  GROUP BY n.name
+  SELECT 'service', sr.name AS owner, count(*)
+  FROM active_service__vw s, registry sr
+  WHERE s.registry = sr.id
+  GROUP BY owner
 UNION
-  SELECT 'release', n.name, '*', count(*)
-  FROM active_release__vw r, service s, namespace n
+  SELECT 'release', sr.name AS owner, count(*)
+  FROM active_release__vw r, service s, registry sr
   WHERE r.service = s.id
-    AND s.namespace = n.id
-GROUP BY n.name
+    AND s.registry = sr.id
+GROUP BY owner
 UNION
-  SELECT 'deployment', n.name, '*', count(*)
-  FROM active_deployment__vw d, release r, service s, namespace n
-WHERE d.release = r.id
-  AND r.service = s.id
-  AND s.namespace = n.id
-GROUP BY n.name
+  SELECT 'deployment', n.name AS owner, count(*)
+  FROM active_deployment__vw d, namespace n
+WHERE d.namespace = n.id
+GROUP BY owner
 ;
 
 COMMIT;

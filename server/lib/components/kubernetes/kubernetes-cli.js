@@ -7,7 +7,7 @@ export default function(options = {}) {
 
     function apply(deployment) {
       const context = deployment.context;
-      const namespace = deployment.release.service.namespace.name;
+      const namespace = deployment.namespace.name;
       const manifest = deployment.manifest.yaml;
       return new Promise(async (resolve, reject) => {
         const args = ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',];

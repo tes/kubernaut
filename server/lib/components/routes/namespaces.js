@@ -9,7 +9,7 @@ export default function(options = {}) {
 
     app.get('/api/namespaces', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('*', 'namespaces-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace('*', 'namespaces-read')) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -23,7 +23,7 @@ export default function(options = {}) {
 
     app.get('/api/namespaces/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('*', 'namespaces-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace('*', 'namespaces-read')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(req.params.id);
         return namespace ? res.json(namespace) : next();
@@ -37,7 +37,7 @@ export default function(options = {}) {
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
 
-        if (!req.user.hasPermission('*', 'namespaces-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace('*', 'namespaces-write')) return next(Boom.forbidden());
 
         const data = {
           name: req.body.name,
@@ -52,7 +52,7 @@ export default function(options = {}) {
 
     app.delete('/api/namespaces/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('*', 'namespaces-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace('*', 'namespaces-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteNamespace(req.params.id, meta);

@@ -28,7 +28,7 @@ CREATE INDEX account_role_registry__subject__idx ON account_role_registry (
   subject DESC
 );
 
-CREATE FUNCTION ensure_account_role_registry (
+CREATE FUNCTION ensure_account_role_on_registry (
   account UUID,
   role UUID,
   subject UUID,
@@ -43,9 +43,9 @@ BEGIN
 
   SELECT account_role_registry.id INTO id
   FROM account_role_registry
-  WHERE account_role_registry.account = ensure_account_role_registry.account
-    AND account_role_registry.role = ensure_account_role_registry.role
-    AND account_role_registry.subject = ensure_account_role_registry.subject;
+  WHERE account_role_registry.account = ensure_account_role_on_registry.account
+    AND account_role_registry.role = ensure_account_role_on_registry.role
+    AND account_role_registry.subject = ensure_account_role_on_registry.subject;
   IF NOT FOUND THEN
     INSERT INTO account_role_registry (
       id,

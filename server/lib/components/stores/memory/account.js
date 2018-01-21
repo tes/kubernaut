@@ -4,7 +4,7 @@ import Account from '../../../domain/Account';
 
 export default function(options = {}) {
 
-  function start({ tables, namespaces, }, cb) {
+  function start({ tables, namespaces, registries, }, cb) {
 
     const { accounts, identities, account_roles, } = tables;
     const roles = {
@@ -25,14 +25,20 @@ export default function(options = {}) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (!account) return;
 
+      const differentiatorCollections = {
+        registry: 'registries',
+        namespace: 'namespaces',
+      };
+
       const accountRoles = account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {
         result[accountRole.role] = result[accountRole.role] || {
           name: accountRole.role,
           permissions: roles[accountRole.role].permissions.slice(),
           namespaces: [],
+          registries: [],
         };
-
-        result[accountRole.role].namespaces.push(accountRole.namespace || '*');
+        const collection = differentiatorCollections[accountRole.differentiator];
+        result[accountRole.role][collection].push(accountRole.subject || '*');
         return result;
       }, {});
 
@@ -62,7 +68,12 @@ export default function(options = {}) {
       const created = await saveAccount(account, meta);
       await saveIdentity(created.id, identity, meta);
 
-      if (await countActiveAdminstrators() === 0) {
+      const counts = await _countActiveGlobalAdminstrators();
+
+      if (counts.registry === 0) {
+        await grantRoleOnRegistry(created.id, 'admin', null, meta);
+      }
+      if (counts.namespace === 0) {
         await grantRoleOnNamespace(created.id, 'admin', null, meta);
       }
 
@@ -103,16 +114,44 @@ export default function(options = {}) {
       }
     }
 
+    async function grantRoleOnRegistry(accountId, roleName, registryName, meta) {
+      reportMissingMetadata(meta);
+      reportMissingAccount(accountId);
+      reportMissingRole(roleName);
+      await reportMissingRegistry(registryName);
+
+      if (hasRole(accountId, roleName, 'registry')) return;
+
+      const granted = {
+        id: uuid(), account: accountId, role: roleName, subject: registryName, differentiator: 'registry', createdOn: meta.date, createdBy: meta.account,
+      };
+
+      return append(account_roles, granted);
+    }
+
+    async function revokeRoleOnRegistry(id, meta) {
+      reportMissingMetadata(meta);
+      const accountRole = account_roles.find(ar =>
+        ar.id === id &&
+        ar.differentiator === 'registry' &&
+        !ar.deletedOn
+      );
+      if (accountRole) {
+        accountRole.deletedOn = meta.date;
+        accountRole.deletedBy = meta.account;
+      }
+    }
+
     async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
       reportMissingMetadata(meta);
       reportMissingAccount(accountId);
       reportMissingRole(roleName);
       await reportMissingNamespace(namespaceName);
 
-      if (hasRole(accountId, roleName)) return;
+      if (hasRole(accountId, roleName, 'namespace')) return;
 
       const granted = {
-        id: uuid(), account: accountId, role: roleName, namespace: namespaceName, createdOn: meta.date, createdBy: meta.account,
+        id: uuid(), account: accountId, role: roleName, subject: namespaceName, differentiator: 'namespace', createdOn: meta.date, createdBy: meta.account,
       };
 
       return append(account_roles, granted);
@@ -120,19 +159,30 @@ export default function(options = {}) {
 
     async function revokeRoleOnNamespace(id, meta) {
       reportMissingMetadata(meta);
-      const accountRole = account_roles.find(ar => ar.id === id && !ar.deletedOn);
+      const accountRole = account_roles.find(ar =>
+        ar.id === id &&
+        ar.differentiator === 'namespace' &&
+        !ar.deletedOn
+      );
       if (accountRole) {
         accountRole.deletedOn = meta.date;
         accountRole.deletedBy = meta.account;
       }
     }
 
-    async function countActiveAdminstrators() {
-      return intersection(
-        accounts.filter(a => !a.deletedOn).map(a => a.id),
-        account_roles.filter(ar => ar.role === 'admin' && !ar.deletedOn).map(ar => ar.account),
-        identities.filter(i => !i.deletedOn).map(i => i.account),
-      ).length;
+    async function _countActiveGlobalAdminstrators() {
+      return {
+        registry: intersection(
+          accounts.filter(a => !a.deletedOn).map(a => a.id),
+          account_roles.filter(ar => ar.role === 'admin' && ar.differentiator === 'registry' && !ar.deletedOn).map(ar => ar.account),
+          identities.filter(i => !i.deletedOn).map(i => i.account),
+        ).length,
+        namespace: intersection(
+          accounts.filter(a => !a.deletedOn).map(a => a.id),
+          account_roles.filter(ar => ar.role === 'admin' && ar.differentiator === 'namespace' && !ar.deletedOn).map(ar => ar.account),
+          identities.filter(i => !i.deletedOn).map(i => i.account),
+        ).length,
+      };
     }
 
     function reportDuplicateIdentities(identity) {
@@ -151,14 +201,25 @@ export default function(options = {}) {
       if (!roles[name]) throw Object.assign(new Error(`Invalid role: ${name}`));
     }
 
+    async function reportMissingRegistry(name) {
+      if (!name) return;
+      const registry = await registries.findRegistry({ name, });
+      if (!registry) throw Object.assign(new Error(`Invalid registry: ${name}`));
+    }
+
     async function reportMissingNamespace(name) {
       if (!name) return;
       const namespace = await namespaces.findNamespace({ name, });
       if (!namespace) throw Object.assign(new Error(`Invalid namespace: ${name}`));
     }
 
-    function hasRole(accountId, roleName) {
-      return account_roles.find(ar => ar.account === accountId && ar.role === roleName && !ar.deletedOn);
+    function hasRole(accountId, roleName, differentiator) {
+      return account_roles.find(ar =>
+        ar.account === accountId &&
+        ar.role === roleName &&
+        ar.differentiator === differentiator &&
+        !ar.deletedOn
+      );
     }
 
     function byActive(a) {
@@ -183,6 +244,8 @@ export default function(options = {}) {
       deleteAccount,
       saveIdentity,
       deleteIdentity,
+      grantRoleOnRegistry,
+      revokeRoleOnRegistry,
       grantRoleOnNamespace,
       revokeRoleOnNamespace,
     });

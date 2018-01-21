@@ -2,13 +2,13 @@ START TRANSACTION;
 
 CREATE VIEW active_registry__vw AS
 SELECT
-  r.*
+  sr.*
 FROM
-  registry r
+  registry sr
 WHERE
-  r.deleted_on IS NULL
+  sr.deleted_on IS NULL
 ORDER BY
-  r.name ASC
+  sr.name ASC
 ;
 
 COMMIT;

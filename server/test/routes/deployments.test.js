@@ -158,6 +158,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -194,6 +195,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -224,6 +226,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -252,6 +255,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -272,8 +276,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          namespace: 'bar',
-          service: 'foo',
+          namespace: 'foo',
+          registry: 'bar',
+          service: 'baz',
           version: '22',
         },
       }).then(() => {
@@ -281,6 +286,28 @@ describe('Deployments API', () => {
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('context is required');
+      });
+    });
+
+    it('should reject payloads without a registry', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          namespace: 'foo',
+          context: 'bar',
+          service: 'baz',
+          version: '22',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('registry is required');
       });
     });
 
@@ -293,8 +320,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          namespace: 'bar',
-          context: 'test',
+          namespace: 'foo',
+          context: 'bar',
+          registry: 'baz',
           version: '22',
         },
       }).then(() => {
@@ -314,8 +342,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          context: 'test',
-          service: 'foo',
+          context: 'foo',
+          registry: 'bar',
+          service: 'baz',
           version: '22',
         },
       }).then(() => {
@@ -335,9 +364,10 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          context: 'foo',
           namespace: 'bar',
-          context: 'test',
-          service: 'foo',
+          registry: 'baz',
+          service: 'meh',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -361,6 +391,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'missing',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -394,6 +425,7 @@ describe('Deployments API', () => {
         json: {
           namespace: namespace.name,
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -420,6 +452,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'other',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
         },
@@ -449,6 +482,7 @@ describe('Deployments API', () => {
         json: {
           namespace: 'default',
           context: 'test',
+          registry: release.service.registry.name,
           service: release.service.name,
           version: 'missing',
         },
@@ -456,7 +490,7 @@ describe('Deployments API', () => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('release foo/missing was not found');
+        expect(reason.response.body.message).toBe('release default/foo/missing was not found');
       });
     });
 

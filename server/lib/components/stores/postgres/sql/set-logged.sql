@@ -1,7 +1,8 @@
 ALTER TABLE account SET LOGGED;
 ALTER TABLE registry SET LOGGED;
 ALTER TABLE namespace SET LOGGED;
-ALTER TABLE account_role SET LOGGED;
+ALTER TABLE account_role_registiry SET LOGGED;
+ALTER TABLE account_role_namespace SET LOGGED;
 ALTER TABLE release_template SET LOGGED;
 ALTER TABLE service SET LOGGED;
 ALTER TABLE release SET LOGGED;

@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeRelease, makeRootMeta, } from '../factories';
+import { makeRegistry, makeRelease, makeRootMeta, } from '../factories';
 
 describe('Release Store', () => {
 
@@ -23,7 +23,7 @@ describe('Release Store', () => {
           },
         })
         .remove('server')
-        .remove('store.namespace')
+        .remove('store.registry')
         .remove('store.release')
         .remove('store.deployment')
         .remove('store.account')
@@ -76,11 +76,11 @@ describe('Release Store', () => {
         });
 
         it('should prevent duplicate releases', async () => {
-          const namespace = await saveNamespace(makeNamespace({ name: 'same-namespace', }));
+          const registry = await saveRegistry(makeRegistry({ name: 'same-registry', }));
           const data = makeRelease({
             service: {
               name: 'same-service',
-              namespace,
+              registry,
             },
             version: 'same-version',
           });
@@ -91,12 +91,12 @@ describe('Release Store', () => {
           ).rejects.toHaveProperty('code', '23505');
         });
 
-        it('should permit differently named services in the same namespace to have the same release version', async () => {
-          const namespace = await saveNamespace(makeNamespace({ name: 'same-namespace', }));
+        it('should permit differently named services in the same registry to have the same release version', async () => {
+          const registry = await saveRegistry(makeRegistry({ name: 'same-registry', }));
           const data1 = makeRelease({
             service: {
               name: 'service-1',
-              namespace,
+              registry,
             },
             version: 'same-version',
           });
@@ -105,22 +105,22 @@ describe('Release Store', () => {
           const data2 = makeRelease({
             service: {
               name: 'service-2',
-              namespace,
+              registry,
             },
             version: 'same-version',
           });
           await saveRelease(data2);
         });
 
-        it('should permit similarly named services in different namespaces to have the same release version', async () => {
-          await saveNamespace(makeNamespace({ name: 'namespace-1', }));
-          await saveNamespace(makeNamespace({ name: 'namespace-2', }));
+        it('should permit similarly named services in different registrys to have the same release version', async () => {
+          await saveRegistry(makeRegistry({ name: 'registry-1', }));
+          await saveRegistry(makeRegistry({ name: 'registry-2', }));
 
           const data1 = makeRelease({
             service: {
               name: 'same-service',
-              namespace: {
-                name: 'namespace-1',
+              registry: {
+                name: 'registry-1',
               },
             },
             version: 'same-version',
@@ -130,8 +130,8 @@ describe('Release Store', () => {
           const data2 = makeRelease({
             service: {
               name: 'same-service',
-              namespace: {
-                name: 'namespace-2',
+              registry: {
+                name: 'registry-2',
               },
             },
             version: 'same-version',
@@ -170,7 +170,7 @@ describe('Release Store', () => {
           expect(release.id).toBe(saved.id);
           expect(release.service.id).toBe(saved.service.id);
           expect(release.service.name).toBe(data.service.name);
-          expect(release.service.namespace.name).toBe(data.service.namespace.name);
+          expect(release.service.registry.name).toBe(data.service.registry.name);
           expect(release.version).toBe(data.version);
           expect(release.template.id).toBe(saved.template.id);
           expect(release.template.source.yaml).toBe(data.template.source.yaml);
@@ -191,10 +191,10 @@ describe('Release Store', () => {
 
       describe('Find Release', () => {
 
-        it('should find a release by service name, namespace and release version', async () => {
+        it('should find a release by service name, registry and release version', async () => {
           const data = makeRelease();
           const saved = await saveRelease(data);
-          const release = await findRelease({ name: data.service.name, namespace: data.service.namespace.name, version: data.version, });
+          const release = await findRelease({ name: data.service.name, registry: data.service.registry.name, version: data.version, });
 
           expect(release).toBeDefined();
           expect(release.id).toBe(saved.id);
@@ -204,16 +204,16 @@ describe('Release Store', () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: 'missing', namespace: data.service.namespace.name, version: data.version, });
+          const release = await findRelease({ name: 'missing', registry: data.service.registry.name, version: data.version, });
           expect(release).toBe(undefined);
         });
 
 
-        it('should return undefined when namespace not found', async () => {
+        it('should return undefined when registry not found', async () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: data.service.name, namespace: 'missing', version: data.version, });
+          const release = await findRelease({ name: data.service.name, registry: 'missing', version: data.version, });
           expect(release).toBe(undefined);
         });
 
@@ -221,7 +221,7 @@ describe('Release Store', () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: data.service.name, namespace: data.service.namespace.name, version: 'missing', });
+          const release = await findRelease({ name: data.service.name, registry: data.service.registry.name, version: 'missing', });
           expect(release).toBe(undefined);
         });
       });
@@ -349,18 +349,18 @@ describe('Release Store', () => {
           function deleteService() {}
         });
 
-        it('should exclude deleted namespaces from release count', async () => {
-          const namespace = await saveNamespace(makeNamespace());
+        it('should exclude deleted registrys from release count', async () => {
+          const registry = await saveRegistry(makeRegistry());
           await saveRelease(makeRelease({
             service: {
-              namespace,
+              registry,
             },
           }));
 
           const results1 = await listReleases();
           expect(results1.count).toBe(1);
 
-          await deleteNamespace(namespace.id);
+          await deleteRegistry(registry.id);
           const results2 = await listReleases();
           expect(results2.count).toBe(0);
         });
@@ -408,10 +408,6 @@ describe('Release Store', () => {
         });
       });
 
-      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
-        return store.saveNamespace(namespace, meta);
-      }
-
       function saveRelease(release = makeRelease(), meta = makeRootMeta()) {
         return store.saveRelease(release, meta);
       }
@@ -432,8 +428,12 @@ describe('Release Store', () => {
         return store.listReleases(page, limit);
       }
 
-      function deleteNamespace(id, meta = makeRootMeta()) {
-        return store.deleteNamespace(id, meta);
+      function saveRegistry(registry = makeRegistry(), meta = makeRootMeta()) {
+        return store.saveRegistry(registry, meta);
+      }
+
+      function deleteRegistry(id, meta = makeRootMeta()) {
+        return store.deleteRegistry(id, meta);
       }
 
     });

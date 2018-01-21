@@ -96,7 +96,7 @@ function makeAccount(overrides = {}) {
 function makeService(overrides = {}) {
   return new Service(merge({
     name: chance.name().toLowerCase().replace(/\s/g, '-'),
-    namespace: makeNamespace({
+    registry: makeRegistry({
       id: '00000000-0000-0000-0000-000000000000',
       name: 'default',
     }),
@@ -175,7 +175,7 @@ function makeReleaseForm(overrides = {}) {
   const data = makeRelease();
 
   return merge({
-    namespace: data.service.namespace.name,
+    registry: data.service.registry.name,
     service: data.service.name,
     version: data.version,
     image: data.attributes.image,

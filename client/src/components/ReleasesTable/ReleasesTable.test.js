@@ -3,7 +3,7 @@ import { shallow, } from 'enzyme';
 import R from 'ramda';
 import ReleasesTable from './ReleasesTable';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, } from '../Links';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, } from '../Links';
 
 describe('ReleasesTable', () => {
 
@@ -12,7 +12,7 @@ describe('ReleasesTable', () => {
 
     expect(wrapper.find('.releases-table__heading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__heading__created-date').text()).toBe('Created');
-    expect(wrapper.find('.releases-table__heading__namespace-name').text()).toBe('Namespace');
+    expect(wrapper.find('.releases-table__heading__registry-name').text()).toBe('Registry');
     expect(wrapper.find('.releases-table__heading__service-name').text()).toBe('Service');
     expect(wrapper.find('.releases-table__heading__version').text()).toBe('Version');
     expect(wrapper.find('.releases-table__heading__created-by').text()).toBe('Created By');
@@ -39,7 +39,7 @@ describe('ReleasesTable', () => {
         },
         service: {
           name: 'svc-awesome',
-          namespace: {
+          registry: {
             name: 'svc-ns',
           },
         },
@@ -56,7 +56,7 @@ describe('ReleasesTable', () => {
     expect(row.prop('id')).toBe('release-1');
     expect(row.find('.releases-table__body__row__created-date__on').find(Human).prop('date')).toBe(releases.items[0].createdOn);
     expect(row.find('.releases-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(releases.items[0].createdOn);
-    expect(row.find('.releases-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(releases.items[0].service.namespace);
+    expect(row.find('.releases-table__body__row__registry-name').find(RegistryLink).prop('registry')).toBe(releases.items[0].service.registry);
     expect(row.find('.releases-table__body__row__service-name').find(ServiceLink).prop('service')).toBe(releases.items[0].service);
     expect(row.find('.releases-table__body__row__version').find(ReleaseLink).prop('release')).toBe(releases.items[0]);
     expect(row.find('.releases-table__body__row__created-by').find(AccountLink).prop('account')).toBe(releases.items[0].createdBy);

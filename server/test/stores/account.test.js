@@ -6,11 +6,11 @@ import { makeIdentity, makeAccount, makeRootMeta, } from '../factories';
 describe('Account Store', () => {
 
   const suites = [
-    // {
-    //   name: 'Memory',
-    //   system: createSystem()
-    //     .remove('server'),
-    // },
+    {
+      name: 'Memory',
+      system: createSystem()
+        .remove('server'),
+    },
     {
       name: 'Postgres',
       system: createSystem()
@@ -209,6 +209,8 @@ describe('Account Store', () => {
           const account = await ensureAccount(account2Data, identity2Data);
           expect(account.id).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
+          expect(account.roles.admin.registries).toEqual(['*',]);
+          expect(account.roles.admin.namespaces).toEqual(['*',]);
         });
 
         it('should assign no roles to a new account when there are already active global admins', async () => {
@@ -216,6 +218,7 @@ describe('Account Store', () => {
           const identity1Data = makeIdentity();
           const saved = await saveAccount(account1Data);
           await saveIdentity(saved.id, identity1Data);
+          await grantRoleOnRegistry(saved.id, 'admin', null);
           await grantRoleOnNamespace(saved.id, 'admin', null);
 
           const account2Data = makeAccount();
@@ -393,9 +396,94 @@ describe('Account Store', () => {
 
       });
 
-      describe('Grant Role', () => {
+      describe('Grant Role On Registry', () => {
 
-        it('should grant global role to account', async () => {
+        it('should grant a role on all registries to an account', async () => {
+          const saved = await saveAccount();
+
+          const role = await grantRoleOnRegistry(saved.id, 'admin', null);
+          expect(role.id).toBeDefined();
+
+          const account = await getAccount(saved.id);
+          expect(account).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual(['admin',]);
+          expect(account.roles.admin.permissions).toContain('accounts-write');
+          expect(account.roles.admin.registries).toContain('*');
+        });
+
+        it('should grant a role on s single registry to an account', async () => {
+          const saved = await saveAccount();
+
+          const role = await grantRoleOnRegistry(saved.id, 'admin', 'default');
+          expect(role.id).toBeDefined();
+
+          const account = await getAccount(saved.id);
+          expect(account).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual(['admin',]);
+          expect(account.roles.admin.permissions).toContain('accounts-write');
+          expect(account.roles.admin.registries).toContain('default');
+        });
+
+        it('should fail if account does not exist', async () => {
+          const id = uuid();
+          await expect(
+            grantRoleOnRegistry(id, 'admin', null)
+          ).rejects.toHaveProperty('message', `Invalid accountId: ${id}`);
+        });
+
+        it('should fail if role does not exist', async () => {
+          const saved = await saveAccount();
+          await expect(
+            grantRoleOnRegistry(saved.id, 'missing', null)
+          ).rejects.toHaveProperty('message', 'Invalid role: missing');
+        });
+
+        it('should fail if registry does not exist', async () => {
+          const saved = await saveAccount();
+          await expect(
+            grantRoleOnRegistry(saved.id, 'admin', 'missing')
+          ).rejects.toHaveProperty('message', 'Invalid registry: missing');
+        });
+
+        it('should tolerate duplicate roles', async () => {
+          const saved = await saveAccount();
+          await grantRoleOnRegistry(saved.id, 'admin', null);
+          await grantRoleOnRegistry(saved.id, 'admin', null);
+
+          const account = await getAccount(saved.id);
+          expect(account).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual(['admin',]);
+        });
+      });
+
+      describe('Revoke Role On Registry', () => {
+
+        it('should revoke role from account', async () => {
+          const saved = await saveAccount();
+          const role = await grantRoleOnRegistry(saved.id, 'admin', null);
+          await revokeRoleOnRegistry(role.id);
+
+          const account = await getAccount(saved.id);
+          expect(account).toBeDefined();
+          expect(Object.keys(account.roles)).toEqual([]);
+        });
+
+        it('should tolerate missing role', async () => {
+          await revokeRoleOnRegistry(uuid());
+        });
+
+        it('should tolerate previously revoked role', async () => {
+          const account = await saveAccount();
+
+          const role = await grantRoleOnRegistry(account.id, 'admin', null);
+          await revokeRoleOnRegistry(role.id);
+          await revokeRoleOnRegistry(role.id);
+        });
+      });
+
+      describe('Grant Role On Namespace', () => {
+
+        it('should grant a role on all namespaces to an account', async () => {
           const saved = await saveAccount();
 
           const role = await grantRoleOnNamespace(saved.id, 'admin', null);
@@ -408,7 +496,7 @@ describe('Account Store', () => {
           expect(account.roles.admin.namespaces).toContain('*');
         });
 
-        it('should grant namespaced role to account', async () => {
+        it('should grant a role on s single namespace to an account', async () => {
           const saved = await saveAccount();
 
           const role = await grantRoleOnNamespace(saved.id, 'admin', 'default');
@@ -454,7 +542,7 @@ describe('Account Store', () => {
       });
 
 
-      describe('Revoke Role', () => {
+      describe('Revoke Role On Namespace', () => {
 
         it('should revoke role from account', async () => {
           const saved = await saveAccount();
@@ -478,6 +566,7 @@ describe('Account Store', () => {
           await revokeRoleOnNamespace(role.id);
         });
       });
+
 
       function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
         return store.saveAccount(account, meta);
@@ -509,6 +598,14 @@ describe('Account Store', () => {
 
       function deleteIdentity(id, meta = makeRootMeta(), ) {
         return store.deleteIdentity(id, meta);
+      }
+
+      function grantRoleOnRegistry(id, name, registry, meta = makeRootMeta(), ) {
+        return store.grantRoleOnRegistry(id, name, registry, meta);
+      }
+
+      function revokeRoleOnRegistry(id, meta = makeRootMeta(), ) {
+        return store.revokeRoleOnRegistry(id, meta);
       }
 
       function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {

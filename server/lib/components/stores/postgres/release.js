@@ -24,14 +24,14 @@ export default function(options) {
       });
     }
 
-    async function findRelease({ name, namespace, version, }) {
-      logger.debug(`Finding release by name: ${name}, namespace: ${namespace}, version: ${version}`);
+    async function findRelease({ name, registry, version, }) {
+      logger.debug(`Finding release by name: ${name}, registry: ${registry}, version: ${version}`);
 
       const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [
-        name, namespace, version,
+        name, registry, version,
       ]);
 
-      logger.debug(`Found ${release.rowCount} releases with name: ${name}, namespace: ${namespace}, version: ${version}`);
+      logger.debug(`Found ${release.rowCount} releases with name: ${name}, registry: ${registry}, version: ${version}`);
 
       if (release.rowCount === 0) return;
 
@@ -42,7 +42,7 @@ export default function(options) {
 
     async function saveRelease(data, meta) {
       const release = await db.withTransaction(async connection => {
-        const service = await _ensureService(connection, data.service, data.service.namespace.name, meta);
+        const service = await _ensureService(connection, data.service, data.service.registry.name, meta);
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
@@ -54,19 +54,19 @@ export default function(options) {
       return release;
     }
 
-    async function _ensureService(connection, data, namespace, meta) {
+    async function _ensureService(connection, data, registry, meta) {
 
-      logger.debug(`Ensuring service: ${namespace}/${data.name}`);
+      logger.debug(`Ensuring service: ${registry}/${data.name}`);
 
       const result = await connection.query(SQL.ENSURE_SERVICE, [
-        data.name, namespace, meta.date, meta.account.id,
+        data.name, registry, meta.date, meta.account.id,
       ]);
 
       const service = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
-      logger.debug(`Ensured service: ${namespace}/${service.name}/${service.id}`);
+      logger.debug(`Ensured service: ${registry}/${service.name}/${service.id}`);
 
       return service;
     }
@@ -154,9 +154,9 @@ export default function(options) {
         service: new Service({
           id: row.service_id,
           name: row.service_name,
-          namespace: new Namespace({
-            id: row.namespace_id,
-            name: row.namespace_name,
+          registry: new Namespace({
+            id: row.registry_id,
+            name: row.registry_name,
           }),
         }),
         version: row.version,

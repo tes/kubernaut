@@ -28,7 +28,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
-        if (!req.user.hasPermission(deployment.namespace.name, 'deployments-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(deployment.namespace.name, 'deployments-read')) return next(Boom.forbidden());
         res.json(deployment);
       } catch (err) {
         next(err);
@@ -42,7 +42,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
-        if (!req.user.hasPermission(deployment.namespace.name, 'deployments-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(deployment.namespace.name, 'deployments-read')) return next(Boom.forbidden());
 
         const contextOk = await kubernetes.checkContext(deployment.context, res.locals.logger);
         if (!contextOk) return next(Boom.internal(`Context ${deployment.context} was not found`));
@@ -69,13 +69,15 @@ export default function(options = {}) {
       try {
         if (!req.body.context) return next(Boom.badRequest('context is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+        if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
 
-        if (!req.user.hasPermission(req.body.namespace, 'deployments-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(req.body.namespace, 'deployments-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'releases-read')) return next(Boom.forbidden());
 
-        const release = await store.findRelease({ name: req.body.service, namespace: req.body.namespace, version: req.body.version, });
-        if (!release) return next(Boom.badRequest(`release ${req.body.service}/${req.body.version} was not found`));
+        const release = await store.findRelease({ name: req.body.service, registry: req.body.registry, version: req.body.version, });
+        if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
         const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
         if (!contextOk) return next(Boom.badRequest(`context ${req.body.context} was not found`));
@@ -110,7 +112,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
-        if (!req.user.hasPermission(deployment.namespace.name, 'deployments-write')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(deployment.namespace.name, 'deployments-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteDeployment(req.params.id, meta);

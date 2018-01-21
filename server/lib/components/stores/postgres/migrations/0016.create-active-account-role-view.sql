@@ -2,7 +2,7 @@ START TRANSACTION;
 
 CREATE VIEW active_account_role__vw AS
 SELECT
-  'registry' AS subject_type,
+  'registry' AS differentiator,
   arr.*
 FROM
   account_role_registry arr,
@@ -14,7 +14,7 @@ WHERE
   arr.subject = r.id
 UNION
 SELECT
-  'registry' AS subject_type,
+  'registry' AS differentiator,
   arr.*
 FROM
   account_role_registry arr,
@@ -25,7 +25,7 @@ WHERE
   arr.subject IS NULL
 UNION
 SELECT
-  'namespace' AS subject_type,
+  'namespace' AS differentiator,
   arn.*
 FROM
   account_role_namespace arn,
@@ -37,7 +37,7 @@ WHERE
   arn.subject = n.id
 UNION
 SELECT
-  'namespace' AS subject_type,
+  'namespace' AS differentiator,
   arn.*
 FROM
   account_role_namespace arn,

@@ -7,8 +7,8 @@ SELECT
   c.display_name AS created_by_display_name,
   s.id AS service_id,
   s.name AS service_name,
-  n.id AS namespace_id,
-  n.name AS namespace_name,
+  sr.id AS registry_id,
+  sr.name AS registry_name,
   rt.id as template_id,
   rt.source_yaml as template_source_yaml,
   rt.source_json as template_source_json,
@@ -17,14 +17,14 @@ FROM
   active_release__vw r,
   release_template rt,
   service s,
-  namespace n,
+  registry sr,
   account c
 WHERE
   s.name = $1 AND
-  n.name = $2 AND
+  sr.name = $2 AND
   r.version = $3 AND
   r.service = s.id AND
   r.created_by = c.id AND
   r.template = rt.id AND
-  s.namespace = n.id
+  s.registry = sr.id
 ;

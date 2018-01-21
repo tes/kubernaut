@@ -1,5 +1,6 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
+import Registry from '../../../domain/Registry';
 import Service from '../../../domain/Service';
 import Release from '../../../domain/Release';
 import Manifest from '../../../domain/Manifest';
@@ -109,6 +110,10 @@ export default function(options) {
           service: new Service({
             id: row.service_id,
             name: row.service_name,
+            registry: new Registry({
+              id: row.service_id,
+              name: row.service_name,
+            }),
           }),
           version: row.release_version,
         }),

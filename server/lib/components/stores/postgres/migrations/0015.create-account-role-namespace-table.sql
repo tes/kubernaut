@@ -28,7 +28,7 @@ CREATE INDEX account_role_namespace__subject__idx ON account_role_namespace (
   subject DESC
 );
 
-CREATE FUNCTION ensure_account_role_namespace (
+CREATE FUNCTION ensure_account_role_on_namespace (
   account UUID,
   role UUID,
   subject UUID,
@@ -43,9 +43,9 @@ BEGIN
 
   SELECT account_role_namespace.id INTO id
   FROM account_role_namespace
-  WHERE account_role_namespace.account = ensure_account_role_namespace.account
-    AND account_role_namespace.role = ensure_account_role_namespace.role
-    AND account_role_namespace.subject = ensure_account_role_namespace.subject;
+  WHERE account_role_namespace.account = ensure_account_role_on_namespace.account
+    AND account_role_namespace.role = ensure_account_role_on_namespace.role
+    AND account_role_namespace.subject = ensure_account_role_on_namespace.subject;
   IF NOT FOUND THEN
     INSERT INTO account_role_namespace (
       id,

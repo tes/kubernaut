@@ -1,6 +1,6 @@
 SELECT
   COALESCE(sr.name, n.name) AS subject_name,
-  ar.subject_type,
+  ar.differentiator,
   r.name AS role_name,
   p.name AS permission_name
 FROM active_account_role__vw ar
@@ -12,10 +12,10 @@ INNER JOIN permission p
   ON rp.permission = p.id
 LEFT OUTER JOIN registry sr
    ON ar.subject = sr.id
-  AND ar.subject_type = 'registry'
+  AND ar.differentiator = 'registry'
 LEFT OUTER JOIN namespace n
    ON ar.subject = n.id
-  AND ar.subject_type = 'namespace'
+  AND ar.differentiator = 'namespace'
 WHERE
   ar.account = $1
 ORDER BY

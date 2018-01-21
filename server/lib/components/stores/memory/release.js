@@ -5,7 +5,7 @@ import Release from '../../../domain/Release';
 
 export default function(options = {}) {
 
-  function start({ tables, namespaces, }, cb) {
+  function start({ tables, registries, }, cb) {
 
     const { services, releases, } = tables;
 
@@ -14,17 +14,17 @@ export default function(options = {}) {
         r.id === id &&
         !r.deletedOn &&
         !r.service.deletedOn &&
-        !r.service.namespace.deletedOn);
+        !r.service.registry.deletedOn);
     }
 
-    async function findRelease({ name, namespace, version, }) {
+    async function findRelease({ name, registry, version, }) {
       return releases.find(r =>
         r.service.name === name &&
-        r.service.namespace.name === namespace &&
+        r.service.registry.name === registry &&
         r.version === version &&
         !r.deletedOn &&
         !r.service.deletedOn &&
-        !r.service.namespace.deletedOn
+        !r.service.registry.deletedOn
       );
     }
 
@@ -47,11 +47,11 @@ export default function(options = {}) {
     async function ensureService(data, meta) {
       reportMissingMetadata(meta);
 
-      const namespace = await namespaces.findNamespace({ name: data.namespace.name, });
-      if (!namespace) throw Object.assign(new Error('Missing namespace'), { code: '23502', });
+      const registry = await registries.findRegistry({ name: data.registry.name, });
+      if (!registry) throw Object.assign(new Error('Missing registry'), { code: '23502', });
 
       return await findService(data.name) || append(services, new Service({
-        id: uuid(), name: data.name, namespace, createdOn: meta.date, createdBy: meta.account,
+        id: uuid(), name: data.name, registry, createdOn: meta.date, createdBy: meta.account,
       }));
     }
 
@@ -74,7 +74,7 @@ export default function(options = {}) {
     function reportDuplicateReleaseVersions(release) {
       if (releases.find(r =>
         r.service.name === release.service.name &&
-        r.service.namespace.name === release.service.namespace.name &&
+        r.service.registry.name === release.service.registry.name &&
         r.version === release.version &&
         !r.deletedOn)
       ) throw Object.assign(new Error('Duplicate Release'), { code: '23505', });
@@ -93,7 +93,7 @@ export default function(options = {}) {
     function byActive(r) {
       return !r.deletedOn &&
              !r.service.deletedOn &&
-             !r.service.namespace.deletedOn;
+             !r.service.registry.deletedOn;
     }
 
     function getTimeForSort(date) {
