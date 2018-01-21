@@ -28,7 +28,7 @@ export function fetchDeployments(options = { page: 1, pageSize: 50, quiet: false
 
 export function fetchDeployment(id, options = { quiet: false, }) {
   return async (dispatch) => {
-    let data;
+    let data = {};
     dispatch({ type: FETCH_DEPLOYMENT_REQUEST, data, loading: true, });
 
     try {

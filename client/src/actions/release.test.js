@@ -28,7 +28,7 @@ describe('Release Actions', () => {
     expectReleasesSuccess([1, 2, 3,]);
   });
 
-  it('should tolerate errors fetching articles', async () => {
+  it('should tolerate errors fetching releases', async () => {
 
     fetchMock.mock('/api/releases?limit=50&offset=0', 500, );
 
@@ -37,7 +37,7 @@ describe('Release Actions', () => {
     expectReleasesError('/api/releases?limit=50&offset=0 returned 500 Internal Server Error');
   });
 
-  it('should tolerate failures fetching articles', async () => {
+  it('should tolerate failures fetching releases', async () => {
 
     fetchMock.mock('/api/releases?limit=50&offset=0', 403, );
 

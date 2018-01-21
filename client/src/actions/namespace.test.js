@@ -28,7 +28,7 @@ describe('Namespace Actions', () => {
     expectNamespacesSuccess([1, 2, 3,]);
   });
 
-  it('should tolerate errors fetching articles', async () => {
+  it('should tolerate errors fetching namespaces', async () => {
 
     fetchMock.mock('/api/namespaces?limit=50&offset=0', 500, );
 
@@ -37,7 +37,7 @@ describe('Namespace Actions', () => {
     expectNamespacesError('/api/namespaces?limit=50&offset=0 returned 500 Internal Server Error');
   });
 
-  it('should tolerate failures fetching articles', async () => {
+  it('should tolerate failures fetching namespaces', async () => {
 
     fetchMock.mock('/api/namespaces?limit=50&offset=0', 403, );
 

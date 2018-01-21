@@ -28,7 +28,7 @@ describe('Account Actions', () => {
     expectAccountsSuccess([1, 2, 3,]);
   });
 
-  it('should tolerate errors fetching articles', async () => {
+  it('should tolerate errors fetching accounts', async () => {
 
     fetchMock.mock('/api/accounts?limit=50&offset=0', 500, );
 
@@ -37,7 +37,7 @@ describe('Account Actions', () => {
     expectAccountsError('/api/accounts?limit=50&offset=0 returned 500 Internal Server Error');
   });
 
-  it('should tolerate failures fetching articles', async () => {
+  it('should tolerate failures fetching accounts', async () => {
 
     fetchMock.mock('/api/accounts?limit=50&offset=0', 403, );
 
