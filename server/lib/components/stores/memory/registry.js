@@ -8,11 +8,11 @@ export default function(options) {
     const { registries, } = tables;
 
     async function getRegistry(id) {
-      return registries.find(n => n.id === id && !n.deletedOn);
+      return registries.find(r => r.id === id && !r.deletedOn);
     }
 
     async function findRegistry({ name, }) {
-      return registries.find(n => n.name === name && !n.deletedOn);
+      return registries.find(r => r.name === name && !r.deletedOn);
     }
 
     async function saveRegistry(registry, meta) {
@@ -33,15 +33,15 @@ export default function(options) {
 
     async function deleteRegistry(id, meta) {
       reportMissingMetadata(meta);
-      const registry = registries.find(n => n.id === id && !n.deletedOn);
+      const registry = registries.find(r => r.id === id && !r.deletedOn);
       if (registry) {
         registry.deletedOn = meta.date;
         registry.deletedBy = meta.account;
       }
     }
 
-    function byActive(n) {
-      return !n.deletedOn;
+    function byActive(r) {
+      return !r.deletedOn;
     }
 
     function byName(a, b) {
@@ -53,7 +53,7 @@ export default function(options) {
     }
 
     function reportDuplicateRegistries(registry) {
-      if (registries.find(n => n.name === registry.name && !n.deletedOn)) throw Object.assign(new Error('Duplicate registry'), { code: '23505', });
+      if (registries.find(r => r.name === registry.name && !r.deletedOn)) throw Object.assign(new Error('Duplicate registry'), { code: '23505', });
     }
 
     function append(collection, item) {
