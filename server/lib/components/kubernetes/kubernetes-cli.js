@@ -35,6 +35,10 @@ export default function(options = {}) {
       return check(['config', 'get-contexts', context,], logger);
     }
 
+    function checkCluster(context, logger) {
+      return check(['--context', context, 'cluster-info',], logger);
+    }
+
     function checkNamespace(context, namespace, logger) {
       return check(['--context', context, 'get', 'namespace', namespace,], logger);
     }
@@ -67,6 +71,7 @@ export default function(options = {}) {
     return cb(null, {
       apply,
       checkContext,
+      checkCluster,
       checkNamespace,
       checkDeployment,
       rolloutStatus,

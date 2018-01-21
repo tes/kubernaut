@@ -8,8 +8,7 @@ FROM
 WHERE
   n.deleted_on IS NULL
 ORDER BY
-  n.created_on DESC,
-  n.id DESC
+  n.name ASC
 ;
 
 COMMIT;

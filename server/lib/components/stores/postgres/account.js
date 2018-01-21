@@ -61,7 +61,7 @@ export default function(options = {}) {
       const created = await db.withTransaction(async connection => {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
-        const counts = await _countActiveGlobalAdminstrators(connection);
+        const counts = await _countActiveAdminstrators(connection);
         if (counts.registry === 0) {
           await _grantRoleOnRegistry(connection, saved.id, 'admin', null, meta);
         }
@@ -243,15 +243,15 @@ export default function(options = {}) {
       return id;
     }
 
-    async function _countActiveGlobalAdminstrators(connection) {
-      logger.debug('Counting active global administrators');
+    async function _countActiveAdminstrators(connection) {
+      logger.debug('Counting active administrators');
 
-      const result = await connection.query(SQL.COUNT_ACTIVE_GLOBAL_ADMINISTRATORS);
+      const result = await connection.query(SQL.COUNT_ACTIVE_ADMINISTRATORS);
       const counts = {
         registry: parseInt(result.rows[0].registry, 10),
         namespace: parseInt(result.rows[0].namespace, 10),
       };
-      logger.debug(`Found ${counts.registry}/${counts.namespace} active global administrator accounts`);
+      logger.debug(`Found ${counts.registry}/${counts.namespace} active administrator accounts`);
 
       return counts;
     }

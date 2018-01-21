@@ -11,7 +11,6 @@ describe('Releases API', () => {
   let config;
   let system = { stop: cb => cb(), };
   let store = { nuke: new Promise(cb => cb()), };
-  let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
 
@@ -23,7 +22,6 @@ describe('Releases API', () => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
-      kubernetes = components.kubernetes;
       cb();
     });
   });
@@ -31,7 +29,6 @@ describe('Releases API', () => {
   beforeEach(async cb => {
     try {
       await store.nuke();
-      await kubernetes.nuke();
     } catch (err) {
       cb(err);
     }

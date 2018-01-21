@@ -5,6 +5,7 @@ export default function(options = {}) {
   function defaultContexts() {
     return {
       test: {
+        cluster: true,
         namespaces: {
           'default': {
             manifests: [],
@@ -15,6 +16,10 @@ export default function(options = {}) {
             deployments: [],
           },
         },
+      },
+      xcluster: {
+        cluster: false,
+        namespaces: {},
       },
     };
   }
@@ -36,6 +41,13 @@ export default function(options = {}) {
     function checkContext(context) {
       return new Promise((resolve) => {
         resolve(Object.keys(contexts).includes(context));
+      });
+    }
+
+    function checkCluster(context) {
+      return new Promise((resolve, reject) => {
+        if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
+        resolve(contexts[context].cluster);
       });
     }
 
@@ -77,6 +89,7 @@ export default function(options = {}) {
     return cb(null, {
       apply,
       checkContext,
+      checkCluster,
       checkDeployment,
       checkNamespace,
       rolloutStatus,

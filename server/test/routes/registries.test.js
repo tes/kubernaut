@@ -9,19 +9,17 @@ describe('Registries API', () => {
   let config;
   let system = { stop: cb => cb(), };
   let store = { nuke: new Promise(cb => cb()), };
-  let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
 
   beforeAll(cb => {
     system = createSystem()
-    .set('config.overrides', { server: { port: 13004, }, })
+    .set('config.overrides', { server: { port: 13005, }, })
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
-      kubernetes = components.kubernetes;
       cb();
     });
   });
@@ -29,7 +27,6 @@ describe('Registries API', () => {
   beforeEach(async cb => {
     try {
       await store.nuke();
-      await kubernetes.nuke();
     } catch (err) {
       cb(err);
     }

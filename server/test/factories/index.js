@@ -9,15 +9,16 @@ import pm from 'power-merge';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
+import Account from '../../lib/domain/Account';
 import Registry from '../../lib/domain/Registry';
-import Namespace from '../../lib/domain/Namespace';
 import Service from '../../lib/domain/Service';
-import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
 import Release from '../../lib/domain/Release';
+import ReleaseTemplate from '../../lib/domain/ReleaseTemplate';
 import Manifest from '../../lib/domain/Manifest';
+import Cluster from '../../lib/domain/Cluster';
+import Namespace from '../../lib/domain/Namespace';
 import Deployment from '../../lib/domain/Deployment';
 import DeploymentLogEntry from '../../lib/domain/DeploymentLogEntry';
-import Account from '../../lib/domain/Account';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -64,18 +65,6 @@ const merge = pm.compile({
     deepClone,
   ], });
 
-function makeRegistry(overrides = {}) {
-  return new Registry(merge({
-    name: chance.word({ length: 32, }),
-  }, overrides));
-}
-
-function makeNamespace(overrides = {}) {
-  return new Namespace(merge({
-    name: chance.word({ length: 32, }),
-  }, overrides));
-}
-
 function makeIdentity(overrides = {}) {
   return merge({
     name: chance.word().toLowerCase(),
@@ -90,6 +79,12 @@ function makeAccount(overrides = {}) {
   return new Account(merge({
     displayName: `${first} ${last}`,
     roles: [],
+  }, overrides));
+}
+
+function makeRegistry(overrides = {}) {
+  return new Registry(merge({
+    name: chance.word({ length: 32, }),
   }, overrides));
 }
 
@@ -121,6 +116,19 @@ function makeRelease(overrides = {}) {
       template: `${chance.word().toLowerCase()}.yaml`,
       image: `registry/repo/${service.name}:${version}`,
     },
+  }, overrides));
+}
+
+function makeCluster(overrides = {}) {
+  return new Cluster(merge({
+    name: chance.word({ length: 32, }),
+    context: chance.word({ length: 32, }),
+  }, overrides));
+}
+
+function makeNamespace(overrides = {}) {
+  return new Namespace(merge({
+    name: chance.word({ length: 32, }),
   }, overrides));
 }
 
@@ -189,4 +197,16 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
-export { makeRegistry, makeNamespace, makeIdentity, makeAccount, makeDeployment, makeDeploymentLogEntry, makeRelease, makeMeta, makeRootMeta, makeReleaseForm, };
+export {
+  makeIdentity,
+  makeAccount,
+  makeRegistry,
+  makeRelease,
+  makeReleaseForm,
+  makeCluster,
+  makeNamespace,
+  makeDeployment,
+  makeDeploymentLogEntry,
+  makeMeta,
+  makeRootMeta,
+};

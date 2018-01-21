@@ -23,11 +23,12 @@ describe('Registry Store', () => {
           },
         })
         .remove('server')
-        .remove('store.registry')
-        .remove('store.release')
-        .remove('store.deployment')
         .remove('store.account')
         .remove('store.registry')
+        .remove('store.release')
+        .remove('store.cluster')
+        .remove('store.namespace')
+        .remove('store.deployment')
         .include(postgres),
     },
   ];

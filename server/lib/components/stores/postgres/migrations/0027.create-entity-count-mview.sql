@@ -9,6 +9,9 @@ CREATE MATERIALIZED VIEW entity_count__mvw (
 SELECT 'registry', '*', count(*)
 FROM active_registry__vw
 UNION
+  SELECT 'cluster', '*', count(*)
+  FROM active_cluster__vw
+UNION
   SELECT 'namespace', '*', count(*)
   FROM active_namespace__vw
 UNION

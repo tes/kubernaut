@@ -9,7 +9,6 @@ describe('Namespaces API', () => {
   let config;
   let system = { stop: cb => cb(), };
   let store = { nuke: new Promise(cb => cb()), };
-  let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
 
@@ -21,7 +20,6 @@ describe('Namespaces API', () => {
       if (err) return cb(err);
       config = components.config;
       store = components.store;
-      kubernetes = components.kubernetes;
       cb();
     });
   });
@@ -29,7 +27,6 @@ describe('Namespaces API', () => {
   beforeEach(async cb => {
     try {
       await store.nuke();
-      await kubernetes.nuke();
     } catch (err) {
       cb(err);
     }
@@ -89,7 +86,7 @@ describe('Namespaces API', () => {
       expect(namespaces.items.length).toBe(40);
     });
 
-    it('should page namepaces list', async () => {
+    it('should page namespaces list', async () => {
 
       const namespaces = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
