@@ -1,1 +1,1 @@
-export { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, DeploymentLink, } from './Links';
+export { RegistryLink, NamespaceLink, AccountLink, ServiceLink, ReleaseLink, DeploymentLink, } from './Links';

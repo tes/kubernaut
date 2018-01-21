@@ -8,6 +8,13 @@ export const AccountLink = ({ account, }) => {
   );
 };
 
+export const RegistryLink = ({ registry, }) => {
+  // TODO Replace with Link when page availalbe
+  return (
+    <span>{registry.name}</span>
+  );
+};
+
 export const NamespaceLink = ({ namespace, }) => {
   // TODO Replace with Link when page availalbe
   return (

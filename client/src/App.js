@@ -8,19 +8,21 @@ import { composeWithDevTools, } from 'redux-devtools-extension';
 
 // Components
 import Header from './components/Header';
+import RegistriesPage from './components/RegistriesPage';
+import NamespacesPage from './components/NamespacesPage';
+import AccountsPage from './components/AccountsPage';
 import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
-import NamespacesPage from './components/NamespacesPage';
-import AccountsPage from './components/AccountsPage';
 import HomePage from './components/HomePage';
 
 // Reducers
+import registries from './reducers/registries';
+import namespaces from './reducers/namespaces';
+import accounts from './reducers/accounts';
 import releases from './reducers/releases';
 import deployments from './reducers/deployments';
 import deployment from './reducers/deployment';
-import namespaces from './reducers/namespaces';
-import accounts from './reducers/accounts';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -41,11 +43,12 @@ require('bootstrap/dist/js/bootstrap.min.js');
 const initialState = {};
 
 const store = createStore(combineReducers({
+  registries,
+  namespaces,
+  accounts,
   releases,
   deployments,
   deployment,
-  namespaces,
-  accounts,
 }), initialState, composeWithDevTools(
   applyMiddleware(thunk)
 ));
@@ -60,6 +63,15 @@ class App extends Component {
             <Header />
             <div className='container'>
               <Switch>
+                <Route exact path='/registries' render={() =>
+                  <RegistriesPage />
+                } />
+                <Route exact path='/namespaces' render={() =>
+                  <NamespacesPage />
+                } />
+                <Route exact path='/accounts' render={() =>
+                  <AccountsPage />
+                } />
                 <Route exact path='/releases' render={() =>
                   <ReleasesPage />
                 } />
@@ -68,12 +80,6 @@ class App extends Component {
                 } />
                 <Route exact path='/deployments/:deploymentId' render={({ match, }) =>
                   <DeploymentDetailsPage deploymentId={match.params.deploymentId} />
-                } />
-                <Route exact path='/namespaces' render={() =>
-                  <NamespacesPage />
-                } />
-                <Route exact path='/accounts' render={() =>
-                  <AccountsPage />
                 } />
                 <Route path='/' render={() =>
                   <HomePage />
