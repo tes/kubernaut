@@ -44,7 +44,7 @@ class DeploymentDetailsPage extends Component {
             <span className='details__label'>Namespace:</span>
           </div>
           <div className='col-md-10'>
-            <span><NamespaceLink namespace={deployment.release.service.namespace} /></span>
+            <span><NamespaceLink namespace={deployment.namespace} /></span>
           </div>
         </div>
         <div className='row'>

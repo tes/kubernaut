@@ -15,9 +15,9 @@ module.exports = new System({ name: 'stores/memory', })
   .add('store.deployment', deployment()).dependsOn('config', 'logger', 'tables', { component: 'store.release', destination: 'releases', },)
   .add('store', store()).dependsOn(
     'tables',
-    { component: 'store.registry', destination: 'registry', },
-    { component: 'store.namespace', destination: 'namespace', },
-    { component: 'store.account', destination: 'account', },
-    { component: 'store.release', destination: 'release', },
-    { component: 'store.deployment', destination: 'deployment', },
+    { component: 'store.registry', destination: 'registries', },
+    { component: 'store.namespace', destination: 'namespaces', },
+    { component: 'store.account', destination: 'accounts', },
+    { component: 'store.release', destination: 'releases', },
+    { component: 'store.deployment', destination: 'deployments', },
   );

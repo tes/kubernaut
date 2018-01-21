@@ -26,10 +26,10 @@ export default function(options) {
     }
 
     async function saveDeployment(data, meta) {
-      logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.context}`);
+      logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.namespace.name}/${data.context}`);
 
       const result = await db.query(SQL.SAVE_DEPLOYMENT, [
-        data.release.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
+        data.release.id, data.namespace.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
       ]);
 
       const deployment = {
@@ -38,7 +38,7 @@ export default function(options) {
 
       await db.refreshEntityCount();
 
-      logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context}/${deployment.id}`);
+      logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context.name}/${deployment.id}`);
 
       return deployment;
     }
@@ -87,6 +87,10 @@ export default function(options) {
     function toDeployment(row, logRows = []) {
       return new Deployment({
         id: row.id,
+        namespace: new Namespace({
+          id: row.namespace_id,
+          name: row.namespace_name,
+        }),
         context: row.context,
         manifest: new Manifest({
           yaml: row.manifest_yaml,
@@ -105,10 +109,6 @@ export default function(options) {
           service: new Service({
             id: row.service_id,
             name: row.service_name,
-            namespace: new Namespace({
-              id: row.namespace_id,
-              name: row.namespace_name,
-            }),
           }),
           version: row.release_version,
         }),

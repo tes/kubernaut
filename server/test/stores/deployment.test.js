@@ -132,9 +132,9 @@ describe('Deployment Store', () => {
 
           expect(deployment).toBeDefined();
           expect(deployment.id).toBe(saved.id);
+          expect(deployment.namespace.name).toBe(saved.namespace.name);
           expect(deployment.release.service.id).toBe(saved.release.service.id);
           expect(deployment.release.service.name).toBe(saved.release.service.name);
-          expect(deployment.release.service.namespace.name).toBe(saved.release.service.namespace.name);
           expect(deployment.release.version).toBe(saved.release.version);
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(deployment.createdBy.id).toBe(meta.account.id);
@@ -357,13 +357,9 @@ describe('Deployment Store', () => {
 
         it('should exclude deleted namespaces from deployment count', async () => {
           const namespace = await saveNamespace(makeNamespace());
-          const release = await saveRelease(makeRelease({
-            service: {
-              namespace,
-            },
-          }));
+          const release = await saveRelease(makeRelease());
 
-          await saveDeployment(makeDeployment({ release, }));
+          await saveDeployment(makeDeployment({ namespace, release, }));
           const results1 = await listDeployments();
           expect(results1.count).toBe(1);
 

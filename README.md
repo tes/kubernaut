@@ -176,7 +176,8 @@ A logical grouping of services. Useful for supporting services with duplicate na
 
 | Property  | Description |
 |-----------|-------------|
-| name      | the registry name, e.g. payments |
+| id        |             |
+| name      | The registry name, e.g. payments |
 
 
 ### Service
@@ -184,38 +185,65 @@ An app / micro service
 
 | Property  | Description |
 |-----------|-------------|
-| name      | the service name, e.g. service-jobs-api |
-| namespace | the kubernetes namespace where the service will be deployed, e.g. jobs, resources |
+| id        |             |
+| name      | The service name, e.g. service-jobs-api |
+| registry  | A reference to the service's registry |
 
 ### Release
 A release of an app / micro service
 
 | Property  | Description |
 |-----------|-------------|
+| id        |             |
 | version   | The release version. Currently jenkins build number, we're considering using / incorporating git commit |
+| service   | A reference to the release's service |
+| template  | A reference to the release's template |
 
 ### Template
 A moustache template for the kubernetes manifest file (yaml).
 
-| Property  | Description |
-|-----------|-------------|
-| source    | The template source. The template is rendered using release attributes (see below) to form the kubernates manfiest |
+| Property       | Description |
+|----------------|-------------|
+| id             |             |
+| source_yaml    | The template source in YAML format. The template is rendered using release attributes (see below) to form the kubernates manfiest |
+| source_json    | The template source in JSON format. |
 
 ### Release Attribute
 Key value pairs, which may be rendered into the kubernetes template, e.g. service name, image, version, commit,
 
 | Property  | Description |
 |-----------|-------------|
-| name      | attribute name |
-| value     | attribute value |
+| id        |             |
+| name      | Attribute name |
+| value     | Attribute value |
+
+### Cluster
+Represents a Kubernetes cluster
+
+| Property  | Description |
+|-----------|-------------|
+| id        |             |
+| name      | The cluster name |
+| context   | The context to be used when interacting with this cluster |
+
+
+### Namespace
+A logical grouping of deployments. Equates to kubernetes namespaces. Useful for applying access controls
+
+| Property  | Description |
+|-----------|-------------|
+| id        |             |
+| name      | The registry name, e.g. payments |
+| cluster   | Reference to the namespace's cluster |
 
 ### Deployment
 A release of an app / micro service
 
 | Property  | Description |
 |-----------|-------------|
-| context   | The kubernetes context which defines the target cluster |
-
+| id        |             |
+| release   | Reference to the deployment's release |
+| namespace | Reference to the deployment's namespace |
 
 ## Kubernaut Permissions Model
 

@@ -18,9 +18,9 @@ FROM
   account c
 WHERE
   d.release = r.id AND
+  d.namespace = n.id AND
   d.created_by = c.id AND
-  r.service = s.id AND
-  s.namespace = n.id
+  r.service = s.id
 ORDER BY
   d.created_on DESC,
   d.id DESC

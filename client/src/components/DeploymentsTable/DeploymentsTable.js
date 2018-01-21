@@ -45,7 +45,7 @@ class DeploymentsTable extends Component {
             </td>
             <td className='deployments-table__body__row__service-name'><ServiceLink service={deployment.release.service} /></td>
             <td className='deployments-table__body__row__version'><ReleaseLink release={deployment.release} /></td>
-            <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.release.service.namespace} /></td>
+            <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.namespace} /></td>
             <td className='deployments-table__body__row__context'>{deployment.context}</td>
             <td className='deployments-table__body__row__created-by'>
               <AccountLink account={deployment.createdBy} />

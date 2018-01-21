@@ -3,6 +3,7 @@ START TRANSACTION;
 CREATE TABLE deployment (
   id UUID PRIMARY KEY,
   release UUID NOT NULL REFERENCES release ON DELETE CASCADE,
+  namespace UUID NOT NULL,
   context TEXT NOT NULL,
   manifest_yaml TEXT NOT NULL,
   manifest_json JSONB NOT NULL,
@@ -11,6 +12,10 @@ CREATE TABLE deployment (
   deleted_on TIMESTAMP WITH TIME ZONE,
   deleted_by UUID REFERENCES account,
   CONSTRAINT deployment__deletion__chk CHECK ((deleted_on IS NULL AND deleted_by IS NULL) OR (deleted_on IS NOT NULL AND deleted_by IS NOT NULL))
+);
+
+CREATE INDEX deployment__namespace__idx ON deployment (
+  namespace DESC
 );
 
 CREATE INDEX deployment__release__idx ON deployment (

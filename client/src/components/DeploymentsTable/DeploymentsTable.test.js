@@ -37,6 +37,9 @@ describe('DeploymentsTable', () => {
     const items = R.times((i) => {
       return {
         id: `deployment-${i+1}`,
+        namespace: {
+          name: 'svc-ns',
+        },
         context: 'test',
         createdOn: new Date('2017-07-01T16:15:14.000Z'),
         createdBy: {
@@ -46,9 +49,6 @@ describe('DeploymentsTable', () => {
         release: {
           service: {
             name: 'svc-awesome',
-            namespace: {
-              name: 'svc-ns',
-            },
           },
           version: `v${i+1}`,
         },
@@ -64,7 +64,7 @@ describe('DeploymentsTable', () => {
     expect(row.prop('id')).toBe('deployment-1');
     expect(row.find('.deployments-table__body__row__created-date__on').find(Human).prop('date')).toBe(deployments.items[0].createdOn);
     expect(row.find('.deployments-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(deployments.items[0].createdOn);
-    expect(row.find('.deployments-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(deployments.items[0].release.service.namespace);
+    expect(row.find('.deployments-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(deployments.items[0].namespace);
     expect(row.find('.deployments-table__body__row__service-name').find(ServiceLink).prop('service')).toBe(deployments.items[0].release.service);
     expect(row.find('.deployments-table__body__row__version').find(ReleaseLink).prop('release')).toBe(deployments.items[0].release);
     expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments.items[0].context);

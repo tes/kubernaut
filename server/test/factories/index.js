@@ -96,7 +96,8 @@ function makeAccount(overrides = {}) {
 function makeService(overrides = {}) {
   return new Service(merge({
     name: chance.name().toLowerCase().replace(/\s/g, '-'),
-    namespace: new Namespace({
+    namespace: makeNamespace({
+      id: '00000000-0000-0000-0000-000000000000',
       name: 'default',
     }),
   }, overrides));
@@ -130,6 +131,10 @@ function makeDeployment(overrides = {}) {
   const context = get(overrides, 'context', chance.name().toLowerCase().replace(/\s/g, '-'));
 
   return new Deployment(merge({
+    namespace: makeNamespace({
+      id: '00000000-0000-0000-0000-000000000000',
+      name: 'default',
+    }),
     context,
     manifest: new Manifest({ yaml, json, }),
     release,

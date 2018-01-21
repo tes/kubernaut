@@ -6,16 +6,16 @@ import DeploymentLogEntry from '../../../domain/DeploymentLogEntry';
 export default function(options = {}) {
   function start({ tables, releases, }, cb) {
 
-    const { deployments, deploymentLogEntries, } = tables;
+    const { namespaces, deployments, deploymentLogEntries, } = tables;
     let deploymentLogSequence = 0;
 
     function _getDeployment(id) {
       return deployments.find(d =>
         d.id === id &&
         !d.deletedOn &&
+        namespaces.find(n => n.id === d.namespace.id && !n.deletedOn) &&
         !d.release.deletedOn &&
-        !d.release.service.deletedOn &&
-        !d.release.service.namespace.deletedOn);
+        !d.release.service.deletedOn);
     }
 
     function _listDeploymentLogEntries(id) {
@@ -69,10 +69,11 @@ export default function(options = {}) {
     }
 
     function byActive(d) {
+      const n = namespaces.find(n => n.id === d.namespace.id);
       return !d.deletedOn &&
+             !n.deletedOn &&
              !d.release.deletedOn &&
-             !d.release.service.deletedOn &&
-             !d.release.service.namespace.deletedOn;
+             !d.release.service.deletedOn;
     }
 
     function getTimeForSort(date) {

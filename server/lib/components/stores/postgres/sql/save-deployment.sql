@@ -1,6 +1,7 @@
 INSERT INTO deployment (
   id,
   release,
+  namespace,
   context,
   manifest_yaml,
   manifest_json,
@@ -8,10 +9,11 @@ INSERT INTO deployment (
   created_by
 ) VALUES (
   uuid_generate_v4(),
-  (SELECT ar.id FROM active_release__vw ar WHERE ar.id = $1),
-  $2,
+  (SELECT r.id FROM active_release__vw r WHERE r.id = $1),
+  (SELECT n.id FROM active_namespace__vw n WHERE n.id = $2),
   $3,
   $4,
   $5,
-  $6
+  $6,
+  $7
 ) RETURNING id;

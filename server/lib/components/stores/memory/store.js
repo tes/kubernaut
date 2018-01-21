@@ -1,6 +1,6 @@
 export default function(options = {}) {
 
-  function start({ registry, namespace, account, release, deployment, tables, }, cb) {
+  function start({ registries, namespaces, accounts, releases, deployments, tables, }, cb) {
 
     async function nuke() {
       Object.keys(tables).forEach(name => {
@@ -12,11 +12,11 @@ export default function(options = {}) {
     }
 
     cb(null, {
-      ...registry,
-      ...namespace,
-      ...account,
-      ...release,
-      ...deployment,
+      ...registries,
+      ...namespaces,
+      ...accounts,
+      ...releases,
+      ...deployments,
       nuke,
     });
   }

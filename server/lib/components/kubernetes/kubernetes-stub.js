@@ -10,6 +10,10 @@ export default function(options = {}) {
             manifests: [],
             deployments: [],
           },
+          'other': {
+            manifests: [],
+            deployments: [],
+          },
         },
       },
     };

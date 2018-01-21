@@ -156,18 +156,17 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
+          namespace: 'default',
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       });
 
       expect(response.id).toBeDefined();
-
       const deployment = await store.getDeployment(response.id);
-
       expect(deployment).toBeDefined();
+      expect(deployment.namespace.name).toBe('default');
       expect(deployment.context).toBe('test');
       expect(deployment.manifest.yaml).toMatch(/image: registry\/repo\/foo:22/);
       expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
@@ -193,9 +192,9 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
+          namespace: 'default',
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       }).then(() => {
@@ -223,9 +222,9 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
+          namespace: 'default',
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       });
@@ -251,9 +250,9 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         followRedirect: false,
         json: {
+          namespace: 'default',
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       }).then(() => {
@@ -273,8 +272,8 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          service: 'foo',
           namespace: 'bar',
+          service: 'foo',
           version: '22',
         },
       }).then(() => {
@@ -294,8 +293,8 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          context: 'test',
           namespace: 'bar',
+          context: 'test',
           version: '22',
         },
       }).then(() => {
@@ -336,9 +335,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          namespace: 'bar',
           context: 'test',
           service: 'foo',
-          namespace: 'bar',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -360,9 +359,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          namespace: 'default',
           context: 'missing',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       }).then(() => {
@@ -373,7 +372,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject payloads with a missing namespace', async () => {
+    it('should reject payloads with a missing namespace (kubernetes)', async () => {
 
       const namespace = await store.saveNamespace(makeNamespace({
         name: 'missing',
@@ -393,9 +392,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          namespace: namespace.name,
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: release.version,
         },
       }).then(() => {
@@ -403,6 +402,32 @@ describe('Deployments API', () => {
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('namespace missing was not found');
+      });
+    });
+
+    // Enable once namespace has been removed from service
+    xit('should reject payloads with a missing namespace (store)', async () => {
+
+      const release = makeRelease();
+      await store.saveRelease(release, makeMeta());
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          namespace: 'other',
+          context: 'test',
+          service: release.service.name,
+          version: release.version,
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('namespace other was not found');
       });
     });
 
@@ -422,9 +447,9 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          namespace: 'default',
           context: 'test',
           service: release.service.name,
-          namespace: release.service.namespace.name,
           version: 'missing',
         },
       }).then(() => {
