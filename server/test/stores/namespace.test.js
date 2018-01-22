@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeNamespace, makeRootMeta, } from '../factories';
+import { makeCluster, makeNamespace, makeRootMeta, } from '../factories';
 
 describe('Namespace Store', () => {
 
@@ -73,14 +73,18 @@ describe('Namespace Store', () => {
       describe('Save namespace', () => {
 
         it('should create a namespace', async () => {
-          const namespace = await saveNamespace();
+          const cluster = await saveCluster();
+          const data = await makeNamespace({ cluster, });
+          const namespace = await saveNamespace(data);
           expect(namespace).toBeDefined();
           expect(namespace.id).toBeDefined();
         });
 
         it('should prevent duplicate namespaces', async () => {
+          const cluster = await saveCluster();
           const data = makeNamespace({
             name: 'same-namespace',
+            cluster,
           });
 
           await saveNamespace(data);
@@ -88,12 +92,30 @@ describe('Namespace Store', () => {
             saveNamespace(data)
           ).rejects.toHaveProperty('code', '23505');
         });
+
+        it('should permit duplicate namespaces in different clusters', async () => {
+          const cluster1 = await saveCluster(makeCluster({ name: 'cluster-1', }));
+          const cluster2 = await saveCluster(makeCluster({ name: 'cluster-2', }));
+
+          const data1 = makeNamespace({
+            name: 'same-namespace',
+            cluster: cluster1,
+          });
+          const data2 = makeNamespace({
+            name: 'same-namespace',
+            cluster: cluster2,
+          });
+
+          await saveNamespace(data1);
+          await saveNamespace(data2);
+        });
       });
 
       describe('Get Namespace', () => {
 
         it('should retrieve namespace by id', async () => {
-          const data = makeNamespace();
+          const cluster = await saveCluster();
+          const data = makeNamespace({ cluster, });
           const meta = makeRootMeta();
           const saved = await saveNamespace(data, meta);
           const namespace = await getNamespace(saved.id);
@@ -101,6 +123,7 @@ describe('Namespace Store', () => {
           expect(namespace).toBeDefined();
           expect(namespace.id).toBe(saved.id);
           expect(namespace.name).toBe(data.name);
+          expect(namespace.cluster.id).toBe(data.cluster.id);
           expect(namespace.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(namespace.createdBy.id).toBe(meta.account.id);
           expect(namespace.createdBy.displayName).toBe(meta.account.displayName);
@@ -114,28 +137,33 @@ describe('Namespace Store', () => {
 
       describe('Find Namespace', () => {
 
-        it('should find a namespace by name', async () => {
-          const data = makeNamespace();
+        it('should find a namespace by name and cluster', async () => {
+          const cluster = await saveCluster();
+          const data = makeNamespace({ cluster, });
           const saved = await saveNamespace(data);
-          const namespace = await findNamespace({ name: data.name, });
+          const namespace = await findNamespace({ name: data.name, cluster: data.cluster.name, });
 
           expect(namespace).toBeDefined();
           expect(namespace.id).toBe(saved.id);
         });
 
-        it('should return undefined when name not found', async () => {
-          const data = makeNamespace();
+        it('should return undefined when namespace not found in cluster', async () => {
+          const cluster = await saveCluster();
+          const data = makeNamespace({ name: 'missing', cluster, });
           await saveNamespace(data);
 
-          const namespace = await findNamespace({ name: 'missing', });
+          const namespace = await findNamespace({ name: 'missing', cluster: 'wrong-cluster', });
           expect(namespace).toBe(undefined);
         });
+
       });
 
       describe('Delete Namespace', () => {
 
         it('should soft delete namespace', async () => {
-          const saved = await saveNamespace();
+          const cluster = await saveCluster();
+          const data = makeNamespace({ cluster, });
+          const saved = await saveNamespace(data);
           await deleteNamespace(saved.id);
 
           const namespace = await getNamespace(saved.id);
@@ -145,26 +173,39 @@ describe('Namespace Store', () => {
 
       describe('List Namespaces', () => {
 
-        it('should list namespaces, ordered by name asc', async () => {
+        it('should list namespaces, ordered by name asc, cluster name asc', async () => {
+
+          const clusterA = await saveCluster(makeCluster({ name: 'A', }));
+          const clusterB = await saveCluster(makeCluster({ name: 'B', }));
 
           const namespaces = [
             {
               data: makeNamespace({
                 name: 'a',
+                cluster: clusterA,
               }),
               meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeNamespace({
                 name: 'c',
+                cluster: clusterA,
               }),
               meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
             },
             {
               data: makeNamespace({
                 name: 'b',
+                cluster: clusterA,
               }),
               meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
+            },
+            {
+              data: makeNamespace({
+                name: 'a',
+                cluster: clusterB,
+              }),
+              meta: makeRootMeta({ date: new Date('2012-07-01T10:11:12.000Z'), }),
             },
           ];
 
@@ -173,7 +214,7 @@ describe('Namespace Store', () => {
           }));
 
           const results = await listNamespaces();
-          expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c', 'default',]);
+          expect(results.items.map(n => `${n.name}-${n.cluster.name}`)).toEqual(['a-A', 'a-B', 'b-A', 'c-A',]);
           expect(results.count).toBe(4);
           expect(results.limit).toBe(50);
           expect(results.offset).toBe(0);
@@ -181,26 +222,29 @@ describe('Namespace Store', () => {
 
         it('should exclude inactive namespaces', async () => {
           const results1 = await listNamespaces();
-          expect(results1.count).toBe(1);
+          expect(results1.count).toBe(0);
 
-          const saved = await saveNamespace(makeNamespace());
+          const cluster = await saveCluster();
+          const saved = await saveNamespace(makeNamespace({ cluster, }));
           const results2 = await listNamespaces();
-          expect(results2.count).toBe(2);
+          expect(results2.count).toBe(1);
 
           await deleteNamespace(saved.id);
           const results3 = await listNamespaces();
-          expect(results3.count).toBe(1);
+          expect(results3.count).toBe(0);
         });
 
         describe('Pagination', () => {
 
           beforeEach(async () => {
+            const cluster = await saveCluster();
+
             const namespaces = [];
             for (var i = 0; i < 51; i++) {
               namespaces.push({
                 data: makeNamespace({
-                  // Must be alphebetically greater than 'default'
-                  name: `x-namespace-${i}`,
+                  name: `namespace-${i}`,
+                  cluster,
                 }),
               });
             }
@@ -215,7 +259,7 @@ describe('Namespace Store', () => {
           it('should limit namespaces to 50 by default', async () => {
             const results = await listNamespaces();
             expect(results.items.length).toBe(50);
-            expect(results.count).toBe(52);
+            expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
             expect(results.offset).toBe(0);
           });
@@ -223,20 +267,25 @@ describe('Namespace Store', () => {
           it('should limit namespaces to the specified number', async () => {
             const results = await listNamespaces(10, 0);
             expect(results.items.length).toBe(10);
-            expect(results.count).toBe(52);
+            expect(results.count).toBe(51);
             expect(results.limit).toBe(10);
             expect(results.offset).toBe(0);
           });
 
           it('should page namespaces list', async () => {
             const results = await listNamespaces(50, 10);
-            expect(results.items.length).toBe(42);
-            expect(results.count).toBe(52);
+            expect(results.items.length).toBe(41);
+            expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
             expect(results.offset).toBe(10);
           });
         });
       });
+
+
+      function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
+        return store.saveCluster(cluster, meta);
+      }
 
       function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
         return store.saveNamespace(namespace, meta);

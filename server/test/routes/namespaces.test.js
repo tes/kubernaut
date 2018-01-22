@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeNamespace, makeMeta, } from '../factories';
+import { makeCluster, makeNamespace, makeMeta, } from '../factories';
 
 describe('Namespaces API', () => {
 
@@ -45,10 +45,12 @@ describe('Namespaces API', () => {
 
     beforeEach(async () => {
 
+      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+
       const namespaces = [];
       for (var i = 0; i < 51; i++) {
         namespaces.push({
-          data: makeNamespace(),
+          data: makeNamespace({ cluster, }),
           meta: makeMeta(),
         });
       }
@@ -65,7 +67,7 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.count).toBe(52);
+      expect(namespaces.count).toBe(51);
       expect(namespaces.offset).toBe(0);
       expect(namespaces.limit).toBe(50);
       expect(namespaces.items.length).toBe(50);
@@ -80,7 +82,7 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.count).toBe(52);
+      expect(namespaces.count).toBe(51);
       expect(namespaces.offset).toBe(0);
       expect(namespaces.limit).toBe(40);
       expect(namespaces.items.length).toBe(40);
@@ -95,10 +97,10 @@ describe('Namespaces API', () => {
         json: true,
       });
 
-      expect(namespaces.count).toBe(52);
+      expect(namespaces.count).toBe(51);
       expect(namespaces.offset).toBe(10);
       expect(namespaces.limit).toBe(50);
-      expect(namespaces.items.length).toBe(42);
+      expect(namespaces.items.length).toBe(41);
     });
 
   });
@@ -107,7 +109,8 @@ describe('Namespaces API', () => {
 
     it('should return the requested namespace', async () => {
 
-      const data = makeNamespace();
+      const cluster = store.saveCluster(makeCluster(), makeMeta());
+      const data = makeNamespace({ cluster, });
       const saved = await store.saveNamespace(data, makeMeta());
 
       const namespace = await request({
@@ -140,12 +143,16 @@ describe('Namespaces API', () => {
 
     it('should save a namespace', async () => {
 
-      const data = makeNamespace();
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const data = makeNamespace({ name: 'other', cluster, });
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
         method: 'POST',
-        json: data,
+        json: {
+          name: data.name,
+          cluster: data.cluster.name,
+        },
       });
 
       expect(response.id).toBeDefined();
@@ -165,6 +172,7 @@ describe('Namespaces API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
+          cluster: 'Test',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -174,13 +182,75 @@ describe('Namespaces API', () => {
       });
     });
 
+    it('should reject payloads without a cluster', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('cluster is required');
+      });
+    });
+
+    it('should reject payloads where cluster cannot be found', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+          cluster: 'missing',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('cluster missing was not found');
+      });
+    });
+
+    it('should reject payloads where namespace cannot be found', async () => {
+
+      loggerOptions.suppress = true;
+
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'missing',
+          cluster: cluster.name,
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('namespace missing was not found on Test cluster');
+      });
+    });
+
   });
 
   describe('DELETE /api/namespaces/:id', () => {
 
     it('should delete namespaces', async () => {
 
-      const data = makeNamespace();
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const data = makeNamespace({ cluster, });
       const saved = await store.saveNamespace(data, makeMeta());
 
       const response = await request({

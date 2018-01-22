@@ -2,7 +2,6 @@ INSERT INTO deployment (
   id,
   release,
   namespace,
-  context,
   manifest_yaml,
   manifest_json,
   created_on,
@@ -14,6 +13,5 @@ INSERT INTO deployment (
   $3,
   $4,
   $5,
-  $6,
-  $7
+  $6
 ) RETURNING id;

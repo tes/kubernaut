@@ -4,7 +4,6 @@ CREATE TABLE deployment (
   id UUID PRIMARY KEY,
   release UUID NOT NULL REFERENCES release ON DELETE CASCADE,
   namespace UUID NOT NULL,
-  context TEXT NOT NULL,
   manifest_yaml TEXT NOT NULL,
   manifest_json JSONB NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,

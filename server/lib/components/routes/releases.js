@@ -31,7 +31,7 @@ export default function(options = {}) {
       try {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(Boom.forbidden());
-        if (!req.user.hasPermissionOnRegistry(release.service.registry.name, 'releases-read')) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnRegistry(release.service.registry.id, 'releases-read')) return next(Boom.forbidden());
         res.json(release);
       } catch (err) {
         next(err);

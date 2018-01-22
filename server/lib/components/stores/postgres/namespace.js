@@ -13,14 +13,14 @@ export default function(options) {
       return result.rowCount ? toNamespace(result.rows[0]) : undefined;
     }
 
-    async function findNamespace({ name, }) {
-      logger.debug(`Finding namespace by name: ${name}`);
+    async function findNamespace({ name, cluster, }) {
+      logger.debug(`Finding namespace by name: ${name} and cluster: ${cluster}`);
 
-      const namespace = await db.query(SQL.SELECT_NAMESPACE_BY_NAME, [
-        name,
+      const namespace = await db.query(SQL.SELECT_NAMESPACE_BY_NAME_AND_CLUSTER, [
+        name, cluster,
       ]);
 
-      logger.debug(`Found ${namespace.rowCount} namespaces with name: ${name}`);
+      logger.debug(`Found ${namespace.rowCount} namespaces with name: ${name} and cluster: ${cluster}`);
 
       if (namespace.rowCount === 0) return;
 
@@ -28,10 +28,10 @@ export default function(options) {
     }
 
     async function saveNamespace(data, meta) {
-      logger.debug(`Saving namespace: ${data.name}`);
+      logger.debug(`Saving namespace: ${data.cluster.id}/${data.name}`);
 
       const result = await db.query(SQL.SAVE_NAMESPACE, [
-        data.name, meta.date, meta.account.id,
+        data.name, data.cluster.id, meta.date, meta.account.id,
       ]);
 
       await db.refreshEntityCount();
@@ -40,7 +40,7 @@ export default function(options) {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
-      logger.debug(`Saved namespace: ${namespace.name}/${namespace.id}`);
+      logger.debug(`Saved namespace:${data.cluster.id}/${namespace.name}/${namespace.id}`);
 
       return namespace;
     }
@@ -75,6 +75,11 @@ export default function(options) {
       return new Namespace({
         id: row.id,
         name: row.name,
+        cluster: {
+          id: row.cluster_id,
+          name: row.cluster_name,
+          context: row.cluster_context,
+        },
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by_id,

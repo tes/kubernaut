@@ -1,7 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import postgres from '../../lib/components/stores/postgres';
-import { makeIdentity, makeAccount, makeRootMeta, } from '../factories';
+import { makeIdentity, makeAccount, makeRegistry, makeCluster, makeNamespace, makeRootMeta, } from '../factories';
 
 describe('Account Store', () => {
 
@@ -413,37 +413,37 @@ describe('Account Store', () => {
         });
 
         it('should grant a role on s single registry to an account', async () => {
+          const registry = await saveRegistry();
           const saved = await saveAccount();
 
-          const role = await grantRoleOnRegistry(saved.id, 'admin', 'default');
+          const role = await grantRoleOnRegistry(saved.id, 'admin', registry.id);
           expect(role.id).toBeDefined();
 
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
           expect(account.roles.admin.permissions).toContain('accounts-write');
-          expect(account.roles.admin.registries).toContain('default');
+          expect(account.roles.admin.registries).toContain(registry.id);
         });
 
         it('should fail if account does not exist', async () => {
-          const id = uuid();
           await expect(
-            grantRoleOnRegistry(id, 'admin', null)
-          ).rejects.toHaveProperty('message', `Invalid accountId: ${id}`);
+            grantRoleOnRegistry(uuid(), 'admin', null)
+          ).rejects.toHaveProperty('code', '23503');
         });
 
         it('should fail if role does not exist', async () => {
           const saved = await saveAccount();
           await expect(
             grantRoleOnRegistry(saved.id, 'missing', null)
-          ).rejects.toHaveProperty('message', 'Invalid role: missing');
+          ).rejects.toHaveProperty('code', '23502');
         });
 
         it('should fail if registry does not exist', async () => {
           const saved = await saveAccount();
           await expect(
             grantRoleOnRegistry(saved.id, 'admin', 'missing')
-          ).rejects.toHaveProperty('message', 'Invalid registry: missing');
+          ).rejects.toHaveProperty('code', '22P02');
         });
 
         it('should tolerate duplicate roles', async () => {
@@ -498,37 +498,38 @@ describe('Account Store', () => {
         });
 
         it('should grant a role on s single namespace to an account', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
           const saved = await saveAccount();
 
-          const role = await grantRoleOnNamespace(saved.id, 'admin', 'default');
+          const role = await grantRoleOnNamespace(saved.id, 'admin', namespace.id);
           expect(role.id).toBeDefined();
 
           const account = await getAccount(saved.id);
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
           expect(account.roles.admin.permissions).toContain('accounts-write');
-          expect(account.roles.admin.namespaces).toContain('default');
+          expect(account.roles.admin.namespaces).toContain(namespace.id);
         });
 
         it('should fail if account does not exist', async () => {
-          const id = uuid();
           await expect(
-            grantRoleOnNamespace(id, 'admin', null)
-          ).rejects.toHaveProperty('message', `Invalid accountId: ${id}`);
+            grantRoleOnNamespace(uuid(), 'admin', null)
+          ).rejects.toHaveProperty('code', '23503');
         });
 
         it('should fail if role does not exist', async () => {
           const saved = await saveAccount();
           await expect(
             grantRoleOnNamespace(saved.id, 'missing', null)
-          ).rejects.toHaveProperty('message', 'Invalid role: missing');
+          ).rejects.toHaveProperty('code', '23502');
         });
 
         it('should fail if namespace does not exist', async () => {
           const saved = await saveAccount();
           await expect(
             grantRoleOnNamespace(saved.id, 'admin', 'missing')
-          ).rejects.toHaveProperty('message', 'Invalid namespace: missing');
+          ).rejects.toHaveProperty('code', '22P02');
         });
 
         it('should tolerate duplicate roles', async () => {
@@ -568,6 +569,18 @@ describe('Account Store', () => {
         });
       });
 
+
+      function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
+        return store.saveRegistry(registry, meta);
+      }
+
+      function saveCluster(cluster = makeCluster(), meta = makeRootMeta(), ) {
+        return store.saveCluster(cluster, meta);
+      }
+
+      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta(), ) {
+        return store.saveNamespace(namespace, meta);
+      }
 
       function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
         return store.saveAccount(account, meta);

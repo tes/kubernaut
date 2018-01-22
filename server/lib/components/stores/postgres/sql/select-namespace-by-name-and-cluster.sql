@@ -9,9 +9,10 @@ SELECT
   cb.display_name AS created_by_display_name
 FROM
   active_namespace__vw n,
-  account cb,
-  cluster c
-WHERE n.id = $1
+  cluster c,
+  account cb
+WHERE n.name = $1
+  AND c.name = $2
   AND n.cluster = c.id
   AND n.created_by = cb.id
 ;

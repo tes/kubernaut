@@ -8,7 +8,6 @@ export default function(options = {}) {
       });
       tables.accounts.push({ id: '00000000-0000-0000-0000-000000000000', displayName: 'root', createdOn: new Date(), createdBy: '00000000-0000-0000-0000-000000000000', });
       tables.registries.push({ id: '00000000-0000-0000-0000-000000000000', name: 'default', createdOn: new Date(), createdBy: '00000000-0000-0000-0000-000000000000', });
-      tables.namespaces.push({ id: '00000000-0000-0000-0000-000000000000', name: 'default', createdOn: new Date(), createdBy: '00000000-0000-0000-0000-000000000000', });
     }
 
     cb(null, {

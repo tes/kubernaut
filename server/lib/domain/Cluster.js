@@ -1,10 +1,9 @@
-export default class Registry {
+export default class Cluster {
 
-  constructor({ id, name, context, namespaces, createdOn, createdBy, }) {
+  constructor({ id, name, context, createdOn, createdBy, }) {
     this.id = id;
     this.name = name;
     this.context = context;
-    this.namespaces = namespaces;
     this.createdOn = createdOn;
     this.createdBy = createdBy;
   }

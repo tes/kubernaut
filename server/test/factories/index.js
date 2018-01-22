@@ -129,6 +129,7 @@ function makeCluster(overrides = {}) {
 function makeNamespace(overrides = {}) {
   return new Namespace(merge({
     name: chance.word({ length: 32, }),
+    cluster: makeCluster(),
   }, overrides));
 }
 
@@ -142,6 +143,10 @@ function makeDeployment(overrides = {}) {
     namespace: makeNamespace({
       id: '00000000-0000-0000-0000-000000000000',
       name: 'default',
+      cluster: {
+        name: 'Test',
+        context: 'test',
+      },
     }),
     context,
     manifest: new Manifest({ yaml, json, }),

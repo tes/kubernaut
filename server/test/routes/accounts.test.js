@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeAccount, makeIdentity, makeMeta, } from '../factories';
+import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeMeta, } from '../factories';
 
 describe('Accounts API', () => {
 
@@ -320,18 +320,21 @@ describe('Accounts API', () => {
   });
 
 
-  describe('POST /api/roles', () => {
+  describe('POST /api/roles/namespace', () => {
 
-    it('should grant a role to an account', async () => {
+    it('should grant a role on a namespace to an account', async () => {
 
+      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeMeta());
       const saved = await store.saveAccount(makeAccount(), makeMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles`,
+        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
         method: 'POST',
         json: {
           account: saved.id,
           role: 'admin',
+          namespace: namespace.id,
         },
       });
 
@@ -340,6 +343,7 @@ describe('Accounts API', () => {
       const account = await store.getAccount(saved.id);
       expect(account).toBeDefined();
       expect(account.roles.admin).toBeDefined();
+      expect(account.roles.admin.namespaces).toEqual([namespace.id,]);
     });
 
     it('should reject payloads without an account', async () => {
@@ -347,11 +351,12 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles`,
+        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
           role: 'admin',
+          namespace: 'ns',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -366,11 +371,12 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles`,
+        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
           account: 'acc',
+          namespace: 'ns',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -379,9 +385,137 @@ describe('Accounts API', () => {
         expect(reason.response.body.message).toBe('role is required');
       });
     });
+
+    it('should reject payloads without a namespace', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          account: 'acc',
+          role: 'admin',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('namespace is required');
+      });
+    });
   });
 
-  describe('DELETE /api/roles/:roleId', () => {
+  describe('POST /api/roles/registry', () => {
+
+    it('should grant a role on a registry to an account', async () => {
+
+      const registry = await store.saveRegistry(makeRegistry(), makeMeta());
+      const saved = await store.saveAccount(makeAccount(), makeMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        method: 'POST',
+        json: {
+          account: saved.id,
+          role: 'admin',
+          registry: registry.id,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+
+      const account = await store.getAccount(saved.id);
+      expect(account).toBeDefined();
+      expect(account.roles.admin).toBeDefined();
+      expect(account.roles.admin.registries).toEqual([ registry.id, ]);
+    });
+
+    it('should reject payloads without an account', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          role: 'admin',
+          registry: 'reg',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('account is required');
+      });
+    });
+
+    it('should reject payloads without a role', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          account: 'acc',
+          registry: 'reg',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('role is required');
+      });
+    });
+
+    it('should reject payloads without a registry', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          account: 'acc',
+          role: 'admin',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('registry is required');
+      });
+    });
+  });
+
+  describe('DELETE /api/roles/registry/:roleId', () => {
+
+    it('should delete a role', async () => {
+
+      const saved = await store.saveAccount(makeAccount(), makeMeta());
+      const role = await store.grantRoleOnRegistry(saved.id, 'admin', null, makeMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/roles/registry/${role.id}`,
+        method: 'DELETE',
+        resolveWithFullResponse: true,
+        json: true,
+      });
+
+      expect(response.statusCode).toBe(204);
+
+      const account = await store.getAccount(saved.id);
+      expect(account).toBeDefined();
+      expect(account.roles.admin).toBe(undefined);
+    });
+  });
+
+  describe('DELETE /api/roles/namespace/:roleId', () => {
 
     it('should delete a role', async () => {
 
@@ -389,7 +523,7 @@ describe('Accounts API', () => {
       const role = await store.grantRoleOnNamespace(saved.id, 'admin', null, makeMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/${role.id}`,
+        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace/${role.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
         json: true,

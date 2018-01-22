@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeNamespace, makeDeployment, makeRelease, makeMeta, } from '../factories';
+import { makeRelease, makeCluster, makeNamespace, makeDeployment, makeMeta, } from '../factories';
 
 describe('Deployments API', () => {
 
@@ -47,11 +47,13 @@ describe('Deployments API', () => {
   describe('GET /api/deployments', () => {
 
     beforeEach(async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeMeta());
       const deployments = [];
 
       for (var i = 0; i < 51; i++) {
         deployments.push({
-          data: makeDeployment(),
+          data: makeDeployment({ namespace, }),
           meta: makeMeta(),
         });
       }
@@ -112,7 +114,9 @@ describe('Deployments API', () => {
 
     it('should return the requested deployment', async () => {
 
-      const saved = await saveDeployment();
+      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       const deployment = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
@@ -144,6 +148,9 @@ describe('Deployments API', () => {
 
     it('should save a deployment', async () => {
 
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+
       const release = makeRelease({
         service: {
           name: 'foo',
@@ -156,8 +163,8 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
-          namespace: 'default',
-          context: 'test',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -167,8 +174,8 @@ describe('Deployments API', () => {
       expect(response.id).toBeDefined();
       const deployment = await store.getDeployment(response.id);
       expect(deployment).toBeDefined();
-      expect(deployment.namespace.name).toBe('default');
-      expect(deployment.context).toBe('test');
+      expect(deployment.namespace.id).toBe(namespace.id);
+      expect(deployment.namespace.cluster.id).toBe(cluster.id);
       expect(deployment.manifest.yaml).toMatch(/image: registry\/repo\/foo:22/);
       expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
       expect(deployment.release.service.name).toBe(release.service.name);
@@ -176,6 +183,9 @@ describe('Deployments API', () => {
     });
 
     it('should report manifest compilation errors', async () => {
+
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
 
       const release = makeRelease({
         template: {
@@ -193,8 +203,8 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
-          namespace: 'default',
-          context: 'test',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -208,6 +218,9 @@ describe('Deployments API', () => {
     });
 
     it('should apply the kubernetes manifest', async () => {
+
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
 
       const release = makeRelease({
         service: {
@@ -224,8 +237,8 @@ describe('Deployments API', () => {
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         json: {
-          namespace: 'default',
-          context: 'test',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -241,7 +254,10 @@ describe('Deployments API', () => {
 
     it('should optionally redirect to status page', async () => {
 
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
       const release = makeRelease();
+
       await store.saveRelease(release, makeMeta());
 
       await request({
@@ -253,8 +269,8 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         followRedirect: false,
         json: {
-          namespace: 'default',
-          context: 'test',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -267,7 +283,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject payloads without a context', async () => {
+    it('should reject payloads without a cluster', async () => {
 
       loggerOptions.suppress = true;
 
@@ -285,7 +301,7 @@ describe('Deployments API', () => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('context is required');
+        expect(reason.response.body.message).toBe('cluster is required');
       });
     });
 
@@ -299,7 +315,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           namespace: 'foo',
-          context: 'bar',
+          cluster: 'bar',
           service: 'baz',
           version: '22',
         },
@@ -321,7 +337,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           namespace: 'foo',
-          context: 'bar',
+          cluster: 'bar',
           registry: 'baz',
           version: '22',
         },
@@ -342,7 +358,7 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          context: 'foo',
+          cluster: 'foo',
           registry: 'bar',
           service: 'baz',
           version: '22',
@@ -364,7 +380,7 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          context: 'foo',
+          cluster: 'foo',
           namespace: 'bar',
           registry: 'baz',
           service: 'meh',
@@ -377,8 +393,10 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should reject payloads a missing context', async () => {
+    it('should reject payloads a missing context (kubernetes)', async () => {
 
+      const cluster = await store.saveCluster(makeCluster({ context: 'missing', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
       const release = makeRelease();
       await store.saveRelease(release, makeMeta());
 
@@ -389,8 +407,8 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          namespace: 'default',
-          context: 'missing',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -405,15 +423,9 @@ describe('Deployments API', () => {
 
     it('should reject payloads with a missing namespace (kubernetes)', async () => {
 
-      const namespace = await store.saveNamespace(makeNamespace({
-        name: 'missing',
-      }), makeMeta());
-
-      const release = makeRelease({
-        service: {
-          namespace,
-        },
-      });
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'missing', cluster, }), makeMeta());
+      const release = makeRelease();
       await store.saveRelease(release, makeMeta());
 
       loggerOptions.suppress = true;
@@ -424,7 +436,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           namespace: namespace.name,
-          context: 'test',
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
@@ -433,7 +445,7 @@ describe('Deployments API', () => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('namespace missing was not found');
+        expect(reason.response.body.message).toBe('namespace missing was not found in Test cluster');
       });
     });
 
@@ -466,6 +478,8 @@ describe('Deployments API', () => {
 
     it('should reject payloads without a matching release', async () => {
 
+      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeMeta());
       const release = makeRelease({
         service: {
           name: 'foo',
@@ -480,8 +494,8 @@ describe('Deployments API', () => {
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
-          namespace: 'default',
-          context: 'test',
+          namespace: namespace.name,
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: 'missing',
@@ -500,7 +514,9 @@ describe('Deployments API', () => {
 
     it('should return 200 when the deployment was successful', async () => {
 
-      const saved = await saveDeployment();
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       kubernetes.getContexts().test.namespaces.default.deployments.push({
         name: saved.release.service.name,
@@ -521,7 +537,9 @@ describe('Deployments API', () => {
 
     it('should return 502 when the deployment failed', async () => {
 
-      const saved = await saveDeployment();
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       kubernetes.getContexts().test.namespaces.default.deployments.push({
         name: saved.release.service.name,
@@ -546,7 +564,9 @@ describe('Deployments API', () => {
 
     it('should return 500 for missing context [kubectl]', async () => {
 
-      const saved = await saveDeployment({ context: 'missing', });
+      const cluster = await store.saveCluster(makeCluster({ name: 'Missing', context: 'missing', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       loggerOptions.suppress = true;
 
@@ -565,7 +585,9 @@ describe('Deployments API', () => {
 
     it('should return 500 for missing deployment [kubectl]', async () => {
 
-      const saved = await saveDeployment();
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       loggerOptions.suppress = true;
 
@@ -603,7 +625,9 @@ describe('Deployments API', () => {
 
     it('should delete deployments', async () => {
 
-      const saved = await saveDeployment();
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const saved = await saveDeployment({ namespace, });
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
@@ -619,7 +643,7 @@ describe('Deployments API', () => {
     });
   });
 
-  async function saveDeployment(overrides = { context: 'test', }) {
+  async function saveDeployment(overrides = {}) {
       const data = makeDeployment(overrides);
       const release = await store.saveRelease(data.release, makeMeta());
       return await store.saveDeployment({ ...data, release, }, makeMeta());

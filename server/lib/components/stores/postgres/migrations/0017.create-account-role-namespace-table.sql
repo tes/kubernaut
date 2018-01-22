@@ -34,10 +34,10 @@ CREATE FUNCTION ensure_account_role_on_namespace (
   subject UUID,
   created_on TIMESTAMP WITH TIME ZONE,
   created_by UUID
-) RETURNS text AS
+) RETURNS UUID AS
 $$
 DECLARE
-  id text;
+  id UUID;
 BEGIN
   PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_account_role_namespace_' || account || '_' || role || '_' || subject));
 

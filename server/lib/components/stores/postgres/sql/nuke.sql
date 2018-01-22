@@ -8,7 +8,7 @@ DELETE FROM release_attribute;
 DELETE FROM release;
 DELETE FROM service;
 DELETE FROM registry WHERE NOT id = '00000000-0000-0000-0000-000000000000';
-DELETE FROM namespace WHERE NOT id = '00000000-0000-0000-0000-000000000000';
+DELETE FROM namespace;
 DELETE FROM cluster;
 DELETE FROM account_role_namespace;
 DELETE FROM identity;

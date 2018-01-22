@@ -27,7 +27,7 @@ export default function(options = {}) {
   function start({ contexts = defaultContexts(), }, cb) {
 
     function apply(deployment) {
-      const context = deployment.context;
+      const context = deployment.namespace.cluster.context;
       const namespace = deployment.namespace.name;
       const manifest = deployment.manifest.yaml;
       return new Promise((resolve, reject) => {

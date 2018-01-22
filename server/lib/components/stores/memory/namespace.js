@@ -11,8 +11,8 @@ export default function(options) {
       return namespaces.find(n => n.id === id && !n.deletedOn);
     }
 
-    async function findNamespace({ name, }) {
-      return namespaces.find(n => n.name === name && !n.deletedOn);
+    async function findNamespace({ name, cluster, }) {
+      return namespaces.find(n => n.name === name && n.cluster.name === cluster && !n.deletedOn);
     }
 
     async function saveNamespace(namespace, meta) {
@@ -53,7 +53,11 @@ export default function(options) {
     }
 
     function reportDuplicateNamespaces(namespace) {
-      if (namespaces.find(n => n.name === namespace.name && !n.deletedOn)) throw Object.assign(new Error('Duplicate namespace'), { code: '23505', });
+      if (namespaces.find(n =>
+        n.name === namespace.name &&
+        n.cluster.name === namespace.cluster.name &&
+        !n.deletedOn
+      )) throw Object.assign(new Error('Duplicate namespace'), { code: '23505', });
     }
 
     function append(collection, item) {

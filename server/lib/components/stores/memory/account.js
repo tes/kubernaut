@@ -68,7 +68,7 @@ export default function(options = {}) {
       const created = await saveAccount(account, meta);
       await saveIdentity(created.id, identity, meta);
 
-      const counts = await _countActiveGlobalAdminstrators();
+      const counts = await _countActiveAdminstrators();
 
       if (counts.registry === 0) {
         await grantRoleOnRegistry(created.id, 'admin', null, meta);
@@ -99,7 +99,7 @@ export default function(options = {}) {
     async function saveIdentity(id, identity, meta) {
       reportMissingMetadata(meta);
       reportDuplicateIdentities(identity);
-      reportMissingAccount(id);
+      reportMissingAccount(id, '23502');
       return append(identities, {
         ...identity, id: uuid(), account: id, createdOn: meta.date, createdBy: meta.account,
       });
@@ -114,16 +114,16 @@ export default function(options = {}) {
       }
     }
 
-    async function grantRoleOnRegistry(accountId, roleName, registryName, meta) {
+    async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
       reportMissingMetadata(meta);
-      reportMissingAccount(accountId);
+      reportMissingAccount(accountId, '23503');
       reportMissingRole(roleName);
-      await reportMissingRegistry(registryName);
+      await reportMissingRegistry(registryId);
 
       if (hasRole(accountId, roleName, 'registry')) return;
 
       const granted = {
-        id: uuid(), account: accountId, role: roleName, subject: registryName, differentiator: 'registry', createdOn: meta.date, createdBy: meta.account,
+        id: uuid(), account: accountId, role: roleName, subject: registryId, differentiator: 'registry', createdOn: meta.date, createdBy: meta.account,
       };
 
       return append(account_roles, granted);
@@ -142,16 +142,16 @@ export default function(options = {}) {
       }
     }
 
-    async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
+    async function grantRoleOnNamespace(accountId, roleName, namespaceId, meta) {
       reportMissingMetadata(meta);
-      reportMissingAccount(accountId);
+      reportMissingAccount(accountId, '23503');
       reportMissingRole(roleName);
-      await reportMissingNamespace(namespaceName);
+      await reportMissingNamespace(namespaceId);
 
       if (hasRole(accountId, roleName, 'namespace')) return;
 
       const granted = {
-        id: uuid(), account: accountId, role: roleName, subject: namespaceName, differentiator: 'namespace', createdOn: meta.date, createdBy: meta.account,
+        id: uuid(), account: accountId, role: roleName, subject: namespaceId, differentiator: 'namespace', createdOn: meta.date, createdBy: meta.account,
       };
 
       return append(account_roles, granted);
@@ -170,7 +170,7 @@ export default function(options = {}) {
       }
     }
 
-    async function _countActiveGlobalAdminstrators() {
+    async function _countActiveAdminstrators() {
       return {
         registry: intersection(
           accounts.filter(a => !a.deletedOn).map(a => a.id),
@@ -189,8 +189,8 @@ export default function(options = {}) {
       if (identities.find(i => i.name === identity.name && i.provider === identity.provider && i.type === identity.type && !i.deletedOn)) throw Object.assign(new Error('Duplicate Identity'), { code: '23505', });
     }
 
-    function reportMissingAccount(id) {
-      if (!accounts.find(a => a.id === id && !a.deletedOn)) throw Object.assign(Object.assign(new Error(`Invalid accountId: ${id}`), { code: '23502', }));
+    function reportMissingAccount(id, code) {
+      if (!accounts.find(a => a.id === id && !a.deletedOn)) throw Object.assign(Object.assign(new Error(`Invalid accountId: ${id}`), { code, }));
     }
 
     function reportMissingMetadata(meta) {
@@ -198,19 +198,19 @@ export default function(options = {}) {
     }
 
     function reportMissingRole(name) {
-      if (!roles[name]) throw Object.assign(new Error(`Invalid role: ${name}`));
+      if (!roles[name]) throw Object.assign(new Error(`Invalid role: ${name}`), { code: '23502', });
     }
 
-    async function reportMissingRegistry(name) {
-      if (!name) return;
-      const registry = await registries.findRegistry({ name, });
-      if (!registry) throw Object.assign(new Error(`Invalid registry: ${name}`));
+    async function reportMissingRegistry(id) {
+      if (!id) return;
+      const registry = await registries.getRegistry(id);
+      if (!registry) throw Object.assign(new Error(`Invalid registry: ${id}`), { code: '22P02', });
     }
 
-    async function reportMissingNamespace(name) {
-      if (!name) return;
-      const namespace = await namespaces.findNamespace({ name, });
-      if (!namespace) throw Object.assign(new Error(`Invalid namespace: ${name}`));
+    async function reportMissingNamespace(id) {
+      if (!id) return;
+      const namespace = await namespaces.getNamespace(id);
+      if (!namespace) throw Object.assign(new Error(`Invalid namespace: ${id}`), { code: '22P02', });
     }
 
     function hasRole(accountId, roleName, differentiator) {

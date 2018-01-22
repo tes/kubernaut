@@ -238,9 +238,7 @@ describe('Clusters API', () => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('Unable to verify cluster using context xcluster');
       });
-
     });
-
   });
 
   describe('DELETE /api/clusters/:id', () => {

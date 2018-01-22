@@ -1,5 +1,5 @@
 SELECT
-  COALESCE(sr.name, n.name) AS subject_name,
+  COALESCE(sr.id, n.id) AS subject_id,
   ar.differentiator,
   r.name AS role_name,
   p.name AS permission_name
@@ -19,7 +19,7 @@ LEFT OUTER JOIN namespace n
 WHERE
   ar.account = $1
 ORDER BY
-  subject_name ASC,
+  subject_id ASC,
   r.name ASC,
   p.name ASC
 ;

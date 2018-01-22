@@ -133,37 +133,26 @@ export default function(options = {}) {
       logger.debug(`Deleted identity id: ${id}`);
     }
 
-    async function grantRoleOnRegistry(accountId, roleName, registryName, meta) {
+    async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
       return db.withTransaction(async connection => {
-        return _grantRoleOnRegistry(connection, accountId, roleName, registryName, meta);
+        return _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta);
       });
     }
 
-    async function _grantRoleOnRegistry(connection, accountId, roleName, registryName, meta) {
-      logger.debug(`Granting role: ${roleName} on registry: ${registryName} to account: ${accountId}`);
+    async function _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta) {
+      logger.debug(`Granting role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
 
-      return Promise.all([
-        connection.query(SQL.SELECT_ACCOUNT_BY_ID, [ accountId, ]),
-        connection.query(SQL.SELECT_ROLE_BY_NAME, [ roleName, ]),
-        connection.query(SQL.SELECT_REGISTRY_BY_NAME, [ registryName, ]),
-      ]).then(([ accountResult, roleResult, registryResult, ]) => {
-        return {
-          accountId: getAccountId(accountResult, accountId),
-          roleId: getRoleId(roleResult, roleName),
-          registryId: getRegistryId(registryResult, registryName),
-        };
-      }).then(async ({ accountId, roleId, registryId, }) => {
-        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_REGISTRY, [
-          accountId, roleId, registryId, meta.date, meta.account.id,
-        ]);
-        const granted = {
-          id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
-        };
+      const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_REGISTRY, [
+        accountId, roleName, registryId, meta.date, meta.account.id,
+      ]);
 
-        logger.debug(`Granted role: ${granted.name}/${granted.id} on registry: ${registryName} to account: ${accountId}`);
+      const granted = {
+        id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
+      };
 
-        return granted;
-      });
+      logger.debug(`Granted role: ${granted.name}/${granted.id} on registry: ${registryId} to account: ${accountId}`);
+
+      return granted;
     }
 
     async function revokeRoleOnRegistry(id, meta) {
@@ -176,37 +165,25 @@ export default function(options = {}) {
       logger.debug(`Revoked role: ${id} on registry`);
     }
 
-    async function grantRoleOnNamespace(accountId, roleName, namespaceName, meta) {
+    async function grantRoleOnNamespace(accountId, roleName, namespaceId, meta) {
       return db.withTransaction(async connection => {
-        return _grantRoleOnNamespace(connection, accountId, roleName, namespaceName, meta);
+        return _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta);
       });
     }
 
-    async function _grantRoleOnNamespace(connection, accountId, roleName, namespaceName, meta) {
-      logger.debug(`Granting role: ${roleName} on namespace: ${namespaceName} to account: ${accountId}`);
+    async function _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta) {
+      logger.debug(`Granting role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
 
-      return Promise.all([
-        connection.query(SQL.SELECT_ACCOUNT_BY_ID, [ accountId, ]),
-        connection.query(SQL.SELECT_ROLE_BY_NAME, [ roleName, ]),
-        connection.query(SQL.SELECT_NAMESPACE_BY_NAME, [ namespaceName, ]),
-      ]).then(([ accountResult, roleResult, namespaceResult, ]) => {
-        return {
-          accountId: getAccountId(accountResult, accountId),
-          roleId: getRoleId(roleResult, roleName),
-          namespaceId: getNamespaceId(namespaceResult, namespaceName),
-        };
-      }).then(async ({ accountId, roleId, namespaceId, }) => {
-        const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_NAMESPACE, [
-          accountId, roleId, namespaceId, meta.date, meta.account.id,
-        ]);
-        const granted = {
-          id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
-        };
+      const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_NAMESPACE, [
+        accountId, roleName, namespaceId, meta.date, meta.account.id,
+      ]);
+      const granted = {
+        id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
+      };
 
-        logger.debug(`Granted role: ${granted.name}/${granted.id} on namespace: ${namespaceName} to account: ${accountId}`);
+      logger.debug(`Granted role: ${granted.name}/${granted.id} on namespace: ${namespaceId} to account: ${accountId}`);
 
-        return granted;
-      });
+      return granted;
     }
 
     async function revokeRoleOnNamespace(id, meta) {
@@ -217,30 +194,6 @@ export default function(options = {}) {
       ]);
 
       logger.debug(`Revoked role: ${id} on namespace`);
-    }
-
-    function getAccountId(result, accountId) {
-      const id = result.rowCount ? result.rows[0].id : null;
-      if (!id) throw new Error(`Invalid accountId: ${accountId}`);
-      return id;
-    }
-
-    function getRoleId(result, name) {
-      const id = result.rowCount ? result.rows[0].id : null;
-      if (!id) throw new Error(`Invalid role: ${name}`);
-      return id;
-    }
-
-    function getRegistryId(result, name) {
-      const id = result.rowCount ? result.rows[0].id : null;
-      if (!id && name) throw new Error(`Invalid registry: ${name}`);
-      return id;
-    }
-
-    function getNamespaceId(result, name) {
-      const id = result.rowCount ? result.rows[0].id : null;
-      if (!id && name) throw new Error(`Invalid namespace: ${name}`);
-      return id;
     }
 
     async function _countActiveAdminstrators(connection) {
@@ -280,7 +233,7 @@ export default function(options = {}) {
         const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
         const collection = differentiatorCollections[row.differentiator];
-        entry[collection] = uniq(entry[collection].concat(row.subject_name || '*'));
+        entry[collection] = uniq(entry[collection].concat(row.subject_id || '*'));
         roles[row.role_name] = entry;
         return roles;
       }, {});

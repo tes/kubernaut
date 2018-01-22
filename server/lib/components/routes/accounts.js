@@ -76,21 +76,46 @@ export default function(options = {}) {
       }
     });
 
-    app.post('/api/roles', bodyParser.json(), async (req, res, next) => {
+    app.post('/api/roles/registry', bodyParser.json(), async (req, res, next) => {
 
       if (!req.body.account) return next(Boom.badRequest('account is required'));
       if (!req.body.role) return next(Boom.badRequest('role is required'));
+      if (!req.body.registry) return next(Boom.badRequest('registry is required'));
 
       try {
         const meta = { date: new Date(), account: { id: req.user.id, }, };
-        const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, null, meta);
+        const account = await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
         res.json(account);
       } catch (err) {
         next(err);
       }
     });
 
-    app.delete('/api/roles/:id', async (req, res, next) => {
+    app.post('/api/roles/namespace', bodyParser.json(), async (req, res, next) => {
+
+      if (!req.body.account) return next(Boom.badRequest('account is required'));
+      if (!req.body.role) return next(Boom.badRequest('role is required'));
+      if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+
+      try {
+        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
+        res.json(account);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/registry/:id', async (req, res, next) => {
+      try {
+        await store.revokeRoleOnRegistry(req.params.id, { date: new Date(), account: req.user.id, });
+        res.status(204).send();
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/namespace/:id', async (req, res, next) => {
       try {
         await store.revokeRoleOnNamespace(req.params.id, { date: new Date(), account: req.user.id, });
         res.status(204).send();
@@ -98,6 +123,7 @@ export default function(options = {}) {
         next(err);
       }
     });
+
 
     cb();
   }

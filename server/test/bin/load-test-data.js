@@ -1,9 +1,9 @@
 import createSystem from '../../lib/system';
 import Chance from 'chance';
-import { makeAccount, makeDeployment, makeDeploymentLogEntry, makeMeta, makeRootMeta, } from '../factories';
+import { makeAccount, makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeMeta, makeRootMeta, } from '../factories';
 import pLimit from 'p-limit';
 
-const limit = pLimit(50);
+const limit = pLimit(10);
 const chance = new Chance();
 
 process.env.APP_ENV = 'local';
@@ -19,6 +19,8 @@ createSystem()
         await store.nuke();
 
         const account = await store.saveAccount(makeAccount(), makeRootMeta());
+        const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+        const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeRootMeta());
 
         // Iterate services inside versions, as creating a release locks based on service name
         const tasks = [];
@@ -39,7 +41,7 @@ createSystem()
 
             tasks.push(limit(async () => {
               const release = await store.saveRelease(data.release, meta);
-              const deployment = await store.saveDeployment({ ...data, release, }, meta);
+              const deployment = await store.saveDeployment({ ...data, release, namespace, }, meta);
               const logEntries = [];
               for (let l = 0; l < 5; l++) {
                 logEntries.push(makeDeploymentLogEntry({ deployment: deployment, }));

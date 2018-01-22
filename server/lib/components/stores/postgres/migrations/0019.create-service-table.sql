@@ -24,14 +24,17 @@ CREATE FUNCTION ensure_service (
   registry UUID,
   created_on TIMESTAMP WITH TIME ZONE,
   created_by UUID
-) RETURNS text AS
+) RETURNS UUID AS
 $$
 DECLARE
-  id text;
+  id UUID;
 BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_service_' || name));
+  PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_service_' || registry || '_' || name));
 
-  SELECT service.id INTO id FROM service WHERE service.name = ensure_service.name AND service.registry = ensure_service.registry;
+  SELECT service.id INTO id
+  FROM service
+  WHERE service.name = ensure_service.name
+    AND service.registry = ensure_service.registry;
   IF NOT FOUND THEN
     INSERT INTO service (
       id,

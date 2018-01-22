@@ -22,10 +22,10 @@ CREATE FUNCTION ensure_release_template (
   checksum TEXT,
   created_on TIMESTAMP WITH TIME ZONE,
   created_by UUID
-) RETURNS text AS
+) RETURNS UUID AS
 $$
 DECLARE
-  id text;
+  id UUID;
 BEGIN
   PERFORM pg_advisory_xact_lock(hashtext(current_schema() || '_release_template_' || checksum));
 

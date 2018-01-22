@@ -1,12 +1,13 @@
 import SQL from './sql';
-import Namespace from '../../../domain/Namespace';
+import Account from '../../../domain/Account';
 import Registry from '../../../domain/Registry';
 import Service from '../../../domain/Service';
 import Release from '../../../domain/Release';
 import Manifest from '../../../domain/Manifest';
+import Cluster from '../../../domain/Cluster';
+import Namespace from '../../../domain/Namespace';
 import Deployment from '../../../domain/Deployment';
 import DeploymentLogEntry from '../../../domain/DeploymentLogEntry';
-import Account from '../../../domain/Account';
 
 export default function(options) {
 
@@ -27,10 +28,10 @@ export default function(options) {
     }
 
     async function saveDeployment(data, meta) {
-      logger.debug(`Saving deployment: ${data.release.service.name}/${data.release.version}/${data.namespace.name}/${data.context}`);
+      logger.debug(`Saving deployment: ${data.release.id}/${data.namespace.cluster.name}/${data.namespace.name}`);
 
       const result = await db.query(SQL.SAVE_DEPLOYMENT, [
-        data.release.id, data.namespace.id, data.context, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
+        data.release.id, data.namespace.id, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
       ]);
 
       const deployment = {
@@ -39,7 +40,7 @@ export default function(options) {
 
       await db.refreshEntityCount();
 
-      logger.debug(`Saved deployment: ${deployment.release.service.name}/${deployment.release.version}/${deployment.context.name}/${deployment.id}`);
+      logger.debug(`Saved deployment:  ${deployment.release.id}/${deployment.namespace.cluster.name}${deployment.namespace.name}/${deployment.id}`);
 
       return deployment;
     }
@@ -91,15 +92,20 @@ export default function(options) {
         namespace: new Namespace({
           id: row.namespace_id,
           name: row.namespace_name,
+          cluster: new Cluster({
+            id: row.cluster_id,
+            name: row.cluster_name,
+            context: row.cluster_context,
+          }),
         }),
-        context: row.context,
         manifest: new Manifest({
           yaml: row.manifest_yaml,
           json: row.manifest_json,
         }),
         log: logRows.map(row => {
           return new DeploymentLogEntry({
-            id: row.id,            sequence: row.sequence,
+            id: row.id,
+            sequence: row.sequence,
             writtenOn: row.written_on,
             writtenTo: row.written_to,
             content: row.content,
