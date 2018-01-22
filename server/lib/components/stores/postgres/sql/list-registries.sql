@@ -2,13 +2,13 @@ SELECT
   r.id,
   r.name,
   r.created_on,
-  c.id AS created_by_id,
-  c.display_name AS created_by_display_name
+  cb.id AS created_by_id,
+  cb.display_name AS created_by_display_name
 FROM
   active_registry__vw r,
-  account c
+  account cb
 WHERE
-  r.created_by = c.id
+  r.created_by = cb.id
 ORDER BY
   r.name ASC
 LIMIT

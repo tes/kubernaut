@@ -8,7 +8,6 @@ SELECT
 FROM
   active_cluster__vw c,
   account cb
-WHERE
-  c.id = $1 AND
-  c.created_by = cb.id
+WHERE c.id = $1
+  AND c.created_by = cb.id
 ;

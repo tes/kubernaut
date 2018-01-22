@@ -3,8 +3,8 @@ SELECT
   r.version,
   r.template,
   r.created_on,
-  c.id AS created_by_id,
-  c.display_name AS created_by_display_name,
+  cb.id AS created_by_id,
+  cb.display_name AS created_by_display_name,
   s.id AS service_id,
   s.name AS service_name,
   sr.id AS registry_id,
@@ -18,13 +18,12 @@ FROM
   release_template rt,
   service s,
   registry sr,
-  account c
-WHERE
-  s.name = $1 AND
-  sr.name = $2 AND
-  r.version = $3 AND
-  r.service = s.id AND
-  r.created_by = c.id AND
-  r.template = rt.id AND
-  s.registry = sr.id
+  account cb
+WHERE s.name = $1
+  AND sr.name = $2
+  AND r.version = $3
+  AND r.service = s.id
+  AND r.created_by = cb.id
+  AND r.template = rt.id
+  AND s.registry = sr.id
 ;
