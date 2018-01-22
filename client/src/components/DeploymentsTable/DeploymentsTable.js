@@ -2,7 +2,7 @@ import React, { Component, } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, DeploymentLink, } from '../Links';
+import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink, } from '../Links';
 import './DeploymentsTable.css';
 
 class DeploymentsTable extends Component {
@@ -45,8 +45,8 @@ class DeploymentsTable extends Component {
             </td>
             <td className='deployments-table__body__row__service-name'><ServiceLink service={deployment.release.service} /></td>
             <td className='deployments-table__body__row__version'><ReleaseLink release={deployment.release} /></td>
+            <td className='deployments-table__body__row__cluster-name'><ClusterLink cluster={deployment.namespace.cluster} /></td>
             <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.namespace} /></td>
-            <td className='deployments-table__body__row__context'>{deployment.context}</td>
             <td className='deployments-table__body__row__created-by'>
               <AccountLink account={deployment.createdBy} />
             </td>
@@ -65,8 +65,8 @@ class DeploymentsTable extends Component {
               <th className='deployments-table__heading__created-date'>Created</th>
               <th className='deployments-table__heading__service-name'>Service</th>
               <th className='deployments-table__heading__version'>Version</th>
+              <th className='deployments-table__heading__cluster-name'>Cluster</th>
               <th className='deployments-table__heading__namespace-name'>Namespace</th>
-              <th className='deployments-table__heading__context'>Context</th>
               <th className='deployments-table__heading__created-by'>Created By</th>
               <th className='deployments-table__heading__actions'>&nbsp;</th>
             </tr>

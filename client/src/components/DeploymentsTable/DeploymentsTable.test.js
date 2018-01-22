@@ -3,7 +3,7 @@ import { shallow, } from 'enzyme';
 import R from 'ramda';
 import DeploymentsTable from './DeploymentsTable';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, ServiceLink, ReleaseLink, DeploymentLink, } from '../Links';
+import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink, } from '../Links';
 
 
 describe('DeploymentsTable', () => {
@@ -14,10 +14,10 @@ describe('DeploymentsTable', () => {
 
     expect(wrapper.find('.deployments-table__heading').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__heading__created-date').text()).toBe('Created');
-    expect(wrapper.find('.deployments-table__heading__namespace-name').text()).toBe('Namespace');
     expect(wrapper.find('.deployments-table__heading__service-name').text()).toBe('Service');
     expect(wrapper.find('.deployments-table__heading__version').text()).toBe('Version');
-    expect(wrapper.find('.deployments-table__heading__context').text()).toBe('Context');
+    expect(wrapper.find('.deployments-table__heading__namespace-name').text()).toBe('Namespace');
+    expect(wrapper.find('.deployments-table__heading__cluster-name').text()).toBe('Cluster');
     expect(wrapper.find('.deployments-table__heading__created-by').text()).toBe('Created By');
   });
 
@@ -38,7 +38,10 @@ describe('DeploymentsTable', () => {
       return {
         id: `deployment-${i+1}`,
         namespace: {
-          name: 'svc-ns',
+          name: 'ns',
+          cluster: {
+            name: 'cl',
+          },
         },
         context: 'test',
         createdOn: new Date('2017-07-01T16:15:14.000Z'),
@@ -64,10 +67,10 @@ describe('DeploymentsTable', () => {
     expect(row.prop('id')).toBe('deployment-1');
     expect(row.find('.deployments-table__body__row__created-date__on').find(Human).prop('date')).toBe(deployments.items[0].createdOn);
     expect(row.find('.deployments-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(deployments.items[0].createdOn);
-    expect(row.find('.deployments-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(deployments.items[0].namespace);
     expect(row.find('.deployments-table__body__row__service-name').find(ServiceLink).prop('service')).toBe(deployments.items[0].release.service);
+    expect(row.find('.deployments-table__body__row__cluster-name').find(ClusterLink).prop('cluster')).toBe(deployments.items[0].namespace.cluster);
+    expect(row.find('.deployments-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(deployments.items[0].namespace);
     expect(row.find('.deployments-table__body__row__version').find(ReleaseLink).prop('release')).toBe(deployments.items[0].release);
-    expect(row.find('.deployments-table__body__row__context').text()).toBe(deployments.items[0].context);
     expect(row.find('.deployments-table__body__row__created-by').find(AccountLink).prop('account')).toBe(deployments.items[0].createdBy);
     expect(row.find('.deployments-table__body__row__actions').find(DeploymentLink).prop('deployment')).toBe(deployments.items[0]);
   });

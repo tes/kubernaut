@@ -1,7 +1,7 @@
 import React, { Component, } from 'react';
 import PropTypes from 'prop-types';
 import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, RegistryLink, NamespaceLink, ServiceLink, ReleaseLink, } from '../Links';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, } from '../Links';
 import './DeploymentDetailsPage.css';
 
 class DeploymentDetailsPage extends Component {
@@ -49,18 +49,18 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Namespace:</span>
+            <span className='details__label'>Cluster:</span>
           </div>
           <div className='col-md-10'>
-            <span><NamespaceLink namespace={deployment.namespace} /></span>
+            <span><ClusterLink cluster={deployment.namespace.cluster} /></span>
           </div>
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Context:</span>
+            <span className='details__label'>Namespace:</span>
           </div>
           <div className='col-md-10'>
-            <span>{deployment.context}</span>
+            <span><NamespaceLink namespace={deployment.namespace} /></span>
           </div>
         </div>
         <div className='row'>
