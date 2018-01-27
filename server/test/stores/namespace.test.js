@@ -155,6 +155,9 @@ describe('Namespace Store', () => {
           const namespace = await findNamespace({ name: 'missing', cluster: 'wrong-cluster', });
           expect(namespace).toBe(undefined);
         });
+      });
+
+      describe('Find Namespaces', () => {
 
         it('should list namespaces, ordered by name asc, cluster name asc', async () => {
 
@@ -196,7 +199,7 @@ describe('Namespace Store', () => {
             return saveNamespace(namespace.data, namespace.meta);
           }));
 
-          const results = await listNamespaces();
+          const results = await findNamespaces();
           expect(results.items.map(n => `${n.name}-${n.cluster.name}`)).toEqual(['a-A', 'a-B', 'b-A', 'c-A',]);
           expect(results.count).toBe(4);
           expect(results.limit).toBe(50);
@@ -204,17 +207,63 @@ describe('Namespace Store', () => {
         });
 
         it('should exclude inactive namespaces', async () => {
-          const results1 = await listNamespaces();
+          const results1 = await findNamespaces();
           expect(results1.count).toBe(0);
 
           const cluster = await saveCluster();
           const saved = await saveNamespace(makeNamespace({ cluster, }));
-          const results2 = await listNamespaces();
+          const results2 = await findNamespaces();
           expect(results2.count).toBe(1);
 
           await deleteNamespace(saved.id);
-          const results3 = await listNamespaces();
+          const results3 = await findNamespaces();
           expect(results3.count).toBe(0);
+        });
+
+        it('should filter namespaces by ids', async () => {
+          const cluster = await saveCluster();
+          const namespace1 = makeNamespace({ name: 'ns1', cluster: cluster, });
+          const namespace2 = makeNamespace({ name: 'ns2', cluster: cluster, });
+
+          const saved1 = await saveNamespace(namespace1);
+          const saved2 = await saveNamespace(namespace2);
+
+          const results1 = await findNamespaces({ ids: [ saved1.id, ], });
+          expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
+
+          const results2 = await findNamespaces({ ids: [ saved2.id, ], });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
+
+          const results3 = await findNamespaces({ ids: [ saved1.id, saved2.id, ], });
+          expect(results3.count).toBe(2);
+          expect(results3.items[0].id).toBe(saved1.id);
+          expect(results3.items[1].id).toBe(saved2.id);
+        });
+
+        it('should filter namespaces by criteria', async () => {
+          const cluster1 = await saveCluster();
+          const cluster2 = await saveCluster();
+          const namespace1 = makeNamespace({ name: 'ns1', cluster: cluster1, });
+          const namespace2 = makeNamespace({ name: 'ns2', cluster: cluster1, });
+          const namespace3 = makeNamespace({ name: 'ns1', cluster: cluster2, });
+
+          const saved1 = await saveNamespace(namespace1);
+          const saved2 = await saveNamespace(namespace2);
+          const saved3 = await saveNamespace(namespace3);
+
+          const results1 = await findNamespaces({ name: namespace1.name, cluster: namespace1.cluster.name, });
+          expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
+
+          const results2 = await findNamespaces({ name: namespace2.name, cluster: namespace2.cluster.name, });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
+
+          const results3 = await findNamespaces({ name: namespace3.name, cluster: namespace3.cluster.name, });
+          expect(results3.count).toBe(1);
+          expect(results3.items[0].id).toBe(saved3.id);
         });
 
         describe('Pagination', () => {
@@ -240,7 +289,7 @@ describe('Namespace Store', () => {
           });
 
           it('should limit namespaces to 50 by default', async () => {
-            const results = await listNamespaces();
+            const results = await findNamespaces();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -248,7 +297,7 @@ describe('Namespace Store', () => {
           });
 
           it('should limit namespaces to the specified number', async () => {
-            const results = await listNamespaces(10, 0);
+            const results = await findNamespaces({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(10);
@@ -256,14 +305,13 @@ describe('Namespace Store', () => {
           });
 
           it('should page namespaces list', async () => {
-            const results = await listNamespaces(50, 10);
+            const results = await findNamespaces({}, 50, 10);
             expect(results.items.length).toBe(41);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
             expect(results.offset).toBe(10);
           });
         });
-
       });
 
       describe('Delete Namespace', () => {
@@ -299,8 +347,8 @@ describe('Namespace Store', () => {
         return store.deleteNamespace(id, meta);
       }
 
-      function listNamespaces(page, limit) {
-        return store.listNamespaces(page, limit);
+      function findNamespaces(criteria = {}, page, limit) {
+        return store.findNamespaces(criteria, page, limit);
       }
 
     });

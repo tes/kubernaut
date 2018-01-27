@@ -24,19 +24,16 @@ export default function(options) {
       }));
     }
 
-    async function listRegistries(limit = 50, offset = 0) {
-      const active = registries.filter(byActive).sort(byName);
-      const count = active.length;
-      const items = active.slice(offset, offset + limit);
-      return { limit, offset, count, items, };
-    }
-
     async function findRegistries(criteria = {}, limit = 50, offset = 0) {
 
       let active = registries.filter(byActive).sort(byName);
 
-      if (criteria.hasOwnProperty('registries')) {
-        active = active.filter(r => criteria.registries.includes(r.id));
+      if (criteria.hasOwnProperty('ids')) {
+        active = active.filter(r => criteria.ids.includes(r.id));
+      }
+
+      if (criteria.hasOwnProperty('name')) {
+        active = active.filter(r => criteria.name === r.name);
       }
 
       const count = active.length;
@@ -79,7 +76,6 @@ export default function(options) {
       getRegistry,
       findRegistry,
       findRegistries,
-      listRegistries,
       deleteRegistry,
     });
   }

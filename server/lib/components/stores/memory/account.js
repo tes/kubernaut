@@ -26,8 +26,8 @@ export default function(options = {}) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (!account) return;
 
-      const allRegistryIds = (await registries.listRegistries(Number.MAX_SAFE_INTEGER, 0)).items.map(r => r.id);
-      const allNamespaceIds = (await namespaces.listNamespaces(Number.MAX_SAFE_INTEGER, 0)).items.map(n => n.id);
+      const allRegistryIds = (await registries.findRegistries({}, Number.MAX_SAFE_INTEGER, 0)).items.map(r => r.id);
+      const allNamespaceIds = (await namespaces.findNamespaces({}, Number.MAX_SAFE_INTEGER, 0)).items.map(n => n.id);
 
       const subjects = {
         registry: {

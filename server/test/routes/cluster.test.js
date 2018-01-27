@@ -15,7 +15,7 @@ describe('Clusters API', () => {
 
   beforeAll(cb => {
     system = createSystem()
-    .set('config.overrides', { server: { port: 13004, }, })
+    .set('config.overrides', { server: { port: 13006, }, })
     .set('transports.human', human(loggerOptions)).dependsOn('config')
     .start((err, components) => {
       if (err) return cb(err);

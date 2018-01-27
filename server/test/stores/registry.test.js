@@ -132,18 +132,7 @@ describe('Registry Store', () => {
         });
       });
 
-      describe('Delete Registry', () => {
-
-        it('should soft delete registry', async () => {
-          const saved = await saveRegistry();
-          await deleteRegistry(saved.id);
-
-          const registry = await getRegistry(saved.id);
-          expect(registry).toBe(undefined);
-        });
-      });
-
-      describe('List Registries', () => {
+      describe('Find Registries', () => {
 
         it('should list registries, ordered by name asc', async () => {
 
@@ -172,7 +161,7 @@ describe('Registry Store', () => {
             return saveRegistry(registry.data, registry.meta);
           }));
 
-          const results = await listRegistries();
+          const results = await findRegistries();
           expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c', 'default',]);
           expect(results.count).toBe(4);
           expect(results.limit).toBe(50);
@@ -180,7 +169,7 @@ describe('Registry Store', () => {
         });
 
         it('should exclude inactive registries', async () => {
-          const results1 = await listRegistries();
+          const results1 = await findRegistries();
           expect(results1.count).toBe(1);
 
           const saved = await saveRegistry(makeRegistry());
@@ -193,16 +182,40 @@ describe('Registry Store', () => {
         });
 
         it('should filter by registry ids', async () => {
-          const results1 = await findRegistries();
+          const registry1 = makeRegistry({ name: 'r1', });
+          const registry2 = makeRegistry({ name: 'r2', });
+
+          const saved1 = await saveRegistry(registry1);
+          const saved2 = await saveRegistry(registry2);
+
+          const results1 = await findRegistries({ ids: [ saved1.id, ], });
           expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
 
-          const saved = await saveRegistry(makeRegistry());
-          const results2 = await findRegistries();
-          expect(results2.count).toBe(2);
+          const results2 = await findRegistries({ ids: [ saved2.id, ], });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
 
-          const results3 = await findRegistries({ registries: [ saved.id, ], });
-          expect(results3.count).toBe(1);
-          expect(results3.items[0].id).toBe(saved.id);
+          const results3 = await findRegistries({ ids: [ saved1.id, saved2.id, ], });
+          expect(results3.count).toBe(2);
+          expect(results3.items[0].id).toBe(saved1.id);
+          expect(results3.items[1].id).toBe(saved2.id);
+        });
+
+        it('should filter registry by criteria', async () => {
+          const registry1 = makeRegistry({ name: 'r1', });
+          const registry2 = makeRegistry({ name: 'r2', });
+
+          const saved1 = await saveRegistry(registry1);
+          const saved2 = await saveRegistry(registry2);
+
+          const results1 = await findRegistries({ name: registry1.name, });
+          expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
+
+          const results2 = await findRegistries({ name: registry2.name, });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
         });
 
         describe('Pagination', () => {
@@ -226,7 +239,7 @@ describe('Registry Store', () => {
           });
 
           it('should limit registries to 50 by default', async () => {
-            const results = await listRegistries();
+            const results = await findRegistries();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(50);
@@ -234,7 +247,7 @@ describe('Registry Store', () => {
           });
 
           it('should limit registries to the specified number', async () => {
-            const results = await listRegistries(10, 0);
+            const results = await findRegistries({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(10);
@@ -242,12 +255,23 @@ describe('Registry Store', () => {
           });
 
           it('should page registries list', async () => {
-            const results = await listRegistries(50, 10);
+            const results = await findRegistries({}, 50, 10);
             expect(results.items.length).toBe(42);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(50);
             expect(results.offset).toBe(10);
           });
+        });
+      });
+
+      describe('Delete Registry', () => {
+
+        it('should soft delete registry', async () => {
+          const saved = await saveRegistry();
+          await deleteRegistry(saved.id);
+
+          const registry = await getRegistry(saved.id);
+          expect(registry).toBe(undefined);
         });
       });
 
@@ -265,10 +289,6 @@ describe('Registry Store', () => {
 
       function deleteRegistry(id, meta = makeRootMeta()) {
         return store.deleteRegistry(id, meta);
-      }
-
-      function listRegistries(page, limit) {
-        return store.listRegistries(page, limit);
       }
 
       function findRegistries(criteria = {}, page, limit) {

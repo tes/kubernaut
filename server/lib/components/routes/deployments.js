@@ -11,10 +11,10 @@ export default function(options = {}) {
 
     app.get('/api/deployments', async (req, res, next) => {
       try {
-        // const namespaces = req.user.listNamespaceIdsWithPermission('deployments-read');
+        // const ids = req.user.listNamespaceIdsWithPermission('deployments-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.listDeployments(limit, offset); // TODO store.findDeployments({ namespaces }, limit, offset)
+        const result = await store.listDeployments(limit, offset); // store.findDeployments({ ids }, limit, offset)
         res.json(result);
       } catch (err) {
         next(err);

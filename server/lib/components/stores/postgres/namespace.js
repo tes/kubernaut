@@ -1,6 +1,7 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
 import Account from '../../../domain/Account';
+import { v4 as uuid, } from 'uuid';
 import sqb from 'sqb';
 import sqbpg from 'sqb-serializer-pg';
 sqb.use(sqbpg);
@@ -8,6 +9,7 @@ sqb.use(sqbpg);
 export default function(options) {
 
   const { Op, raw, } = sqb;
+  const sqbOptions = { dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, };
 
   function start({ config, logger, db, }, cb) {
 
@@ -50,23 +52,6 @@ export default function(options) {
       return namespace;
     }
 
-    async function listNamespaces(limit = 50, offset = 0) {
-
-      logger.debug(`Listing up to ${limit} namespaces starting from offset: ${offset}`);
-
-      return db.withTransaction(async connection => {
-        return Promise.all([
-          connection.query(SQL.LIST_NAMESPACES, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'namespace', ]),
-        ]).then(([namespaceResult, countResult,]) => {
-          const items = namespaceResult.rows.map(row => toNamespace(row));
-          const count = parseInt(countResult.rows[0].count, 10);
-          logger.debug(`Returning ${items.length} of ${count} namespaces`);
-          return { limit, offset, count, items, };
-        });
-      });
-    }
-
     async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
 
       logger.debug(`Finding up to ${limit} namespaces matching criteria: ${criteria} starting from offset: ${offset}`);
@@ -74,34 +59,33 @@ export default function(options) {
       const bindVariables = {};
 
       const findNamespacesBuilder = sqb
-        .select('n.id', 'n.name', 'n.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
-        .from('active_namesapce__vw n', 'account cb')
+        .select('n.id', 'n.name', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_namespace__vw n', 'cluster c', 'account cb')
+        .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
         .orderBy('n.name asc')
         .limit(limit)
         .offset(offset);
 
-      const countActiveEntitiesBuilder = sqb
-        .select(raw('count(*) count'))
-        .from('active_namespace__vw r', 'account cb')
-        .where(Op.eq('n.created_by', raw('cb.id')));
+      const countNamespacesBuilder = sqb
+        .select(raw('count(*)'))
+        .from('active_namespace__vw n', 'cluster c')
+        .where(Op.eq('n.cluster', raw('c.id')));
 
-      if (criteria.hasOwnProperty('namespaces')) {
-
-        const namespaceBindVariables = criteria.namespaces.reduce((namespaceBindVariables, id, index) => {
-          return Object.assign(namespaceBindVariables, { [`namespace_${index}`]: id, });
-        }, {});
-
-        const namespacePlaceholders = Object.keys(namespaceBindVariables).map(key => new RegExp(key));
-
-        findNamespacesBuilder.where(Op.in('r.id', namespacePlaceholders));
-        countActiveEntitiesBuilder.where(Op.in('r.id', namespacePlaceholders));
-
-        Object.assign(bindVariables, namespaceBindVariables);
+      if (criteria.hasOwnProperty('ids')) {
+        buildWhereClause('n.id', criteria.ids, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
-      const findNamespacesStatement = findNamespacesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
-      const countNamespacesStatement = countActiveEntitiesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+      if (criteria.hasOwnProperty('name')) {
+        buildWhereClause('n.name', criteria.name, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+      }
+
+      if (criteria.hasOwnProperty('cluster')) {
+        buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+      }
+
+      const findNamespacesStatement = findNamespacesBuilder.generate(sqbOptions, bindVariables);
+      const countNamespacesStatement = countNamespacesBuilder.generate(sqbOptions, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
@@ -114,6 +98,19 @@ export default function(options) {
           return { limit, offset, count, items, };
         });
       });
+    }
+
+    function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
+      const clauseVariables = [].concat(values).reduce((clauseVariables, value, index) => {
+        return Object.assign(clauseVariables, { [uuid()]: value, });
+      }, {});
+
+      const placeholders = Object.keys(clauseVariables).map(key => new RegExp(key));
+
+      listBuilder.where(Op.in(column, placeholders));
+      countBuilder.where(Op.in(column, placeholders));
+
+      Object.assign(bindVariables, clauseVariables);
     }
 
     async function deleteNamespace(id, meta) {
@@ -146,7 +143,6 @@ export default function(options) {
       getNamespace,
       findNamespace,
       findNamespaces,
-      listNamespaces,
       saveNamespace,
       deleteNamespace,
     });

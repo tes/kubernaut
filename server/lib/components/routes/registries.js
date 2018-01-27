@@ -9,10 +9,10 @@ export default function(options = {}) {
 
     app.get('/api/registries', async (req, res, next) => {
       try {
-        const registries = req.user.listRegistryIdsWithPermission('registries-read');
+        const ids = req.user.listRegistryIdsWithPermission('registries-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findRegistries({ registries, }, limit, offset);
+        const result = await store.findRegistries({ ids, }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);

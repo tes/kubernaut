@@ -24,19 +24,20 @@ export default function(options) {
       }));
     }
 
-    async function listNamespaces(limit = 50, offset = 0) {
-      const active = namespaces.filter(byActive).sort(byName);
-      const count = active.length;
-      const items = active.slice(offset, offset + limit);
-      return { limit, offset, count, items, };
-    }
-
     async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
 
       let active = namespaces.filter(byActive).sort(byName);
 
-      if (criteria.hasOwnProperty('namespaces')) {
-        active = active.filter(r => criteria.namespaces.includes(r.id));
+      if (criteria.hasOwnProperty('ids')) {
+        active = active.filter(n => criteria.ids.includes(n.id));
+      }
+
+      if (criteria.hasOwnProperty('name')) {
+        active = active.filter(n => criteria.name === n.name);
+      }
+
+      if (criteria.hasOwnProperty('cluster')) {
+        active = active.filter(n => criteria.cluster === n.cluster.name);
       }
 
       const count = active.length;
@@ -83,7 +84,6 @@ export default function(options) {
       getNamespace,
       findNamespace,
       findNamespaces,
-      listNamespaces,
       deleteNamespace,
     });
   }
