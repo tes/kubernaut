@@ -121,7 +121,7 @@ describe('Releases API', () => {
       expect(release.id).toBe(saved.id);
     });
 
-    it('should return 403 for missing releases', async () => {
+    it('should return 404 for missing releases', async () => {
 
       loggerOptions.suppress = true;
 
@@ -131,9 +131,9 @@ describe('Releases API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 403');
+        throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(403);
+        expect(reason.response.statusCode).toBe(404);
       });
     });
   });

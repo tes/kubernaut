@@ -9,12 +9,10 @@ export default function(options = {}) {
 
     app.get('/api/registries', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnRegistry('*', 'registries-read')) return next(Boom.forbidden());
-
+        const registries = req.user.listRegistryIdsWithPermission('registries-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.listRegistries(limit, offset);
-
+        const result = await store.findRegistries({ registries, }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -23,10 +21,10 @@ export default function(options = {}) {
 
     app.get('/api/registries/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnRegistry('*', 'registries-read')) return next(Boom.forbidden());
-
         const registry = await store.getRegistry(req.params.id);
-        return registry ? res.json(registry) : next();
+        if (!registry) return next(Boom.notFound());
+        if (!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
+        return res.json(registry);
       } catch (err) {
         next(err);
       }
@@ -34,14 +32,9 @@ export default function(options = {}) {
 
     app.post('/api/registries', bodyParser.json(), async (req, res, next) => {
       try {
-
+        if (!req.user.isRegistryAdmin()) return next(Boom.forbidden());
         if (!req.body.name) return next(Boom.badRequest('name is required'));
-
-        if (!req.user.hasPermissionOnRegistry('*', 'registries-write')) return next(Boom.forbidden());
-
-        const data = {
-          name: req.body.name,
-        };
+        const data = { name: req.body.name, };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const registry = await store.saveRegistry(data, meta);
         res.json(registry);
@@ -52,8 +45,7 @@ export default function(options = {}) {
 
     app.delete('/api/registries/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnRegistry('*', 'registries-write')) return next(Boom.forbidden());
-
+        if (!req.user.isRegistryAdmin()) return next(Boom.forbidden());
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteRegistry(req.params.id, meta);
         res.status(204).send();

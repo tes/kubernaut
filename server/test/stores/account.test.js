@@ -200,6 +200,7 @@ describe('Account Store', () => {
         });
 
         it('should assign admin role when there are no other active admins', async () => {
+          const namespace = await saveNamespace();
           const account1Data = makeAccount();
           const identity1Data = makeIdentity();
           const saved = await saveAccount(account1Data);
@@ -210,8 +211,8 @@ describe('Account Store', () => {
           const account = await ensureAccount(account2Data, identity2Data);
           expect(account.id).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
-          expect(account.roles.admin.registries).toEqual(['*',]);
-          expect(account.roles.admin.namespaces).toEqual(['*',]);
+          expect(account.roles.admin.registries).toEqual(['00000000-0000-0000-0000-000000000000',]);
+          expect(account.roles.admin.namespaces).toEqual([namespace.id,]);
         });
 
         it('should assign no roles to a new account when there are already active global admins', async () => {
@@ -409,7 +410,7 @@ describe('Account Store', () => {
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
           expect(account.roles.admin.permissions).toContain('accounts-write');
-          expect(account.roles.admin.registries).toContain('*');
+          expect(account.roles.admin.registries).toContain('00000000-0000-0000-0000-000000000000');
         });
 
         it('should grant a role on s single registry to an account', async () => {
@@ -485,6 +486,7 @@ describe('Account Store', () => {
       describe('Grant Role On Namespace', () => {
 
         it('should grant a role on all namespaces to an account', async () => {
+          const namespace = await saveNamespace();
           const saved = await saveAccount();
 
           const role = await grantRoleOnNamespace(saved.id, 'admin', null);
@@ -494,12 +496,11 @@ describe('Account Store', () => {
           expect(account).toBeDefined();
           expect(Object.keys(account.roles)).toEqual(['admin',]);
           expect(account.roles.admin.permissions).toContain('accounts-write');
-          expect(account.roles.admin.namespaces).toContain('*');
+          expect(account.roles.admin.namespaces).toContain(namespace.id);
         });
 
         it('should grant a role on s single namespace to an account', async () => {
-          const cluster = await saveCluster();
-          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const namespace = await saveNamespace();
           const saved = await saveAccount();
 
           const role = await grantRoleOnNamespace(saved.id, 'admin', namespace.id);
@@ -574,14 +575,6 @@ describe('Account Store', () => {
         return store.saveRegistry(registry, meta);
       }
 
-      function saveCluster(cluster = makeCluster(), meta = makeRootMeta(), ) {
-        return store.saveCluster(cluster, meta);
-      }
-
-      function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta(), ) {
-        return store.saveNamespace(namespace, meta);
-      }
-
       function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
         return store.saveAccount(account, meta);
       }
@@ -630,6 +623,13 @@ describe('Account Store', () => {
         return store.revokeRoleOnNamespace(id, meta);
       }
 
+      function saveNamespace() {
+        return store.saveCluster(makeCluster(), makeRootMeta())
+          .then(cluster => {
+            const namespace = makeNamespace({ cluster, });
+            return store.saveNamespace(namespace, makeRootMeta());
+          });
+      }
     });
   });
 });

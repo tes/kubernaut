@@ -31,6 +31,19 @@ export default function(options) {
       return { limit, offset, count, items, };
     }
 
+    async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
+
+      let active = namespaces.filter(byActive).sort(byName);
+
+      if (criteria.hasOwnProperty('namespaces')) {
+        active = active.filter(r => criteria.namespaces.includes(r.id));
+      }
+
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
+    }
+
     async function deleteNamespace(id, meta) {
       reportMissingMetadata(meta);
       const namespace = namespaces.find(n => n.id === id && !n.deletedOn);
@@ -69,6 +82,7 @@ export default function(options) {
       saveNamespace,
       getNamespace,
       findNamespace,
+      findNamespaces,
       listNamespaces,
       deleteNamespace,
     });

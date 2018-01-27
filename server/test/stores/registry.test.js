@@ -184,12 +184,25 @@ describe('Registry Store', () => {
           expect(results1.count).toBe(1);
 
           const saved = await saveRegistry(makeRegistry());
-          const results2 = await listRegistries();
+          const results2 = await findRegistries();
           expect(results2.count).toBe(2);
 
           await deleteRegistry(saved.id);
-          const results3 = await listRegistries();
+          const results3 = await findRegistries();
           expect(results3.count).toBe(1);
+        });
+
+        it('should filter by registry ids', async () => {
+          const results1 = await findRegistries();
+          expect(results1.count).toBe(1);
+
+          const saved = await saveRegistry(makeRegistry());
+          const results2 = await findRegistries();
+          expect(results2.count).toBe(2);
+
+          const results3 = await findRegistries({ registries: [ saved.id, ], });
+          expect(results3.count).toBe(1);
+          expect(results3.items[0].id).toBe(saved.id);
         });
 
         describe('Pagination', () => {
@@ -256,6 +269,10 @@ describe('Registry Store', () => {
 
       function listRegistries(page, limit) {
         return store.listRegistries(page, limit);
+      }
+
+      function findRegistries(criteria = {}, page, limit) {
+        return store.findRegistries(criteria, page, limit);
       }
 
     });

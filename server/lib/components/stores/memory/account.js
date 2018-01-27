@@ -1,6 +1,7 @@
 import { v4 as uuid, } from 'uuid';
 import intersection from 'lodash.intersection';
 import Account from '../../../domain/Account';
+import uniq from 'lodash.uniq';
 
 export default function(options = {}) {
 
@@ -25,20 +26,26 @@ export default function(options = {}) {
       const account = accounts.find(a => a.id === id && !a.deletedOn);
       if (!account) return;
 
-      const differentiatorCollections = {
-        registry: 'registries',
-        namespace: 'namespaces',
+      const allRegistryIds = (await registries.listRegistries(Number.MAX_SAFE_INTEGER, 0)).items.map(r => r.id);
+      const allNamespaceIds = (await namespaces.listNamespaces(Number.MAX_SAFE_INTEGER, 0)).items.map(n => n.id);
+
+      const subjects = {
+        registry: {
+          name: 'registries',
+          allSubjectIds: allRegistryIds,
+        },
+        namespace: {
+          name: 'namespaces',
+          allSubjectIds: allNamespaceIds,
+        },
       };
 
-      const accountRoles = account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, accountRole) => {
-        result[accountRole.role] = result[accountRole.role] || {
-          name: accountRole.role,
-          permissions: roles[accountRole.role].permissions.slice(),
-          namespaces: [],
-          registries: [],
-        };
-        const collection = differentiatorCollections[accountRole.differentiator];
-        result[accountRole.role][collection].push(accountRole.subject || '*');
+      const accountRoles = account_roles.filter(ar => ar.account === id && !ar.deletedOn).reduce((result, row) => {
+        const collection = subjects[row.differentiator];
+        const entry = result[row.role] || { name: row.role, permissions: [], namespaces: [], registries: [], };
+        entry.permissions = entry.permissions.concat(roles[row.role].permissions.slice());
+        entry[collection.name] = uniq(entry[collection.name].concat(row.subject || collection.allSubjectIds.slice()));
+        result[row.role] = entry;
         return result;
       }, {});
 

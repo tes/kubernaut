@@ -127,7 +127,7 @@ describe('Deployments API', () => {
       expect(deployment.id).toBe(saved.id);
     });
 
-    it('should return 403 for missing deployments', async () => {
+    it('should return 404 for missing deployments', async () => {
 
       loggerOptions.suppress = true;
 
@@ -137,9 +137,9 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 403');
+        throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(403);
+        expect(reason.response.statusCode).toBe(404);
       });
     });
   });
@@ -562,7 +562,7 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should return 500 for missing context [kubectl]', async () => {
+    it('should return 400 for missing context [kubectl]', async () => {
 
       const cluster = await store.saveCluster(makeCluster({ name: 'Missing', context: 'missing', }), makeMeta());
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
@@ -576,14 +576,14 @@ describe('Deployments API', () => {
         json: true,
         resolveWithFullResponse: true,
       }).then(() => {
-        throw new Error('Should have failed with 500');
+        throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(500);
+        expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('Context missing was not found');
       });
     });
 
-    it('should return 500 for missing deployment [kubectl]', async () => {
+    it('should return 400 for missing deployment [kubectl]', async () => {
 
       const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
@@ -597,14 +597,14 @@ describe('Deployments API', () => {
         json: true,
         resolveWithFullResponse: true,
       }).then(() => {
-        throw new Error('Should have failed with 500');
+        throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(500);
-        expect(reason.response.body.message).toBe(`Deployment ${saved.release.service.name} was not found`);
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe(`Deployment ${saved.release.service.name} was not deployed`);
       });
     });
 
-    it('should return 403 for missing deployments [kubernaut]', async () => {
+    it('should return 404 for missing deployments [kubernaut]', async () => {
 
       loggerOptions.suppress = true;
 
@@ -614,9 +614,9 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 403');
+        throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(403);
+        expect(reason.response.statusCode).toBe(404);
       });
     });
   });

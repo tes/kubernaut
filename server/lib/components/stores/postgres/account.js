@@ -10,10 +10,15 @@ export default function(options = {}) {
 
       return Promise.all([
         db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
+        db.query(SQL.LIST_REGISTRIES, [ Number.MAX_SAFE_INTEGER, 0, ]),
+        db.query(SQL.LIST_NAMESPACES, [ Number.MAX_SAFE_INTEGER, 0, ]),
         db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
-      ]).then(([accountResult, rolesAndPermissionsResult, ]) => {
+      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult, ]) => {
         logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
-        return accountResult.rowCount ? toAccount(accountResult.rows[0], rolesAndPermissionsResult.rows) : undefined;
+        const registries = registriesResult.rows.map(row => row.id);
+        const namespaces = namespacesResult.rows.map(row => row.id);
+        const roles = toRolesAndPermissions(rolesAndPermissionsResult.rows, registries, namespaces);
+        return accountResult.rowCount ? toAccount(accountResult.rows[0], roles) : undefined;
       });
     }
 
@@ -209,8 +214,7 @@ export default function(options = {}) {
       return counts;
     }
 
-    function toAccount(row, rolesAndPermissionsRows = []) {
-      const roles = toRolesAndPermissions(rolesAndPermissionsRows);
+    function toAccount(row, roles) {
       return new Account({
         id: row.id,
         displayName: row.display_name,
@@ -224,16 +228,22 @@ export default function(options = {}) {
       });
     }
 
-    function toRolesAndPermissions(rows) {
-      const differentiatorCollections = {
-        registry: 'registries',
-        namespace: 'namespaces',
+    function toRolesAndPermissions(rows, allRegistryIds, allNamespaceIds) {
+      const subjects = {
+        registry: {
+          name: 'registries',
+          allSubjectIds: allRegistryIds,
+        },
+        namespace: {
+          name: 'namespaces',
+          allSubjectIds: allNamespaceIds,
+        },
       };
       return rows.reduce((roles, row) => {
+        const collection = subjects[row.differentiator];
         const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [], };
         entry.permissions.push(row.permission_name);
-        const collection = differentiatorCollections[row.differentiator];
-        entry[collection] = uniq(entry[collection].concat(row.subject_id || '*'));
+        entry[collection.name] = uniq(entry[collection.name].concat(row.subject_id || collection.allSubjectIds.slice()));
         roles[row.role_name] = entry;
         return roles;
       }, {});

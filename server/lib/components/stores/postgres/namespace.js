@@ -1,8 +1,13 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
 import Account from '../../../domain/Account';
+import sqb from 'sqb';
+import sqbpg from 'sqb-serializer-pg';
+sqb.use(sqbpg);
 
 export default function(options) {
+
+  const { Op, raw, } = sqb;
 
   function start({ config, logger, db, }, cb) {
 
@@ -62,6 +67,55 @@ export default function(options) {
       });
     }
 
+    async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
+
+      logger.debug(`Finding up to ${limit} namespaces matching criteria: ${criteria} starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findNamespacesBuilder = sqb
+        .select('n.id', 'n.name', 'n.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_namesapce__vw n', 'account cb')
+        .where(Op.eq('n.created_by', raw('cb.id')))
+        .orderBy('n.name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countActiveEntitiesBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_namespace__vw r', 'account cb')
+        .where(Op.eq('n.created_by', raw('cb.id')));
+
+      if (criteria.hasOwnProperty('namespaces')) {
+
+        const namespaceBindVariables = criteria.namespaces.reduce((namespaceBindVariables, id, index) => {
+          return Object.assign(namespaceBindVariables, { [`namespace_${index}`]: id, });
+        }, {});
+
+        const namespacePlaceholders = Object.keys(namespaceBindVariables).map(key => new RegExp(key));
+
+        findNamespacesBuilder.where(Op.in('r.id', namespacePlaceholders));
+        countActiveEntitiesBuilder.where(Op.in('r.id', namespacePlaceholders));
+
+        Object.assign(bindVariables, namespaceBindVariables);
+      }
+
+      const findNamespacesStatement = findNamespacesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+      const countNamespacesStatement = countActiveEntitiesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+
+      return db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(findNamespacesStatement.sql, findNamespacesStatement.values),
+          connection.query(countNamespacesStatement.sql, countNamespacesStatement.values),
+        ]).then(([namespaceResult, countResult,]) => {
+          const items = namespaceResult.rows.map(row => toNamespace(row));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} namespaces`);
+          return { limit, offset, count, items, };
+        });
+      });
+    }
+
     async function deleteNamespace(id, meta) {
       logger.debug(`Deleting namespace id: ${id}`);
       await db.query(SQL.DELETE_NAMESPACE, [
@@ -91,6 +145,7 @@ export default function(options) {
     return cb(null, {
       getNamespace,
       findNamespace,
+      findNamespaces,
       listNamespaces,
       saveNamespace,
       deleteNamespace,

@@ -6,11 +6,11 @@ import { makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, mak
 describe('Deployment Store', () => {
 
   const suites = [
-    // {
-    //   name: 'Memory',
-    //   system: createSystem()
-    //     .remove('server'),
-    // },
+    {
+      name: 'Memory',
+      system: createSystem()
+        .remove('server'),
+    },
     {
       name: 'Postgres',
       system: createSystem()

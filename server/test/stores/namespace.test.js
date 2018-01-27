@@ -156,23 +156,6 @@ describe('Namespace Store', () => {
           expect(namespace).toBe(undefined);
         });
 
-      });
-
-      describe('Delete Namespace', () => {
-
-        it('should soft delete namespace', async () => {
-          const cluster = await saveCluster();
-          const data = makeNamespace({ cluster, });
-          const saved = await saveNamespace(data);
-          await deleteNamespace(saved.id);
-
-          const namespace = await getNamespace(saved.id);
-          expect(namespace).toBe(undefined);
-        });
-      });
-
-      describe('List Namespaces', () => {
-
         it('should list namespaces, ordered by name asc, cluster name asc', async () => {
 
           const clusterA = await saveCluster(makeCluster({ name: 'A', }));
@@ -280,8 +263,21 @@ describe('Namespace Store', () => {
             expect(results.offset).toBe(10);
           });
         });
+
       });
 
+      describe('Delete Namespace', () => {
+
+        it('should soft delete namespace', async () => {
+          const cluster = await saveCluster();
+          const data = makeNamespace({ cluster, });
+          const saved = await saveNamespace(data);
+          await deleteNamespace(saved.id);
+
+          const namespace = await getNamespace(saved.id);
+          expect(namespace).toBe(undefined);
+        });
+      });
 
       function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
         return store.saveCluster(cluster, meta);

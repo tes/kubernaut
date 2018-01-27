@@ -14,13 +14,10 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        const registries = req.user.permittedRegistry('releases-read');
-        if (registries.length === 0) return next(Boom.forbidden());
-
+        // const registries = req.user.listRegistryIdsWithPermission('releases-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.listReleases(limit, offset); // TODO limit to permitted registries
-
+        const result = await store.listReleases(limit, offset); // findReleases({ registries }, limit, offset)
         res.json(result);
       } catch (err) {
         next(err);
@@ -30,7 +27,7 @@ export default function(options = {}) {
     app.get('/api/releases/:id', async (req, res, next) => {
       try {
         const release = await store.getRelease(req.params.id);
-        if (!release) return next(Boom.forbidden());
+        if (!release) return next(Boom.notFound());
         if (!req.user.hasPermissionOnRegistry(release.service.registry.id, 'releases-read')) return next(Boom.forbidden());
         res.json(release);
       } catch (err) {
@@ -39,13 +36,14 @@ export default function(options = {}) {
     });
 
     app.post('/api/releases', upload.single('template'), async (req, res, next) => {
-
       try {
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
 
-        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'releases-write')) return next(Boom.forbidden());
+        const registry = await store.findRegistry({ name: req.body.registry, });
+        if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
+        if (!req.user.hasPermissionOnRegistry(registry.id, 'releases-write')) return next(Boom.forbidden());
 
         const data = {
           service: {
@@ -69,8 +67,8 @@ export default function(options = {}) {
     app.delete('/api/releases/:id', async (req, res, next) => {
       try {
         const release = await store.getRelease(req.params.id);
-        if (!release) return next(Boom.forbidden());
-        if (!req.user.hasPermissionOnRegistry(release.service.registry.name, 'releases-write')) return next(Boom.forbidden());
+        if (!release) return next(204).send();
+        if (!req.user.hasPermissionOnRegistry(release.service.registry.id, 'releases-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteRelease(req.params.id, meta);

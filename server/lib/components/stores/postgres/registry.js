@@ -1,8 +1,13 @@
 import SQL from './sql';
 import Registry from '../../../domain/Registry';
 import Account from '../../../domain/Account';
+import sqb from 'sqb';
+import sqbpg from 'sqb-serializer-pg';
+sqb.use(sqbpg);
 
 export default function(options) {
+
+  const { Op, raw, } = sqb;
 
   function start({ config, logger, db, }, cb) {
 
@@ -62,6 +67,55 @@ export default function(options) {
       });
     }
 
+    async function findRegistries(criteria = {}, limit = 50, offset = 0) {
+
+      logger.debug(`Finding up to ${limit} registries matching criteria: ${criteria} starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findRegistriesBuilder = sqb
+        .select('r.id', 'r.name', 'r.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_registry__vw r', 'account cb')
+        .where(Op.eq('r.created_by', raw('cb.id')))
+        .orderBy('r.name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countActiveEntitiesBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_registry__vw r', 'account cb')
+        .where(Op.eq('r.created_by', raw('cb.id')));
+
+      if (criteria.hasOwnProperty('registries')) {
+
+        const registryBindVariables = criteria.registries.reduce((registryBindVariables, id, index) => {
+          return Object.assign(registryBindVariables, { [`registry_${index}`]: id, });
+        }, {});
+
+        const registryPlaceholders = Object.keys(registryBindVariables).map(key => new RegExp(key));
+
+        findRegistriesBuilder.where(Op.in('r.id', registryPlaceholders));
+        countActiveEntitiesBuilder.where(Op.in('r.id', registryPlaceholders));
+
+        Object.assign(bindVariables, registryBindVariables);
+      }
+
+      const findRegistriesStatement = findRegistriesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+      const countRegistriesStatement = countActiveEntitiesBuilder.generate({ dialect: 'pg', prettyPrint: false, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+
+      return db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(findRegistriesStatement.sql, findRegistriesStatement.values),
+          connection.query(countRegistriesStatement.sql, countRegistriesStatement.values),
+        ]).then(([registryResult, countResult,]) => {
+          const items = registryResult.rows.map(row => toRegistry(row));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} registries`);
+          return { limit, offset, count, items, };
+        });
+      });
+    }
+
     async function deleteRegistry(id, meta) {
       logger.debug(`Deleting registry id: ${id}`);
       await db.query(SQL.DELETE_REGISTRY, [
@@ -86,6 +140,7 @@ export default function(options) {
     return cb(null, {
       getRegistry,
       findRegistry,
+      findRegistries,
       listRegistries,
       saveRegistry,
       deleteRegistry,

@@ -31,6 +31,19 @@ export default function(options) {
       return { limit, offset, count, items, };
     }
 
+    async function findRegistries(criteria = {}, limit = 50, offset = 0) {
+
+      let active = registries.filter(byActive).sort(byName);
+
+      if (criteria.hasOwnProperty('registries')) {
+        active = active.filter(r => criteria.registries.includes(r.id));
+      }
+
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
+    }
+
     async function deleteRegistry(id, meta) {
       reportMissingMetadata(meta);
       const registry = registries.find(r => r.id === id && !r.deletedOn);
@@ -65,6 +78,7 @@ export default function(options) {
       saveRegistry,
       getRegistry,
       findRegistry,
+      findRegistries,
       listRegistries,
       deleteRegistry,
     });
