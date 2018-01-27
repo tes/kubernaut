@@ -330,7 +330,7 @@ describe('Deployment Store', () => {
             });
           }));
 
-          const results = await listDeployments();
+          const results = await findDeployments();
           expect(results.items.map(d => `${d.release.service.name}${d.release.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
           expect(results.count).toBe(6);
           expect(results.limit).toBe(50);
@@ -343,15 +343,15 @@ describe('Deployment Store', () => {
           const namespace = await saveNamespace(makeNamespace({ cluster, }));
           const release = await saveRelease(makeRelease());
 
-          const results1 = await listDeployments();
+          const results1 = await findDeployments();
           expect(results1.count).toBe(0);
 
           const saved = await saveDeployment(makeDeployment({ release, namespace, }));
-          const results2 = await listDeployments();
+          const results2 = await findDeployments();
           expect(results2.count).toBe(1);
 
           await deleteDeployment(saved.id);
-          const results3 = await listDeployments();
+          const results3 = await findDeployments();
           expect(results3.count).toBe(0);
         });
 
@@ -361,11 +361,11 @@ describe('Deployment Store', () => {
           const release = await saveRelease(makeRelease());
 
           await saveDeployment(makeDeployment({ release, namespace, }));
-          const results1 = await listDeployments();
+          const results1 = await findDeployments();
           expect(results1.count).toBe(1);
 
           await deleteRelease(release.id);
-          const results2 = await listDeployments();
+          const results2 = await findDeployments();
           expect(results2.count).toBe(0);
         });
 
@@ -378,11 +378,11 @@ describe('Deployment Store', () => {
           }));
 
           await saveDeployment(makeDeployment({ release, }));
-          const results1 = await listDeployments();
+          const results1 = await findDeployments();
           expect(results1.count).toBe(1);
 
           await deleteService(release.service.id);
-          const results2 = await listDeployments();
+          const results2 = await findDeployments();
           expect(results2.count).toBe(0);
 
           function deleteService() {}
@@ -394,11 +394,11 @@ describe('Deployment Store', () => {
           const release = await saveRelease(makeRelease());
 
           await saveDeployment(makeDeployment({ release, namespace, }));
-          const results1 = await listDeployments();
+          const results1 = await findDeployments();
           expect(results1.count).toBe(1);
 
           await deleteNamespace(namespace.id);
-          const results2 = await listDeployments();
+          const results2 = await findDeployments();
           expect(results2.count).toBe(0);
         });
 
@@ -426,7 +426,7 @@ describe('Deployment Store', () => {
           });
 
           it('should limit deployments to 50 by default', async () => {
-            const results = await listDeployments();
+            const results = await findDeployments();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -434,7 +434,7 @@ describe('Deployment Store', () => {
           });
 
           it('should limit deployments to the specified number', async () => {
-            const results = await listDeployments(10, 0);
+            const results = await findDeployments({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(10);
@@ -442,7 +442,7 @@ describe('Deployment Store', () => {
           });
 
           it('should page deployments list', async () => {
-            const results = await listDeployments(50, 10);
+            const results = await findDeployments({}, 50, 10);
             expect(results.items.length).toBe(41);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -479,8 +479,8 @@ describe('Deployment Store', () => {
         return store.getDeployment(id);
       }
 
-      function listDeployments(page, limit) {
-        return store.listDeployments(page, limit);
+      function findDeployments(criteria, page, limit) {
+        return store.findDeployments(criteria, page, limit);
       }
 
       function deleteDeployment(id, meta = makeRootMeta()) {

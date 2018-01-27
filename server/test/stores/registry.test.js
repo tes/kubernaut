@@ -287,12 +287,12 @@ describe('Registry Store', () => {
         return store.findRegistry(criteria);
       }
 
-      function deleteRegistry(id, meta = makeRootMeta()) {
-        return store.deleteRegistry(id, meta);
+      function findRegistries(criteria, page, limit) {
+        return store.findRegistries(criteria, page, limit);
       }
 
-      function findRegistries(criteria = {}, page, limit) {
-        return store.findRegistries(criteria, page, limit);
+      function deleteRegistry(id, meta = makeRootMeta()) {
+        return store.deleteRegistry(id, meta);
       }
 
     });

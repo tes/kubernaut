@@ -343,12 +343,12 @@ describe('Namespace Store', () => {
         return store.findNamespace(criteria);
       }
 
-      function deleteNamespace(id, meta = makeRootMeta()) {
-        return store.deleteNamespace(id, meta);
+      function findNamespaces(criteria, page, limit) {
+        return store.findNamespaces(criteria, page, limit);
       }
 
-      function findNamespaces(criteria = {}, page, limit) {
-        return store.findNamespaces(criteria, page, limit);
+      function deleteNamespace(id, meta = makeRootMeta()) {
+        return store.deleteNamespace(id, meta);
       }
 
     });

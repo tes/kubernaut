@@ -46,6 +46,12 @@ export default function(options = {}) {
         ...logEntry, id: uuid(), sequence: deploymentLogSequence++,
       }));
     }
+    async function findDeployments(criteria = {}, limit = 50, offset = 0) {
+      const active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
+      const count = active.length;
+      const items = active.slice(offset, offset + limit);
+      return { limit, offset, count, items, };
+    }
 
     async function deleteDeployment(id, meta) {
       reportMissingMetadata(meta);
@@ -57,12 +63,6 @@ export default function(options = {}) {
       }
     }
 
-    async function listDeployments(limit = 50, offset = 0) {
-      const active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
-      const count = active.length;
-      const items = active.slice(offset, offset + limit);
-      return { limit, offset, count, items, };
-    }
 
     function reportMissingMetadata(meta) {
       if (!meta.date || !meta.account) throw Object.assign(new Error('Missing Metadata'), { code: '23502', });
@@ -105,7 +105,7 @@ export default function(options = {}) {
       saveDeployment,
       saveDeploymentLogEntry,
       getDeployment,
-      listDeployments,
+      findDeployments,
       deleteDeployment,
     });
   }

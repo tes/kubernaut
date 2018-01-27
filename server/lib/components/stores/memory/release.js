@@ -9,25 +9,6 @@ export default function(options = {}) {
 
     const { services, releases, } = tables;
 
-    async function getRelease(id) {
-      return releases.find(r =>
-        r.id === id &&
-        !r.deletedOn &&
-        !r.service.deletedOn &&
-        !r.service.registry.deletedOn);
-    }
-
-    async function findRelease({ name, registry, version, }) {
-      return releases.find(r =>
-        r.service.name === name &&
-        r.service.registry.name === registry &&
-        r.version === version &&
-        !r.deletedOn &&
-        !r.service.deletedOn &&
-        !r.service.registry.deletedOn
-      );
-    }
-
     async function saveRelease(release, meta) {
       reportMissingMetadata(meta);
 
@@ -55,7 +36,26 @@ export default function(options = {}) {
       }));
     }
 
-    async function listReleases(limit = 50, offset = 0) {
+    async function getRelease(id) {
+      return releases.find(r =>
+        r.id === id &&
+        !r.deletedOn &&
+        !r.service.deletedOn &&
+        !r.service.registry.deletedOn);
+    }
+
+    async function findRelease({ name, registry, version, }) {
+      return releases.find(r =>
+        r.service.name === name &&
+        r.service.registry.name === registry &&
+        r.version === version &&
+        !r.deletedOn &&
+        !r.service.deletedOn &&
+        !r.service.registry.deletedOn
+      );
+    }
+
+    async function findReleases(criteria = {}, limit = 50, offset = 0) {
       const active = releases.filter(byActive).map(toSlimRelease).sort(byMostRecent);
       const count = active.length;
       const items = active.slice(offset, offset + limit);
@@ -113,7 +113,7 @@ export default function(options = {}) {
       saveRelease,
       getRelease,
       findRelease,
-      listReleases,
+      findReleases,
       deleteRelease,
     });
   }

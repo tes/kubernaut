@@ -304,7 +304,7 @@ describe('Release Store', () => {
             return saveRelease(release.data, release.meta);
           }));
 
-          const results = await listReleases();
+          const results = await findReleases();
           expect(results.items.map(r => `${r.service.name}${r.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
           expect(results.count).toBe(6);
           expect(results.limit).toBe(50);
@@ -314,22 +314,22 @@ describe('Release Store', () => {
         it('should return slim release', async () => {
           await saveRelease(makeRelease());
 
-          const releases = await listReleases();
+          const releases = await findReleases();
           expect(releases.items.length).toBe(1);
           expect(releases.items[0].template).toBe(undefined);
           expect(Object.keys(releases.items[0].attributes).length).toBe(0);
         });
 
         it('should exclude inactive releases', async () => {
-          const results1 = await listReleases();
+          const results1 = await findReleases();
           expect(results1.count).toBe(0);
 
           const saved = await saveRelease();
-          const results2 = await listReleases();
+          const results2 = await findReleases();
           expect(results2.count).toBe(1);
 
           await deleteRelease(saved.id);
-          const results3 = await listReleases();
+          const results3 = await findReleases();
           expect(results3.count).toBe(0);
         });
 
@@ -341,11 +341,11 @@ describe('Release Store', () => {
             },
           }));
 
-          const results1 = await listReleases();
+          const results1 = await findReleases();
           expect(results1.count).toBe(1);
 
           await deleteService(release.service.id);
-          const results2 = await listReleases();
+          const results2 = await findReleases();
           expect(results2.count).toBe(0);
 
           function deleteService() {}
@@ -359,11 +359,11 @@ describe('Release Store', () => {
             },
           }));
 
-          const results1 = await listReleases();
+          const results1 = await findReleases();
           expect(results1.count).toBe(1);
 
           await deleteRegistry(registry.id);
-          const results2 = await listReleases();
+          const results2 = await findReleases();
           expect(results2.count).toBe(0);
         });
 
@@ -385,7 +385,7 @@ describe('Release Store', () => {
           });
 
           it('should limit releases to 50 by default', async () => {
-            const results = await listReleases();
+            const results = await findReleases();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -393,7 +393,7 @@ describe('Release Store', () => {
           });
 
           it('should limit releases to the specified number', async () => {
-            const results = await listReleases(10, 0);
+            const results = await findReleases({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(10);
@@ -401,7 +401,7 @@ describe('Release Store', () => {
           });
 
           it('should page releases list', async () => {
-            const results = await listReleases(50, 10);
+            const results = await findReleases({}, 50, 10);
             expect(results.items.length).toBe(41);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -426,8 +426,8 @@ describe('Release Store', () => {
         return store.deleteRelease(id, meta);
       }
 
-      function listReleases(page, limit) {
-        return store.listReleases(page, limit);
+      function findReleases(criteria, page, limit) {
+        return store.findReleases(criteria, page, limit);
       }
 
       function saveRegistry(registry = makeRegistry(), meta = makeRootMeta()) {

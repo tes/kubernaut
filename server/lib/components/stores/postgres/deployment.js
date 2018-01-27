@@ -13,20 +13,6 @@ export default function(options) {
 
   function start({ config, logger, db, }, cb) {
 
-    async function getDeployment(id) {
-      logger.debug(`Getting deployment by id: ${id}`);
-
-      return await db.withTransaction(async connection => {
-        return Promise.all([
-          connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]),
-          connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id,]),
-        ]).then(([deploymentResult, logEntryResult,]) => {
-          logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
-          return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], logEntryResult.rows) : undefined;
-        });
-      });
-    }
-
     async function saveDeployment(data, meta) {
       logger.debug(`Saving deployment: ${data.release.id}/${data.namespace.cluster.name}/${data.namespace.name}`);
 
@@ -61,7 +47,21 @@ export default function(options) {
       return deploymentLogEntry;
     }
 
-    async function listDeployments(limit = 50, offset = 0) {
+    async function getDeployment(id) {
+      logger.debug(`Getting deployment by id: ${id}`);
+
+      return await db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]),
+          connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id,]),
+        ]).then(([deploymentResult, logEntryResult,]) => {
+          logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
+          return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], logEntryResult.rows) : undefined;
+        });
+      });
+    }
+
+    async function findDeployments(criteria = {}, limit = 50, offset = 0) {
 
       logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
 
@@ -135,8 +135,8 @@ export default function(options) {
       saveDeployment,
       saveDeploymentLogEntry,
       getDeployment,
+      findDeployments,
       deleteDeployment,
-      listDeployments,
     });
   }
 

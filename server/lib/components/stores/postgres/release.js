@@ -9,37 +9,6 @@ export default function(options) {
 
   function start({ config, logger, db, }, cb) {
 
-    async function getRelease(id) {
-
-      logger.debug(`Getting release by id: ${id}`);
-
-      return await db.withTransaction(async connection => {
-        return Promise.all([
-          connection.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
-          connection.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
-        ]).then(([releaseResult, attributesResult,]) => {
-          logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
-          return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
-        });
-      });
-    }
-
-    async function findRelease({ name, registry, version, }) {
-      logger.debug(`Finding release by name: ${name}, registry: ${registry}, version: ${version}`);
-
-      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [
-        name, registry, version,
-      ]);
-
-      logger.debug(`Found ${release.rowCount} releases with name: ${name}, registry: ${registry}, version: ${version}`);
-
-      if (release.rowCount === 0) return;
-
-      const attributes = await db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
-
-      return toRelease(release.rows[0], attributes.rows);
-    }
-
     async function saveRelease(data, meta) {
       const release = await db.withTransaction(async connection => {
         const service = await _ensureService(connection, data.service, data.service.registry.name, meta);
@@ -122,7 +91,38 @@ export default function(options) {
       return attributes;
     }
 
-    async function listReleases(limit = 50, offset = 0) {
+    async function getRelease(id) {
+
+      logger.debug(`Getting release by id: ${id}`);
+
+      return await db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
+          connection.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
+        ]).then(([releaseResult, attributesResult,]) => {
+          logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
+          return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
+        });
+      });
+    }
+
+    async function findRelease({ name, registry, version, }) {
+      logger.debug(`Finding release by name: ${name}, registry: ${registry}, version: ${version}`);
+
+      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [
+        name, registry, version,
+      ]);
+
+      logger.debug(`Found ${release.rowCount} releases with name: ${name}, registry: ${registry}, version: ${version}`);
+
+      if (release.rowCount === 0) return;
+
+      const attributes = await db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
+
+      return toRelease(release.rows[0], attributes.rows);
+    }
+
+    async function findReleases(criteria = {}, limit = 50, offset = 0) {
 
       logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
 
@@ -178,10 +178,10 @@ export default function(options) {
     }
 
     return cb(null, {
+      saveRelease,
       getRelease,
       findRelease,
-      saveRelease,
-      listReleases,
+      findReleases,
       deleteRelease,
     });
   }
