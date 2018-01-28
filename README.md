@@ -309,7 +309,7 @@ Account identities (e.g. cressie176/github, machine_user/token)
 | description   | A description of the permission |
 
 ## Subject
-Subject may be a [Registry](#registry) or a [Namespace](#namespace)
+Subject may be a [Registry](#registry) or a [Namespace](#namespace).
 
 
 ## Kubernaut API
@@ -337,7 +337,12 @@ GET /api/registries?limit=50&offset=0
   "items": [
     {
       "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-      "name": "default"
+      "name": "default",
+      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdBy":{
+        "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+        "displayName": "Bob Holness"
+      }       
     }
   ]
 }
@@ -361,6 +366,11 @@ GET /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
   "name": "default"
+  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }   
 }
 ```
 
@@ -381,7 +391,12 @@ POST /api/registries
 ```json
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
+  "name": "default",
+  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }   
 }
 ```
 
@@ -396,14 +411,6 @@ Deletes a registry
 #### Sample Request
 ```
 DELETE /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
-```
-
-#### Sample Response
-```json
-{
-  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
-}
 ```
 
 #### Expected Status Codes
@@ -435,11 +442,130 @@ GET /api/namespaces?limit=50&offset=0
   "items": [
     {
       "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-      "name": "default"
+      "name": "default",
+      "cluster": {
+        "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+        "name": "development-eu",
+        "context": "dev"
+      },
+      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdBy": {
+        "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+        "displayName": "Bob Holness"
+      }     
     }
   ]
 }
 ```
+
+### GET /api/clusters
+Lists all active clusters
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| limit  | Query   | No        | 50      | Limits the number of items returned in the response |
+| offset | Query   | No        | 0       | Sets the items offset |
+
+#### Sample Request
+```
+GET /api/clusters?limit=50&offset=0
+```
+
+#### Sample Response
+```json
+{
+  "limit": 50,
+  "offset": 0,
+  "count": 1,
+  "items": [
+    {
+      "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+      "name": "development-eu",
+      "context": "dev",
+      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdBy":{
+        "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+        "displayName": "Bob Holness"
+      }       
+    }
+  ]
+}
+```
+
+### GET /api/clusters/:id
+Gets a single cluster
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The cluster id |
+
+#### Sample Request
+```
+GET /api/clusters/a6d41d27-d96e-49fd-ae41-7419a42aa377
+```
+
+#### Sample Response
+```json
+{
+  "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+  "name": "development-eu",
+  "context": "dev",
+  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }   
+}
+```
+
+### POST /api/clusters
+Creates a new cluster
+
+#### Sample Request
+```
+POST /api/clusters
+```
+```json
+{
+  "name": "development-eu",
+  "context: "dev"
+}
+```
+
+#### Sample Response
+```json
+{
+  "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+  "name": "development-eu",
+  "context": "dev",
+  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }   
+}
+```
+
+### DELETE /api/clusters/:id
+Deletes a cluster
+
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| id     | URL     | Yes       | N/A     | The cluster id |
+
+#### Sample Request
+```
+DELETE /api/clusters/a6d41d27-d96e-49fd-ae41-7419a42aa377
+```
+
+#### Expected Status Codes
+| Status | Meaning |
+|--------|---------|
+| 204    | Cluster was deleted |
+
 
 ### GET /api/namespaces/:id
 Gets a single namespace
@@ -458,7 +584,16 @@ GET /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
 ```json
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
+  "name": "default",
+  "cluster": {
+    "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+    "name": "development-eu",
+    "context": "dev"
+  },  
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }  
 }
 ```
 
@@ -471,7 +606,8 @@ POST /api/namespaces
 ```
 ```json
 {
-  "name": "default"
+  "name": "default",
+  "cluster": "a6d41d27-d96e-49fd-ae41-7419a42aa377"
 }
 ```
 
@@ -479,7 +615,16 @@ POST /api/namespaces
 ```json
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
+  "name": "default",
+  "cluster": {
+    "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
+    "name": "development-eu",
+    "context": "dev"
+  },  
+  "createdBy": {
+    "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
+    "displayName": "Bob Holness"
+  }  
 }
 ```
 
@@ -494,14 +639,6 @@ Deletes a namespace
 #### Sample Request
 ```
 DELETE /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
-```
-
-#### Sample Response
-```json
-{
-  "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
-}
 ```
 
 #### Expected Status Codes
