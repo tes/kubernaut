@@ -187,10 +187,10 @@ describe('Release Store', () => {
 
       describe('Find Release', () => {
 
-        it('should find a release by service name, registry and release version', async () => {
+        it('should find a release by registry, service and release version', async () => {
           const data = makeRelease();
           const saved = await saveRelease(data);
-          const release = await findRelease({ name: data.service.name, registry: data.service.registry.name, version: data.version, });
+          const release = await findRelease({ registry: data.service.registry.name, service: data.service.name, version: data.version, });
 
           expect(release).toBeDefined();
           expect(release.id).toBe(saved.id);
@@ -200,7 +200,7 @@ describe('Release Store', () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: 'missing', registry: data.service.registry.name, version: data.version, });
+          const release = await findRelease({ registry: data.service.registry.name, service: 'missing', version: data.version, });
           expect(release).toBe(undefined);
         });
 
@@ -208,7 +208,7 @@ describe('Release Store', () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: data.service.name, registry: 'missing', version: data.version, });
+          const release = await findRelease({ registry: 'missing', service: data.service.name, version: data.version, });
           expect(release).toBe(undefined);
         });
 
@@ -216,7 +216,7 @@ describe('Release Store', () => {
           const data = makeRelease();
           await saveRelease(data);
 
-          const release = await findRelease({ name: data.service.name, registry: data.service.registry.name, version: 'missing', });
+          const release = await findRelease({ registry: data.service.registry.name, service: data.service.name, version: 'missing', });
           expect(release).toBe(undefined);
         });
       });

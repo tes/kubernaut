@@ -78,7 +78,7 @@ export default function(options = {}) {
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
         if (!req.user.hasPermissionOnRegistry(registry.id, 'releases-read')) return next(Boom.forbidden());
 
-        const release = await store.findRelease({ name: req.body.service, registry: req.body.registry, version: req.body.version, });
+        const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version, });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
         const contextOk = await kubernetes.checkContext(namespace.cluster.context, res.locals.logger);

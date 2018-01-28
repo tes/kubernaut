@@ -44,9 +44,9 @@ export default function(options = {}) {
         !r.service.registry.deletedOn);
     }
 
-    async function findRelease({ name, registry, version, }) {
+    async function findRelease({ registry, service, version, }) {
       return releases.find(r =>
-        r.service.name === name &&
+        r.service.name === service &&
         r.service.registry.name === registry &&
         r.version === version &&
         !r.deletedOn &&

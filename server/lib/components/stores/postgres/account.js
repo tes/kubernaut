@@ -8,35 +8,6 @@ export default function(options = {}) {
 
   const { Op, raw, } = sqb;
 
-    async function getAccount(id) {
-      logger.debug(`Getting account by id: ${id}`);
-
-      return Promise.all([
-        db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
-        db.query(SQL.LIST_REGISTRIES),
-        db.query(SQL.LIST_NAMESPACES),
-        db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
-      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult, ]) => {
-        logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
-        const registries = registriesResult.rows.map(row => row.id);
-        const namespaces = namespacesResult.rows.map(row => row.id);
-        const roles = toRolesAndPermissions(rolesAndPermissionsResult.rows, registries, namespaces);
-        return accountResult.rowCount ? toAccount(accountResult.rows[0], roles) : undefined;
-      });
-    }
-
-    async function findAccount({ name, provider, type, }) {
-      logger.debug(`Finding account by identity: ${type}/${name}/${provider}`);
-
-      const account = await db.query(SQL.SELECT_ACCOUNT_BY_IDENTITY, [
-        name, provider, type,
-      ]);
-      logger.debug(`Found ${account.rowCount} accounts with identity: ${type}/${name}/${provider}`);
-      if (account.rowCount === 0) return;
-
-      return getAccount(account.rows[0].id);
-    }
-
     async function saveAccount(data, meta) {
       return _saveAccount(db, data, meta);
     }
@@ -82,6 +53,35 @@ export default function(options = {}) {
       logger.debug(`Ensured account: ${account.displayName}/${account.id}`);
 
       return account;
+    }
+
+    async function getAccount(id) {
+      logger.debug(`Getting account by id: ${id}`);
+
+      return Promise.all([
+        db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
+        db.query(SQL.LIST_REGISTRIES),
+        db.query(SQL.LIST_NAMESPACES),
+        db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
+      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult, ]) => {
+        logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
+        const registries = registriesResult.rows.map(row => row.id);
+        const namespaces = namespacesResult.rows.map(row => row.id);
+        const roles = toRolesAndPermissions(rolesAndPermissionsResult.rows, registries, namespaces);
+        return accountResult.rowCount ? toAccount(accountResult.rows[0], roles) : undefined;
+      });
+    }
+
+    async function findAccount({ name, provider, type, }) {
+      logger.debug(`Finding account by identity: ${type}/${name}/${provider}`);
+
+      const account = await db.query(SQL.SELECT_ACCOUNT_BY_IDENTITY, [
+        name, provider, type,
+      ]);
+      logger.debug(`Found ${account.rowCount} accounts with identity: ${type}/${name}/${provider}`);
+      if (account.rowCount === 0) return;
+
+      return getAccount(account.rows[0].id);
     }
 
     async function findAccounts(criteria = {}, limit = 50, offset = 0) {
@@ -268,10 +268,10 @@ export default function(options = {}) {
     }
 
     return cb(null, {
-      getAccount,
-      findAccount,
       saveAccount,
       ensureAccount,
+      getAccount,
+      findAccount,
       findAccounts,
       deleteAccount,
       saveIdentity,

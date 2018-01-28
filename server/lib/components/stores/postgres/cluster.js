@@ -9,27 +9,6 @@ export default function(options) {
 
   function start({ config, logger, db, }, cb) {
 
-    async function getCluster(id) {
-      logger.debug(`Getting cluster by id: ${id}`);
-      const result = await db.query(SQL.SELECT_CLUSTER_BY_ID, [id,]);
-      logger.debug(`Found ${result.rowCount} clusters with id: ${id}`);
-      return result.rowCount ? toCluster(result.rows[0]) : undefined;
-    }
-
-    async function findCluster({ name, }) {
-      logger.debug(`Finding cluster by name: ${name}`);
-
-      const cluster = await db.query(SQL.SELECT_CLUSTER_BY_NAME, [
-        name,
-      ]);
-
-      logger.debug(`Found ${cluster.rowCount} clusters with name: ${name}`);
-
-      if (cluster.rowCount === 0) return;
-
-      return toCluster(cluster.rows[0]);
-    }
-
     async function saveCluster(data, meta) {
       logger.debug(`Saving cluster: ${data.name}`);
 
@@ -44,6 +23,19 @@ export default function(options) {
       logger.debug(`Saved cluster: ${cluster.name}/${cluster.id}`);
 
       return cluster;
+    }
+
+    async function getCluster(id) {
+      logger.debug(`Getting cluster by id: ${id}`);
+      const result = await db.query(SQL.SELECT_CLUSTER_BY_ID, [id,]);
+      logger.debug(`Found ${result.rowCount} clusters with id: ${id}`);
+      return result.rowCount ? toCluster(result.rows[0]) : undefined;
+    }
+
+    async function findCluster(criteria) {
+      const list = await findClusters(criteria, 2, 0);
+      if (list.count > 1) throw new Error(`Expected 0 or 1 clusters but found ${list.count}}`);
+      return list.count === 1 ? list.items[0] : undefined;
     }
 
     async function findClusters(criteria = {}, limit = 50, offset = 0) {
@@ -63,6 +55,10 @@ export default function(options) {
       const countClustersBuilder = sqb
         .select(raw('count(*) count'))
         .from('active_cluster__vw c');
+
+      if (criteria.hasOwnProperty('name')) {
+        db.buildWhereClause('c.name', criteria.name, bindVariables, findClustersBuilder, countClustersBuilder);
+      }
 
       const findClustersStatement = db.serialize(findClustersBuilder, bindVariables);
       const countClustersStatement = db.serialize(countClustersBuilder, bindVariables);

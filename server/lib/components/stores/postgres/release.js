@@ -107,20 +107,11 @@ export default function(options) {
       });
     }
 
-    async function findRelease({ name, registry, version, }) {
-      logger.debug(`Finding release by name: ${name}, registry: ${registry}, version: ${version}`);
-
-      const release = await db.query(SQL.SELECT_RELEASE_BY_NAME_AND_VERSION, [
-        name, registry, version,
-      ]);
-
-      logger.debug(`Found ${release.rowCount} releases with name: ${name}, registry: ${registry}, version: ${version}`);
-
-      if (release.rowCount === 0) return;
-
-      const attributes = await db.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [release.rows[0].id,]);
-
-      return toRelease(release.rows[0], attributes.rows);
+    async function findRelease(criteria) {
+      const list = await findReleases(criteria, 2, 0);
+      if (list.count > 1) throw new Error(`Expected 0 or 1 releases but found ${list.count}}`);
+      if (list.count === 0) return;
+      return getRelease(list.items[0].id); // Lazy way to get release attributes
     }
 
     async function findReleases(criteria = {}, limit = 50, offset = 0) {
@@ -144,6 +135,10 @@ export default function(options) {
         .from('active_release__vw r', 'service s', 'registry sr')
         .where(Op.eq('r.service', raw('s.id')))
         .where(Op.eq('s.registry', raw('sr.id')));
+
+      if (criteria.hasOwnProperty('version')) {
+        db.buildWhereClause('r.version', criteria.version, bindVariables, findReleasesBuilder, countReleasesBuilder);
+      }
 
       if (criteria.hasOwnProperty('service')) {
         db.buildWhereClause('s.name', criteria.service, bindVariables, findReleasesBuilder, countReleasesBuilder);

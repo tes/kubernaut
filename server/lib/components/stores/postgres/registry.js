@@ -32,18 +32,10 @@ export default function(options) {
       return result.rowCount ? toRegistry(result.rows[0]) : undefined;
     }
 
-    async function findRegistry({ name, }) {
-      logger.debug(`Finding registry by name: ${name}`);
-
-      const registry = await db.query(SQL.SELECT_REGISTRY_BY_NAME, [
-        name,
-      ]);
-
-      logger.debug(`Found ${registry.rowCount} registries with name: ${name}`);
-
-      if (registry.rowCount === 0) return;
-
-      return toRegistry(registry.rows[0]);
+    async function findRegistry(criteria) {
+      const list = await findRegistries(criteria, 2, 0);
+      if (list.count > 1) throw new Error(`Expected 0 or 1 registries but found ${list.count}}`);
+      return list.count === 1 ? list.items[0] : undefined;
     }
 
     async function findRegistries(criteria = {}, limit = 50, offset = 0) {

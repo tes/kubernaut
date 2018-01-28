@@ -32,18 +32,10 @@ export default function(options) {
       return namespace;
     }
 
-    async function findNamespace({ name, cluster, }) {
-      logger.debug(`Finding namespace by name: ${name} and cluster: ${cluster}`);
-
-      const namespace = await db.query(SQL.SELECT_NAMESPACE_BY_NAME_AND_CLUSTER, [
-        name, cluster,
-      ]);
-
-      logger.debug(`Found ${namespace.rowCount} namespaces with name: ${name} and cluster: ${cluster}`);
-
-      if (namespace.rowCount === 0) return;
-
-      return toNamespace(namespace.rows[0]);
+    async function findNamespace(criteria) {
+      const list = await findNamespaces(criteria, 2, 0);
+      if (list.count > 1) throw new Error(`Expected 0 or 1 namespaces but found ${list.count}}`);
+      return list.count === 1 ? list.items[0] : undefined;
     }
 
     async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
