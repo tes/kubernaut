@@ -6,7 +6,7 @@ export default function(options = {}) {
   function start({ store, }, cb) {
 
     function apply(deployment) {
-      const context = deployment.namespace.context.name;
+      const context = deployment.namespace.cluster.context;
       const namespace = deployment.namespace.name;
       const manifest = deployment.manifest.yaml;
       return new Promise(async (resolve, reject) => {
