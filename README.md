@@ -52,7 +52,10 @@ Kubernaut uses dependency injection called [systemic](https://www.npmjs.com/pack
 #### The Client
 The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate. The aim is to keep the entry barrier as low as possible.
 
-## Kubernaut Release Workflow
+## Kubernaut Concepts
+The two most important concepts in kubernaut are **releases** and **deployments**. A release is something you build, whereas a deployment is something you ship. A release is comprised of a versioned docker image, some attributes and a Kubernetes manifest file template. A deployment is comprised of a release, generated Kubernetes manifest file and a destination [Kubernetes namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/).
+
+### Release Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
 │                    │ Kubernetes Manifest Template │
@@ -104,7 +107,7 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 └────────────────────┘           └────────────────────┘
 </pre>
 
-## Kubernaut Deployment Workflow
+### Deployment Workflow
 <pre>
            │ Release
            │ Namespace
@@ -136,7 +139,6 @@ The client is a React/Redux app. It deliberately doesn't have any bells and whis
 
 
 ## Kubernaut Domain Model
-
 <pre>
                                ┌───────────────────┐        ┌───────────────────┐
                                │                   │        │                   │
