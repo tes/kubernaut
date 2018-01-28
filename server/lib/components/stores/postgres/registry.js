@@ -1,17 +1,31 @@
 import SQL from './sql';
 import Registry from '../../../domain/Registry';
 import Account from '../../../domain/Account';
-import { v4 as uuid, } from 'uuid';
 import sqb from 'sqb';
-import sqbpg from 'sqb-serializer-pg';
-sqb.use(sqbpg);
 
 export default function(options) {
 
   const { Op, raw, } = sqb;
-  const sqbOptions = { dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, };
 
   function start({ config, logger, db, }, cb) {
+
+    async function saveRegistry(data, meta) {
+      logger.debug(`Saving registry: ${data.name}`);
+
+      const result = await db.query(SQL.SAVE_REGISTRY, [
+        data.name, meta.date, meta.account.id,
+      ]);
+
+      await db.refreshEntityCount();
+
+      const registry = {
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
+      };
+
+      logger.debug(`Saved registry: ${registry.name}/${registry.id}`);
+
+      return registry;
+    }
 
     async function getRegistry(id) {
       logger.debug(`Getting registry by id: ${id}`);
@@ -32,24 +46,6 @@ export default function(options) {
       if (registry.rowCount === 0) return;
 
       return toRegistry(registry.rows[0]);
-    }
-
-    async function saveRegistry(data, meta) {
-      logger.debug(`Saving registry: ${data.name}`);
-
-      const result = await db.query(SQL.SAVE_REGISTRY, [
-        data.name, meta.date, meta.account.id,
-      ]);
-
-      await db.refreshEntityCount();
-
-      const registry = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
-
-      logger.debug(`Saved registry: ${registry.name}/${registry.id}`);
-
-      return registry;
     }
 
     async function listRegistries(limit = 50, offset = 0) {
@@ -88,15 +84,15 @@ export default function(options) {
         .from('active_registry__vw r');
 
       if (criteria.hasOwnProperty('ids')) {
-        buildWhereClause('r.id', criteria.ids, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
+        db.buildWhereClause('r.id', criteria.ids, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
       }
 
       if (criteria.hasOwnProperty('name')) {
-        buildWhereClause('r.name', criteria.name, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
+        db.buildWhereClause('r.name', criteria.name, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
       }
 
-      const findRegistriesStatement = findRegistriesBuilder.generate(sqbOptions, bindVariables);
-      const countRegistriesStatement = countRegistriesBuilder.generate(sqbOptions, bindVariables);
+      const findRegistriesStatement = db.serialize(findRegistriesBuilder, bindVariables);
+      const countRegistriesStatement = db.serialize(countRegistriesBuilder, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
@@ -109,19 +105,6 @@ export default function(options) {
           return { limit, offset, count, items, };
         });
       });
-    }
-
-    function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
-      const clauseVariables = [].concat(values).reduce((clauseVariables, value, index) => {
-        return Object.assign(clauseVariables, { [uuid()]: value, });
-      }, {});
-
-      const placeholders = Object.keys(clauseVariables).map(key => new RegExp(key));
-
-      listBuilder.where(Op.in(column, placeholders));
-      countBuilder.where(Op.in(column, placeholders));
-
-      Object.assign(bindVariables, clauseVariables);
     }
 
     async function deleteRegistry(id, meta) {
@@ -146,11 +129,11 @@ export default function(options) {
     }
 
     return cb(null, {
+      saveRegistry,
       getRegistry,
       findRegistry,
       findRegistries,
       listRegistries,
-      saveRegistry,
       deleteRegistry,
     });
   }

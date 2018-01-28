@@ -1,15 +1,11 @@
 import SQL from './sql';
 import Namespace from '../../../domain/Namespace';
 import Account from '../../../domain/Account';
-import { v4 as uuid, } from 'uuid';
 import sqb from 'sqb';
-import sqbpg from 'sqb-serializer-pg';
-sqb.use(sqbpg);
 
 export default function(options) {
 
   const { Op, raw, } = sqb;
-  const sqbOptions = { dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, };
 
   function start({ config, logger, db, }, cb) {
 
@@ -73,19 +69,19 @@ export default function(options) {
         .where(Op.eq('n.cluster', raw('c.id')));
 
       if (criteria.hasOwnProperty('ids')) {
-        buildWhereClause('n.id', criteria.ids, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.buildWhereClause('n.id', criteria.ids, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
       if (criteria.hasOwnProperty('name')) {
-        buildWhereClause('n.name', criteria.name, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.buildWhereClause('n.name', criteria.name, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
       if (criteria.hasOwnProperty('cluster')) {
-        buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
-      const findNamespacesStatement = findNamespacesBuilder.generate(sqbOptions, bindVariables);
-      const countNamespacesStatement = countNamespacesBuilder.generate(sqbOptions, bindVariables);
+      const findNamespacesStatement = db.serialize(findNamespacesBuilder, bindVariables);
+      const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
@@ -98,19 +94,6 @@ export default function(options) {
           return { limit, offset, count, items, };
         });
       });
-    }
-
-    function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
-      const clauseVariables = [].concat(values).reduce((clauseVariables, value, index) => {
-        return Object.assign(clauseVariables, { [uuid()]: value, });
-      }, {});
-
-      const placeholders = Object.keys(clauseVariables).map(key => new RegExp(key));
-
-      listBuilder.where(Op.in(column, placeholders));
-      countBuilder.where(Op.in(column, placeholders));
-
-      Object.assign(bindVariables, clauseVariables);
     }
 
     async function deleteNamespace(id, meta) {

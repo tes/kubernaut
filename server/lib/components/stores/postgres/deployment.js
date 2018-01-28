@@ -8,10 +8,13 @@ import Cluster from '../../../domain/Cluster';
 import Namespace from '../../../domain/Namespace';
 import Deployment from '../../../domain/Deployment';
 import DeploymentLogEntry from '../../../domain/DeploymentLogEntry';
+import sqb from 'sqb';
 
 export default function(options) {
 
   function start({ config, logger, db, }, cb) {
+
+    const { Op, raw, } = sqb;
 
     async function saveDeployment(data, meta) {
       logger.debug(`Saving deployment: ${data.release.id}/${data.namespace.cluster.name}/${data.namespace.name}`);
@@ -63,14 +66,53 @@ export default function(options) {
 
     async function findDeployments(criteria = {}, limit = 50, offset = 0) {
 
-      logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
+      logger.debug(`Listing up to ${limit} deploymentss starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findDeploymentsBuilder = sqb
+        .select('d.id', 'd.created_on', 'r.id release_id', 'r.version release_version', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'n.id namespace_id', 'n.name namespace_name', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_deployment__vw d', 'release r', 'service s', 'registry sr', 'cluster c', 'namespace n', 'account cb')
+        .where(Op.eq('d.release', raw('r.id')))
+        .where(Op.eq('r.service', raw('s.id')))
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('d.namespace', raw('n.id')))
+        .where(Op.eq('n.cluster', raw('c.id')))
+        .where(Op.eq('r.created_by', raw('cb.id')))
+        .orderBy('d.created_on desc', 'd.id desc')
+        .limit(limit)
+        .offset(offset);
+
+      const countDeploymentsBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_deployment__vw d', 'release r', 'service s', 'registry sr', 'cluster c', 'namespace n')
+        .where(Op.eq('d.release', raw('r.id')))
+        .where(Op.eq('r.service', raw('s.id')))
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('d.namespace', raw('n.id')))
+        .where(Op.eq('n.cluster', raw('c.id')));
+
+      if (criteria.hasOwnProperty('service')) {
+        db.buildWhereClause('s.name', criteria.service, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+      }
+
+      if (criteria.hasOwnProperty('namespace')) {
+        db.buildWhereClause('n.name', criteria.nameapsce, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+      }
+
+      if (criteria.hasOwnProperty('namespaces')) {
+        db.buildWhereClause('n.id', criteria.namespaces, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+      }
+
+      const findDeploymentsStatement = db.serialize(findDeploymentsBuilder, bindVariables);
+      const countDeploymentsStatement = db.serialize(countDeploymentsBuilder, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.LIST_DEPLOYMENTS, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'deployment', ]),
-        ]).then(([deploymentResult, countResult,]) => {
-          const items = deploymentResult.rows.map(row => toDeployment(row));
+          connection.query(findDeploymentsStatement.sql, findDeploymentsStatement.values),
+          connection.query(countDeploymentsStatement.sql, countDeploymentsStatement.values),
+        ]).then(([deploymentsResult, countResult,]) => {
+          const items = deploymentsResult.rows.map(row => toDeployment(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} deployments`);
           return { limit, offset, count, items, };

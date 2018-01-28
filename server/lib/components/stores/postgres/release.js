@@ -4,10 +4,13 @@ import Service from '../../../domain/Service';
 import ReleaseTemplate from '../../../domain/ReleaseTemplate';
 import Release from '../../../domain/Release';
 import Account from '../../../domain/Account';
+import sqb from 'sqb';
 
 export default function(options) {
 
   function start({ config, logger, db, }, cb) {
+
+    const { Op, raw, } = sqb;
 
     async function saveRelease(data, meta) {
       const release = await db.withTransaction(async connection => {
@@ -126,10 +129,43 @@ export default function(options) {
 
       logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
 
+      const bindVariables = {};
+
+      const findReleasesBuilder = sqb
+        .select('r.id', 'r.version', 'r.created_on', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_release__vw r', 'service s', 'registry sr', 'account cb')
+        .where(Op.eq('r.service', raw('s.id')))
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('r.created_by', raw('cb.id')))
+        .orderBy('r.created_on desc', 'r.id desc')
+        .limit(limit)
+        .offset(offset);
+
+      const countReleasesBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_release__vw r', 'service s', 'registry sr')
+        .where(Op.eq('r.service', raw('s.id')))
+        .where(Op.eq('s.registry', raw('sr.id')));
+
+      if (criteria.hasOwnProperty('service')) {
+        db.buildWhereClause('s.name', criteria.service, bindVariables, findReleasesBuilder, countReleasesBuilder);
+      }
+
+      if (criteria.hasOwnProperty('registry')) {
+        db.buildWhereClause('sr.name', criteria.registry, bindVariables, findReleasesBuilder, countReleasesBuilder);
+      }
+
+      if (criteria.hasOwnProperty('registries')) {
+        db.buildWhereClause('sr.id', criteria.registries, bindVariables, findReleasesBuilder, countReleasesBuilder);
+      }
+
+      const findReleasesStatement = db.serialize(findReleasesBuilder, bindVariables);
+      const countReleasesStatement = db.serialize(countReleasesBuilder, bindVariables);
+
       return db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.LIST_RELEASES, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'release', ]),
+          connection.query(findReleasesStatement.sql, findReleasesStatement.values),
+          connection.query(countReleasesStatement.sql, countReleasesStatement.values),
         ]).then(([releaseResult, countResult,]) => {
           const items = releaseResult.rows.map(row => toRelease(row));
           const count = parseInt(countResult.rows[0].count, 10);

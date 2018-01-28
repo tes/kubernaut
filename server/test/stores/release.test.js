@@ -114,7 +114,7 @@ describe('Release Store', () => {
           await saveRelease(data2);
         });
 
-        it('should permit similarly named services in different registrys to have the same release version', async () => {
+        it('should permit similarly named services in different registries to have the same release version', async () => {
           await saveRegistry(makeRegistry({ name: 'registry-1', }));
           await saveRegistry(makeRegistry({ name: 'registry-2', }));
 
@@ -210,7 +210,6 @@ describe('Release Store', () => {
           expect(release).toBe(undefined);
         });
 
-
         it('should return undefined when registry not found', async () => {
           const data = makeRelease();
           await saveRelease(data);
@@ -228,18 +227,7 @@ describe('Release Store', () => {
         });
       });
 
-      describe('Delete Release', () => {
-
-        it('should soft delete release', async () => {
-          const saved = await saveRelease();
-          await deleteRelease(saved.id);
-
-          const release = await getRelease(saved.id);
-          expect(release).toBe(undefined);
-        });
-      });
-
-      describe('List Releases', () => {
+      describe('Find Releases', () => {
 
         it('should list releases, ordered by createdOn desc and id desc', async () => {
 
@@ -311,6 +299,76 @@ describe('Release Store', () => {
           expect(results.offset).toBe(0);
         });
 
+        it('should filter releases by registry ids', async () => {
+          const registry1 = await saveRegistry({ name: 'sr1', });
+          const registry2 = await saveRegistry({ name: 'sr2', });
+          const release1 = makeRelease({
+            name: 'r1',
+            service: {
+              registry: registry1,
+            },
+          });
+          const release2 = makeRelease({
+            name: 'r2',
+            service: {
+              registry: registry2,
+            },
+          });
+
+          const saved1 = await saveRelease(release1);
+          const saved2 = await saveRelease(release2);
+
+          const results1 = await findReleases({ registries: [ registry1.id, ], });
+          expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
+
+          const results2 = await findReleases({ registries: [ registry2.id, ], });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
+
+          const results3 = await findReleases({ registries: [ registry1.id, registry2.id, ], });
+          expect(results3.count).toBe(2);
+        });
+
+        it('should filter releases by criteria', async () => {
+          const registry1 = await saveRegistry();
+          const registry2 = await saveRegistry();
+          const release1 = makeRelease({
+            name: 'r1',
+            service: {
+              registry: registry1,
+            },
+          });
+          const release2 = makeRelease({
+            name: 'r2',
+            service: {
+              registry: registry1,
+            },
+          });
+          const release3 = makeRelease({
+            name: 'r1',
+            service: {
+              registry: registry2,
+            },
+          });
+
+          const saved1 = await saveRelease(release1);
+          const saved2 = await saveRelease(release2);
+          const saved3 = await saveRelease(release3);
+
+          const results1 = await findReleases({ service: release1.service.name, registry: release1.service.registry.name, });
+          expect(results1.count).toBe(1);
+          expect(results1.items[0].id).toBe(saved1.id);
+
+          const results2 = await findReleases({ service: release2.service.name, registry: release2.service.registry.name, });
+          expect(results2.count).toBe(1);
+          expect(results2.items[0].id).toBe(saved2.id);
+
+          const results3 = await findReleases({ service: release3.service.name, registry: release3.service.registry.name, });
+          expect(results3.count).toBe(1);
+          expect(results3.items[0].id).toBe(saved3.id);
+        });
+
         it('should return slim release', async () => {
           await saveRelease(makeRelease());
 
@@ -351,7 +409,7 @@ describe('Release Store', () => {
           function deleteService() {}
         });
 
-        it('should exclude deleted registrys from release count', async () => {
+        it('should exclude deleted registries from release count', async () => {
           const registry = await saveRegistry(makeRegistry());
           await saveRelease(makeRelease({
             service: {
@@ -407,6 +465,17 @@ describe('Release Store', () => {
             expect(results.limit).toBe(50);
             expect(results.offset).toBe(10);
           });
+        });
+      });
+
+      describe('Delete Release', () => {
+
+        it('should soft delete release', async () => {
+          const saved = await saveRelease();
+          await deleteRelease(saved.id);
+
+          const release = await getRelease(saved.id);
+          expect(release).toBe(undefined);
         });
       });
 

@@ -14,10 +14,10 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        const ids = req.user.listRegistryIdsWithPermission('releases-read');
+        const registries = req.user.listRegistryIdsWithPermission('releases-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findReleases({ ids, }, limit, offset);
+        const result = await store.findReleases({ registries, }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);

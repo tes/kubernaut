@@ -47,7 +47,20 @@ export default function(options = {}) {
       }));
     }
     async function findDeployments(criteria = {}, limit = 50, offset = 0) {
-      const active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
+      let active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
+
+      if (criteria.hasOwnProperty('service')) {
+        active = active.filter(d => criteria.service === d.release.service.name);
+      }
+
+      if (criteria.hasOwnProperty('namespace')) {
+        active = active.filter(d => criteria.namespace === d.namespace.name);
+      }
+
+      if (criteria.hasOwnProperty('namespaces')) {
+        active = active.filter(d => criteria.namespaces.includes(d.namespace.id));
+      }
+
       const count = active.length;
       const items = active.slice(offset, offset + limit);
       return { limit, offset, count, items, };

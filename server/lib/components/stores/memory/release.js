@@ -56,7 +56,21 @@ export default function(options = {}) {
     }
 
     async function findReleases(criteria = {}, limit = 50, offset = 0) {
-      const active = releases.filter(byActive).map(toSlimRelease).sort(byMostRecent);
+
+      let active = releases.filter(byActive).map(toSlimRelease).sort(byMostRecent);
+
+      if (criteria.hasOwnProperty('service')) {
+        active = active.filter(r => criteria.service === r.service.name);
+      }
+
+      if (criteria.hasOwnProperty('registry')) {
+        active = active.filter(r => criteria.registry === r.service.registry.name);
+      }
+
+      if (criteria.hasOwnProperty('registries')) {
+        active = active.filter(r => criteria.registries.includes(r.service.registry.id));
+      }
+
       const count = active.length;
       const items = active.slice(offset, offset + limit);
       return { limit, offset, count, items, };

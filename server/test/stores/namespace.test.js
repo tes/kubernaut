@@ -222,8 +222,8 @@ describe('Namespace Store', () => {
 
         it('should filter namespaces by ids', async () => {
           const cluster = await saveCluster();
-          const namespace1 = makeNamespace({ name: 'ns1', cluster: cluster, });
-          const namespace2 = makeNamespace({ name: 'ns2', cluster: cluster, });
+          const namespace1 = makeNamespace({ name: 'ns1', cluster, });
+          const namespace2 = makeNamespace({ name: 'ns2', cluster, });
 
           const saved1 = await saveNamespace(namespace1);
           const saved2 = await saveNamespace(namespace2);
