@@ -27,7 +27,6 @@ export default function(options) {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
-      await db.refreshEntityCount();
 
       logger.debug(`Saved deployment:  ${deployment.release.id}/${deployment.namespace.cluster.name}${deployment.namespace.name}/${deployment.id}`);
 
@@ -97,7 +96,11 @@ export default function(options) {
       }
 
       if (criteria.hasOwnProperty('namespace')) {
-        db.buildWhereClause('n.name', criteria.nameapsce, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+        db.buildWhereClause('n.name', criteria.namespace, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+      }
+
+      if (criteria.hasOwnProperty('cluster')) {
+        db.buildWhereClause('c.name', criteria.cluster, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
       }
 
       if (criteria.hasOwnProperty('namespaces')) {
@@ -125,7 +128,6 @@ export default function(options) {
       await db.query(SQL.DELETE_DEPLOYMENT, [
         id, meta.date, meta.account.id,
       ]);
-      await db.refreshEntityCount();
     }
 
     function toDeployment(row, logRows = []) {

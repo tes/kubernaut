@@ -16,6 +16,22 @@ export default function(options) {
       return result.rowCount ? toNamespace(result.rows[0]) : undefined;
     }
 
+    async function saveNamespace(data, meta) {
+      logger.debug(`Saving namespace: ${data.cluster.id}/${data.name}`);
+
+      const result = await db.query(SQL.SAVE_NAMESPACE, [
+        data.name, data.cluster.id, meta.date, meta.account.id,
+      ]);
+
+      const namespace = {
+        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
+      };
+
+      logger.debug(`Saved namespace:${data.cluster.id}/${namespace.name}/${namespace.id}`);
+
+      return namespace;
+    }
+
     async function findNamespace({ name, cluster, }) {
       logger.debug(`Finding namespace by name: ${name} and cluster: ${cluster}`);
 
@@ -30,24 +46,6 @@ export default function(options) {
       return toNamespace(namespace.rows[0]);
     }
 
-    async function saveNamespace(data, meta) {
-      logger.debug(`Saving namespace: ${data.cluster.id}/${data.name}`);
-
-      const result = await db.query(SQL.SAVE_NAMESPACE, [
-        data.name, data.cluster.id, meta.date, meta.account.id,
-      ]);
-
-      await db.refreshEntityCount();
-
-      const namespace = {
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
-
-      logger.debug(`Saved namespace:${data.cluster.id}/${namespace.name}/${namespace.id}`);
-
-      return namespace;
-    }
-
     async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
 
       logger.debug(`Finding up to ${limit} namespaces matching criteria: ${criteria} starting from offset: ${offset}`);
@@ -59,7 +57,7 @@ export default function(options) {
         .from('active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
-        .orderBy('n.name asc')
+        .orderBy('n.name asc', 'c.name asc')
         .limit(limit)
         .offset(offset);
 
@@ -101,7 +99,6 @@ export default function(options) {
       await db.query(SQL.DELETE_NAMESPACE, [
         id, meta.date, meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted namespace id: ${id}`);
     }
 

@@ -39,17 +39,11 @@ describe('Release Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
-      let db = {
-        refreshEntityCount: () => {},
-        enableRefreshEntityCount: () => {},
-        disableRefreshEntityCount: () => {},
-      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
-          db = components.db || db;
           cb();
         });
       });
@@ -435,11 +429,9 @@ describe('Release Store', () => {
               });
             }
 
-            db.disableRefreshEntityCount();
             await Promise.all(releases.map(async release => {
               return saveRelease(release.data);
             }));
-            await db.enableRefreshEntityCount();
           });
 
           it('should limit releases to 50 by default', async () => {

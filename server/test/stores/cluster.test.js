@@ -39,17 +39,11 @@ describe('Cluster Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
-      let db = {
-        refreshEntityCount: () => {},
-        enableRefreshEntityCount: () => {},
-        disableRefreshEntityCount: () => {},
-      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
-          db = components.db || db;
           cb();
         });
       });
@@ -156,7 +150,7 @@ describe('Cluster Store', () => {
         });
       });
 
-      describe('List Clusters', () => {
+      describe('Find Clusters', () => {
 
         it('should list clusters, ordered by name asc', async () => {
 
@@ -185,7 +179,7 @@ describe('Cluster Store', () => {
             return saveCluster(cluster.data, cluster.meta);
           }));
 
-          const results = await listClusters();
+          const results = await findClusters();
           expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c',]);
           expect(results.count).toBe(3);
           expect(results.limit).toBe(50);
@@ -193,15 +187,15 @@ describe('Cluster Store', () => {
         });
 
         it('should exclude inactive clusters', async () => {
-          const results1 = await listClusters();
+          const results1 = await findClusters();
           expect(results1.count).toBe(0);
 
           const saved = await saveCluster(makeCluster());
-          const results2 = await listClusters();
+          const results2 = await findClusters();
           expect(results2.count).toBe(1);
 
           await deleteCluster(saved.id);
-          const results3 = await listClusters();
+          const results3 = await findClusters();
           expect(results3.count).toBe(0);
         });
 
@@ -217,15 +211,13 @@ describe('Cluster Store', () => {
               });
             }
 
-            db.disableRefreshEntityCount();
             await Promise.all(clusters.map(async cluster => {
               return saveCluster(cluster.data);
             }));
-            await db.enableRefreshEntityCount();
           });
 
           it('should limit clusters to 50 by default', async () => {
-            const results = await listClusters();
+            const results = await findClusters();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -233,7 +225,7 @@ describe('Cluster Store', () => {
           });
 
           it('should limit clusters to the specified number', async () => {
-            const results = await listClusters(10, 0);
+            const results = await findClusters({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(10);
@@ -241,7 +233,7 @@ describe('Cluster Store', () => {
           });
 
           it('should page clusters list', async () => {
-            const results = await listClusters(50, 10);
+            const results = await findClusters({}, 50, 10);
             expect(results.items.length).toBe(41);
             expect(results.count).toBe(51);
             expect(results.limit).toBe(50);
@@ -266,8 +258,8 @@ describe('Cluster Store', () => {
         return store.deleteCluster(id, meta);
       }
 
-      function listClusters(page, limit) {
-        return store.listClusters(page, limit);
+      function findClusters(criteria, page, limit) {
+        return store.findClusters(criteria, page, limit);
       }
 
     });

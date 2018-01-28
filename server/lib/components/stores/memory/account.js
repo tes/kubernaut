@@ -87,7 +87,7 @@ export default function(options = {}) {
       return await getAccount(created.id);
     }
 
-    async function listAccounts(limit = 50, offset = 0) {
+    async function findAccounts(criteria = {}, limit = 50, offset = 0) {
       const active = accounts.filter(byActive).sort(byDisplayName);
       const count = active.length;
       const items = active.slice(offset, offset + limit);
@@ -247,7 +247,7 @@ export default function(options = {}) {
       ensureAccount,
       getAccount,
       findAccount,
-      listAccounts,
+      findAccounts,
       deleteAccount,
       saveIdentity,
       deleteIdentity,

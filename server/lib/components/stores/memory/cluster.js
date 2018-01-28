@@ -24,7 +24,7 @@ export default function(options) {
       }));
     }
 
-    async function listClusters(limit = 50, offset = 0) {
+    async function findClusters(criteria = {}, limit = 50, offset = 0) {
       const active = clusters.filter(byActive).sort(byName);
       const count = active.length;
       const items = active.slice(offset, offset + limit);
@@ -65,7 +65,7 @@ export default function(options) {
       saveCluster,
       getCluster,
       findCluster,
-      listClusters,
+      findClusters,
       deleteCluster,
     });
   }

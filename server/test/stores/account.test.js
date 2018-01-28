@@ -39,17 +39,11 @@ describe('Account Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => {}, };
-      let db = {
-        refreshEntityCount: () => {},
-        enableRefreshEntityCount: () => {},
-        disableRefreshEntityCount: () => {},
-      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
-          db = components.db || db;
           cb();
         });
       });
@@ -232,7 +226,7 @@ describe('Account Store', () => {
 
       });
 
-      describe('List Accounts', () => {
+      describe('Find Accounts', () => {
 
         it('should list accounts, ordered by display name asc', async () => {
 
@@ -252,7 +246,7 @@ describe('Account Store', () => {
             return saveAccount(account.data);
           }));
 
-          const results = await listAccounts();
+          const results = await findAccounts();
           expect(results.items.map(a => a.displayName)).toEqual(['a', 'b', 'c', 'root',]);
           expect(results.count).toBe(4);
           expect(results.limit).toBe(50);
@@ -260,17 +254,17 @@ describe('Account Store', () => {
         });
 
         it('should exclude inactive accounts', async () => {
-          const results1 = await listAccounts();
+          const results1 = await findAccounts();
           expect(results1.items.length).toBe(1);
           expect(results1.count).toBe(1);
 
           const saved = await saveAccount(makeAccount());
-          const results2 = await listAccounts();
+          const results2 = await findAccounts();
           expect(results2.items.length).toBe(2);
           expect(results2.count).toBe(2);
 
           await deleteAccount(saved.id);
-          const results3 = await listAccounts();
+          const results3 = await findAccounts();
           expect(results3.items.length).toBe(1);
           expect(results3.count).toBe(1);
         });
@@ -288,15 +282,13 @@ describe('Account Store', () => {
               });
             }
 
-            db.disableRefreshEntityCount();
             await Promise.all(accounts.map(async account => {
               return saveAccount(account.data);
             }));
-            await db.enableRefreshEntityCount();
           });
 
           it('should limit accounts to 50 by default', async () => {
-            const results = await listAccounts();
+            const results = await findAccounts();
             expect(results.items.length).toBe(50);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(50);
@@ -304,7 +296,7 @@ describe('Account Store', () => {
           });
 
           it('should limit accounts to the specified number', async () => {
-            const results = await listAccounts(10, 0);
+            const results = await findAccounts({}, 10, 0);
             expect(results.items.length).toBe(10);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(10);
@@ -312,7 +304,7 @@ describe('Account Store', () => {
           });
 
           it('should page accounts list', async () => {
-            const results = (await listAccounts(50, 10));
+            const results = (await findAccounts({}, 50, 10));
             expect(results.items.length).toBe(42);
             expect(results.count).toBe(52);
             expect(results.limit).toBe(50);
@@ -591,8 +583,8 @@ describe('Account Store', () => {
         return store.findAccount(criteria);
       }
 
-      function listAccounts(limit, offset) {
-        return store.listAccounts(limit, offset);
+      function findAccounts(criteria, limit, offset) {
+        return store.findAccounts(criteria, limit, offset);
       }
 
       function deleteAccount(id, meta = makeRootMeta(), ) {

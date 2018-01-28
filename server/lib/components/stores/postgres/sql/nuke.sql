@@ -14,6 +14,4 @@ DELETE FROM account_role_namespace;
 DELETE FROM identity;
 DELETE FROM account WHERE NOT id = '00000000-0000-0000-0000-000000000000';
 
-REFRESH MATERIALIZED VIEW entity_count__mvw;
-
 COMMIT;

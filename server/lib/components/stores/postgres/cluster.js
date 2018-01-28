@@ -1,8 +1,11 @@
 import SQL from './sql';
 import Cluster from '../../../domain/Cluster';
 import Account from '../../../domain/Account';
+import sqb from 'sqb';
 
 export default function(options) {
+
+  const { Op, raw, } = sqb;
 
   function start({ config, logger, db, }, cb) {
 
@@ -34,8 +37,6 @@ export default function(options) {
         data.name, data.context, meta.date, meta.account.id,
       ]);
 
-      await db.refreshEntityCount();
-
       const cluster = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
@@ -45,14 +46,31 @@ export default function(options) {
       return cluster;
     }
 
-    async function listClusters(limit = 50, offset = 0) {
+    async function findClusters(criteria = {}, limit = 50, offset = 0) {
 
-      logger.debug(`Listing up to ${limit} clusters starting from offset: ${offset}`);
+      logger.debug(`Finding up to ${limit} clusters matching criteria: ${criteria} starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findClustersBuilder = sqb
+        .select('c.id', 'c.name', 'c.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_cluster__vw c', 'account cb')
+        .where(Op.eq('c.created_by', raw('cb.id')))
+        .orderBy('c.name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countClustersBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_cluster__vw c');
+
+      const findClustersStatement = db.serialize(findClustersBuilder, bindVariables);
+      const countClustersStatement = db.serialize(countClustersBuilder, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.LIST_CLUSTERS, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'cluster', ]),
+          connection.query(findClustersStatement.sql, findClustersStatement.values),
+          connection.query(countClustersStatement.sql, countClustersStatement.values),
         ]).then(([clusterResult, countResult,]) => {
           const items = clusterResult.rows.map(row => toCluster(row));
           const count = parseInt(countResult.rows[0].count, 10);
@@ -67,7 +85,6 @@ export default function(options) {
       await db.query(SQL.DELETE_CLUSTER, [
         id, meta.date, meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted cluster id: ${id}`);
     }
 
@@ -87,7 +104,7 @@ export default function(options) {
     return cb(null, {
       getCluster,
       findCluster,
-      listClusters,
+      findClusters,
       saveCluster,
       deleteCluster,
     });

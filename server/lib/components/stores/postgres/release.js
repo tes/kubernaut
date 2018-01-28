@@ -21,8 +21,6 @@ export default function(options) {
         return { ...release, service, template, attributes, };
       });
 
-      await db.refreshEntityCount();
-
       return release;
     }
 
@@ -180,7 +178,6 @@ export default function(options) {
       await db.query(SQL.DELETE_RELEASE, [
         id, meta.date, meta.account.id,
       ]);
-      await db.refreshEntityCount();
       logger.debug(`Deleted release id: ${id}`);
     }
 

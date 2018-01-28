@@ -16,8 +16,6 @@ export default function(options) {
         data.name, meta.date, meta.account.id,
       ]);
 
-      await db.refreshEntityCount();
-
       const registry = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
@@ -46,23 +44,6 @@ export default function(options) {
       if (registry.rowCount === 0) return;
 
       return toRegistry(registry.rows[0]);
-    }
-
-    async function listRegistries(limit = 50, offset = 0) {
-
-      logger.debug(`Listing up to ${limit} registries starting from offset: ${offset}`);
-
-      return db.withTransaction(async connection => {
-        return Promise.all([
-          connection.query(SQL.LIST_REGISTRIES, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'registry', ]),
-        ]).then(([registryResult, countResult,]) => {
-          const items = registryResult.rows.map(row => toRegistry(row));
-          const count = parseInt(countResult.rows[0].count, 10);
-          logger.debug(`Returning ${items.length} of ${count} registries`);
-          return { limit, offset, count, items, };
-        });
-      });
     }
 
     async function findRegistries(criteria = {}, limit = 50, offset = 0) {
@@ -112,7 +93,6 @@ export default function(options) {
       await db.query(SQL.DELETE_REGISTRY, [
         id, meta.date, meta.account.id,
       ]);
-      await db.query(SQL.REFRESH_ENTITY_COUNT);
       logger.debug(`Deleted registry id: ${id}`);
     }
 
@@ -133,7 +113,6 @@ export default function(options) {
       getRegistry,
       findRegistry,
       findRegistries,
-      listRegistries,
       deleteRegistry,
     });
   }

@@ -16,8 +16,4 @@ WHERE n.cluster = c.id
 ORDER BY
   n.name ASC,
   c.name ASC
-LIMIT
-  $1
-OFFSET
-  $2
 ;

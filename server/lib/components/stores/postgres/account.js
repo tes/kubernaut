@@ -1,17 +1,20 @@
 import SQL from './sql';
 import uniq from 'lodash.uniq';
 import Account from '../../../domain/Account';
+import sqb from 'sqb';
 
 export default function(options = {}) {
   function start({ config, logger, db, }, cb) {
+
+  const { Op, raw, } = sqb;
 
     async function getAccount(id) {
       logger.debug(`Getting account by id: ${id}`);
 
       return Promise.all([
         db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
-        db.query(SQL.LIST_REGISTRIES, [ Number.MAX_SAFE_INTEGER, 0, ]),
-        db.query(SQL.LIST_NAMESPACES, [ Number.MAX_SAFE_INTEGER, 0, ]),
+        db.query(SQL.LIST_REGISTRIES),
+        db.query(SQL.LIST_NAMESPACES),
         db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
       ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult, ]) => {
         logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
@@ -44,8 +47,6 @@ export default function(options = {}) {
       const result = await connection.query(SQL.SAVE_ACCOUNT, [
         data.displayName, data.avatar, meta.date, meta.account.id,
       ]);
-
-      await db.refreshEntityCount();
 
       const account = {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
@@ -83,13 +84,31 @@ export default function(options = {}) {
       return account;
     }
 
-    async function listAccounts(limit = 50, offset = 0) {
-      logger.debug(`Listing up to ${limit} accounts starting from offset: ${offset}`);
+    async function findAccounts(criteria = {}, limit = 50, offset = 0) {
+
+      logger.debug(`Finding up to ${limit} accounts matching criteria: ${criteria} starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findAccountsBuilder = sqb
+        .select('a.id', 'a.display_name', 'a.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_account__vw a', 'account cb')
+        .where(Op.eq('a.created_by', raw('cb.id')))
+        .orderBy('a.display_name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countAccountsBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_account__vw a');
+
+      const findAccountsStatement = db.serialize(findAccountsBuilder, bindVariables);
+      const countAccountsStatement = db.serialize(countAccountsBuilder, bindVariables);
 
       return db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.LIST_ACCOUNTS, [ limit, offset, ]),
-          connection.query(SQL.COUNT_ACTIVE_ENTITIES, [ 'account', ]),
+          connection.query(findAccountsStatement.sql, findAccountsStatement.values),
+          connection.query(countAccountsStatement.sql, countAccountsStatement.values),
         ]).then(([accountResult, countResult,]) => {
           const items = accountResult.rows.map(row => toAccount(row));
           const count = parseInt(countResult.rows[0].count, 10);
@@ -106,7 +125,6 @@ export default function(options = {}) {
         meta.date,
         meta.account.id,
       ]);
-      await db.refreshEntityCount();
       logger.debug(`Deleted account id: ${id}`);
     }
 
@@ -254,7 +272,7 @@ export default function(options = {}) {
       findAccount,
       saveAccount,
       ensureAccount,
-      listAccounts,
+      findAccounts,
       deleteAccount,
       saveIdentity,
       deleteIdentity,

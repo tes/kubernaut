@@ -57,6 +57,10 @@ export default function(options = {}) {
         active = active.filter(d => criteria.namespace === d.namespace.name);
       }
 
+      if (criteria.hasOwnProperty('cluster')) {
+        active = active.filter(d => criteria.cluster === d.namespace.cluster.name);
+      }
+
       if (criteria.hasOwnProperty('namespaces')) {
         active = active.filter(d => criteria.namespaces.includes(d.namespace.id));
       }

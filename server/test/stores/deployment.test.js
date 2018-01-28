@@ -39,17 +39,11 @@ describe('Deployment Store', () => {
 
       let system = { stop: cb => cb(), };
       let store = { nuke: () => new Promise(cb => cb()), };
-      let db = {
-        refreshEntityCount: () => {},
-        enableRefreshEntityCount: () => {},
-        disableRefreshEntityCount: () => {},
-      };
 
       beforeAll(cb => {
         system = suite.system.start((err, components) => {
           if (err) return cb(err);
           store = components.store;
-          db = components.db || db;
           cb();
         });
       });
@@ -350,43 +344,55 @@ describe('Deployment Store', () => {
           expect(results3.count).toBe(2);
         });
 
-        xit('should filter deployments by criteria', async () => {
-          const namespace1 = await saveNamespace();
-          const namespace2 = await saveNamespace();
-          const deployment1 = makeDeployment({
-            name: 'r1',
+        it('should filter deployments by criteria', async () => {
+          const cluster = await saveCluster();
+          const namespace1 = await saveNamespace({ name: 'ns1', cluster, });
+          const namespace2 = await saveNamespace({ name: 'ns2', cluster, });
+          const release1 = await saveRelease(makeRelease({
             service: {
-              namespace: namespace1,
+              name: 's1',
             },
+          }));
+          const release2 = await saveRelease(makeRelease({
+            service: {
+              name: 's1',
+            },
+          }));
+          const release3 = await saveRelease(makeRelease({
+            service: {
+              name: 's2',
+            },
+          }));
+          const deployment1 = makeDeployment({
+            release: release1,
+            namespace: namespace1,
           });
           const deployment2 = makeDeployment({
-            name: 'r2',
-            service: {
-              namespace: namespace1,
-            },
+            release: release2,
+            namespace: namespace1,
           });
           const deployment3 = makeDeployment({
-            name: 'r1',
-            service: {
-              namespace: namespace2,
-            },
+            release: release1,
+            namespace: namespace2,
+          });
+          const deployment4 = makeDeployment({
+            release: release3,
+            namespace: namespace2,
           });
 
-          const saved1 = await saveDeployment(deployment1);
-          const saved2 = await saveDeployment(deployment2);
-          const saved3 = await saveDeployment(deployment3);
+          await saveDeployment(deployment1);
+          await saveDeployment(deployment2);
+          await saveDeployment(deployment3);
+          await saveDeployment(deployment4);
 
-          const results1 = await findDeployments({ service: deployment1.release.service.name, namespace: deployment1.namespace.name, });
-          expect(results1.count).toBe(1);
-          expect(results1.items[0].id).toBe(saved1.id);
+          const results1 = await findDeployments({ namespace: 'ns1', });
+          expect(results1.count).toBe(2);
 
-          const results2 = await findDeployments({ service: deployment2.release.service.name, namespace: deployment2.namespace.name, });
-          expect(results2.count).toBe(1);
-          expect(results2.items[0].id).toBe(saved2.id);
+          const results2 = await findDeployments({ service: 's1', });
+          expect(results2.count).toBe(3);
 
-          const results3 = await findDeployments({ service: deployment3.release.service.name, namespace: deployment3.namespace.name, });
+          const results3 = await findDeployments({ namespace: 'ns2', service: 's1', });
           expect(results3.count).toBe(1);
-          expect(results3.items[0].id).toBe(saved3.id);
         });
 
         it('should count active deployments', async () => {
@@ -467,13 +473,11 @@ describe('Deployment Store', () => {
               });
             }
 
-            db.disableRefreshEntityCount();
             await Promise.all(deployments.map(async record => {
               const release = await saveRelease(record.data.release);
               const deployment = { ...record.data, release, };
               return saveDeployment(deployment);
             }));
-            await db.enableRefreshEntityCount();
           });
 
           it('should limit deployments to 50 by default', async () => {

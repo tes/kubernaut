@@ -11,8 +11,4 @@ WHERE
   r.created_by = cb.id
 ORDER BY
   r.name ASC
-LIMIT
-  $1
-OFFSET
-  $2
 ;

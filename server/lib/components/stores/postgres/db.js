@@ -1,4 +1,3 @@
-import SQL from './sql';
 import { v4 as uuid, } from 'uuid';
 import sqb from 'sqb';
 import sqbpg from 'sqb-serializer-pg';
@@ -10,7 +9,6 @@ export default function(options = {}) {
   function start({ config = {}, logger, postgres, }, cb) {
 
     const { Op, } = sqb;
-    let _refreshEntityCountDisabled = false;
 
     postgres.on('error', err => {
       logger.warn(err, 'Database client errored and was evicted from the pool');
@@ -18,20 +16,6 @@ export default function(options = {}) {
 
     async function query(...args) {
       return postgres.query.apply(postgres, args);
-    }
-
-    async function refreshEntityCount() {
-      if (_refreshEntityCountDisabled) return;
-      return postgres.query(SQL.REFRESH_ENTITY_COUNT);
-    }
-
-    async function enableRefreshEntityCount() {
-      _refreshEntityCountDisabled = false;
-      await refreshEntityCount();
-    }
-
-    function disableRefreshEntityCount() {
-      _refreshEntityCountDisabled = true;
     }
 
     async function withTransaction(operations) {
@@ -71,9 +55,6 @@ export default function(options = {}) {
       withTransaction,
       serialize,
       buildWhereClause,
-      refreshEntityCount,
-      enableRefreshEntityCount,
-      disableRefreshEntityCount,
     });
   }
 
