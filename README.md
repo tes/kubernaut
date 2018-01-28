@@ -365,7 +365,7 @@ GET /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
 ```json
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
-  "name": "default"
+  "name": "default",
   "createdOn": "2018-01-01T13:14:15.000Z",      
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
@@ -530,7 +530,7 @@ POST /api/clusters
 ```json
 {
   "name": "development-eu",
-  "context: "dev"
+  "context": "dev"
 }
 ```
 
