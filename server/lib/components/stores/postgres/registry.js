@@ -33,7 +33,7 @@ export default function(options) {
     }
 
     async function findRegistry(criteria) {
-      const list = await findRegistries(criteria, 2, 0);
+      const list = await findRegistries(criteria, 1, 0);
       if (list.count > 1) throw new Error(`Expected 0 or 1 registries but found ${list.count}}`);
       return list.count === 1 ? list.items[0] : undefined;
     }

@@ -108,7 +108,7 @@ export default function(options) {
     }
 
     async function findRelease(criteria) {
-      const list = await findReleases(criteria, 2, 0);
+      const list = await findReleases(criteria, 1, 0);
       if (list.count > 1) throw new Error(`Expected 0 or 1 releases but found ${list.count}}`);
       if (list.count === 0) return;
       return getRelease(list.items[0].id); // Lazy way to get release attributes
