@@ -65,6 +65,22 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
+            <span className='details__label'>Apply Exit Code:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.applyExitCode}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='details__label'>Rollout Status Exit Code:</span>
+          </div>
+          <div className='col-md-10'>
+            <span>{deployment.rolloutStatusExitCode}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
             <span className='details__label'>Created On:</span>
           </div>
           <div className='col-md-10'>

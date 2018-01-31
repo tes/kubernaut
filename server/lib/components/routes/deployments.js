@@ -1,6 +1,9 @@
 import bodyParser from 'body-parser';
 import hogan from 'hogan.js';
 import Boom from 'boom';
+import EventEmitter from 'events';
+import isNil from 'lodash.isnil';
+import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
 export default function(options = {}) {
@@ -47,15 +50,39 @@ export default function(options = {}) {
         const deploymentOk = await kubernetes.checkDeployment(deployment.namespace.cluster.context, deployment.namespace.name, deployment.release.service.name, res.locals.logger);
         if (!deploymentOk) return next(Boom.badRequest(`Deployment ${deployment.release.service.name} was not deployed`));
 
-        const ok = await kubernetes.rolloutStatus(deployment.namespace.cluster.context, deployment.namespace.name, deployment.release.service.name, res.locals.logger);
 
-        return ok ? res.status(200).json({
-          id: deployment.id,
-          status: 'success',
-        }) : res.status(502).json({
-          id: deployment.id,
-          status: 'failed',
+        if (!isNil(deployment.rolloutStatusExitCode)) {
+          return deployment.rolloutStatusExitCode > 0
+            ? res.status(500).json({ id: deployment.id, status: 'failure', logs: [], })
+            : res.stauts(200).json({ id: deployment.id, status: 'success', logs: [], });
+        }
+
+        const emitter = new EventEmitter();
+        const logs = [];
+
+        emitter.on('data', async data => {
+          logs.push(data);
+          res.locals.logger.info(data.content);
+          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
+        }).on('error', async data => {
+          logs.push(data);
+          res.locals.logger.error(data.content);
+          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
         });
+
+        const code = await kubernetes.rolloutStatus(
+          deployment.namespace.cluster.context,
+          deployment.namespace.name,
+          deployment.release.service.name,
+          emitter
+        );
+
+        await store.saveRolloutStatusExitCode(deployment.id, code);
+        if (code > 0) {
+          res.status(500).json({ id: deployment.id, status: 'failure', logs, });
+        } else {
+          res.status(200).json({  id: deployment.id, status: 'success', logs, });
+        }
       } catch (err) {
         next(err);
       }
@@ -95,12 +122,32 @@ export default function(options = {}) {
 
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const deployment = await store.saveDeployment(data, meta);
-        await kubernetes.apply(deployment);
+        const emitter = new EventEmitter();
+        const logs = [];
 
-        if (req.query.wait === 'true') {
+        emitter.on('data', async data => {
+          logs.push(data);
+          res.locals.logger.info(data.content);
+          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
+        }).on('error', async data => {
+          logs.push(data);
+          res.locals.logger.error(data.content);
+          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
+        });
+
+        const code = await kubernetes.apply(
+          deployment.namespace.cluster.context,
+          deployment.namespace.name,
+          deployment.manifest.yaml,
+          emitter,
+        );
+        await store.saveApplyExitCode(deployment.id, code);
+        if (code > 0) {
+          res.status(500).json({ id: deployment.id, status: 'failure', logs, });
+        } else if (req.query.wait === 'true') {
           res.redirect(303, `/api/deployments/${deployment.id}/status`);
         } else {
-          res.status(202).json({ id: deployment.id, });
+          res.status(202).json({ id: deployment.id, status: 'pending', logs, });
         }
       } catch (err) {
         next(err);

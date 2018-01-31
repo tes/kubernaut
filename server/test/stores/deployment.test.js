@@ -111,6 +111,116 @@ describe('Deployment Store', () => {
         });
       });
 
+      describe('Save Apply Exit Code', () => {
+
+        it('should update a deployment with apply exit code', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          expect(deployment).toBeDefined();
+          expect(deployment.id).toBeDefined();
+
+          await saveApplyExitCode(deployment.id, 99);
+
+          const updated = await getDeployment(deployment.id);
+          expect(updated).toBeDefined();
+          expect(updated.applyExitCode).toBe(99);
+        });
+
+        it('should report an error if deployment does not exist', async () => {
+          const id = uuid();
+          await expect(
+            saveApplyExitCode(id, 99)
+          ).rejects.toHaveProperty('message', `Deployment ${id} was not updated`);
+        });
+
+        it('should report an error if deployment was deleted', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          deleteDeployment(deployment.id);
+
+          await expect(
+            saveApplyExitCode(deployment.id, 99)
+          ).rejects.toHaveProperty('message', `Deployment ${deployment.id} was not updated`);
+        });
+
+        it('should report an error if deployment already has an apply exit code', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          await saveApplyExitCode(deployment.id, 99);
+
+          await expect(
+            saveApplyExitCode(deployment.id, 100)
+          ).rejects.toHaveProperty('message', `Deployment ${deployment.id} was not updated`);
+        });
+      });
+
+      describe('Save Rollout Status Exit Code', () => {
+
+        it('should update a deployment with rollout status exit code', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          expect(deployment).toBeDefined();
+          expect(deployment.id).toBeDefined();
+
+          await saveRolloutStatusExitCode(deployment.id, 99);
+
+          const updated = await getDeployment(deployment.id);
+          expect(updated).toBeDefined();
+          expect(updated.rolloutStatusExitCode).toBe(99);
+        });
+
+        it('should report an error if deployment does not exist', async () => {
+          const id = uuid();
+          await expect(
+            saveRolloutStatusExitCode(id, 99)
+          ).rejects.toHaveProperty('message', `Deployment ${id} was not updated`);
+        });
+
+        it('should report an error if deployment was deleted', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          deleteDeployment(deployment.id);
+
+          await expect(
+            saveRolloutStatusExitCode(deployment.id, 99)
+          ).rejects.toHaveProperty('message', `Deployment ${deployment.id} was not updated`);
+        });
+
+        it('should report an error if deployment already has a rollout status exit code', async () => {
+          const cluster = await saveCluster();
+          const namespace = await saveNamespace(makeNamespace({ cluster, }));
+          const release = await saveRelease(makeRelease());
+          const data = makeDeployment({ release, namespace, });
+          const deployment = await saveDeployment(data);
+
+          await saveRolloutStatusExitCode(deployment.id, 99);
+
+          await expect(
+            saveRolloutStatusExitCode(deployment.id, 100)
+          ).rejects.toHaveProperty('message', `Deployment ${deployment.id} was not updated`);
+        });
+      });
+
       describe('Save Deployment Log Entry', () => {
 
         it('should create deployment log entries', async () => {
@@ -538,6 +648,14 @@ describe('Deployment Store', () => {
 
       function saveDeployment(deployment = makeDeployment(), meta = makeRootMeta()) {
         return store.saveDeployment(deployment, meta);
+      }
+
+      function saveApplyExitCode(id, code) {
+        return store.saveApplyExitCode(id, code);
+      }
+
+      function saveRolloutStatusExitCode(id, code) {
+        return store.saveRolloutStatusExitCode(id, code);
       }
 
       function saveDeploymentLogEntry(deploymentLogEntry = makeDeploymentLogEntry()) {

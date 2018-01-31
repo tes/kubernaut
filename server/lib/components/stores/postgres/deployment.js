@@ -27,10 +27,33 @@ export default function(options) {
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
       };
 
-
       logger.debug(`Saved deployment:  ${deployment.release.id}/${deployment.namespace.cluster.name}${deployment.namespace.name}/${deployment.id}`);
 
       return deployment;
+    }
+
+    async function saveApplyExitCode(id, code) {
+      logger.debug(`Saving apply exit code to ${code} for ${id}`);
+
+      const result = await db.query(SQL.SAVE_DEPLOYMENT_APPLY_EXIT_CODE, [
+        id, code,
+      ]);
+
+      if (result.rowCount !== 1) throw new Error(`Deployment ${id} was not updated`);
+
+      logger.debug(`Saved apply exit code to ${code} for ${id}`);
+    }
+
+    async function saveRolloutStatusExitCode(id, code) {
+      logger.debug(`Saving rollout status exit code to ${code} for ${id}`);
+
+      const result = await db.query(SQL.SAVE_DEPLOYMENT_ROLLOUT_STATUS_EXIT_CODE, [
+        id, code,
+      ]);
+
+      if (result.rowCount !== 1) throw new Error(`Deployment ${id} was not updated`);
+
+      logger.debug(`Saved rollout status exit code to ${code} for ${id}`);
     }
 
     async function saveDeploymentLogEntry(data) {
@@ -70,7 +93,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findDeploymentsBuilder = sqb
-        .select('d.id', 'd.created_on', 'r.id release_id', 'r.version release_version', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'n.id namespace_id', 'n.name namespace_name', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('d.id', 'd.apply_exit_code', 'd.rollout_status_exit_code', 'd.created_on', 'r.id release_id', 'r.version release_version', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'n.id namespace_id', 'n.name namespace_name', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_deployment__vw d', 'release r', 'service s', 'registry sr', 'cluster c', 'namespace n', 'account cb')
         .where(Op.eq('d.release', raw('r.id')))
         .where(Op.eq('r.service', raw('s.id')))
@@ -146,10 +169,11 @@ export default function(options) {
           yaml: row.manifest_yaml,
           json: row.manifest_json,
         }),
+        applyExitCode: row.apply_exit_code,
+        rolloutStatusExitCode: row.rollout_status_exit_code,
         log: logRows.map(row => {
           return new DeploymentLogEntry({
             id: row.id,
-            sequence: row.sequence,
             writtenOn: row.written_on,
             writtenTo: row.written_to,
             content: row.content,
@@ -177,6 +201,8 @@ export default function(options) {
 
     return cb(null, {
       saveDeployment,
+      saveApplyExitCode,
+      saveRolloutStatusExitCode,
       saveDeploymentLogEntry,
       getDeployment,
       findDeployments,

@@ -1,32 +1,47 @@
 import { spawn, } from 'child_process';
-import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 
 export default function(options = {}) {
 
-  function start({ store, }, cb) {
+  function start(cb) {
 
-    function apply(deployment) {
-      const context = deployment.namespace.cluster.context;
-      const namespace = deployment.namespace.name;
-      const manifest = deployment.manifest.yaml;
+    function apply(context, namespace, manifest, emitter, ) {
       return new Promise(async (resolve, reject) => {
         const args = ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',];
-        const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')} \${KUBERNETES_MANIFEST}`, });
-        await store.saveDeploymentLogEntry(entry);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')} \${KUBERNETES_MANIFEST}`, });
+
         const kubectl = spawn('kubectl', args);
         kubectl.stdout.on('data', async data => {
-          const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stdout', content: data.toString().trim(), });
-          await store.saveDeploymentLogEntry(entry);
+          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: data.toString().trim(), });
         });
         kubectl.stderr.on('data', async data => {
-          const entry = new DeploymentLogEntry({ deployment, writtenOn: new Date(), writtenTo: 'stderr', content: data.toString().trim(), });
-          await store.saveDeploymentLogEntry(entry);
+          emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: data.toString().trim(), });
         });
         kubectl.on('close', code => {
-          return code === 0 ? resolve() : reject(new Error(`kubectl apply exited with code ${code}`));
+          resolve(code);
         });
         kubectl.on('error', reject);
         kubectl.stdin.write(manifest);
+        kubectl.stdin.end();
+      });
+    }
+
+
+    function rolloutStatus(context, namespace, name, emitter) {
+      return new Promise(async (resolve, reject) => {
+        const args = ['--context', context, '--namespace', namespace, 'rollout', 'status', `deployments/${name}`,];
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')}`, });
+
+        const kubectl = spawn('kubectl', args);
+        kubectl.stdout.on('data', async data => {
+          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: data.toString().trim(), });
+        });
+        kubectl.stderr.on('data', async data => {
+          emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: data.toString().trim(), });
+        });
+        kubectl.on('close', code => {
+          resolve(code);
+        });
+        kubectl.on('error', reject);
         kubectl.stdin.end();
       });
     }
@@ -45,10 +60,6 @@ export default function(options = {}) {
 
     function checkDeployment(context, namespace, name, logger) {
       return check(['--context', context, '--namespace', namespace, 'get', 'deployment', name,], logger);
-    }
-
-    function rolloutStatus(context, namespace, name, logger) {
-      return check(['--context', context, '--namespace', namespace, 'rollout', 'status', `deployments/${name}`,], logger);
     }
 
     function check(args, logger) {

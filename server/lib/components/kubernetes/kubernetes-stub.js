@@ -26,10 +26,7 @@ export default function(options = {}) {
 
   function start({ contexts = defaultContexts(), }, cb) {
 
-    function apply(deployment) {
-      const context = deployment.namespace.cluster.context;
-      const namespace = deployment.namespace.name;
-      const manifest = deployment.manifest.yaml;
+    function apply(context, namespace, manifest, emitter) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
@@ -66,15 +63,24 @@ export default function(options = {}) {
       });
     }
 
-    function rolloutStatus(context, namespace, name) {
+    function rolloutStatus(context, namespace, name, emitter) {
       return new Promise((resolve, reject) => {
+
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}`, });
+
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
 
         const deployment = contexts[context].namespaces[namespace].deployments.find(d => d.name === name);
         if (!deployment) return reject(new Error(`Unknown deployment: ${name}`));
 
-        resolve(deployment.status === 'success');
+        if (deployment.status === 'success') {
+          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `super smashing great`, });
+          return resolve(0);
+        } else {
+          emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `booo`, });
+          return resolve(99);
+        }
       });
     }
 

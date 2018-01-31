@@ -41,11 +41,24 @@ export default function(options = {}) {
       }));
     }
 
+    async function saveApplyExitCode(id, code) {
+      const deployment = _getDeployment(id);
+      if (!deployment || deployment.applyExitCode !== undefined) throw new Error(`Deployment ${id} was not updated`);
+      deployment.applyExitCode = code;
+    }
+
+    async function saveRolloutStatusExitCode(id, code) {
+      const deployment = _getDeployment(id);
+      if (!deployment || deployment.rolloutStatusExitCode !== undefined) throw new Error(`Deployment ${id} was not updated`);
+      deployment.rolloutStatusExitCode = code;
+    }
+
     async function saveDeploymentLogEntry(logEntry) {
       return append(deploymentLogEntries, new DeploymentLogEntry({
         ...logEntry, id: uuid(), sequence: deploymentLogSequence++,
       }));
     }
+
     async function findDeployments(criteria = {}, limit = 50, offset = 0) {
       let active = deployments.filter(byActive).sort(byMostRecent).map(toSlimDeployment);
 
@@ -120,6 +133,8 @@ export default function(options = {}) {
 
     return cb(null, {
       saveDeployment,
+      saveApplyExitCode,
+      saveRolloutStatusExitCode,
       saveDeploymentLogEntry,
       getDeployment,
       findDeployments,

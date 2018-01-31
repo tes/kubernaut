@@ -2,6 +2,8 @@ SELECT
   d.id,
   d.manifest_yaml,
   d.manifest_json,
+  d.apply_exit_code,
+  d.rollout_status_exit_code,
   d.created_on,
   cb.id AS created_by_id,
   cb.display_name AS created_by_display_name,

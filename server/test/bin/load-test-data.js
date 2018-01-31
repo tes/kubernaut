@@ -42,6 +42,9 @@ createSystem()
             tasks.push(limit(async () => {
               const release = await store.saveRelease(data.release, meta);
               const deployment = await store.saveDeployment({ ...data, release, namespace, }, meta);
+              const applyExitCode = chance.integer({ min: 0, max: 3, });
+              await store.saveApplyExitCode(deployment.id, applyExitCode);
+              if (applyExitCode === 0) await store.saveRolloutStatusExitCode(deployment.id, chance.integer({ min: 0, max: 3, }));
               const logEntries = [];
               for (let l = 0; l < 5; l++) {
                 logEntries.push(makeDeploymentLogEntry({ deployment: deployment, }));

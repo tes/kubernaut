@@ -13,7 +13,7 @@ class DeploymentsTable extends Component {
     const errorTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--error'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='7'>Error loading deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='8'>Error loading deployments</td>
         </tr>
       </tbody>
     ;
@@ -21,7 +21,7 @@ class DeploymentsTable extends Component {
     const loadingTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--loading'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='7'>Loading deployments…</td>
+          <td className='deployments-table__body__row__info' colSpan='8'>Loading deployments…</td>
         </tr>
       </tbody>
     ;
@@ -29,10 +29,22 @@ class DeploymentsTable extends Component {
     const emptyTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--empty'>
         <tr className='deployments-table__body__row'>
-          <td className='deployments-table__body__row__info' colSpan='7'>There are no deployments</td>
+          <td className='deployments-table__body__row__info' colSpan='8'>There are no deployments</td>
         </tr>
       </tbody>
     ;
+
+    const status = (deployment) => {
+      if (deployment.rolloutStatusExitCode === 0 && deployment.applyExitCode === 0) {
+        return 'Succeeded';
+      } else if (deployment.rolloutStatusExitCode > 0 || deployment.applyExitCode > 0) {
+        return 'Failed';
+      } else if (deployment.applyExitCode === 0) {
+        return 'Applied';
+      } else {
+        return 'Pending';
+      }
+    };
 
     const deploymentsTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--data'>
@@ -47,6 +59,7 @@ class DeploymentsTable extends Component {
             <td className='deployments-table__body__row__version'><ReleaseLink release={deployment.release} /></td>
             <td className='deployments-table__body__row__cluster-name'><ClusterLink cluster={deployment.namespace.cluster} /></td>
             <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.namespace} /></td>
+            <td className='deployments-table__body__row__status'>{status(deployment)}</td>
             <td className='deployments-table__body__row__created-by'>
               <AccountLink account={deployment.createdBy} />
             </td>
@@ -67,6 +80,7 @@ class DeploymentsTable extends Component {
               <th className='deployments-table__heading__version'>Version</th>
               <th className='deployments-table__heading__cluster-name'>Cluster</th>
               <th className='deployments-table__heading__namespace-name'>Namespace</th>
+              <th className='deployments-table__heading__status'>Status</th>
               <th className='deployments-table__heading__created-by'>Created By</th>
               <th className='deployments-table__heading__actions'>&nbsp;</th>
             </tr>

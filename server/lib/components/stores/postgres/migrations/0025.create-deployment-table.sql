@@ -6,6 +6,8 @@ CREATE TABLE deployment (
   namespace UUID NOT NULL,
   manifest_yaml TEXT NOT NULL,
   manifest_json JSONB NOT NULL,
+  apply_exit_code INTEGER,
+  rollout_status_exit_code INTEGER,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,

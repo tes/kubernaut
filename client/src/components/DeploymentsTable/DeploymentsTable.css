@@ -8,10 +8,12 @@
 
 .deployments-table .deployments-table__body__row__created-date .deployments-table__body__row__created-date__on {
   margin-right: 20px;
+  white-space: nowrap;
 }
 
 .deployments-table .deployments-table__body__row__created-date .deployments-table__body__row__created-date__ago {
   font-style: italic;
+  white-space: nowrap;
 }
 
 .deployments-table .deployments-table__body__row__namespace-name,

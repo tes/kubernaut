@@ -535,7 +535,7 @@ describe('Deployments API', () => {
       expect(response.body.status).toBe('success');
     });
 
-    it('should return 502 when the deployment failed', async () => {
+    it('should return 500 when the deployment failed', async () => {
 
       const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
@@ -554,11 +554,11 @@ describe('Deployments API', () => {
         json: true,
         resolveWithFullResponse: true,
       }).then(() => {
-        throw new Error('Should have failed with 502');
+        throw new Error('Should have failed with 500');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(502);
+        expect(reason.response.statusCode).toBe(500);
         expect(reason.response.body.id).toBe(saved.id);
-        expect(reason.response.body.status).toBe('failed');
+        expect(reason.response.body.status).toBe('failure');
       });
     });
 
