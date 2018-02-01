@@ -106,6 +106,23 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-12'>
+            <h2>Deployment Attributes</h2>
+          </div>
+        </div>
+        {
+          Object.keys(deployment.attributes).map(name => {
+            return <div key={name} className='row'>
+              <div className='col-md-2'>
+                <span className='deployment_details__label'>{name}</span>
+              </div>
+              <div className='col-md-10'>
+                <span>{deployment.attributes[name]}</span>
+              </div>
+            </div>;
+          })
+        }
+        <div className='row'>
+          <div className='col-md-12'>
             <h2>Deployment Log</h2>
           </div>
         </div>
@@ -115,9 +132,9 @@ class DeploymentDetailsPage extends Component {
               <tbody>
               {
                 deployment.log.map(entry => {
-                  return <tr key={entry.id} className={`log-table__body log-table__body__row--${entry.writtenTo}`}>
-                    <td className='log-table__body__row__written-on'><Human date={entry.writtenOn} /></td>
-                    <td className='log-table__body__row__content'>{entry.content}</td>
+                  return <tr key={entry.id} className={`log-table log-table__row--${entry.writtenTo}`}>
+                    <td className='log-table__row__written-on'><Human date={entry.writtenOn} /></td>
+                    <td className='log-table__row__content'>{entry.content}</td>
                   </tr>;
                 })
               }

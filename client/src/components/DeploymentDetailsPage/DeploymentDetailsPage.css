@@ -7,16 +7,15 @@
   text-transform: capitalize;
 }
 
-
-.log-table .log-table__body__row__written-on {
+.log-table .log-table__row__written-on {
   width: 250px;
 }
 
-.log-table .log-table__body__row--stdin {
+.log-table .log-table__row--stdin {
   color: blue;
 }
 
-.log-table .log-table__body__row--stderr {
+.log-table .log-table__row--stderr {
   color: red;
 }
 

@@ -146,49 +146,7 @@ describe('Deployments API', () => {
 
   describe('POST /api/deployments', () => {
 
-    it('should save a deployment without attributes', async () => {
-
-      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
-
-      const release = makeRelease({
-        service: {
-          name: 'release-1',
-        },
-        version: '22',
-      });
-      await store.saveRelease(release, makeMeta());
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
-        method: 'POST',
-        json: {
-          namespace: namespace.name,
-          cluster: cluster.name,
-          registry: release.service.registry.name,
-          service: release.service.name,
-          version: release.version,
-        },
-      });
-
-      expect(response.id).toBeDefined();
-      expect(response.status).toBe('pending');
-      expect(response.log.length).toBe(1);
-
-      const deployment = await store.getDeployment(response.id);
-      expect(deployment).toBeDefined();
-      expect(deployment.namespace.id).toBe(namespace.id);
-      expect(deployment.namespace.cluster.id).toBe(cluster.id);
-      expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
-      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
-      expect(deployment.release.service.name).toBe(release.service.name);
-      expect(deployment.release.version).toBe(release.version);
-      expect(deployment.applyExitCode).toBe(0);
-      expect(deployment.rolloutStatusExitCode).toBe(undefined);
-      expect(deployment.log.length).toBe(1);
-    });
-
-    it('should save a deployment with attributes', async () => {
+    it('should save a deployment', async () => {
 
       const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
@@ -225,6 +183,7 @@ describe('Deployments API', () => {
       expect(deployment.namespace.id).toBe(namespace.id);
       expect(deployment.namespace.cluster.id).toBe(cluster.id);
       expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
+      expect(deployment.manifest.json[2].spec.replicas).toBe(3);
       expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
       expect(deployment.release.service.name).toBe(release.service.name);
       expect(deployment.release.version).toBe(release.version);
@@ -294,6 +253,9 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
+          attributes: {
+            replicas: 3,
+          },
         },
       });
 
@@ -320,6 +282,8 @@ describe('Deployments API', () => {
       });
       await store.saveRelease(release, makeMeta());
 
+      loggerOptions.suppress = true;
+
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
@@ -329,6 +293,9 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
+          attributes: {
+            replicas: 3,
+          },
         },
       }).then(() => {
         throw new Error('Should have failed with 500');
@@ -360,6 +327,9 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
+          attributes: {
+            replicas: 3,
+          },
         },
       });
 
@@ -385,6 +355,8 @@ describe('Deployments API', () => {
 
       await store.saveRelease(release, makeMeta());
 
+      loggerOptions.suppress = true;
+
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
@@ -398,6 +370,9 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
+          attributes: {
+            replicas: 3,
+          },
         },
       }).then(() => {
         throw new Error('Should have failed with 500');
@@ -580,8 +555,9 @@ describe('Deployments API', () => {
       });
     });
 
-    xit('should reject payloads with a missing namespace (store)', async () => {
+    it('should reject payloads with a missing namespace (store)', async () => {
 
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
       const release = makeRelease();
       await store.saveRelease(release, makeMeta());
 
@@ -593,7 +569,7 @@ describe('Deployments API', () => {
         resolveWithFullResponse: true,
         json: {
           namespace: 'other',
-          context: 'test',
+          cluster: cluster.name,
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,

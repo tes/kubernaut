@@ -690,7 +690,6 @@ POST /api/deployments?wait=true
    }
  }
 ```
-*Attributes will be be converted into strings as a side effect of persistence*
 
 #### Expected Status Codes
 | Status | Meaning |
