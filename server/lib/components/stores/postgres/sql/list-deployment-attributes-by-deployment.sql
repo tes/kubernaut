@@ -7,5 +7,5 @@ FROM
 WHERE
   da.deployment = $1
 ORDER BY
-  name DESC
+  name ASC
 ;

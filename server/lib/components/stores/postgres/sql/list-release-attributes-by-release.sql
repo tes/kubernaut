@@ -7,5 +7,5 @@ FROM
 WHERE
   ra.release = $1
 ORDER BY
-  name DESC;
+  name ASC;
 ;
