@@ -673,6 +673,19 @@ Deploys a release using the specified context
 |--------|---------|-----------|---------|---------|
 | wait   | query   | No        | N/A     | Add wait=true to tell kubernaut to wait for the rollout to complete before responding. You may need to disable or extend client timeouts |
 
+#### Sample Request
+```
+POST /api/deployments?wait=true
+```
+```json
+{
+   "cluster": "development-eu",
+   "namespace": "default",
+   "registry": "default",
+   "service": "kubernaut",
+   "version": "f2e2bbf-212"
+ }
+```
 
 #### Expected Status Codes
 | Status | Meaning |

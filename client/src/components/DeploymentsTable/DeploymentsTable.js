@@ -34,32 +34,20 @@ class DeploymentsTable extends Component {
       </tbody>
     ;
 
-    const status = (deployment) => {
-      if (deployment.rolloutStatusExitCode === 0 && deployment.applyExitCode === 0) {
-        return 'Succeeded';
-      } else if (deployment.rolloutStatusExitCode > 0 || deployment.applyExitCode > 0) {
-        return 'Failed';
-      } else if (deployment.applyExitCode === 0) {
-        return 'Applied';
-      } else {
-        return 'Pending';
-      }
-    };
-
     const deploymentsTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--data'>
       {
         deployments.items.map(deployment => {
-          return <tr className='deployments-table__body__row' key={deployment.id} id={deployment.id} >
+          return <tr className={`deployments-table__body__row deployments-table__body__row--${deployment.status}`} key={deployment.id} id={deployment.id} >
             <td className='deployments-table__body__row__created-date'>
-              <span className="deployments-table__body__row__created-date__on"><Human date={deployment.createdOn} /></span>
-              <span className="deployments-table__body__row__created-date__ago"><Ago date={deployment.createdOn} /></span>
+              <span className='deployments-table__body__row__created-date__on'><Human date={deployment.createdOn} /></span>
+              <span className='deployments-table__body__row__created-date__ago'><Ago date={deployment.createdOn} /></span>
             </td>
             <td className='deployments-table__body__row__service-name'><ServiceLink service={deployment.release.service} /></td>
             <td className='deployments-table__body__row__version'><ReleaseLink release={deployment.release} /></td>
             <td className='deployments-table__body__row__cluster-name'><ClusterLink cluster={deployment.namespace.cluster} /></td>
             <td className='deployments-table__body__row__namespace-name'><NamespaceLink namespace={deployment.namespace} /></td>
-            <td className='deployments-table__body__row__status'>{status(deployment)}</td>
+            <td className='deployments-table__body__row__status'>{deployment.status}</td>
             <td className='deployments-table__body__row__created-by'>
               <AccountLink account={deployment.createdBy} />
             </td>

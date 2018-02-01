@@ -2,8 +2,25 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.deployments-table .deployments-table__body__row--applied,
+.deployments-table .deployments-table__body__row--pending {
+  color: grey;
+}
+
+.deployments-table .deployments-table__body__row--failed .deployments-table__body__row__status {
+  color: red;
+}
+
 .deployments-table .deployments-table__heading__created-date {
   width: 350px;
+}
+
+.deployments-table .deployments-table__heading__created-by {
+  width: 200px;
+}
+
+.deployments-table .deployments-table__heading__actions {
+  width: 31px;
 }
 
 .deployments-table .deployments-table__body__row__created-date .deployments-table__body__row__created-date__on {
@@ -23,10 +40,7 @@
   white-space: nowrap;
 }
 
-.deployments-table .deployments-table__heading__created-by {
-  width: 200px;
+.deployments-table .deployments-table__body__row__status {
+  text-transform: capitalize;
 }
 
-.deployments-table .deployments-table__heading__actions {
-  width: 31px;
-}

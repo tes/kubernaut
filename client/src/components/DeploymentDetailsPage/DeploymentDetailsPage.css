@@ -1,7 +1,12 @@
-.details .details__label {
+.deployment_details .deployment_details__label {
   font-weight: bold;
   white-space: nowrap;
 }
+
+.deployment_details .deployment_details__status {
+  text-transform: capitalize;
+}
+
 
 .log-table .log-table__body__row__written-on {
   width: 250px;
@@ -14,3 +19,5 @@
 .log-table .log-table__body__row--stderr {
   color: red;
 }
+
+

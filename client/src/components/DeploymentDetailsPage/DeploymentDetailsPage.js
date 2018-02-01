@@ -22,10 +22,10 @@ class DeploymentDetailsPage extends Component {
     ;
 
     const deploymentDetails = () =>
-      <div className='details'>
+      <div className='deployment_details'>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Service:</span>
+            <span className='deployment_details__label'>Service:</span>
           </div>
           <div className='col-md-10'>
             <span><ServiceLink service={deployment.release.service} /></span>
@@ -33,7 +33,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Version:</span>
+            <span className='deployment_details__label'>Version:</span>
           </div>
           <div className='col-md-10'>
             <span><ReleaseLink release={deployment.release} /></span>
@@ -41,7 +41,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Registry:</span>
+            <span className='deployment_details__label'>Registry:</span>
           </div>
           <div className='col-md-10'>
             <span><RegistryLink registry={deployment.release.service.registry} /></span>
@@ -49,7 +49,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Cluster:</span>
+            <span className='deployment_details__label'>Cluster:</span>
           </div>
           <div className='col-md-10'>
             <span><ClusterLink cluster={deployment.namespace.cluster} /></span>
@@ -57,7 +57,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Namespace:</span>
+            <span className='deployment_details__label'>Namespace:</span>
           </div>
           <div className='col-md-10'>
             <span><NamespaceLink namespace={deployment.namespace} /></span>
@@ -65,7 +65,15 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Apply Exit Code:</span>
+            <span className='deployment_details__label'>Status:</span>
+          </div>
+          <div className='col-md-10'>
+            <span className='deployment_details__status'>{deployment.status}</span>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-2'>
+            <span className='deployment_details__label'>Apply Exit Code:</span>
           </div>
           <div className='col-md-10'>
             <span>{deployment.applyExitCode}</span>
@@ -73,7 +81,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Rollout Status Exit Code:</span>
+            <span className='deployment_details__label'>Rollout Status Exit Code:</span>
           </div>
           <div className='col-md-10'>
             <span>{deployment.rolloutStatusExitCode}</span>
@@ -81,7 +89,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Created On:</span>
+            <span className='deployment_details__label'>Created On:</span>
           </div>
           <div className='col-md-10'>
             <span><Human date={deployment.createdOn} /></span>&nbsp;
@@ -90,7 +98,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-2'>
-            <span className='details__label'>Created By:</span>
+            <span className='deployment_details__label'>Created By:</span>
           </div>
           <div className='col-md-10'>
             <span><AccountLink account={deployment.createdBy} /></span>
