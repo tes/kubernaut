@@ -16,9 +16,9 @@ export default function(options) {
         data.name, meta.date, meta.account.id,
       ]);
 
-      const registry = {
+      const registry = new Registry({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved registry: ${registry.name}/${registry.id}`);
 

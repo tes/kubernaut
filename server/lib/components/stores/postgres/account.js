@@ -19,9 +19,9 @@ export default function(options = {}) {
         data.displayName, data.avatar, meta.date, meta.account.id,
       ]);
 
-      const account = {
+      const account = new Account({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved account: ${account.displayName}/${account.id}`);
 

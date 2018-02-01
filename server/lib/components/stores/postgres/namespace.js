@@ -23,9 +23,9 @@ export default function(options) {
         data.name, data.cluster.id, meta.date, meta.account.id,
       ]);
 
-      const namespace = {
+      const namespace = new Namespace({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved namespace:${data.cluster.id}/${namespace.name}/${namespace.id}`);
 

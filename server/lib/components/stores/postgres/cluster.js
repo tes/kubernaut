@@ -16,9 +16,9 @@ export default function(options) {
         data.name, data.context, meta.date, meta.account.id,
       ]);
 
-      const cluster = {
+      const cluster = new Cluster({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved cluster: ${cluster.name}/${cluster.id}`);
 

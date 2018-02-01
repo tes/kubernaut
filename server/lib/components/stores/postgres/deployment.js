@@ -23,9 +23,9 @@ export default function(options) {
         data.release.id, data.namespace.id, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
       ]);
 
-      const deployment = {
+      const deployment = new Deployment({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved deployment:  ${deployment.release.id}/${deployment.namespace.cluster.name}${deployment.namespace.name}/${deployment.id}`);
 
@@ -63,9 +63,9 @@ export default function(options) {
         data.deployment.id, data.writtenOn, data.writtenTo, data.content,
       ]);
 
-      const deploymentLogEntry = {
+      const deploymentLogEntry = new DeploymentLogEntry({
         ...data, id: result.rows[0].id,
-      };
+      });
 
       logger.debug(`Saved deployment log entry: ${data.deployment.id}/${deploymentLogEntry.id}`);
 

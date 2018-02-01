@@ -32,9 +32,9 @@ export default function(options) {
         data.name, registry, meta.date, meta.account.id,
       ]);
 
-      const service = {
+      const service = new Service({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Ensured service: ${registry}/${service.name}/${service.id}`);
 
@@ -49,9 +49,9 @@ export default function(options) {
         data.source.yaml, JSON.stringify(data.source.json), data.checksum, meta.date, meta.account.id,
       ]);
 
-      const template = {
+      const template = new ReleaseTemplate({
         ...data, id: result.rows[0].id,
-      };
+      });
 
       logger.debug(`Ensured release template: ${template.checksum}/${template.id}`);
 
@@ -66,9 +66,9 @@ export default function(options) {
         service.id, data.version, template.id, meta.date, meta.account.id,
       ]);
 
-      const release = {
+      const release = new Release({
         ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      });
 
       logger.debug(`Saved release ${service.name}/${release.version}/${release.id}`);
 
