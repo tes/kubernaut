@@ -54,7 +54,7 @@ export default function(options = {}) {
         if (!isNil(deployment.rolloutStatusExitCode)) {
           return deployment.rolloutStatusExitCode > 0
             ? res.status(500).json({ id: deployment.id, status: 'failure', logs: [], })
-            : res.stauts(200).json({ id: deployment.id, status: 'success', logs: [], });
+            : res.status(200).json({ id: deployment.id, status: 'success', logs: [], });
         }
 
         const emitter = new EventEmitter();
