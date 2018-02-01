@@ -2,7 +2,6 @@ import bodyParser from 'body-parser';
 import hogan from 'hogan.js';
 import Boom from 'boom';
 import EventEmitter from 'events';
-import isNil from 'lodash.isnil';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 import { safeLoadAll as yaml2json, } from 'js-yaml';
 
@@ -35,59 +34,6 @@ export default function(options = {}) {
       }
     });
 
-    app.get('/api/deployments/:id/status', async (req, res, next) => {
-
-      req.setTimeout(0);
-
-      try {
-        const deployment = await store.getDeployment(req.params.id);
-        if (!deployment) return next(Boom.notFound(`Deployment ${req.params.id} was not found`));
-        if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
-
-        const contextOk = await kubernetes.checkContext(deployment.namespace.cluster.context, res.locals.logger);
-        if (!contextOk) return next(Boom.badRequest(`Context ${deployment.namespace.cluster.context} was not found`));
-
-        const deploymentOk = await kubernetes.checkDeployment(deployment.namespace.cluster.context, deployment.namespace.name, deployment.release.service.name, res.locals.logger);
-        if (!deploymentOk) return next(Boom.badRequest(`Deployment ${deployment.release.service.name} was not deployed`));
-
-
-        if (!isNil(deployment.rolloutStatusExitCode)) {
-          return deployment.rolloutStatusExitCode > 0
-            ? res.status(500).json({ id: deployment.id, status: 'failure', logs: [], })
-            : res.status(200).json({ id: deployment.id, status: 'success', logs: [], });
-        }
-
-        const emitter = new EventEmitter();
-        const logs = [];
-
-        emitter.on('data', async data => {
-          logs.push(data);
-          res.locals.logger.info(data.content);
-          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
-        }).on('error', async data => {
-          logs.push(data);
-          res.locals.logger.error(data.content);
-          await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
-        });
-
-        const code = await kubernetes.rolloutStatus(
-          deployment.namespace.cluster.context,
-          deployment.namespace.name,
-          deployment.release.service.name,
-          emitter
-        );
-
-        await store.saveRolloutStatusExitCode(deployment.id, code);
-        if (code > 0) {
-          res.status(500).json({ id: deployment.id, status: 'failure', logs, });
-        } else {
-          res.status(200).json({  id: deployment.id, status: 'success', logs, });
-        }
-      } catch (err) {
-        next(err);
-      }
-    });
-
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
       try {
@@ -114,40 +60,39 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
-        const data = {
-          namespace,
-          manifest: await getManifest(release, res.locals.logger),
-          release,
-        };
-
+        const data = { namespace, manifest: getManifest(release, res.locals.logger), release, };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const deployment = await store.saveDeployment(data, meta);
         const emitter = new EventEmitter();
-        const logs = [];
+        const log = [];
 
         emitter.on('data', async data => {
-          logs.push(data);
+          log.push(data);
           res.locals.logger.info(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
         }).on('error', async data => {
-          logs.push(data);
+          log.push(data);
           res.locals.logger.error(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data, }));
         });
 
-        const code = await kubernetes.apply(
-          deployment.namespace.cluster.context,
-          deployment.namespace.name,
-          deployment.manifest.yaml,
-          emitter,
-        );
-        await store.saveApplyExitCode(deployment.id, code);
-        if (code > 0) {
-          res.status(500).json({ id: deployment.id, status: 'failure', logs, });
-        } else if (req.query.wait === 'true') {
-          res.redirect(303, `/api/deployments/${deployment.id}/status`);
+        const applyExitCode = await applyManifest(deployment, emitter);
+        if (applyExitCode > 0) {
+          return res.status(500).json({ id: deployment.id, status: 'failure', log, });
+        } else if (req.query.wait !== 'true') {
+          res.status(202).json({ id: deployment.id, status: 'pending', log, });
+        }
+
+        req.setTimeout(0);
+
+        const rolloutStatusExitCode = await getRolloutStatus(deployment, emitter);
+
+        if (res.headerSent) return;
+
+        if (rolloutStatusExitCode) {
+          res.status(500).json({ id: deployment.id, status: 'failure', log, });
         } else {
-          res.status(202).json({ id: deployment.id, status: 'pending', logs, });
+          res.status(200).json({ id: deployment.id, status: 'success', log, });
         }
       } catch (err) {
         next(err);
@@ -168,15 +113,32 @@ export default function(options = {}) {
       }
     });
 
-    function getManifest(release, logger) {
-      return new Promise(resolve => {
-        const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
-        const json = yaml2json(yaml);
-        resolve({ yaml, json, });
-      }).catch(err => {
-        logger.error(err);
-        throw Boom.internal('Error compiling manifest');
-      });
+    function getManifest(release) {
+      const yaml = hogan.compile(release.template.source.yaml).render(release.attributes);
+      const json = yaml2json(yaml);
+      return { yaml, json, };
+    }
+
+    async function applyManifest(deployment, emitter) {
+      const code = await kubernetes.apply(
+        deployment.namespace.cluster.context,
+        deployment.namespace.name,
+        deployment.manifest.yaml,
+        emitter,
+      );
+      await store.saveApplyExitCode(deployment.id, code);
+      return code;
+    }
+
+    async function getRolloutStatus(deployment, emitter) {
+      const code = await kubernetes.rolloutStatus(
+        deployment.namespace.cluster.context,
+        deployment.namespace.name,
+        deployment.release.service.name,
+        emitter
+      );
+      await store.saveRolloutStatusExitCode(deployment.id, code);
+      return code;
     }
 
     cb();

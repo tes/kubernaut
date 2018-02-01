@@ -115,6 +115,8 @@ function makeRelease(overrides = {}) {
     attributes: {
       template: `${chance.word().toLowerCase()}.yaml`,
       image: `registry/repo/${service.name}:${version}`,
+      service: service.name,
+      version: version,
     },
   }, overrides));
 }

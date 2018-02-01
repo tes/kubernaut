@@ -338,11 +338,11 @@ GET /api/registries?limit=50&offset=0
     {
       "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
       "name": "default",
-      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdOn": "2018-01-01T13:14:15.000Z",
       "createdBy":{
         "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
         "displayName": "Bob Holness"
-      }       
+      }
     }
   ]
 }
@@ -366,11 +366,11 @@ GET /api/registries/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
   "name": "default",
-  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }   
+  }
 }
 ```
 
@@ -392,11 +392,11 @@ POST /api/registries
 {
   "id": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1",
   "name": "default",
-  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }   
+  }
 }
 ```
 
@@ -448,11 +448,11 @@ GET /api/namespaces?limit=50&offset=0
         "name": "development-eu",
         "context": "dev"
       },
-      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdOn": "2018-01-01T13:14:15.000Z",
       "createdBy": {
         "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
         "displayName": "Bob Holness"
-      }     
+      }
     }
   ]
 }
@@ -483,11 +483,11 @@ GET /api/clusters?limit=50&offset=0
       "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
       "name": "development-eu",
       "context": "dev",
-      "createdOn": "2018-01-01T13:14:15.000Z",      
+      "createdOn": "2018-01-01T13:14:15.000Z",
       "createdBy":{
         "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
         "displayName": "Bob Holness"
-      }       
+      }
     }
   ]
 }
@@ -512,11 +512,11 @@ GET /api/clusters/a6d41d27-d96e-49fd-ae41-7419a42aa377
   "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
   "name": "development-eu",
   "context": "dev",
-  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }   
+  }
 }
 ```
 
@@ -540,11 +540,11 @@ POST /api/clusters
   "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
   "name": "development-eu",
   "context": "dev",
-  "createdOn": "2018-01-01T13:14:15.000Z",      
+  "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }   
+  }
 }
 ```
 
@@ -589,11 +589,11 @@ GET /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
     "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
     "name": "development-eu",
     "context": "dev"
-  },  
+  },
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }  
+  }
 }
 ```
 
@@ -620,11 +620,11 @@ POST /api/namespaces
     "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
     "name": "development-eu",
     "context": "dev"
-  },  
+  },
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
     "displayName": "Bob Holness"
-  }  
+  }
 }
 ```
 
@@ -668,16 +668,19 @@ Gets a single deployment
 ### POST /api/deployments
 Deploys a release using the specified context
 
-### GET /api/deployments/:id/status
-Returns the status of a deployment (blocks until known)
+#### Parameters
+| Name   | Type    | Mandatory | Default | Notes   |
+|--------|---------|-----------|---------|---------|
+| wait   | query   | No        | N/A     | Add wait=true to tell kubernaut to wait for the rollout to complete before responding. You may need to disable or extend client timeouts |
+
 
 #### Expected Status Codes
 | Status | Meaning |
 |--------|---------|
-| 200    | Deployment met all the conditions of the deployment strategy |
-| 404    | Deployment not found by kubernaut |
-| 500    | Mismatch between kubernaut's deployment (context or service name) and kubernetes (or a usual server error) |
-| 502    | Deployment failed to meet all the conditions of the deployment strategy within the deadline |
+| 200    | The deployment was successful (only returned when wait=true) |
+| 202    | The deployment has been accecpt. You can GET /api/deployments/:id to check on status |
+| 400    | The supplied registry, service, version, cluster or namespace were invalid |
+| 500    | The deployment failed. Likely causes a manifest rendering error, or the deployment failed one of its kubernetes probes |
 
 ### DELETE /api/deployments/:id
 Soft deletes a deployment

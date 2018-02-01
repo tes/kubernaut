@@ -2,6 +2,8 @@ import { safeLoadAll, } from 'js-yaml';
 
 export default function(options = {}) {
 
+  let timeoutId;
+
   function defaultContexts() {
     return {
       test: {
@@ -30,8 +32,19 @@ export default function(options = {}) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
-        contexts[context].namespaces[namespace].manifests.push(safeLoadAll(manifest));
-        resolve();
+
+        const manifestJson = safeLoadAll(manifest);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} apply -f \${MANIFEST}`, });
+
+        const name = manifestJson[2].metadata.name;
+
+        if (/^z-/.test(name)) return resolve(99);
+
+        contexts[context].namespaces[namespace].manifests.push(manifestJson);
+
+        const status = /^x-/.test(name) ? 'failure' : 'success';
+        contexts[context].namespaces[namespace].deployments.push({ name, status, });
+        resolve(0);
       });
     }
 
@@ -65,22 +78,23 @@ export default function(options = {}) {
 
     function rolloutStatus(context, namespace, name, emitter) {
       return new Promise((resolve, reject) => {
+        timeoutId = setTimeout(async () => {
+          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}`, });
 
-        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}`, });
+          if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
+          if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
 
-        if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
-        if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
+          const deployment = contexts[context].namespaces[namespace].deployments.find(d => d.name === name);
+          if (!deployment) return reject(new Error(`Unknown deployment: ${name}`));
 
-        const deployment = contexts[context].namespaces[namespace].deployments.find(d => d.name === name);
-        if (!deployment) return reject(new Error(`Unknown deployment: ${name}`));
-
-        if (deployment.status === 'success') {
-          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `super smashing great`, });
-          return resolve(0);
-        } else {
-          emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `booo`, });
-          return resolve(99);
-        }
+          if (deployment.status === 'success') {
+            emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `super smashing great`, });
+            return resolve(0);
+          } else {
+            emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `booo`, });
+            return resolve(99);
+          }
+        }, 500);
       });
     }
 
@@ -89,6 +103,7 @@ export default function(options = {}) {
     }
 
     async function nuke() {
+      clearTimeout(timeoutId);
       contexts = defaultContexts();
     }
 

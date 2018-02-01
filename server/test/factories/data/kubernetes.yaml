@@ -2,7 +2,7 @@
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
-  name: kubernaut-hello-world-ingress
+  name: "{{service}}-ingress"
   annotations:
     kubernetes.io/ingress.class: voyager
     ingress.appscode.com/type: LoadBalancer
@@ -10,17 +10,17 @@ metadata:
     ingress.appscode.com/stats: 'true'
 spec:
   backend:
-    serviceName: kubernaut-hello-world
+    serviceName: "{{service}}"
     servicePort: '80'
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: kubernaut-hello-world
+  name: "{{service}}"
 spec:
   selector:
-    app: kubernaut-hello-world
+    app: "{{service}}"
   ports:
     - port: 80
       targetPort: web
@@ -30,22 +30,23 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: kubernaut-hello-world
+  name: "{{service}}"
   labels:
-    app: kubernaut-hello-world
+    app: "{{service}}"
+    version: "{{version}}"
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: kubernaut-hello-world
+      app: "{{service}}"
   template:
     metadata:
       labels:
-        app: kubernaut-hello-world
+        app: "{{service}}"
     spec:
       containers:
-      - name: kubernaut-hello-world
-        image: {{image}}
+      - name: "{{service}}"
+        image: "{{image}}"
         ports:
         - containerPort: 3000
           name: web

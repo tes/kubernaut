@@ -2,7 +2,7 @@
 apiVersion: voyager.appscode.com/v1beta1
 kind: Ingress
 metadata:
-  name: kubernaut-ingress
+  name: "{{service}}-ingress"
   annotations:
     kubernetes.io/ingress.class: voyager
     ingress.appscode.com/type: LoadBalancer

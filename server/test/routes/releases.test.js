@@ -162,7 +162,7 @@ describe('Releases API', () => {
       expect(release.version).toBe(formData.version);
       expect(release.template.source.yaml).toBeDefined();
       expect(release.template.source.json).toBeDefined();
-      expect(release.template.checksum).toBe('f449ec78a09c2d18');
+      expect(release.template.checksum).toBe('1f5a82658f5636f6');
       expect(release.attributes.image).toBe(formData.image);
     });
 

@@ -138,7 +138,7 @@ describe('Deployments API', () => {
         json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(404);
       });
     });
@@ -153,7 +153,7 @@ describe('Deployments API', () => {
 
       const release = makeRelease({
         service: {
-          name: 'foo',
+          name: 'release-1',
         },
         version: '22',
       });
@@ -172,14 +172,20 @@ describe('Deployments API', () => {
       });
 
       expect(response.id).toBeDefined();
+      expect(response.status).toBe('pending');
+      expect(response.log.length).toBe(1);
+
       const deployment = await store.getDeployment(response.id);
       expect(deployment).toBeDefined();
       expect(deployment.namespace.id).toBe(namespace.id);
       expect(deployment.namespace.cluster.id).toBe(cluster.id);
-      expect(deployment.manifest.yaml).toMatch(/image: registry\/repo\/foo:22/);
-      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
+      expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
+      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
       expect(deployment.release.service.name).toBe(release.service.name);
       expect(deployment.release.version).toBe(release.version);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(undefined);
+      expect(deployment.log.length).toBe(1);
     });
 
     it('should report manifest compilation errors', async () => {
@@ -211,9 +217,9 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 500');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(500);
-        expect(reason.response.body.message).toMatch(/Error compiling manifest/);
+        expect(reason.response.body.message).toMatch(/missing closing tag: whatever/);
       });
     });
 
@@ -224,7 +230,7 @@ describe('Deployments API', () => {
 
       const release = makeRelease({
         service: {
-          name: 'foo',
+          name: 'release-1',
           namespace: {
             name: 'default',
           },
@@ -249,14 +255,87 @@ describe('Deployments API', () => {
 
       expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
       expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(3);
-      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/foo:22');
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
     });
 
-    it('should optionally redirect to status page', async () => {
+    it('should report apply failure', async () => {
+
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+
+      const release = makeRelease({
+        service: {
+          name: 'z-elease-1',
+          namespace: {
+            name: 'default',
+          },
+        },
+        version: '22',
+      });
+      await store.saveRelease(release, makeMeta());
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 500');
+      }).catch(errors.StatusCodeError, async reason => {
+        expect(reason.response.statusCode).toBe(500);
+        expect(reason.response.body.id).toBeDefined();
+        expect(reason.response.body.status).toBe('failure');
+        expect(reason.response.body.log.length).toBe(1);
+      });
+    });
+
+    it('should wait for rollout', async () => {
 
       const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
       const release = makeRelease();
+
+      await store.saveRelease(release, makeMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        qs: {
+          wait: 'true',
+        },
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+      expect(response.status).toBe('success');
+      expect(response.log.length).toBe(3);
+
+      const deployment = await store.getDeployment(response.id);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(0);
+      expect(deployment.log.length).toBe(3);
+    });
+
+    it('should report rollout failure', async () => {
+
+      const cluster = await store.saveCluster(makeCluster({ context: 'test', }), makeMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
+      const release = makeRelease({
+        service: {
+          name: 'x-release-1',
+        },
+      });
 
       await store.saveRelease(release, makeMeta());
 
@@ -267,7 +346,6 @@ describe('Deployments API', () => {
           wait: 'true',
         },
         resolveWithFullResponse: true,
-        followRedirect: false,
         json: {
           namespace: namespace.name,
           cluster: cluster.name,
@@ -276,10 +354,17 @@ describe('Deployments API', () => {
           version: release.version,
         },
       }).then(() => {
-        throw new Error('Should have redirected with 303');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(303);
-        expect(reason.response.headers.location).toMatch(/api\/deployments\/.+\/status/);
+        throw new Error('Should have failed with 500');
+      }).catch(errors.StatusCodeError, async reason => {
+        expect(reason.response.statusCode).toBe(500);
+        expect(reason.response.body.id).toBeDefined();
+        expect(reason.response.body.status).toBe('failure');
+        expect(reason.response.body.log.length).toBe(3);
+
+        const deployment = await store.getDeployment(reason.response.body.id);
+        expect(deployment.applyExitCode).toBe(0);
+        expect(deployment.rolloutStatusExitCode).toBe(99);
+        expect(deployment.log.length).toBe(3);
       });
     });
 
@@ -299,7 +384,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('cluster is required');
       });
@@ -321,7 +406,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('registry is required');
       });
@@ -343,7 +428,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('service is required');
       });
@@ -365,7 +450,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('namespace is required');
       });
@@ -387,7 +472,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('version is required');
       });
@@ -415,7 +500,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('context missing was not found');
       });
@@ -443,13 +528,12 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('namespace missing was not found in Test cluster');
       });
     });
 
-    // Enable once namespace has been removed from service
     xit('should reject payloads with a missing namespace (store)', async () => {
 
       const release = makeRelease();
@@ -470,7 +554,7 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('namespace other was not found');
       });
@@ -502,123 +586,12 @@ describe('Deployments API', () => {
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
+      }).catch(errors.StatusCodeError, reason => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('release default/foo/missing was not found');
       });
     });
 
-  });
-
-  describe('GET /api/deployments/:id/status', () => {
-
-    it('should return 200 when the deployment was successful', async () => {
-
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
-      const saved = await saveDeployment({ namespace, });
-
-      kubernetes.getContexts().test.namespaces.default.deployments.push({
-        name: saved.release.service.name,
-        status: 'success',
-      });
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}/status`,
-        method: 'GET',
-        json: true,
-        resolveWithFullResponse: true,
-      });
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body.id).toBe(saved.id);
-      expect(response.body.status).toBe('success');
-    });
-
-    it('should return 500 when the deployment failed', async () => {
-
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
-      const saved = await saveDeployment({ namespace, });
-
-      kubernetes.getContexts().test.namespaces.default.deployments.push({
-        name: saved.release.service.name,
-        status: 'failed',
-      });
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}/status`,
-        method: 'GET',
-        json: true,
-        resolveWithFullResponse: true,
-      }).then(() => {
-        throw new Error('Should have failed with 500');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(500);
-        expect(reason.response.body.id).toBe(saved.id);
-        expect(reason.response.body.status).toBe('failure');
-      });
-    });
-
-    it('should return 400 for missing context [kubectl]', async () => {
-
-      const cluster = await store.saveCluster(makeCluster({ name: 'Missing', context: 'missing', }), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
-      const saved = await saveDeployment({ namespace, });
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}/status`,
-        method: 'GET',
-        json: true,
-        resolveWithFullResponse: true,
-      }).then(() => {
-        throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('Context missing was not found');
-      });
-    });
-
-    it('should return 400 for missing deployment [kubectl]', async () => {
-
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, }), makeMeta());
-      const saved = await saveDeployment({ namespace, });
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}/status`,
-        method: 'GET',
-        json: true,
-        resolveWithFullResponse: true,
-      }).then(() => {
-        throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe(`Deployment ${saved.release.service.name} was not deployed`);
-      });
-    });
-
-    it('should return 404 for missing deployments [kubernaut]', async () => {
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/missing/status`,
-        method: 'GET',
-        resolveWithFullResponse: true,
-        json: true,
-      }).then(() => {
-        throw new Error('Should have failed with 404');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
-      });
-    });
   });
 
   describe('DELETE /api/deployments/:id', () => {
