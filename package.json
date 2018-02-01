@@ -22,7 +22,9 @@
     "precommit": "npm run lint && npm run check-package-lock",
     "prepush": "IMAGE=kubernaut TAG=$(git rev-parse --short HEAD)-local docker-compose run --rm --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
     "lint": "eslint .",
-    "check-package-lock": "grep -qc tescloud package-lock.json; test $? -gt 0"
+    "check-package-lock": "grep -qc tescloud package-lock.json; test $? -gt 0",
+    "kube-release": "release",
+    "kube-deploy": "deploy"
   },
   "author": "TES",
   "license": "UNLICENSED",
