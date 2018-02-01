@@ -683,9 +683,14 @@ POST /api/deployments?wait=true
    "namespace": "default",
    "registry": "default",
    "service": "kubernaut",
-   "version": "f2e2bbf-212"
+   "version": "f2e2bbf-212",
+   "attributes": {
+     "replicas": 3,
+     "containerPort: 3001
+   }
  }
 ```
+*Attributes will be be converted into strings as a side effect of persistence*
 
 #### Expected Status Codes
 | Status | Meaning |

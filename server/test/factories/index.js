@@ -150,6 +150,10 @@ function makeDeployment(overrides = {}) {
         context: 'test',
       },
     }),
+    attributes: {
+      replicas: `${chance.integer({ min: 1, max: 10, })}`,
+      containerPort: `${chance.integer({ min: 3000, max: 10000, })}`,
+    },
     context,
     manifest: new Manifest({ yaml, json, }),
     release,

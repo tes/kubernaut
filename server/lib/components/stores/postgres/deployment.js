@@ -17,9 +17,17 @@ export default function(options) {
     const { Op, raw, } = sqb;
 
     async function saveDeployment(data, meta) {
+      return await db.withTransaction(async connection => {
+        const deployment = await _saveDeployment(connection, data, meta);
+        const attributes = await _saveDeploymentAttributes(connection, deployment, data.attributes);
+        return new Deployment({ ...deployment, attributes, });
+      });
+    }
+
+    async function _saveDeployment(connection, data, meta) {
       logger.debug(`Saving deployment: ${data.release.id}/${data.namespace.cluster.name}/${data.namespace.name}`);
 
-      const result = await db.query(SQL.SAVE_DEPLOYMENT, [
+      const result = await connection.query(SQL.SAVE_DEPLOYMENT, [
         data.release.id, data.namespace.id, data.manifest.yaml, JSON.stringify(data.manifest.json), meta.date, meta.account.id,
       ]);
 
@@ -30,6 +38,23 @@ export default function(options) {
       logger.debug(`Saved deployment:  ${deployment.release.id}/${deployment.namespace.cluster.name}${deployment.namespace.name}/${deployment.id}`);
 
       return deployment;
+    }
+
+    async function _saveDeploymentAttributes(connection, deployment, data) {
+
+      const attributeNames = Object.keys(data);
+
+      logger.debug(`Saving deployment attributes: [ ${attributeNames.join(', ')} ] for deployment id: ${deployment.id}`);
+
+      const attributes = attributeNames.map(name => ({
+        name, value: data[name], deployment: deployment.id,
+      }));
+
+      await connection.query(SQL.SAVE_DEPLOYMENT_ATTRIBUTES, [JSON.stringify(attributes),]);
+
+      logger.debug(`Saved deployment attributes: [ ${attributeNames.join(', ')} ] for deployment id: ${deployment.id}`);
+
+      return attributes;
     }
 
     async function saveApplyExitCode(id, code) {
@@ -78,10 +103,11 @@ export default function(options) {
       return await db.withTransaction(async connection => {
         return Promise.all([
           connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]),
+          connection.query(SQL.LIST_DEPLOYMENT_ATTRIBUTES_BY_DEPLOYMENT, [id,]),
           connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id,]),
-        ]).then(([deploymentResult, logEntryResult,]) => {
+        ]).then(([deploymentResult, attributesResults, logEntriesResult,]) => {
           logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
-          return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], logEntryResult.rows) : undefined;
+          return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], attributesResults.rows, logEntriesResult.rows) : undefined;
         });
       });
     }
@@ -153,7 +179,7 @@ export default function(options) {
       ]);
     }
 
-    function toDeployment(row, logRows = []) {
+    function toDeployment(row, attributeRows = [], logRows = []) {
       return new Deployment({
         id: row.id,
         namespace: new Namespace({
@@ -191,6 +217,9 @@ export default function(options) {
           }),
           version: row.release_version,
         }),
+        attributes: attributeRows.reduce((attributes, row) => {
+          return { ...attributes, [row.name]: row.value, };
+        }, {}),
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by_id,

@@ -123,7 +123,7 @@ export default function(options = {}) {
 
     function toSlimDeployment(deployment) {
       const release = { ...deployment.release, template: undefined, attribtes: {}, };
-      return { ...deployment, release, };
+      return { ...deployment, release, attributes: {}, };
     }
 
     function append(collection, item) {

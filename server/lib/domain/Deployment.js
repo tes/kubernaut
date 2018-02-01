@@ -1,10 +1,11 @@
 export default class Deployment {
 
-  constructor({ id, release, namespace, manifest, applyExitCode, rolloutStatusExitCode, log, createdOn, createdBy, deletedOn, deletedBy, }) {
+  constructor({ id, release, namespace, manifest, attributes, applyExitCode, rolloutStatusExitCode, log, createdOn, createdBy, deletedOn, deletedBy, }) {
     this.id = id;
     this.namespace = namespace;
     this.release = release;
     this.manifest = manifest;
+    this.attributes = attributes;
     this.applyExitCode = applyExitCode;
     this.rolloutStatusExitCode = rolloutStatusExitCode;
     this.status = getStatus(applyExitCode, rolloutStatusExitCode);

@@ -8,6 +8,7 @@ ALTER TABLE release_template SET LOGGED;
 ALTER TABLE service SET LOGGED;
 ALTER TABLE release SET LOGGED;
 ALTER TABLE deployment SET LOGGED;
+ALTER TABLE deployment_attribute SET LOGGED;
 ALTER TABLE deployment_log_entry SET LOGGED;
 ALTER TABLE release_attribute SET LOGGED;
 ALTER TABLE identity SET LOGGED;

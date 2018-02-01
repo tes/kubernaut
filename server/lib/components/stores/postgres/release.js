@@ -13,15 +13,13 @@ export default function(options) {
     const { Op, raw, } = sqb;
 
     async function saveRelease(data, meta) {
-      const release = await db.withTransaction(async connection => {
+      return await db.withTransaction(async connection => {
         const service = await _ensureService(connection, data.service, data.service.registry.name, meta);
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
-        return { ...release, service, template, attributes, };
+        return new Release({ ...release, service, template, attributes, });
       });
-
-      return release;
     }
 
     async function _ensureService(connection, data, registry, meta) {

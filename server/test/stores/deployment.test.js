@@ -260,6 +260,7 @@ describe('Deployment Store', () => {
           expect(deployment.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(deployment.createdBy.id).toBe(meta.account.id);
           expect(deployment.createdBy.displayName).toBe(meta.account.displayName);
+          expect(deployment.attributes.replicas).toBe(data.attributes.replicas);
         });
 
         it('should return undefined when release not found', async () => {
