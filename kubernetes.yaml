@@ -10,7 +10,7 @@ metadata:
     ingress.appscode.com/stats: 'true'
 spec:
   backend:
-    serviceName: kubernaut
+    serviceName: {{service}}
     servicePort: '80'
 
 ---
@@ -35,7 +35,7 @@ metadata:
     app: {{service}}
     version: "{{version}}"
 spec:
-  replicas: 2
+  replicas: {{replicas}}
   selector:
     matchLabels:
       app: {{service}}
@@ -48,7 +48,7 @@ spec:
       - name: {{service}}
         image: {{image}}
         ports:
-        - containerPort: 3001
+        - containerPort: {{containerPort}}
           name: web
         env:
         - name: APP_ENV
@@ -61,13 +61,13 @@ spec:
         - name: kubectl-config
           mountPath: "/config/.kube"
           readOnly: true
-        - name: kubernaut-config
-          mountPath: "/opt/kubernaut/secrets"
+        - name: "{{service}}-config"
+          mountPath: "/opt/{{service}}/secrets"
           readOnly: true
       volumes:
         - name: kubectl-config
           secret:
             secretName: kubectl
-        - name: kubernaut-config
+        - name: "{{service}}-config"
           secret:
-            secretName: kubernaut
+            secretName: {{service}}
