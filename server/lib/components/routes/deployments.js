@@ -60,7 +60,7 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
-        const attributes = Object.assign({}, release.attributes, req.body.attributes, { namespace: namespace.name, });
+        const attributes = Object.assign({}, release.attributes, req.body);
         const manifest = getManifest(release, attributes);
         const data = { namespace, manifest, release, attributes, };
         const meta = { date: new Date(), account: { id: req.user.id, }, };

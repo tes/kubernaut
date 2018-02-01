@@ -168,9 +168,7 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
-          attributes: {
-            replicas: 3,
-          },
+          replicas: 3,
         },
       });
 
@@ -253,9 +251,7 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
-          attributes: {
-            replicas: 3,
-          },
+          replicas: 3,
         },
       });
 
@@ -293,9 +289,7 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
-          attributes: {
-            replicas: 3,
-          },
+          replicas: 3,
         },
       }).then(() => {
         throw new Error('Should have failed with 500');
@@ -327,9 +321,7 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
-          attributes: {
-            replicas: 3,
-          },
+          replicas: 3,
         },
       });
 
@@ -370,9 +362,7 @@ describe('Deployments API', () => {
           registry: release.service.registry.name,
           service: release.service.name,
           version: release.version,
-          attributes: {
-            replicas: 3,
-          },
+          replicas: 3,
         },
       }).then(() => {
         throw new Error('Should have failed with 500');

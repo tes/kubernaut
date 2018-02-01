@@ -666,7 +666,7 @@ Lists all active deployments
 Gets a single deployment
 
 ### POST /api/deployments
-Deploys a release using the specified context
+Deploys a release to the specified namespace. "cluster", "namespace", "registry", "service" and "version" are required attributes. These and any additional attributes you specify will be available to the manifest template.
 
 #### Parameters
 | Name   | Type    | Mandatory | Default | Notes   |
@@ -684,10 +684,8 @@ POST /api/deployments?wait=true
    "registry": "default",
    "service": "kubernaut",
    "version": "f2e2bbf-212",
-   "attributes": {
-     "replicas": 3,
-     "containerPort: 3001
-   }
+   "replicas": 3,
+   "containerPort: 3001
  }
 ```
 
