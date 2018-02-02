@@ -17,4 +17,8 @@ CREATE UNIQUE INDEX identity__name__provider__type__uniq ON identity (
   name DESC, provider DESC, type DESC
 ) WHERE deleted_on IS NULL;
 
+CREATE UNIQUE INDEX identity__name__bearer__uniq ON identity (
+  provider DESC
+) WHERE deleted_on IS NULL AND type = 'bearer';
+
 COMMIT;
