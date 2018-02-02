@@ -1,6 +1,10 @@
 module.exports = {
   auth: [
     {
+      id: 'bearer',
+      key: '108f3364c51b529ef449a99f800b6732bf9ff1136fbec3c6935a439ceae9586f',
+    },
+    {
       id: 'local',
     },
   ],

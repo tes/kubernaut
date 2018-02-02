@@ -23,8 +23,10 @@
     "prepush": "IMAGE=kubernaut TAG=$(git rev-parse --short HEAD)-local docker-compose run --rm --entrypoint npm build-kubernaut run test-server -- --ci --bail --no-colors --verbose",
     "lint": "eslint .",
     "check-package-lock": "grep -qc tescloud package-lock.json; test $? -gt 0",
+    "create-key": "create-key",
     "kube-release": "release",
-    "kube-deploy": "deploy"
+    "kube-deploy": "deploy",
+    "create-bearer-token": "./bin/create-bearer-token.js"
   },
   "author": "TES",
   "license": "UNLICENSED",
@@ -53,6 +55,7 @@
     "chalk": "^2.1.0",
     "confabulous": "^1.5.3",
     "connect-pg-simple": "^4.2.1",
+    "cryptus": "^1.2.0",
     "elastic-apm-node": "^0.10.0",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",

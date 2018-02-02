@@ -73,12 +73,12 @@ export default function(options = {}) {
     }
 
     async function findAccount({ name, provider, type, }) {
-      logger.debug(`Finding account by identity: ${type}/${name}/${provider}`);
+      logger.debug(`Finding account by identity: ${name}/${provider}/${type}`);
 
       const account = await db.query(SQL.SELECT_ACCOUNT_BY_IDENTITY, [
         name, provider, type,
       ]);
-      logger.debug(`Found ${account.rowCount} accounts with identity: ${type}/${name}/${provider}`);
+      logger.debug(`Found ${account.rowCount} accounts with identity: ${name}/${provider}/${type}`);
       if (account.rowCount === 0) return;
 
       return getAccount(account.rows[0].id);

@@ -52,6 +52,40 @@ Kubernaut uses dependency injection called [systemic](https://www.npmjs.com/pack
 #### The Client
 The client is a React/Redux app. It deliberately doesn't have any bells and whistles to compensate for the Redux the boilerplate. The aim is to keep the entry barrier as low as possible.
 
+### Authentication
+Kubernaut has a number of authentication strategies. The long term plan is for humans to authenticate via OAuth (e.g. GitHub), and machine users to authenticate via Bearer Tokens. This is still in development, so for the moment the UI automatically authenticates anyone using a fixed user, and you have to manually insert credentials for machine users into PostreSQL. To generate a bearer token, run the following
+```
+npm run create-bearer-token $KEY
+
+Identity (store in database):  8ebc1d21-e55b-47a0-b5a5-d06b51bc0b63
+Bearer Token (use in HTTP requests): djE6OWQxMTU5Y2Q3MzY0ZjEwNDlkNGVmZjQ5ZjI3OGRjOTE6M2UyYWVkZDUwNjQ1ZDI0N2MyMmVmMWMzNzFkNzVkNWQwM2E3N2I1MTgxMWU2NGU0Y2Q2ZjI3NTJiMGMxMjZlYjQ5M2IyYmUyM2JlZmMyZTY2ZmQ1NDE4ZjIxZTJkNmZi
+```
+Then
+```
+INSERT INTO account (id, display_name, created_on, created_by)
+VALUES (
+  uuid_generate_v4(),
+  display_name = 'machine-user-1', -- Make sure this is unique
+  now(),
+  '00000000-0000-0000-0000-000000000000'
+);
+
+INSERT INTO identity (id, account, name, provider, type, created_on, created_by)
+VALUES (
+  uuid_generate_v4(),
+  (SELECT id FROM account WHERE display_name = 'machine-user-1'),
+  '8ebc1d21-e55b-47a0-b5a5-d06b51bc0b63',
+  'kubernaut',
+  'bearer',
+  now(),
+  '00000000-0000-0000-0000-000000000000'
+);
+```
+Now issue API requests using the bearer token
+```
+curl -i -H "Authorization: Bearer djE6OWQxMTU5Y2Q3MzY0ZjEwNDlkNGVmZjQ5ZjI3OGRjOTE6M2UyYWVkZDUwNjQ1ZDI0N2MyMmVmMWMzNzFkNzVkNWQwM2E3N2I1MTgxMWU2NGU0Y2Q2ZjI3NTJiMGMxMjZlYjQ5M2IyYmUyM2JlZmMyZTY2ZmQ1NDE4ZjIxZTJkNmZi" localhost:3001/api/deployments
+```
+
 ## Kubernaut Concepts
 The two most important concepts in kubernaut are **releases** and **deployments**. A release is something you build, whereas a deployment is something you ship. A release is comprised of a versioned docker image, some attributes and a Kubernetes manifest file template. A deployment is comprised of a release, generated Kubernetes manifest file and a destination [Kubernetes namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/).
 
