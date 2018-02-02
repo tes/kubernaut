@@ -65,7 +65,7 @@ Then
 INSERT INTO account (id, display_name, created_on, created_by)
 VALUES (
   uuid_generate_v4(),
-  display_name = 'machine-user-1', -- Make sure this is unique
+  'machine-user-1', -- Make sure this is unique
   now(),
   '00000000-0000-0000-0000-000000000000'
 );

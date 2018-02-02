@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Manages kubernetes deployments",
   "main": "server/build/index.js",
+  "config": {
+    "registry": "payments",
+    "service": "kubernaut",
+    "containerPort": 3001
+  },
   "scripts": {
     "start": "concurrently 'npm run start-server' 'npm run start-client'",
     "start-server": "npm run start-server-dependencies && nodemon server/index.js --exec babel-node --ignore client/",
@@ -26,6 +31,7 @@
     "create-key": "create-key",
     "kube-release": "release",
     "kube-deploy": "deploy",
+    "kube-status": "status",
     "create-bearer-token": "./bin/create-bearer-token.js"
   },
   "author": "TES",
