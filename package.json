@@ -5,7 +5,6 @@
   "main": "server/build/index.js",
   "config": {
     "registry": "payments",
-    "service": "kubernaut",
     "containerPort": 3001
   },
   "scripts": {
