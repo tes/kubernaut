@@ -4,8 +4,10 @@
   "description": "Manages kubernetes deployments",
   "main": "server/build/index.js",
   "config": {
-    "registry": "payments",
-    "containerPort": 3001
+    "kubernaut": {
+      "registry": "payments",
+      "containerPort": 3001
+    }
   },
   "scripts": {
     "start": "concurrently 'npm run start-server' 'npm run start-client'",
