@@ -92,11 +92,11 @@ The two most important concepts in kubernaut are **releases** and **deployments*
 ### Release Workflow
 <pre>
 ┌────────────────────┬──────────────────────────────┐
-│                    │ Kubernetes Manifest Template │
+│                    │ Manifest Template (optional) │
 │                    ├──────────────────────────────┤
-│                    │      Dockerfile              │
+│                    │ Dockerfile                   │
 │    Hello World     ├──────────────────────────────┤
-│                    │       index.js               │
+│                    │ index.js                     │
 │                    ├──────────────────────────────┘
 │                    │
 └────────────────────┘
@@ -123,8 +123,8 @@ The two most important concepts in kubernaut are **releases** and **deployments*
 │                    │ Docker image
 │      Jenkins       │──────────────────────┐
 │                    │                      │
-│                    │                      │
-│                    │                      │
+├────────────────────┤                      │
+│   Kubernaut CLI    │                      │
 └────────────────────┘                      │
           │ Manifest template               │
           │ Release attributes              │
@@ -143,6 +143,15 @@ The two most important concepts in kubernaut are **releases** and **deployments*
 
 ### Deployment Workflow
 <pre>
+┌────────────────────┐
+│                    │
+│                    │
+│                    │
+│       Jenkins      │
+│                    │
+├────────────────────┤
+│   Kubernaut CLI    │
+└────────────────────┘
            │ Release
            │ Namespace
            │
@@ -164,7 +173,7 @@ The two most important concepts in kubernaut are **releases** and **deployments*
 │                    │                      │
 │                    │                      │
 │                    │  Docker image        │
-│ Kubernets Cluster  │◀─────────────────────┘
+│ Kubernetes Cluster │◀─────────────────────┘
 │                    │
 │                    │
 │                    │
