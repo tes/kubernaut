@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "license": "UNLICENSED",
-  "proxy": "http://localhost:3001/",
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:3001/"
+    },
+    "/auth/github": {
+      "target": "http://localhost:3001/"
+    }
+  },
   "dependencies": {
     "bootstrap": "^3.3.7",
     "enzyme-adapter-react-16": "^1.0.2",
