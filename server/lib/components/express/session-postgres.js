@@ -27,6 +27,7 @@ module.exports = function() {
       saveUninitialized: true,
       cookie: {
         httpOnly: false,
+        secure: true,
       },
     }));
   }

@@ -28,6 +28,8 @@ module.exports = function() {
 
     passport.use(strategy);
 
+    app.set('trust proxy', 1);
+
     app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/', }), (req, res) => {
       res.locals.logger.info(`Authenticated ${req.user.id} using github strategy`);
       res.redirect(req.session.returnTo || '/');
