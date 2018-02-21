@@ -18,7 +18,7 @@ module.exports = function() {
       try {
         const personal = { displayName: profile.displayName || profile.username, avatar: profile.photos.map(p => p.value)[0], };
         const identity = { name: profile.id, provider: profile.provider, 'type': 'oauth2', };
-        const meta = { date: new Date(), account: '00000000-0000-0000-0000-000000000000', };
+        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000', }, };
         const account = await store.ensureAccount(personal, identity, meta);
         cb(null, account);
       } catch (err) {
