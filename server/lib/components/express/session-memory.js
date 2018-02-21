@@ -14,6 +14,9 @@ module.exports = function() {
       secret: config.secret,
       resave: true,
       saveUninitialized: true,
+      cookie: {
+        httpOnly: false,
+      },
     }));
   }
 

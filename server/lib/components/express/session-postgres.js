@@ -25,6 +25,9 @@ module.exports = function() {
       store: store,
       resave: true,
       saveUninitialized: true,
+      cookie: {
+        httpOnly: false,
+      },
     }));
   }
 
