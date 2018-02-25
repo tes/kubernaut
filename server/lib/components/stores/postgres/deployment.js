@@ -185,10 +185,10 @@ export default function(options) {
         namespace: new Namespace({
           id: row.namespace_id,
           name: row.namespace_name,
+          context: row.namespace_context,
           cluster: new Cluster({
             id: row.cluster_id,
             name: row.cluster_name,
-            context: row.cluster_context,
             config: row.cluster_config,
           }),
         }),

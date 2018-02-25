@@ -13,7 +13,7 @@ class NamespacesTable extends Component {
     const errorTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--error'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='3'>Error loading namespaces</td>
+          <td className='namespaces-table__body__row__info' colSpan='4'>Error loading namespaces</td>
         </tr>
       </tbody>
     ;
@@ -21,7 +21,7 @@ class NamespacesTable extends Component {
     const loadingTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--loading'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='3'>Loading namespaces…</td>
+          <td className='namespaces-table__body__row__info' colSpan='4'>Loading namespaces…</td>
         </tr>
       </tbody>
     ;
@@ -29,7 +29,7 @@ class NamespacesTable extends Component {
     const emptyTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--empty'>
         <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='3'>There are no namespaces</td>
+          <td className='namespaces-table__body__row__info' colSpan='4'>There are no namespaces</td>
         </tr>
       </tbody>
     ;
@@ -44,6 +44,7 @@ class NamespacesTable extends Component {
               <span className='namespaces-table__body__row__created-date__ago'><Ago date={namespace.createdOn} /></span>
             </td>
             <td className='namespaces-table__body__row__namespace-name'><NamespaceLink namespace={namespace} /></td>
+            <td className='namespaces-table__body__row__context'>{namespace.context}</td>
             <td className='namespaces-table__body__row__created-by'><AccountLink account={namespace.createdBy} /></td>
           </tr>;
         })
@@ -58,6 +59,7 @@ class NamespacesTable extends Component {
             <tr>
               <th className='namespaces-table__heading__created-date'>Created</th>
               <th className='namespaces-table__heading__namespace-name'>Name</th>
+              <th className='namespaces-table__heading__context'>Context</th>
               <th className='namespaces-table__heading__created-by'>Created By</th>
             </tr>
           </thead>

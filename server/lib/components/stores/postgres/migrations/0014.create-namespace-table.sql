@@ -4,6 +4,7 @@ CREATE TABLE namespace (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   cluster UUID NOT NULL REFERENCES cluster,
+  context TEXT NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,

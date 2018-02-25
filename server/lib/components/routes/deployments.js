@@ -54,10 +54,10 @@ export default function(options = {}) {
         const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version, });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
-        const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.cluster.context, res.locals.logger);
-        if (!contextOk) return next(Boom.badRequest(`context ${namespace.cluster.context} was not found`));
+        const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.context, res.locals.logger);
+        if (!contextOk) return next(Boom.badRequest(`context ${namespace.context} was not found`));
 
-        const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.cluster.context, namespace.name, res.locals.logger);
+        const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
         const attributes = Object.assign({}, release.attributes, req.body);
@@ -124,7 +124,7 @@ export default function(options = {}) {
     async function applyManifest(deployment, emitter) {
       const code = await kubernetes.apply(
         deployment.namespace.cluster.config,
-        deployment.namespace.cluster.context,
+        deployment.namespace.context,
         deployment.namespace.name,
         deployment.manifest.yaml,
         emitter,
@@ -136,7 +136,7 @@ export default function(options = {}) {
     async function getRolloutStatus(deployment, emitter) {
       const code = await kubernetes.rolloutStatus(
         deployment.namespace.cluster.config,
-        deployment.namespace.cluster.context,
+        deployment.namespace.context,
         deployment.namespace.name,
         deployment.release.service.name,
         emitter

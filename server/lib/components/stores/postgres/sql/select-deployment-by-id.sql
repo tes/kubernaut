@@ -15,9 +15,9 @@ SELECT
   r.version AS release_version,
   n.id AS namespace_id,
   n.name AS namespace_name,
+  n.context AS namespace_context,
   c.id AS cluster_id,
   c.name AS cluster_name,
-  c.context AS cluster_context,
   c.config AS cluster_config
 FROM
   active_deployment__vw d,

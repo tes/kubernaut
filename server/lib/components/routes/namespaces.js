@@ -35,11 +35,15 @@ export default function(options = {}) {
         if (!req.user.isNamespaceAdmin()) return next(Boom.forbidden());
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.cluster) return next(Boom.badRequest('cluster is required'));
+        if (!req.body.context) return next(Boom.badRequest('context is required'));
 
         const cluster = await store.findCluster({ name: req.body.cluster, });
         if (!cluster) return next(Boom.badRequest(`cluster ${req.body.cluster} was not found`));
 
-        const namespaceOk = await kubernetes.checkNamespace(cluster.config, cluster.context, req.body.name, res.locals.logger);
+        const contextOk = await kubernetes.checkContext(cluster.config, req.body.context, res.locals.logger);
+        if (!contextOk) return next(Boom.badRequest(`context ${req.body.context} was not found on ${cluster.name} cluster`));
+
+        const namespaceOk = await kubernetes.checkNamespace(cluster.config, req.body.context, req.body.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.name} was not found on ${cluster.name} cluster`));
 
         const data = { name: req.body.name, context: req.body.context, };

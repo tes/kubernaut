@@ -251,9 +251,9 @@ describe('Deployment Store', () => {
           expect(deployment.id).toBe(saved.id);
           expect(deployment.namespace.id).toBe(saved.namespace.id);
           expect(deployment.namespace.name).toBe(saved.namespace.name);
+          expect(deployment.namespace.context).toBe(saved.namespace.context);
           expect(deployment.namespace.cluster.id).toBe(saved.namespace.cluster.id);
           expect(deployment.namespace.cluster.name).toBe(saved.namespace.cluster.name);
-          expect(deployment.namespace.cluster.context).toBe(saved.namespace.cluster.context);
           expect(deployment.release.service.id).toBe(saved.release.service.id);
           expect(deployment.release.service.name).toBe(saved.release.service.name);
           expect(deployment.release.version).toBe(saved.release.version);
@@ -427,8 +427,8 @@ describe('Deployment Store', () => {
 
         it('should filter deployments by namespace ids', async () => {
           const cluster = await saveCluster();
-          const namespace1 = await saveNamespace({ name: 'ns1', cluster, });
-          const namespace2 = await saveNamespace({ name: 'ns2', cluster, });
+          const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test', });
+          const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test', });
           const release1 = await saveRelease(makeRelease());
           const release2 = await saveRelease(makeRelease());
           const deployment1 = makeDeployment({
@@ -457,8 +457,8 @@ describe('Deployment Store', () => {
 
         it('should filter deployments by criteria', async () => {
           const cluster = await saveCluster();
-          const namespace1 = await saveNamespace({ name: 'ns1', cluster, });
-          const namespace2 = await saveNamespace({ name: 'ns2', cluster, });
+          const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test', });
+          const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test', });
           const release1 = await saveRelease(makeRelease({
             service: {
               name: 's1',

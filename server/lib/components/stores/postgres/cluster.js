@@ -13,7 +13,7 @@ export default function(options) {
       logger.debug(`Saving cluster: ${data.name}`);
 
       const result = await db.query(SQL.SAVE_CLUSTER, [
-        data.name, data.context, data.config, meta.date, meta.account.id,
+        data.name, data.config, meta.date, meta.account.id,
       ]);
 
       const cluster = new Cluster({
@@ -88,7 +88,6 @@ export default function(options) {
       return new Cluster({
         id: row.id,
         name: row.name,
-        context: row.context,
         config: row.config,
         createdOn: row.created_on,
         createdBy: new Account({

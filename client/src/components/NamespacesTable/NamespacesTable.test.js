@@ -13,6 +13,7 @@ describe('NamespacesTable', () => {
     expect(wrapper.find('.namespaces-table__heading').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__heading__created-date').text()).toBe('Created');
     expect(wrapper.find('.namespaces-table__heading__namespace-name').text()).toBe('Name');
+    expect(wrapper.find('.namespaces-table__heading__context').text()).toBe('Context');
     expect(wrapper.find('.namespaces-table__heading__created-by').text()).toBe('Created By');
   });
 
@@ -30,6 +31,7 @@ describe('NamespacesTable', () => {
       return {
         id: `namespace-${i+1}`,
         name: 'svc-ns',
+        context: 'test-ctx',
         createdOn: new Date('2017-07-01T16:15:14.000Z'),
         createdBy: {
           id: '123',
@@ -48,6 +50,7 @@ describe('NamespacesTable', () => {
     expect(row.find('.namespaces-table__body__row__created-date__on').find(Human).prop('date')).toBe(namespaces.items[0].createdOn);
     expect(row.find('.namespaces-table__body__row__created-date__ago').find(Ago).prop('date')).toBe(namespaces.items[0].createdOn);
     expect(row.find('.namespaces-table__body__row__namespace-name').find(NamespaceLink).prop('namespace')).toBe(namespaces.items[0]);
+    expect(row.find('.namespaces-table__body__row__context').text()).toBe(namespaces.items[0].context);
     expect(row.find('.namespaces-table__body__row__created-by').find(AccountLink).prop('account')).toBe(namespaces.items[0].createdBy);
   });
 

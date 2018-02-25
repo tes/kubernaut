@@ -117,6 +117,7 @@ describe('Namespace Store', () => {
           expect(namespace).toBeDefined();
           expect(namespace.id).toBe(saved.id);
           expect(namespace.name).toBe(data.name);
+          expect(namespace.context).toBe(data.context);
           expect(namespace.cluster.id).toBe(data.cluster.id);
           expect(namespace.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(namespace.createdBy.id).toBe(meta.account.id);

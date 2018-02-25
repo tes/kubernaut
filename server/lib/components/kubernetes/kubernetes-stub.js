@@ -66,10 +66,9 @@ export default function(options = {}) {
       });
     }
 
-    function checkCluster(config, context) {
+    function checkCluster(config) {
       return new Promise((resolve, reject) => {
-        if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
-        resolve(contexts[context].cluster);
+        resolve(true);
       });
     }
 

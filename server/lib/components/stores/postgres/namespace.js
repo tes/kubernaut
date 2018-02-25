@@ -20,7 +20,7 @@ export default function(options) {
       logger.debug(`Saving namespace: ${data.cluster.id}/${data.name}`);
 
       const result = await db.query(SQL.SAVE_NAMESPACE, [
-        data.name, data.cluster.id, meta.date, meta.account.id,
+        data.name, data.cluster.id, data.context, meta.date, meta.account.id,
       ]);
 
       const namespace = new Namespace({
@@ -45,7 +45,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findNamespacesBuilder = sqb
-        .select('n.id', 'n.name', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.context cluster_context', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
@@ -98,10 +98,10 @@ export default function(options) {
       return new Namespace({
         id: row.id,
         name: row.name,
+        context: row.context,
         cluster: {
           id: row.cluster_id,
           name: row.cluster_name,
-          context: row.cluster_context,
           config: row.cluster_config,
         },
         createdOn: row.created_on,

@@ -124,7 +124,6 @@ function makeRelease(overrides = {}) {
 function makeCluster(overrides = {}) {
   return new Cluster(merge({
     name: chance.word({ length: 32, }),
-    context: chance.word({ length: 32, }),
     config: `.kube/${chance.word()}`,
   }, overrides));
 }
@@ -133,6 +132,7 @@ function makeNamespace(overrides = {}) {
   return new Namespace(merge({
     name: chance.word({ length: 32, }),
     cluster: makeCluster(),
+    context: chance.word({ length: 32, }),
   }, overrides));
 }
 

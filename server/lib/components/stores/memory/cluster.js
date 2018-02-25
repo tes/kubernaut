@@ -53,7 +53,7 @@ export default function(options) {
     }
 
     function reportDuplicateClusters(cluster) {
-      if (clusters.find(c => (c.name === cluster.name || c.context === cluster.context) && !c.deletedOn)) throw Object.assign(new Error('Duplicate cluster'), { code: '23505', });
+      if (clusters.find(c => c.name === cluster.name && !c.deletedOn)) throw Object.assign(new Error('Duplicate cluster'), { code: '23505', });
     }
 
     function append(collection, item) {

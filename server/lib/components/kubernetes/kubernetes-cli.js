@@ -61,8 +61,8 @@ export default function(options = {}) {
       return check(['--kubeconfig', config, 'config', 'get-contexts', context, ], logger);
     }
 
-    function checkCluster(config, context, logger) {
-      return check(['--kubeconfig', config, '--context', context, 'cluster-info',], logger);
+    function checkCluster(config, logger) {
+      return check(['--kubeconfig', config, 'cluster-info',], logger);
     }
 
     function checkNamespace(config, context, namespace, logger) {
