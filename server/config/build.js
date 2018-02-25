@@ -20,6 +20,9 @@ module.exports = {
   },
   session: {
     secret: 'secret',
+    cookie: {
+      secure: false,
+    },
   },
   store: {
     unsafe: true,

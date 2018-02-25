@@ -1,7 +1,7 @@
 import path from 'path';
 import express from 'systemic-express/express';
 
-const APP_ROUTES = /^(?!(?:\/api\/|\/__\/)).*/;
+const APP_ROUTES = /^(?!(?:\/auth\/|\/api\/|\/__\/)).*/;
 
 module.exports = function() {
 
@@ -30,6 +30,9 @@ module.exports = function() {
     // Handle requests to the client app without disabling logging
     app.get([
       /^\/$/,
+      '/registries/:registry?',
+      '/namespaces/:namespace?',
+      '/accounts/:account?',
       '/releases/:release?',
       '/deployments/:deployment?',
     ], clientApp(200));

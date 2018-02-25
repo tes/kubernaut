@@ -36,7 +36,10 @@ export default function() {
 
     function middleware(authenticationMethods) {
       return function(method) {
-        return passport.authenticate(authenticationMethods[method]);
+        return function(req, res, next) {
+          if (req.isAuthenticated()) return next();
+          passport.authenticate(authenticationMethods[method])(req, res, next);
+        };
       };
     }
   }

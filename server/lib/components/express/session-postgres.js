@@ -21,14 +21,8 @@ module.exports = function() {
     });
 
     cb(null, session({
-      secret: config.secret,
-      store: store,
-      resave: true,
-      saveUninitialized: true,
-      cookie: {
-        httpOnly: false,
-        secure: true,
-      },
+      ...config,
+      store,
     }));
   }
 

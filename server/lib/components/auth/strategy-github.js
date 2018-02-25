@@ -35,7 +35,7 @@ module.exports = function() {
       res.redirect(req.session.returnTo || '/');
     });
 
-    cb(null, { name: strategy.name, app: true, api: false, });
+    cb(null, { name: strategy.name, app: true, api: true, });
   }
 
   return {

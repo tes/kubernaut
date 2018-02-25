@@ -1,15 +1,16 @@
 import passport from 'passport';
+import Account from '../../domain/Account';
 
 export default function() {
 
   function start({ config, }, cb) {
 
-    passport.serializeUser((user, cb) => {
-      cb(null, user);
+    passport.serializeUser((account, cb) => {
+      cb(null, account);
     });
 
-    passport.deserializeUser((obj, cb) => {
-      cb(null, obj);
+    passport.deserializeUser((account, cb) => {
+      cb(null, new Account({ ...account, }));
     });
 
     cb(null, passport);

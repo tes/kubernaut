@@ -46,7 +46,12 @@ module.exports = {
     port: 3001,
   },
   session: {
-    store: 'postgres',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: false,
+      secure: true,
+    },
   },
   store: {
     nukeable: false,

@@ -10,14 +10,7 @@ module.exports = function() {
 
     logger.info('Using Memory backed sessions');
 
-    cb(null, session({
-      secret: config.secret,
-      resave: true,
-      saveUninitialized: true,
-      cookie: {
-        httpOnly: false,
-      },
-    }));
+    cb(null, session(config));
   }
 
   return {

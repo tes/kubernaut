@@ -23,8 +23,10 @@ module.exports = {
     port: 13000,
   },
   session: {
-    store: 'memory',
     secret: 'secret',
+    cookie: {
+      secure: false,
+    },
   },
   store: {
     unsafe: true,
