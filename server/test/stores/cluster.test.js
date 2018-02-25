@@ -108,6 +108,7 @@ describe('Cluster Store', () => {
           expect(cluster.id).toBe(saved.id);
           expect(cluster.name).toBe(data.name);
           expect(cluster.context).toBe(data.context);
+          expect(cluster.config).toBe(data.config);
           expect(cluster.createdOn.toISOString()).toBe(meta.date.toISOString());
           expect(cluster.createdBy.id).toBe(meta.account.id);
           expect(cluster.createdBy.displayName).toBe(meta.account.displayName);

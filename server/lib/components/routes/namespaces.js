@@ -39,7 +39,7 @@ export default function(options = {}) {
         const cluster = await store.findCluster({ name: req.body.cluster, });
         if (!cluster) return next(Boom.badRequest(`cluster ${req.body.cluster} was not found`));
 
-        const namespaceOk = await kubernetes.checkNamespace(cluster.context, req.body.name, res.locals.logger);
+        const namespaceOk = await kubernetes.checkNamespace(cluster.config, cluster.context, req.body.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.name} was not found on ${cluster.name} cluster`));
 
         const data = { name: req.body.name, context: req.body.context, };

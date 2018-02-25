@@ -102,6 +102,7 @@ export default function(options) {
           id: row.cluster_id,
           name: row.cluster_name,
           context: row.cluster_context,
+          config: row.cluster_config,
         },
         createdOn: row.created_on,
         createdBy: new Account({

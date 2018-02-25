@@ -270,6 +270,7 @@ Represents a Kubernetes cluster
 | id        |             |
 | name      | The cluster name |
 | context   | The context to be used when interacting with this cluster |
+| config    | The path to the kubeconfig to be used when communicating with the cluster |
 
 
 ### Namespace
@@ -489,7 +490,8 @@ GET /api/namespaces?limit=50&offset=0
       "cluster": {
         "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
         "name": "development-eu",
-        "context": "dev"
+        "context": "dev",
+        "config": "/path/to/config"
       },
       "createdOn": "2018-01-01T13:14:15.000Z",
       "createdBy": {
@@ -526,6 +528,7 @@ GET /api/clusters?limit=50&offset=0
       "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
       "name": "development-eu",
       "context": "dev",
+      "config": "/path/to/config",
       "createdOn": "2018-01-01T13:14:15.000Z",
       "createdBy":{
         "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
@@ -555,6 +558,7 @@ GET /api/clusters/a6d41d27-d96e-49fd-ae41-7419a42aa377
   "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
   "name": "development-eu",
   "context": "dev",
+  "config": "/path/to/config",
   "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
@@ -573,7 +577,8 @@ POST /api/clusters
 ```json
 {
   "name": "development-eu",
-  "context": "dev"
+  "context": "dev",
+  "config": "/path/to/config"
 }
 ```
 
@@ -583,6 +588,7 @@ POST /api/clusters
   "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
   "name": "development-eu",
   "context": "dev",
+  "config": "/path/to/config",
   "createdOn": "2018-01-01T13:14:15.000Z",
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
@@ -631,7 +637,8 @@ GET /api/namespaces/95e7b0b7-6202-4f45-a2cf-b96709cb07b1
   "cluster": {
     "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
     "name": "development-eu",
-    "context": "dev"
+    "context": "dev",
+    "config": "/path/to/config"
   },
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",
@@ -662,7 +669,8 @@ POST /api/namespaces
   "cluster": {
     "id": "a6d41d27-d96e-49fd-ae41-7419a42aa377",
     "name": "development-eu",
-    "context": "dev"
+    "context": "dev",
+    "config": "/path/to/config"
   },
   "createdBy": {
     "id": "95c0c295-7c00-408e-9409-b9fe8f2db1be",

@@ -145,6 +145,7 @@ describe('Clusters API', () => {
 
       const data = makeCluster({
         context: 'test',
+        config: __filename,
       });
 
       const response = await request({
@@ -159,6 +160,7 @@ describe('Clusters API', () => {
 
       expect(cluster).toBeDefined();
       expect(cluster.name).toBe(data.name);
+      expect(cluster.config).toBe(data.config);
     });
 
     it('should reject payloads without a name', async () => {
@@ -171,6 +173,7 @@ describe('Clusters API', () => {
         resolveWithFullResponse: true,
         json: {
           context: 'foo',
+          config: __filename,
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -210,6 +213,7 @@ describe('Clusters API', () => {
         json: {
           name: 'Development',
           context: 'missing',
+          config: __filename,
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -217,7 +221,47 @@ describe('Clusters API', () => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('Context missing was not found');
       });
+    });
 
+    it('should reject payloads without a config', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+          context: 'test',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('config is required');
+      });
+    });
+
+    it('should reject payloads missing config', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+          context: 'test',
+          config: 'does-not-exist-123123123',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('Config does-not-exist-123123123 was not found');
+      });
     });
 
     it('should reject unreachable clusters', async () => {
@@ -231,6 +275,7 @@ describe('Clusters API', () => {
         json: {
           name: 'Development',
           context: 'xcluster',
+          config: __filename,
         },
       }).then(() => {
         throw new Error('Should have failed with 400');

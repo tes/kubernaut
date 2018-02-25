@@ -1,4 +1,7 @@
 import { safeLoadAll, } from 'js-yaml';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 export default function(options = {}) {
 
@@ -28,7 +31,7 @@ export default function(options = {}) {
 
   function start({ contexts = defaultContexts(), }, cb) {
 
-    function apply(context, namespace, manifest, emitter) {
+    function apply(config, context, namespace, manifest, emitter) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
@@ -48,27 +51,36 @@ export default function(options = {}) {
       });
     }
 
-    function checkContext(context) {
+    function checkConfig(config, logger) {
+      const fullPath = path.resolve(os.homedir(), config);
+      return new Promise((resolve, reject) => {
+        fs.access(fullPath, fs.constants.R_OK, (err) => {
+          return err ? resolve(false) : resolve(true);
+        });
+      });
+    }
+
+    function checkContext(config, context) {
       return new Promise((resolve) => {
         resolve(Object.keys(contexts).includes(context));
       });
     }
 
-    function checkCluster(context) {
+    function checkCluster(config, context) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         resolve(contexts[context].cluster);
       });
     }
 
-    function checkNamespace(context, namespace) {
+    function checkNamespace(config, context, namespace) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         resolve(Object.keys(contexts[context].namespaces).includes(namespace));
       });
     }
 
-    function checkDeployment(context, namespace, name) {
+    function checkDeployment(config, context, namespace, name) {
       return new Promise((resolve, reject) => {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
@@ -76,7 +88,7 @@ export default function(options = {}) {
       });
     }
 
-    function rolloutStatus(context, namespace, name, emitter) {
+    function rolloutStatus(config, context, namespace, name, emitter) {
       return new Promise((resolve, reject) => {
         timeoutId = setTimeout(async () => {
           emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}`, });
@@ -109,6 +121,7 @@ export default function(options = {}) {
 
     return cb(null, {
       apply,
+      checkConfig,
       checkContext,
       checkCluster,
       checkDeployment,

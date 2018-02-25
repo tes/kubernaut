@@ -1,12 +1,15 @@
 import { spawn, } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 export default function(options = {}) {
 
   function start(cb) {
 
-    function apply(context, namespace, manifest, emitter, ) {
+    function apply(config, context, namespace, manifest, emitter, ) {
       return new Promise(async (resolve, reject) => {
-        const args = ['--context', context, '--namespace', namespace, 'apply', '--filename', '-',];
+        const args = ['--kubeconfig', config, '--context', context, '--namespace', namespace, 'apply', '--filename', '-',];
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')} \${KUBERNETES_MANIFEST}`, });
 
         const kubectl = spawn('kubectl', args);
@@ -25,10 +28,9 @@ export default function(options = {}) {
       });
     }
 
-
-    function rolloutStatus(context, namespace, name, emitter) {
+    function rolloutStatus(config, context, namespace, name, emitter) {
       return new Promise(async (resolve, reject) => {
-        const args = ['--context', context, '--namespace', namespace, 'rollout', 'status', `deployments/${name}`,];
+        const args = ['--kubeconfig', config, '--context', context, '--namespace', namespace, 'rollout', 'status', `deployments/${name}`,];
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl ${args.join(' ')}`, });
 
         const kubectl = spawn('kubectl', args);
@@ -46,20 +48,29 @@ export default function(options = {}) {
       });
     }
 
-    function checkContext(context, logger) {
-      return check(['config', 'get-contexts', context,], logger);
+    function checkConfig(config, logger) {
+      const fullPath = path.resolve(os.homedir(), config);
+      return new Promise((resolve, reject) => {
+        fs.access(fullPath, fs.constants.R_OK, (err) => {
+          return err ? resolve(false) : resolve(true);
+        });
+      });
     }
 
-    function checkCluster(context, logger) {
-      return check(['--context', context, 'cluster-info',], logger);
+    function checkContext(config, context, logger) {
+      return check(['--kubeconfig', config, 'config', 'get-contexts', context, ], logger);
     }
 
-    function checkNamespace(context, namespace, logger) {
-      return check(['--context', context, 'get', 'namespace', namespace,], logger);
+    function checkCluster(config, context, logger) {
+      return check(['--kubeconfig', config, '--context', context, 'cluster-info',], logger);
     }
 
-    function checkDeployment(context, namespace, name, logger) {
-      return check(['--context', context, '--namespace', namespace, 'get', 'deployment', name,], logger);
+    function checkNamespace(config, context, namespace, logger) {
+      return check(['--kubeconfig', config, '--context', context, 'get', 'namespace', namespace,], logger);
+    }
+
+    function checkDeployment(config, context, namespace, name, logger) {
+      return check(['--kubeconfig', config, '--context', context, '--namespace', namespace, 'get', 'deployment', name,], logger);
     }
 
     function check(args, logger) {
@@ -81,6 +92,7 @@ export default function(options = {}) {
 
     return cb(null, {
       apply,
+      checkConfig,
       checkContext,
       checkCluster,
       checkNamespace,

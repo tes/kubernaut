@@ -2,6 +2,7 @@ SELECT
   c.id,
   c.name,
   c.context,
+  c.config,
   c.created_on,
   cb.id AS created_by_id,
   cb.display_name AS created_by_display_name

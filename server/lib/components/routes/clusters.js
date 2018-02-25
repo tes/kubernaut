@@ -32,16 +32,21 @@ export default function(options = {}) {
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.context) return next(Boom.badRequest('context is required'));
+        if (!req.body.config) return next(Boom.badRequest('config is required'));
 
-        const contextOk = await kubernetes.checkContext(req.body.context, res.locals.logger);
+        const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
+        if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
+
+        const contextOk = await kubernetes.checkContext(req.body.config, req.body.context, res.locals.logger);
         if (!contextOk) return next(Boom.badRequest(`Context ${req.body.context} was not found`));
 
-        const clusterOk = await kubernetes.checkCluster(req.body.context, res.locals.logger);
+        const clusterOk = await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
         if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster using context ${req.body.context}`));
 
         const data = {
           name: req.body.name,
           context: req.body.context,
+          config: req.body.config,
         };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const cluster = await store.saveCluster(data, meta);

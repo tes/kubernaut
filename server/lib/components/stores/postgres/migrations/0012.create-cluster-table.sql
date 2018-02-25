@@ -4,6 +4,7 @@ CREATE TABLE cluster (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   context TEXT NOT NULL,
+  config TEXT NOT NULL,
   created_on TIMESTAMP WITH TIME ZONE NOT NULL,
   created_by UUID NOT NULL REFERENCES account,
   deleted_on TIMESTAMP WITH TIME ZONE,
