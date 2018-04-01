@@ -21,9 +21,10 @@ export default function(options = {}) {
 
     app.get('/api/registries/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermissionOnRegistry(req.params.id, 'registries-read')) return next(Boom.forbidden());
+
         const registry = await store.getRegistry(req.params.id);
         if (!registry) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
         return res.json(registry);
       } catch (err) {
         next(err);
@@ -32,7 +33,8 @@ export default function(options = {}) {
 
     app.post('/api/registries', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.isRegistryAdmin()) return next(Boom.forbidden());
+        if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
+
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         const data = { name: req.body.name, };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
@@ -45,7 +47,8 @@ export default function(options = {}) {
 
     app.delete('/api/registries/:id', async (req, res, next) => {
       try {
-        if (!req.user.isRegistryAdmin()) return next(Boom.forbidden());
+        if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteRegistry(req.params.id, meta);
         res.status(204).send();

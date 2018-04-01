@@ -119,7 +119,7 @@ describe('Registries API', () => {
       expect(registry.id).toBe(saved.id);
     });
 
-    it('should return 404 for missing registries', async () => {
+    it('should return 403 for missing registries', async () => {
 
       loggerOptions.suppress = true;
 
@@ -129,9 +129,9 @@ describe('Registries API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 404');
+        throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
+        expect(reason.response.statusCode).toBe(403);
       });
     });
   });

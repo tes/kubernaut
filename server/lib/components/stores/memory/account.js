@@ -16,8 +16,8 @@ export default function(options = {}) {
           "deployments-write", "deployments-read",
           "client",
           "accounts-write", "accounts-read",
-          "namespaces-write", "namespaces-read",
-          "registries-write", "registries-read",
+          "namespaces-write", "namespaces-read", "namespaces-grant",
+          "registries-write", "registries-read", "registries-grant",
         ],
       },
     };

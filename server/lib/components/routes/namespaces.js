@@ -21,9 +21,10 @@ export default function(options = {}) {
 
     app.get('/api/namespaces/:id', async (req, res, next) => {
       try {
+        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-read')) return next(Boom.forbidden());
+
         const namespace = await store.getNamespace(req.params.id);
         if (!namespace) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnNamespace(namespace.id, 'namespaces-read')) return next(Boom.forbidden());
         res.json(namespace);
       } catch (err) {
         next(err);
@@ -32,10 +33,12 @@ export default function(options = {}) {
 
     app.post('/api/namespaces', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.isNamespaceAdmin()) return next(Boom.forbidden());
+        if (!req.user.hasPermission('namespaces-write')) return next(Boom.forbidden());
+
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.cluster) return next(Boom.badRequest('cluster is required'));
         if (!req.body.context) return next(Boom.badRequest('context is required'));
+
 
         const cluster = await store.findCluster({ name: req.body.cluster, });
         if (!cluster) return next(Boom.badRequest(`cluster ${req.body.cluster} was not found`));
@@ -57,7 +60,8 @@ export default function(options = {}) {
 
     app.delete('/api/namespaces/:id', async (req, res, next) => {
       try {
-        if (!req.user.isNamespaceAdmin()) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         await store.deleteNamespace(req.params.id, meta);
         res.status(204).send();

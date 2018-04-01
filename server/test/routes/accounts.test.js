@@ -275,7 +275,6 @@ describe('Accounts API', () => {
       });
     });
 
-
     it('should reject payloads without a type', async () => {
 
       loggerOptions.suppress = true;
@@ -297,28 +296,6 @@ describe('Accounts API', () => {
       });
     });
   });
-
-  describe('DELETE /api/identities/:identityId', () => {
-
-    it('should delete an identity', async () => {
-
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
-      const identity = await store.saveIdentity(saved.id, makeIdentity(), makeMeta());
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities/${identity.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response.statusCode).toBe(204);
-
-      const account = await store.findAccount({ ...identity, });
-      expect(account).toBe(undefined);
-    });
-  });
-
 
   describe('POST /api/roles/namespace', () => {
 
@@ -490,50 +467,6 @@ describe('Accounts API', () => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('registry is required');
       });
-    });
-  });
-
-  describe('DELETE /api/roles/registry/:roleId', () => {
-
-    it('should delete a role', async () => {
-
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
-      const role = await store.grantRoleOnRegistry(saved.id, 'admin', null, makeMeta());
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/registry/${role.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response.statusCode).toBe(204);
-
-      const account = await store.getAccount(saved.id);
-      expect(account).toBeDefined();
-      expect(account.roles.admin).toBe(undefined);
-    });
-  });
-
-  describe('DELETE /api/roles/namespace/:roleId', () => {
-
-    it('should delete a role', async () => {
-
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
-      const role = await store.grantRoleOnNamespace(saved.id, 'admin', null, makeMeta());
-
-      const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace/${role.id}`,
-        method: 'DELETE',
-        resolveWithFullResponse: true,
-        json: true,
-      });
-
-      expect(response.statusCode).toBe(204);
-
-      const account = await store.getAccount(saved.id);
-      expect(account).toBeDefined();
-      expect(account.roles.admin).toBe(undefined);
     });
   });
 

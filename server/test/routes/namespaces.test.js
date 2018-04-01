@@ -122,7 +122,7 @@ describe('Namespaces API', () => {
       expect(namespace.id).toBe(saved.id);
     });
 
-    it('should return 404 for missing namespaces', async () => {
+    it('should return 403 for missing namespaces', async () => {
 
       loggerOptions.suppress = true;
 
@@ -132,9 +132,9 @@ describe('Namespaces API', () => {
         resolveWithFullResponse: true,
         json: true,
       }).then(() => {
-        throw new Error('Should have failed with 404');
+        throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(404);
+        expect(reason.response.statusCode).toBe(403);
       });
     });
   });

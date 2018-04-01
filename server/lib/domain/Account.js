@@ -19,6 +19,14 @@ export default class Account {
     return has(this, 'roles.admin.registries');
   }
 
+  hasPermission(permission) {
+    return has(this, 'roles.admin');
+  }
+
+  hasPermissionOnAccount(accountId, permission) {
+    return this.hasPermission(permission) || accountId === this.id;
+  }
+
   hasPermissionOnNamespace(namespace, permission) {
     return Object.keys(this.roles).reduce((permissions, name) => {
       if (!this.roles[name].namespaces.includes(namespace)) return permissions;

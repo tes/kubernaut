@@ -773,28 +773,33 @@ Creates an account identity
 ```json
 {
   "account": "7008eeaa-0e58-45e9-a7cb-773edf9758c3",
-  "name": "cressie176",
-  "provider": "github",
-  "type": "oauth"
+  "name": "8ebc1d21-e55b-47a0-b5a5-d06b51bc0b63",
+  "provider": "kubernaut",
+  "type": "bearer"
 }
 ```
 
-
-### DELETE /api/identities/:id
-Delets an account identity
-
-### POST /api/roles
-Grants a role to a user account
+### POST /api/roles/registry
+Grants a role on a registry to a user account
 
 #### Body
 ```json
 {
   "account": "7008eeaa-0e58-45e9-a7cb-773edf9758c3",
-  "role": "admin"
+  "role": "admin",
+  "registry": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1"
 }
 ```
 
-### DELETE /api/roles/:id
-Revokes a role from a user account
+### POST /api/roles/namespace
+Grants a role on a namespace to a user account
+
+#### Body
+```json
+{
+  "account": "7008eeaa-0e58-45e9-a7cb-773edf9758c3",
+  "role": "admin",
+  "namespace": "95e7b0b7-6202-4f45-a2cf-b96709cb07b1"
+}
 
 
