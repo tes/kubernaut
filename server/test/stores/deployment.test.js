@@ -254,6 +254,7 @@ describe('Deployment Store', () => {
           expect(deployment.namespace.context).toBe(saved.namespace.context);
           expect(deployment.namespace.cluster.id).toBe(saved.namespace.cluster.id);
           expect(deployment.namespace.cluster.name).toBe(saved.namespace.cluster.name);
+          expect(deployment.namespace.cluster.config).toBe(saved.namespace.cluster.config);
           expect(deployment.release.service.id).toBe(saved.release.service.id);
           expect(deployment.release.service.name).toBe(saved.release.service.name);
           expect(deployment.release.version).toBe(saved.release.version);

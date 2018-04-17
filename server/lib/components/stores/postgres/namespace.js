@@ -45,7 +45,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findNamespacesBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
