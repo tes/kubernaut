@@ -1,7 +1,6 @@
 import system from '../lib/system';
 import { fake as clock, } from 'groundhog-day';
 import memorySession from '../lib/components/express/session-memory';
-// import memoryStore from '../lib/components/stores/memory';
 import kubernetes from '../lib/components/kubernetes/kubernetes-stub';
 
 export default function() {

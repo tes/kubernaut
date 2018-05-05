@@ -35,7 +35,8 @@ describe('Releases API', () => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(cb => {
+  afterAll(async cb => {
+    await store.nuke();
     system.stop(cb);
   });
 

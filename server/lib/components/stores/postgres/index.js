@@ -31,4 +31,3 @@ module.exports = new System({ name: 'stores/postgres', })
     { component: 'store.release', destination: 'release', },
     { component: 'store.deployment', destination: 'deployment', },
   );
-
