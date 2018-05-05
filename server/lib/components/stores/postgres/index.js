@@ -1,5 +1,4 @@
 import System from 'systemic';
-import multiTenant from './multi-tenant';
 import migrator from './migrator';
 import postgres from 'systemic-pg';
 import db from './db';
@@ -12,9 +11,8 @@ import deployment from './deployment';
 import store from './store';
 
 module.exports = new System({ name: 'stores/postgres', })
-  .add('multiTenant', multiTenant()).dependsOn({ component: 'config', source: 'postgres', destination: 'config', }, 'logger' )
-  .add('migrator', migrator()).dependsOn({ component: 'multiTenant', destination: 'config', }, )
-  .add('postgres', postgres()).dependsOn({ component: 'multiTenant', destination: 'config', }, 'logger', 'migrator')
+  .add('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config', }, )
+  .add('postgres', postgres()).dependsOn('config', 'logger', 'migrator')
   .add('db', db()).dependsOn('config', 'logger', 'postgres')
   .add('store.registry', registry()).dependsOn('config', 'logger', 'db')
   .add('store.cluster', cluster()).dependsOn('config', 'logger', 'db')
