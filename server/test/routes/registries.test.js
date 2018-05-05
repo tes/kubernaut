@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRegistry, makeMeta, } from '../factories';
+import { makeRegistry, makeRootMeta, } from '../factories';
 
 describe('Registries API', () => {
 
@@ -25,11 +25,7 @@ describe('Registries API', () => {
   });
 
   beforeEach(async cb => {
-    try {
-      await store.nuke();
-    } catch (err) {
-      cb(err);
-    }
+    await store.nuke();
     cb();
   });
 
@@ -37,7 +33,8 @@ describe('Registries API', () => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(cb => {
+  afterAll(async cb => {
+    await store.nuke();
     system.stop(cb);
   });
 
@@ -49,7 +46,7 @@ describe('Registries API', () => {
       for (var i = 0; i < 51; i++) {
         registries.push({
           data: makeRegistry(),
-          meta: makeMeta(),
+          meta: makeRootMeta(),
         });
       }
 
@@ -108,7 +105,7 @@ describe('Registries API', () => {
     it('should return the requested registry', async () => {
 
       const data = makeRegistry();
-      const saved = await store.saveRegistry(data, makeMeta());
+      const saved = await store.saveRegistry(data, makeRootMeta());
 
       const registry = await request({
         url: `http://${config.server.host}:${config.server.port}/api/registries/${saved.id}`,
@@ -181,7 +178,7 @@ describe('Registries API', () => {
     it('should delete registries', async () => {
 
       const data = makeRegistry();
-      const saved = await store.saveRegistry(data, makeMeta());
+      const saved = await store.saveRegistry(data, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/registries/${saved.id}`,

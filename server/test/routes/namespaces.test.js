@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeNamespace, makeMeta, } from '../factories';
+import { makeCluster, makeNamespace, makeRootMeta, } from '../factories';
 
 describe('Namespaces API', () => {
 
@@ -25,11 +25,7 @@ describe('Namespaces API', () => {
   });
 
   beforeEach(async cb => {
-    try {
-      await store.nuke();
-    } catch (err) {
-      cb(err);
-    }
+    await store.nuke();
     cb();
   });
 
@@ -37,7 +33,8 @@ describe('Namespaces API', () => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(cb => {
+  afterAll(async cb => {
+    await store.nuke();
     system.stop(cb);
   });
 
@@ -45,13 +42,13 @@ describe('Namespaces API', () => {
 
     beforeEach(async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
 
       const namespaces = [];
       for (var i = 0; i < 51; i++) {
         namespaces.push({
           data: makeNamespace({ cluster, }),
-          meta: makeMeta(),
+          meta: makeRootMeta(),
         });
       }
 
@@ -108,10 +105,9 @@ describe('Namespaces API', () => {
   describe('GET /api/namespaces/:id', () => {
 
     it('should return the requested namespace', async () => {
-
-      const cluster = store.saveCluster(makeCluster(), makeMeta());
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
       const data = makeNamespace({ cluster, });
-      const saved = await store.saveNamespace(data, makeMeta());
+      const saved = await store.saveNamespace(data, makeRootMeta());
 
       const namespace = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
@@ -143,7 +139,7 @@ describe('Namespaces API', () => {
 
     it('should save a namespace', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeMeta());
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
       const data = makeNamespace({ name: 'other', cluster, context: 'test', });
 
       const response = await request({
@@ -248,7 +244,7 @@ describe('Namespaces API', () => {
 
     it('should reject payloads where context cannot be found', async () => {
 
-      await store.saveCluster(makeCluster({ name: 'Test', }), makeMeta());
+      await store.saveCluster(makeCluster({ name: 'Test', }), makeRootMeta());
 
       loggerOptions.suppress = true;
 
@@ -273,7 +269,7 @@ describe('Namespaces API', () => {
 
       loggerOptions.suppress = true;
 
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeRootMeta());
 
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
@@ -298,9 +294,9 @@ describe('Namespaces API', () => {
 
     it('should delete namespaces', async () => {
 
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test', }), makeRootMeta());
       const data = makeNamespace({ cluster, });
-      const saved = await store.saveNamespace(data, makeMeta());
+      const saved = await store.saveNamespace(data, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,

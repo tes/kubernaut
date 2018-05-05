@@ -49,7 +49,7 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(cluster.config, req.body.context, req.body.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.name} was not found on ${cluster.name} cluster`));
 
-        const data = { name: req.body.name, context: req.body.context, };
+        const data = { name: req.body.name, cluster, context: req.body.context, };
         const meta = { date: new Date(), account: { id: req.user.id, }, };
         const namespace = await store.saveNamespace(data, meta);
         res.json(namespace);

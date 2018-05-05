@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRelease, makeMeta, makeReleaseForm, } from '../factories';
+import { makeRelease, makeRootMeta, makeReleaseForm, } from '../factories';
 
 describe('Releases API', () => {
 
@@ -27,11 +27,7 @@ describe('Releases API', () => {
   });
 
   beforeEach(async cb => {
-    try {
-      await store.nuke();
-    } catch (err) {
-      cb(err);
-    }
+    await store.nuke();
     cb();
   });
 
@@ -47,11 +43,13 @@ describe('Releases API', () => {
 
     beforeEach(async () => {
 
+      await store.nuke();
+
       const releases = [];
       for (var i = 0; i < 51; i++) {
         releases.push({
           data: makeRelease(),
-          meta: makeMeta(),
+          meta: makeRootMeta(),
         });
       }
 
@@ -110,7 +108,7 @@ describe('Releases API', () => {
     it('should return the requested release', async () => {
 
       const data = makeRelease();
-      const saved = await store.saveRelease(data, makeMeta());
+      const saved = await store.saveRelease(data, makeRootMeta());
 
       const release = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,
@@ -126,7 +124,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/does-not-exist`,
+        url: `http://${config.server.host}:${config.server.port}/api/releases/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
         json: true,
@@ -250,7 +248,7 @@ describe('Releases API', () => {
     it('should delete releases', async () => {
 
       const data = makeRelease();
-      const saved = await store.saveRelease(data, makeMeta());
+      const saved = await store.saveRelease(data, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,

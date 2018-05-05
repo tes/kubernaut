@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeMeta, } from '../factories';
+import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeRootMeta, } from '../factories';
 
 describe('Accounts API', () => {
 
@@ -25,14 +25,15 @@ describe('Accounts API', () => {
   });
 
   beforeEach(cb => {
-    store.nuke().then(cb);
+    store.nuke().then(cb).catch(cb);
   });
 
   afterEach(() => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(cb => {
+  afterAll(async cb => {
+    await store.nuke();
     system.stop(cb);
   });
 
@@ -44,7 +45,7 @@ describe('Accounts API', () => {
       for (var i = 0; i < 60; i++) {
         accounts.push({
           data: makeAccount(),
-          meta: makeMeta(),
+          meta: makeRootMeta(),
         });
       }
 
@@ -107,7 +108,7 @@ describe('Accounts API', () => {
     it('should return the requested account', async () => {
 
       const data = makeAccount();
-      const saved = await store.saveAccount(data, makeMeta());
+      const saved = await store.saveAccount(data, makeRootMeta());
 
       const account = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts/${saved.id}`,
@@ -121,7 +122,7 @@ describe('Accounts API', () => {
     it('should return 404 for missing accounts', async () => {
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts/does-not-exist`,
+        url: `http://${config.server.host}:${config.server.port}/api/accounts/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
         json: true,
@@ -176,7 +177,7 @@ describe('Accounts API', () => {
 
     it('should delete an account', async () => {
 
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
+      const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts/${saved.id}`,
@@ -196,7 +197,7 @@ describe('Accounts API', () => {
 
     it('should save an account identity', async () => {
 
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
+      const saved = await store.saveAccount(makeAccount(), makeRootMeta());
       const data = makeIdentity();
 
       const response = await request({
@@ -301,9 +302,9 @@ describe('Accounts API', () => {
 
     it('should grant a role on a namespace to an account', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeMeta());
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeRootMeta());
+      const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
@@ -388,8 +389,8 @@ describe('Accounts API', () => {
 
     it('should grant a role on a registry to an account', async () => {
 
-      const registry = await store.saveRegistry(makeRegistry(), makeMeta());
-      const saved = await store.saveAccount(makeAccount(), makeMeta());
+      const registry = await store.saveRegistry(makeRegistry(), makeRootMeta());
+      const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,

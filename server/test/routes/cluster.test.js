@@ -2,7 +2,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeMeta, } from '../factories';
+import { makeCluster, makeRootMeta, } from '../factories';
 
 describe('Clusters API', () => {
 
@@ -27,12 +27,8 @@ describe('Clusters API', () => {
   });
 
   beforeEach(async cb => {
-    try {
-      await store.nuke();
-      await kubernetes.nuke();
-    } catch (err) {
-      cb(err);
-    }
+    await store.nuke();
+    await kubernetes.nuke();
     cb();
   });
 
@@ -40,7 +36,8 @@ describe('Clusters API', () => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(cb => {
+  afterAll(async cb => {
+    await store.nuke();
     system.stop(cb);
   });
 
@@ -52,7 +49,7 @@ describe('Clusters API', () => {
       for (var i = 0; i < 51; i++) {
         clusters.push({
           data: makeCluster(),
-          meta: makeMeta(),
+          meta: makeRootMeta(),
         });
       }
 
@@ -111,7 +108,7 @@ describe('Clusters API', () => {
     it('should return the requested cluster', async () => {
 
       const data = makeCluster();
-      const saved = await store.saveCluster(data, makeMeta());
+      const saved = await store.saveCluster(data, makeRootMeta());
 
       const cluster = await request({
         url: `http://${config.server.host}:${config.server.port}/api/clusters/${saved.id}`,
@@ -127,7 +124,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters/does-not-exist`,
+        url: `http://${config.server.host}:${config.server.port}/api/clusters/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
         json: true,
@@ -226,7 +223,7 @@ describe('Clusters API', () => {
     it('should delete clusters', async () => {
 
       const data = makeCluster();
-      const saved = await store.saveCluster(data, makeMeta());
+      const saved = await store.saveCluster(data, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/clusters/${saved.id}`,
