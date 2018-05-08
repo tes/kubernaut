@@ -1,3 +1,4 @@
+import expect from 'expect';
 import { v4 as uuid, } from 'uuid';
 import createSystem from '../test-system';
 import { makeIdentity, makeAccount, makeRegistry, makeCluster, makeNamespace, makeRootMeta, } from '../factories';
@@ -7,22 +8,20 @@ describe('Account Store', () => {
   let system = { stop: cb => cb(), };
   let store = { nuke: () => {}, };
 
-  beforeAll(cb => {
-    system = createSystem().remove('server').start((err, components) => {
-      if (err) return cb(err);
-      store = components.store;
-      cb();
-    });
+  before(async () => {
+    system = createSystem().remove('server');
+
+    const components = await system.start();
+    store = components.store;
   });
 
-  beforeEach(async cb => {
+  beforeEach(async () => {
     await store.nuke();
-    cb();
   });
 
-  afterAll(async cb => {
+  after(async () => {
     await store.nuke();
-    system.stop(cb);
+    await system.stop();
   });
 
   describe('Save Account', () => {

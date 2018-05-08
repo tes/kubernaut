@@ -1,3 +1,4 @@
+import expect from 'expect';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
@@ -7,38 +8,34 @@ import { makeCluster, makeRootMeta, } from '../factories';
 describe('Clusters API', () => {
 
   let config;
-  let system = { stop: cb => cb(), };
+  let system = { stop: new Promise(cb => cb()), };
   let store = { nuke: new Promise(cb => cb()), };
   let kubernetes = { nuke: new Promise(cb => cb()), };
 
   const loggerOptions = {};
 
-  beforeAll(cb => {
+  before(async () => {
     system = createSystem()
-    .set('config.overrides', { server: { port: 13006, }, })
-    .set('transports.human', human(loggerOptions)).dependsOn('config')
-    .start((err, components) => {
-      if (err) return cb(err);
-      config = components.config;
-      store = components.store;
-      kubernetes = components.kubernetes;
-      cb();
-    });
+      .set('transports.human', human(loggerOptions)).dependsOn('config');
+
+    const components = await system.start();
+    config = components.config;
+    store = components.store;
+    kubernetes = components.kubernetes;
   });
 
-  beforeEach(async cb => {
+  beforeEach(async () => {
     await store.nuke();
     await kubernetes.nuke();
-    cb();
   });
 
   afterEach(() => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(async cb => {
+  after(async () => {
     await store.nuke();
-    system.stop(cb);
+    await system.stop();
   });
 
   describe('GET /api/clusters', () => {

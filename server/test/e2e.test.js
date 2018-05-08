@@ -1,3 +1,4 @@
+import expect from 'expect';
 import cheerio from 'cheerio';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
@@ -5,19 +6,17 @@ import createSystem from './test-system';
 
 describe('kubernaut', () => {
 
-  let system = { stop: cb => cb(), };
+  let system;
   let config;
 
-  beforeAll(cb => {
-    system = createSystem().start((err, components) => {
-      if (err) return cb(err);
-      config = components.config;
-      cb();
-    });
+  before(async () => {
+    system = createSystem();
+    const components = await system.start();
+    config = components.config;
   });
 
-  afterAll(cb => {
-    system.stop(cb);
+  after(async () => {
+    await system.stop();
   });
 
   it('should respond to status requests', async () => {

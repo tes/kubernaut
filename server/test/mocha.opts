@@ -1,0 +1,4 @@
+--require babel-register
+--require ./server/test/env.js
+--recursive
+--timeout 5000

@@ -1,3 +1,4 @@
+import expect from 'expect';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
 import fs from 'fs';
@@ -14,30 +15,26 @@ describe('Releases API', () => {
 
   const loggerOptions = {};
 
-  beforeAll(cb => {
+  before(async () => {
     system = createSystem()
-    .set('config.overrides', { server: { port: 13001, }, })
-    .set('transports.human', human(loggerOptions)).dependsOn('config')
-    .start((err, components) => {
-      if (err) return cb(err);
-      config = components.config;
-      store = components.store;
-      cb();
-    });
+      .set('transports.human', human(loggerOptions)).dependsOn('config');
+
+    const components = await system.start();
+    config = components.config;
+    store = components.store;
   });
 
-  beforeEach(async cb => {
+  beforeEach(async () => {
     await store.nuke();
-    cb();
   });
 
   afterEach(() => {
     loggerOptions.suppress = false;
   });
 
-  afterAll(async cb => {
+  after(async () => {
     await store.nuke();
-    system.stop(cb);
+    await system.stop();
   });
 
   describe('GET /api/releases', () => {
