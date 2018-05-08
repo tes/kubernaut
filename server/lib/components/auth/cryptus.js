@@ -1,8 +1,8 @@
-import { promiseApi, } from 'cryptus';
+import { promiseApi } from 'cryptus';
 
 export default function() {
 
-  function start({ config, }, cb) {
+  function start({ config }, cb) {
     cb(null, promiseApi());
   }
 

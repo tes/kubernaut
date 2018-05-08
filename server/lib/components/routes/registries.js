@@ -3,7 +3,7 @@ import Boom from 'boom';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, auth, }, cb) {
+  function start({ pkg, app, store, auth }, cb) {
 
     app.use('/api/registries', auth('api'));
 
@@ -12,7 +12,7 @@ export default function(options = {}) {
         const ids = req.user.listRegistryIdsWithPermission('registries-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findRegistries({ ids, }, limit, offset);
+        const result = await store.findRegistries({ ids }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -36,8 +36,8 @@ export default function(options = {}) {
         if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
-        const data = { name: req.body.name, };
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const data = { name: req.body.name };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const registry = await store.saveRegistry(data, meta);
         res.json(registry);
       } catch (err) {
@@ -49,7 +49,7 @@ export default function(options = {}) {
       try {
         if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteRegistry(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

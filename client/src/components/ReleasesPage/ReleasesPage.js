@@ -1,4 +1,4 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import ReleasesTable from '../ReleasesTable';
@@ -10,7 +10,7 @@ class ReleasesPage extends Component {
   }
 
   render() {
-    const { releases, fetchReleases, } = this.props;
+    const { releases, fetchReleases } = this.props;
 
     return (
       <div className='row'>

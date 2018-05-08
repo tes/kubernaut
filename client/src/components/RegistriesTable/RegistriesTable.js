@@ -1,14 +1,14 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, RegistryLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, RegistryLink } from '../Links';
 import './RegistriesTable.css';
 
 class RegistriesTable extends Component {
 
   render() {
-    const { error = null, loading = false, registries = {}, fetchRegistries, } = this.props;
+    const { error = null, loading = false, registries = {}, fetchRegistries } = this.props;
 
     const errorTableBody = () =>
       <tbody className='registries-table__body registries-table__body--error'>

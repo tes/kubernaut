@@ -1,1 +1,1 @@
-export { default, } from './NamespacesTable';
+export { default } from './NamespacesTable';

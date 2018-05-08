@@ -1,6 +1,6 @@
 export default class Service {
 
-  constructor({ id, name, registry, createdOn, createdBy, }) {
+  constructor({ id, name, registry, createdOn, createdBy }) {
     this.id = id;
     this.name = name;
     this.registry = registry;

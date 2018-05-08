@@ -1,6 +1,6 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
-import { Human, Ago, } from './DisplayDate';
+import { shallow } from 'enzyme';
+import { Human, Ago } from './DisplayDate';
 
 describe('DisplayDate', () => {
 

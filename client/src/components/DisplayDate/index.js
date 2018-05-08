@@ -1,1 +1,1 @@
-export { Human, Ago, } from './DisplayDate';
+export { Human, Ago } from './DisplayDate';

@@ -1,12 +1,12 @@
 import expect from 'expect';
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeIdentity, makeAccount, makeRegistry, makeCluster, makeNamespace, makeRootMeta, } from '../factories';
+import { makeIdentity, makeAccount, makeRegistry, makeCluster, makeNamespace, makeRootMeta } from '../factories';
 
 describe('Account Store', () => {
 
-  let system = { stop: cb => cb(), };
-  let store = { nuke: () => {}, };
+  let system = { stop: cb => cb() };
+  let store = { nuke: () => {} };
 
   before(async () => {
     system = createSystem().remove('server');
@@ -33,10 +33,10 @@ describe('Account Store', () => {
     });
 
     it('should permit duplicate display names', async () => {
-      const data1 = makeAccount({ displayName: 'John', });
+      const data1 = makeAccount({ displayName: 'John' });
       await saveAccount(data1);
 
-      const data2 = makeAccount({ displayName: 'John', });
+      const data2 = makeAccount({ displayName: 'John' });
       await saveAccount(data2);
     });
 
@@ -45,7 +45,7 @@ describe('Account Store', () => {
   describe('Get Account', () => {
 
     it('should retrieve account by id', async () => {
-      const data = makeAccount({ displayName: 'Foo Bar', });
+      const data = makeAccount({ displayName: 'Foo Bar' });
       const meta = makeRootMeta();
       const saved = await saveAccount(data, meta);
       const account = await getAccount(saved.id);
@@ -75,58 +75,58 @@ describe('Account Store', () => {
 
     it('should find an account by identity, provider and type', async () => {
       const saved = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       await saveIdentity(saved.id, data);
 
-      const account = await findAccount({ name: 'foo', provider: 'bar', type: 'baz', });
+      const account = await findAccount({ name: 'foo', provider: 'bar', type: 'baz' });
       expect(account).toBeDefined();
       expect(account.id).toBe(saved.id);
     });
 
     it('should return undefined when identity name not found', async () => {
       const saved = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       await saveIdentity(saved.id, data);
 
-      const account = await findAccount({ name: 'missing', provider: 'bar', type: 'baz', });
+      const account = await findAccount({ name: 'missing', provider: 'bar', type: 'baz' });
       expect(account).toBe(undefined);
     });
 
     it('should return undefined when provider not found', async () => {
       const saved = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       await saveIdentity(saved.id, data);
 
-      const account = await findAccount({ name: 'foo', provider: 'missing', type: 'baz',});
+      const account = await findAccount({ name: 'foo', provider: 'missing', type: 'baz'});
       expect(account).toBe(undefined);
     });
 
     it('should return undefined when type not found', async () => {
       const saved = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       await saveIdentity(saved.id, data);
 
-      const account = await findAccount({ name: 'foo', provider: 'bar', type: 'missing',});
+      const account = await findAccount({ name: 'foo', provider: 'bar', type: 'missing'});
       expect(account).toBe(undefined);
     });
 
     it('should return undefined when account deleted', async () => {
       const saved = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       await saveIdentity(saved.id, data);
       await deleteAccount(saved.id);
 
-      const account = await findAccount({ identity: 'foo', provider: 'bar', type: 'baz', });
+      const account = await findAccount({ identity: 'foo', provider: 'bar', type: 'baz' });
       expect(account).toBe(undefined);
     });
 
     it('should return undefined when identity and provider were deleted', async () => {
       const savedAccount = await saveAccount();
-      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz', });
+      const data = makeIdentity({ name: 'foo', provider: 'bar', type: 'baz' });
       const identity = await saveIdentity(savedAccount.id, data);
       await deleteIdentity(identity.id);
 
-      const account = await findAccount({ identity: 'foo', provider: 'bar', type: 'baz', });
+      const account = await findAccount({ identity: 'foo', provider: 'bar', type: 'baz' });
       expect(account).toBe(undefined);
     });
 
@@ -165,9 +165,9 @@ describe('Account Store', () => {
       const identity2Data = makeIdentity();
       const account = await ensureAccount(account2Data, identity2Data);
       expect(account.id).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
-      expect(account.roles.admin.registries).toEqual(['00000000-0000-0000-0000-000000000000',]);
-      expect(account.roles.admin.namespaces).toEqual([namespace.id,]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
+      expect(account.roles.admin.registries).toEqual(['00000000-0000-0000-0000-000000000000']);
+      expect(account.roles.admin.namespaces).toEqual([namespace.id]);
     });
 
     it('should assign no roles to a new account when there are already active global admins', async () => {
@@ -193,13 +193,13 @@ describe('Account Store', () => {
 
       const accounts = [
         {
-          data: makeAccount({ displayName: 'c', }),
+          data: makeAccount({ displayName: 'c' }),
         },
         {
-          data: makeAccount({ displayName: 'a', }),
+          data: makeAccount({ displayName: 'a' }),
         },
         {
-          data: makeAccount({ displayName: 'b', }),
+          data: makeAccount({ displayName: 'b' }),
         },
       ];
 
@@ -208,7 +208,7 @@ describe('Account Store', () => {
       }));
 
       const results = await findAccounts();
-      expect(results.items.map(a => a.displayName)).toEqual(['a', 'b', 'c', 'root',]);
+      expect(results.items.map(a => a.displayName)).toEqual(['a', 'b', 'c', 'root']);
       expect(results.count).toBe(4);
       expect(results.limit).toBe(50);
       expect(results.offset).toBe(0);
@@ -295,8 +295,8 @@ describe('Account Store', () => {
     it('should prevent duplicate active identities for different accounts', async () => {
       const account1 = await saveAccount();
       const account2 = await saveAccount();
-      const data1 = makeIdentity({ name: 'duplicate-name', provider: 'duplicate-provider', type: 'duplicate-type', });
-      const data2 = makeIdentity({ name: 'duplicate-name', provider: 'duplicate-provider', type: 'duplicate-type', });
+      const data1 = makeIdentity({ name: 'duplicate-name', provider: 'duplicate-provider', type: 'duplicate-type' });
+      const data2 = makeIdentity({ name: 'duplicate-name', provider: 'duplicate-provider', type: 'duplicate-type' });
 
       await saveIdentity(account1.id, data1);
       await expect(
@@ -306,8 +306,8 @@ describe('Account Store', () => {
 
     it('should permit duplicate identity names for different providers', async () => {
       const account = await saveAccount();
-      const data1 = makeIdentity({ name: 'duplidate-name', });
-      const data2 = makeIdentity({ name: 'duplidate-name', });
+      const data1 = makeIdentity({ name: 'duplidate-name' });
+      const data2 = makeIdentity({ name: 'duplidate-name' });
 
       await saveIdentity(account.id, data1);
       await saveIdentity(account.id, data2);
@@ -315,8 +315,8 @@ describe('Account Store', () => {
 
     it('should permit duplicate providers for an account', async () => {
       const account = await saveAccount();
-      const data1 = makeIdentity({ provider: 'duplicate-provider', });
-      const data2 = makeIdentity({ provider: 'duplicate-provider', });
+      const data1 = makeIdentity({ provider: 'duplicate-provider' });
+      const data2 = makeIdentity({ provider: 'duplicate-provider' });
 
       await saveIdentity(account.id, data1);
       await saveIdentity(account.id, data2);
@@ -361,7 +361,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
       expect(account.roles.admin.permissions).toContain('accounts-write');
       expect(account.roles.admin.registries).toContain('00000000-0000-0000-0000-000000000000');
     });
@@ -375,7 +375,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
       expect(account.roles.admin.permissions).toContain('accounts-write');
       expect(account.roles.admin.registries).toContain(registry.id);
     });
@@ -407,7 +407,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
     });
   });
 
@@ -447,7 +447,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
       expect(account.roles.admin.permissions).toContain('accounts-write');
       expect(account.roles.admin.namespaces).toContain(namespace.id);
     });
@@ -461,7 +461,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
       expect(account.roles.admin.permissions).toContain('accounts-write');
       expect(account.roles.admin.namespaces).toContain(namespace.id);
     });
@@ -493,7 +493,7 @@ describe('Account Store', () => {
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
-      expect(Object.keys(account.roles)).toEqual(['admin',]);
+      expect(Object.keys(account.roles)).toEqual(['admin']);
     });
   });
 
@@ -579,7 +579,7 @@ describe('Account Store', () => {
   function saveNamespace() {
     return store.saveCluster(makeCluster(), makeRootMeta())
       .then(cluster => {
-        const namespace = makeNamespace({ cluster, });
+        const namespace = makeNamespace({ cluster });
         return store.saveNamespace(namespace, makeRootMeta());
       });
   }

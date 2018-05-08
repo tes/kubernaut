@@ -1,4 +1,4 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import DeploymentsTable from '../DeploymentsTable';
@@ -10,7 +10,7 @@ class DeploymentsPage extends Component {
   }
 
   render() {
-    const { deployments, fetchDeployments, } = this.props;
+    const { deployments, fetchDeployments } = this.props;
 
     return (
       <div className='row'>

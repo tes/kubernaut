@@ -4,7 +4,7 @@ import {
   FETCH_NAMESPACES_ERROR,
 } from '../actions/namespace';
 
-export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [], }, meta: {}, }, action)  {
+export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [] }, meta: {} }, action)  {
   switch (action.type) {
     case FETCH_NAMESPACES_REQUEST:
     case FETCH_NAMESPACES_SUCCESS:

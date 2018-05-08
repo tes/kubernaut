@@ -3,7 +3,7 @@ import Boom from 'boom';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, auth, }, cb) {
+  function start({ pkg, app, store, kubernetes, auth }, cb) {
 
     app.use('/api/clusters', auth('api'));
 
@@ -43,7 +43,7 @@ export default function(options = {}) {
           name: req.body.name,
           config: req.body.config,
         };
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const cluster = await store.saveCluster(data, meta);
         res.json(cluster);
       } catch (err) {
@@ -53,7 +53,7 @@ export default function(options = {}) {
 
     app.delete('/api/clusters/:id', async (req, res, next) => {
       try {
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteCluster(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

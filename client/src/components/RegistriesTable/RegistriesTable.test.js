@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
+import { shallow } from 'enzyme';
 import R from 'ramda';
 import RegistriesTable from './RegistriesTable';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, RegistryLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, RegistryLink } from '../Links';
 
 describe('RegistriesTable', () => {
 
@@ -17,8 +17,8 @@ describe('RegistriesTable', () => {
   });
 
   it('should render empty table', () => {
-    const registries = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
-    const wrapper = renderRegistriesTable({ registries, });
+    const registries = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const wrapper = renderRegistriesTable({ registries });
 
     expect(wrapper.find('.registries-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);
@@ -37,8 +37,8 @@ describe('RegistriesTable', () => {
         },
       };
     }, 50);
-    const registries = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
-    const wrapper = renderRegistriesTable({ registries, });
+    const registries = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const wrapper = renderRegistriesTable({ registries });
 
     expect(wrapper.find('.registries-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(50);
@@ -53,7 +53,7 @@ describe('RegistriesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderRegistriesTable({ loading: true, });
+    const wrapper = renderRegistriesTable({ loading: true });
 
     expect(wrapper.find('.registries-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);
@@ -62,7 +62,7 @@ describe('RegistriesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderRegistriesTable({ error: new Error(), });
+    const wrapper = renderRegistriesTable({ error: new Error() });
 
     expect(wrapper.find('.registries-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);

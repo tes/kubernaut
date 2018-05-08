@@ -2,7 +2,7 @@ import has from 'lodash.has';
 
 export default class Account {
 
-  constructor({ id, displayName, avatar, createdOn, createdBy, roles, }) {
+  constructor({ id, displayName, avatar, createdOn, createdBy, roles }) {
     this.id = id;
     this.displayName = displayName;
     this.avatar = avatar;

@@ -2,7 +2,7 @@ import highwayhash from 'highwayhash';
 
 module.exports = function(options = {}) {
 
-  function start({ config, }, cb) {
+  function start({ config }, cb) {
 
     const key = Buffer.from(config.key, 'hex');
 

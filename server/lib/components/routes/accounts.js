@@ -3,7 +3,7 @@ import Boom from 'boom';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, loggerMiddleware, store, auth, }, cb) {
+  function start({ pkg, app, loggerMiddleware, store, auth }, cb) {
 
     app.use('/api/accounts', auth('api'));
     app.use('/api/identities', auth('api'));
@@ -36,8 +36,8 @@ export default function(options = {}) {
     app.post('/api/accounts', bodyParser.json(), async (req, res, next) => {
       try {
         if (!req.body.displayName) return next(Boom.badRequest('displayName is required'));
-        const data = { displayName: req.body.displayName, };
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const data = { displayName: req.body.displayName };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.saveAccount(data, meta);
         res.json(account);
       } catch (err) {
@@ -49,7 +49,7 @@ export default function(options = {}) {
       try {
         if (!req.user.hasPermissionOnAccount(req.params.id, 'accounts-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteAccount(req.params.id, meta);
         res.status(204).send();
       } catch (err) {
@@ -66,8 +66,8 @@ export default function(options = {}) {
 
         if (!req.user.hasPermissionOnAccount(req.body.account, 'accounts-write')) return next(Boom.forbidden());
 
-        const data = { name: req.body.name, provider: req.body.provider, type: req.body.type, };
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const data = { name: req.body.name, provider: req.body.provider, type: req.body.type };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const identity = await store.saveIdentity(req.body.account, data, meta);
         res.json(identity);
       } catch (err) {
@@ -83,7 +83,7 @@ export default function(options = {}) {
 
         if (!req.user.hasPermissionOnRegistry(req.body.registry, 'registries-grant')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
         res.json(account);
       } catch (err) {
@@ -99,7 +99,7 @@ export default function(options = {}) {
 
         if (!req.user.hasPermissionOnNamespace(req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
         res.json(account);
       } catch (err) {

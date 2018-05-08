@@ -1,4 +1,4 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import AccountsTable from '../AccountsTable';
@@ -10,7 +10,7 @@ class AccountsPage extends Component {
   }
 
   render() {
-    const { accounts, fetchAccounts, } = this.props;
+    const { accounts, fetchAccounts } = this.props;
 
     return (
       <div className='row'>

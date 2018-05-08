@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
+import { shallow } from 'enzyme';
 import R from 'ramda';
 import DeploymentsTable from './DeploymentsTable';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink } from '../Links';
 
 
 describe('DeploymentsTable', () => {
@@ -23,8 +23,8 @@ describe('DeploymentsTable', () => {
 
   it('should render empty table', () => {
 
-    const deployments = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
-    const wrapper = renderDeploymentsTable({ deployments, });
+    const deployments = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const wrapper = renderDeploymentsTable({ deployments });
 
     expect(wrapper.find('.deployments-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__body__row').length).toBe(1);
@@ -57,8 +57,8 @@ describe('DeploymentsTable', () => {
         },
       };
     }, 50);
-    const deployments = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
-    const wrapper = renderDeploymentsTable({ deployments, });
+    const deployments = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const wrapper = renderDeploymentsTable({ deployments });
 
     expect(wrapper.find('.deployments-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__body__row').length).toBe(50);
@@ -77,7 +77,7 @@ describe('DeploymentsTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderDeploymentsTable({ loading: true, });
+    const wrapper = renderDeploymentsTable({ loading: true });
 
     expect(wrapper.find('.deployments-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__body__row').length).toBe(1);
@@ -86,7 +86,7 @@ describe('DeploymentsTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderDeploymentsTable({ error: new Error(), });
+    const wrapper = renderDeploymentsTable({ error: new Error() });
 
     expect(wrapper.find('.deployments-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.deployments-table__body__row').length).toBe(1);

@@ -1,6 +1,6 @@
 export default class Release {
 
-  constructor({ id, yaml, json, checksum, }) {
+  constructor({ id, yaml, json, checksum }) {
     this.id = id;
     this.source = {
       yaml: yaml,

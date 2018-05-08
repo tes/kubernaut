@@ -16,7 +16,7 @@
   },
   "rules": {
     "semi": [2, "always"],
-    "comma-dangle": [2, "always"],
+    "comma-dangle": [2, "only-multiline"],
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
   }

@@ -1,14 +1,14 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, NamespaceLink } from '../Links';
 import './NamespacesTable.css';
 
 class NamespacesTable extends Component {
 
   render() {
-    const { error = null, loading = false, namespaces = {}, fetchNamespaces, } = this.props;
+    const { error = null, loading = false, namespaces = {}, fetchNamespaces } = this.props;
 
     const errorTableBody = () =>
       <tbody className='namespaces-table__body namespaces-table__body--error'>

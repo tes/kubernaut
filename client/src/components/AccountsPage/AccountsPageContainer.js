@@ -1,5 +1,5 @@
-import { connect, } from 'react-redux';
-import { fetchAccounts, } from '../../actions/account';
+import { connect } from 'react-redux';
+import { fetchAccounts } from '../../actions/account';
 
 import AccountsPage from './AccountsPage';
 

@@ -12,15 +12,15 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
-    const { Op, raw, } = sqb;
+    const { Op, raw } = sqb;
 
     async function saveDeployment(data, meta) {
       return await db.withTransaction(async connection => {
         const deployment = await _saveDeployment(connection, data, meta);
         const attributes = await _saveDeploymentAttributes(connection, deployment, data.attributes);
-        return new Deployment({ ...deployment, attributes, });
+        return new Deployment({ ...deployment, attributes });
       });
     }
 
@@ -50,7 +50,7 @@ export default function(options) {
         name, value: data[name], deployment: deployment.id,
       }));
 
-      await connection.query(SQL.SAVE_DEPLOYMENT_ATTRIBUTES, [JSON.stringify(attributes),]);
+      await connection.query(SQL.SAVE_DEPLOYMENT_ATTRIBUTES, [JSON.stringify(attributes)]);
 
       logger.debug(`Saved deployment attributes: [ ${attributeNames.join(', ')} ] for deployment id: ${deployment.id}`);
 
@@ -102,10 +102,10 @@ export default function(options) {
 
       return await db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id,]),
-          connection.query(SQL.LIST_DEPLOYMENT_ATTRIBUTES_BY_DEPLOYMENT, [id,]),
-          connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id,]),
-        ]).then(([deploymentResult, attributesResults, logEntriesResult,]) => {
+          connection.query(SQL.SELECT_DEPLOYMENT_BY_ID, [id]),
+          connection.query(SQL.LIST_DEPLOYMENT_ATTRIBUTES_BY_DEPLOYMENT, [id]),
+          connection.query(SQL.LIST_DEPLOYMENT_LOG_ENTRIES_BY_DEPLOYMENT, [id]),
+        ]).then(([deploymentResult, attributesResults, logEntriesResult]) => {
           logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
           return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], attributesResults.rows, logEntriesResult.rows) : undefined;
         });
@@ -163,11 +163,11 @@ export default function(options) {
         return Promise.all([
           connection.query(findDeploymentsStatement.sql, findDeploymentsStatement.values),
           connection.query(countDeploymentsStatement.sql, countDeploymentsStatement.values),
-        ]).then(([deploymentsResult, countResult,]) => {
+        ]).then(([deploymentsResult, countResult]) => {
           const items = deploymentsResult.rows.map(row => toDeployment(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} deployments`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }
@@ -219,7 +219,7 @@ export default function(options) {
           version: row.release_version,
         }),
         attributes: attributeRows.reduce((attributes, row) => {
-          return { ...attributes, [row.name]: row.value, };
+          return { ...attributes, [row.name]: row.value };
         }, {}),
         createdOn: row.created_on,
         createdBy: new Account({

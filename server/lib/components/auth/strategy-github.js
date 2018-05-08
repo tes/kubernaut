@@ -1,4 +1,4 @@
-import { Strategy as GitHubStrategy, } from 'passport-github';
+import { Strategy as GitHubStrategy } from 'passport-github';
 
 /*
  Using 'module.exports' to workaround TypeError require is not a function
@@ -6,7 +6,7 @@ import { Strategy as GitHubStrategy, } from 'passport-github';
 */
 module.exports = function() {
 
-  function start({ config, logger, app, passport, store, }, cb) {
+  function start({ config, logger, app, passport, store }, cb) {
 
     logger.info('Initialising github authentication strategy');
 
@@ -16,9 +16,9 @@ module.exports = function() {
       passReqToCallback: true,
     }, async (req, accessToken, refreshToken, profile, cb) => {
       try {
-        const personal = { displayName: profile.displayName || profile.username, avatar: profile.photos.map(p => p.value)[0], };
-        const identity = { name: profile.id, provider: profile.provider, 'type': 'oauth2', };
-        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000', }, };
+        const personal = { displayName: profile.displayName || profile.username, avatar: profile.photos.map(p => p.value)[0] };
+        const identity = { name: profile.id, provider: profile.provider, 'type': 'oauth2' };
+        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000' } };
         const account = await store.ensureAccount(personal, identity, meta);
         cb(null, account);
       } catch (err) {
@@ -30,12 +30,12 @@ module.exports = function() {
 
     app.set('trust proxy', 1);
 
-    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/', }), (req, res) => {
+    app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
       res.locals.logger.info(`Authenticated ${req.user.id} using github strategy`);
       res.redirect(req.session.returnTo || '/');
     });
 
-    cb(null, { name: strategy.name, app: true, api: true, });
+    cb(null, { name: strategy.name, app: true, api: true });
   }
 
   return {

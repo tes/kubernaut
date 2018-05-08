@@ -5,9 +5,9 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  const { Op, raw, } = sqb;
+  const { Op, raw } = sqb;
 
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
     async function saveCluster(data, meta) {
       logger.debug(`Saving cluster: ${data.name}`);
@@ -27,7 +27,7 @@ export default function(options) {
 
     async function getCluster(id) {
       logger.debug(`Getting cluster by id: ${id}`);
-      const result = await db.query(SQL.SELECT_CLUSTER_BY_ID, [id,]);
+      const result = await db.query(SQL.SELECT_CLUSTER_BY_ID, [id]);
       logger.debug(`Found ${result.rowCount} clusters with id: ${id}`);
       return result.rowCount ? toCluster(result.rows[0]) : undefined;
     }
@@ -67,11 +67,11 @@ export default function(options) {
         return Promise.all([
           connection.query(findClustersStatement.sql, findClustersStatement.values),
           connection.query(countClustersStatement.sql, countClustersStatement.values),
-        ]).then(([clusterResult, countResult,]) => {
+        ]).then(([clusterResult, countResult]) => {
           const items = clusterResult.rows.map(row => toCluster(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} clusters`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }

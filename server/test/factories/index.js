@@ -1,5 +1,5 @@
 import Chance from 'chance';
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import get from 'lodash.get';
 import fs from 'fs';
 import path from 'path';
@@ -7,7 +7,7 @@ import highwayhash from 'highwayhash';
 import crypto from 'crypto';
 import pm from 'power-merge';
 import hogan from 'hogan.js';
-import { safeLoadAll as yaml2json, } from 'js-yaml';
+import { safeLoadAll as yaml2json } from 'js-yaml';
 
 import Account from '../../lib/domain/Account';
 import Registry from '../../lib/domain/Registry';
@@ -25,8 +25,8 @@ const chance = new Chance();
 const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
 const sampleTemplate = fs.readFileSync(sampleTemplatePath, 'utf-8');
 
-const { deepClone, } = pm.ruleSets;
-const { and, or, eq, ne, reference, } = pm.commands;
+const { deepClone } = pm.ruleSets;
+const { and, or, eq, ne, reference } = pm.commands;
 const shallow = [
   {
     when: and([
@@ -63,7 +63,7 @@ const merge = pm.compile({
   }, rules: [
     shallow,
     deepClone,
-  ], });
+  ] });
 
 function makeIdentity(overrides = {}) {
   return merge({
@@ -84,7 +84,7 @@ function makeAccount(overrides = {}) {
 
 function makeRegistry(overrides = {}) {
   return new Registry(merge({
-    name: chance.word({ length: 32, }),
+    name: chance.word({ length: 32 }),
   }, overrides));
 }
 
@@ -100,7 +100,7 @@ function makeService(overrides = {}) {
 
 function makeRelease(overrides = {}) {
   const service = makeService(overrides.service);
-  const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000, })}`);
+  const version = get(overrides, 'version', `${chance.integer({ min: 1, max: 1000 })}`);
   const yaml = get(overrides, 'template.source.yaml', sampleTemplate);
   const json = get(overrides, 'template.source.json', yaml2json(yaml));
 
@@ -123,16 +123,16 @@ function makeRelease(overrides = {}) {
 
 function makeCluster(overrides = {}) {
   return new Cluster(merge({
-    name: chance.word({ length: 32, }),
+    name: chance.word({ length: 32 }),
     config: `.kube/${chance.word()}`,
   }, overrides));
 }
 
 function makeNamespace(overrides = {}) {
   return new Namespace(merge({
-    name: chance.word({ length: 32, }),
+    name: chance.word({ length: 32 }),
     cluster: makeCluster(),
-    context: chance.word({ length: 32, }),
+    context: chance.word({ length: 32 }),
   }, overrides));
 }
 
@@ -152,11 +152,11 @@ function makeDeployment(overrides = {}) {
       },
     }),
     attributes: {
-      replicas: `${chance.integer({ min: 1, max: 10, })}`,
-      containerPort: `${chance.integer({ min: 3000, max: 10000, })}`,
+      replicas: `${chance.integer({ min: 1, max: 10 })}`,
+      containerPort: `${chance.integer({ min: 3000, max: 10000 })}`,
     },
     context,
-    manifest: new Manifest({ yaml, json, }),
+    manifest: new Manifest({ yaml, json }),
     release,
   }, overrides));
 }
@@ -165,7 +165,7 @@ function makeDeploymentLogEntry(overrides = {}) {
   const deployment = makeDeployment(overrides.deployment);
 
   return new DeploymentLogEntry(merge({
-    writtenTo: chance.pickone(['stdin', 'stdout', 'stderr',]),
+    writtenTo: chance.pickone(['stdin', 'stdout', 'stderr']),
     writtenOn: chance.date(),
     content: chance.sentence(),
     deployment,
@@ -187,7 +187,7 @@ function makeRootMeta(overrides = {}) {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'root',
   });
-  return merge({ date: chance.date(), }, overrides, { account, });
+  return merge({ date: chance.date() }, overrides, { account });
 }
 
 function makeReleaseForm(overrides = {}) {

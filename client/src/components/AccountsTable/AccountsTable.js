@@ -1,14 +1,14 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink } from '../Links';
 import './AccountsTable.css';
 
 class AccountsTable extends Component {
 
   render() {
-    const { error = null, loading = false, accounts = {}, fetchAccounts, } = this.props;
+    const { error = null, loading = false, accounts = {}, fetchAccounts } = this.props;
 
     const errorTableBody = () =>
       <tbody className='accounts-table__body accounts-table__body--error'>

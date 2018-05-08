@@ -4,7 +4,7 @@ import {
   FETCH_ACCOUNTS_ERROR,
 } from '../actions/account';
 
-export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [], }, meta: {}, }, action)  {
+export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [] }, meta: {} }, action)  {
   switch (action.type) {
     case FETCH_ACCOUNTS_REQUEST:
     case FETCH_ACCOUNTS_SUCCESS:

@@ -1,4 +1,4 @@
-import { Strategy as BearerStrategy, } from 'passport-http-bearer';
+import { Strategy as BearerStrategy } from 'passport-http-bearer';
 
 /*
  Using 'module.exports' to workaround TypeError require is not a function
@@ -6,7 +6,7 @@ import { Strategy as BearerStrategy, } from 'passport-http-bearer';
 */
 module.exports = function() {
 
-  function start({ config, logger, app, passport, store, cryptus, }, cb) {
+  function start({ config, logger, app, passport, store, cryptus }, cb) {
 
     logger.info('Initialising bearer token authentication strategy');
 
@@ -14,7 +14,7 @@ module.exports = function() {
       try {
         const encrypted = Buffer.from(token, 'base64').toString();
         const name = await cryptus.decrypt(config.key, encrypted);
-        const identity = { name, provider: 'kubernaut', 'type': 'bearer', };
+        const identity = { name, provider: 'kubernaut', 'type': 'bearer' };
         const account = await store.findAccount(identity);
         cb(null, account);
       } catch (err) {
@@ -24,7 +24,7 @@ module.exports = function() {
 
     passport.use(strategy);
 
-    cb(null, { name: strategy.name, app: false, api: true, });
+    cb(null, { name: strategy.name, app: false, api: true });
   }
 
   return {

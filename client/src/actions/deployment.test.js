@@ -12,7 +12,7 @@ import {
   FETCH_DEPLOYMENT_ERROR,
 } from './deployment';
 
-const mockStore = configureStore([thunk,]);
+const mockStore = configureStore([thunk]);
 
 describe('Deployment Actions', () => {
 
@@ -26,12 +26,12 @@ describe('Deployment Actions', () => {
 
     it('should fetch deployments', async () => {
 
-      fetchMock.mock('/api/deployments?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
+      fetchMock.mock('/api/deployments?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3] });
 
       await dispatchDeploymentsActions();
 
-      expectRequest(FETCH_DEPLOYMENTS_REQUEST, { limit: 50, offset: 0, count: 0, items: [], });
-      expectDeploymentsSuccess([1, 2, 3,]);
+      expectRequest(FETCH_DEPLOYMENTS_REQUEST, { limit: 50, offset: 0, count: 0, items: [] });
+      expectDeploymentsSuccess([1, 2, 3]);
     });
 
     it('should tolerate errors fetching deployments', async () => {
@@ -56,7 +56,7 @@ describe('Deployment Actions', () => {
 
     async function dispatchDeploymentsActions(_options) {
       const store = mockStore({});
-      const options = Object.assign({ page: 1, pageSize: 50, quiet: true, }, _options);
+      const options = Object.assign({ page: 1, pageSize: 50, quiet: true }, _options);
       await store.dispatch(fetchDeployments(options));
       actions = store.getActions();
       expect(actions).toHaveLength(2);
@@ -75,11 +75,11 @@ describe('Deployment Actions', () => {
 describe('Fetch an individiual deployment', () => {
 
     it('should fetch deployment', async () => {
-      fetchMock.mock('/api/deployments/12345', { id: 12345, });
+      fetchMock.mock('/api/deployments/12345', { id: 12345 });
 
       await dispatchDeploymentActions(12345);
       expectRequest(FETCH_DEPLOYMENT_REQUEST, {});
-      expectDeploymentSuccess({ id: 12345, });
+      expectDeploymentSuccess({ id: 12345 });
     });
 
     it('should tolerate errors fetching deployment', async () => {
@@ -103,7 +103,7 @@ describe('Fetch an individiual deployment', () => {
 
     async function dispatchDeploymentActions(id, _options) {
       const store = mockStore({});
-      const options = Object.assign({ quiet: true, }, _options);
+      const options = Object.assign({ quiet: true }, _options);
       await store.dispatch(fetchDeployment(id, options));
       actions = store.getActions();
       expect(actions).toHaveLength(2);

@@ -1,4 +1,4 @@
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import sqb from 'sqb';
 import sqbpg from 'sqb-serializer-pg';
 
@@ -6,9 +6,9 @@ sqb.use(sqbpg);
 
 export default function(options = {}) {
 
-  function start({ config = {}, logger, postgres, }, cb) {
+  function start({ config = {}, logger, postgres }, cb) {
 
-    const { Op, } = sqb;
+    const { Op } = sqb;
 
     postgres.on('error', err => {
       logger.warn(err, 'Database client errored and was evicted from the pool');
@@ -34,12 +34,12 @@ export default function(options = {}) {
     }
 
     function serialize(builder, bindVariables) {
-      return builder.generate({ dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, }, bindVariables);
+      return builder.generate({ dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR }, bindVariables);
     }
 
     function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
       const clauseVariables = [].concat(values).reduce((clauseVariables, value, index) => {
-        return Object.assign(clauseVariables, { [uuid()]: value, });
+        return Object.assign(clauseVariables, { [uuid()]: value });
       }, {});
 
       const placeholders = Object.keys(clauseVariables).map(key => new RegExp(key));

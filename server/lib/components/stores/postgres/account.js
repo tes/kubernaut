@@ -4,9 +4,9 @@ import Account from '../../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options = {}) {
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
-  const { Op, raw, } = sqb;
+  const { Op, raw } = sqb;
 
     async function saveAccount(data, meta) {
       return _saveAccount(db, data, meta);
@@ -59,11 +59,11 @@ export default function(options = {}) {
       logger.debug(`Getting account by id: ${id}`);
 
       return Promise.all([
-        db.query(SQL.SELECT_ACCOUNT_BY_ID, [id,]),
+        db.query(SQL.SELECT_ACCOUNT_BY_ID, [id]),
         db.query(SQL.LIST_REGISTRIES),
         db.query(SQL.LIST_NAMESPACES),
-        db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id,]),
-      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult, ]) => {
+        db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id]),
+      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult ]) => {
         logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
         const registries = registriesResult.rows.map(row => row.id);
         const namespaces = namespacesResult.rows.map(row => row.id);
@@ -72,7 +72,7 @@ export default function(options = {}) {
       });
     }
 
-    async function findAccount({ name, provider, type, }) {
+    async function findAccount({ name, provider, type }) {
       logger.debug(`Finding account by identity: ${name}/${provider}/${type}`);
 
       const account = await db.query(SQL.SELECT_ACCOUNT_BY_IDENTITY, [
@@ -109,11 +109,11 @@ export default function(options = {}) {
         return Promise.all([
           connection.query(findAccountsStatement.sql, findAccountsStatement.values),
           connection.query(countAccountsStatement.sql, countAccountsStatement.values),
-        ]).then(([accountResult, countResult,]) => {
+        ]).then(([accountResult, countResult]) => {
           const items = accountResult.rows.map(row => toAccount(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} accounts`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }
@@ -259,7 +259,7 @@ export default function(options = {}) {
       };
       return rows.reduce((roles, row) => {
         const collection = subjects[row.differentiator];
-        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [], };
+        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [] };
         entry.permissions.push(row.permission_name);
         entry[collection.name] = uniq(entry[collection.name].concat(row.subject_id || collection.allSubjectIds.slice()));
         roles[row.role_name] = entry;

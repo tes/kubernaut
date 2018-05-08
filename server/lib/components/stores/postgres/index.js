@@ -10,8 +10,8 @@ import release from './release';
 import deployment from './deployment';
 import store from './store';
 
-module.exports = new System({ name: 'stores/postgres', })
-  .add('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config', }, )
+module.exports = new System({ name: 'stores/postgres' })
+  .add('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config' }, )
   .add('postgres', postgres()).dependsOn('config', 'logger', 'migrator')
   .add('db', db()).dependsOn('config', 'logger', 'postgres')
   .add('store.registry', registry()).dependsOn('config', 'logger', 'db')
@@ -22,10 +22,10 @@ module.exports = new System({ name: 'stores/postgres', })
   .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db')
   .add('store', store()).dependsOn(
     'config', 'logger', 'db',
-    { component: 'store.registry', destination: 'registry', },
-    { component: 'store.cluster', destination: 'cluster', },
-    { component: 'store.namespace', destination: 'namespace', },
-    { component: 'store.account', destination: 'account', },
-    { component: 'store.release', destination: 'release', },
-    { component: 'store.deployment', destination: 'deployment', },
+    { component: 'store.registry', destination: 'registry' },
+    { component: 'store.cluster', destination: 'cluster' },
+    { component: 'store.namespace', destination: 'namespace' },
+    { component: 'store.account', destination: 'account' },
+    { component: 'store.release', destination: 'release' },
+    { component: 'store.deployment', destination: 'deployment' },
   );

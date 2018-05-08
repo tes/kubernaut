@@ -8,7 +8,7 @@ import {
   FETCH_RELEASES_ERROR,
 } from './release';
 
-const mockStore = configureStore([thunk,]);
+const mockStore = configureStore([thunk]);
 
 describe('Release Actions', () => {
 
@@ -20,12 +20,12 @@ describe('Release Actions', () => {
 
   it('should fetch releases', async () => {
 
-    fetchMock.mock('/api/releases?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
+    fetchMock.mock('/api/releases?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3] });
 
     await dispatchReleasesActions();
 
     expectReleasesRequest();
-    expectReleasesSuccess([1, 2, 3,]);
+    expectReleasesSuccess([1, 2, 3]);
   });
 
   it('should tolerate errors fetching releases', async () => {
@@ -59,7 +59,7 @@ describe('Release Actions', () => {
 
   async function dispatchReleasesActions(_options) {
     const store = mockStore({});
-    const options = Object.assign({ page: 1, pageSize: 50, quiet: true, }, _options);
+    const options = Object.assign({ page: 1, pageSize: 50, quiet: true }, _options);
     await store.dispatch(fetchReleases(options));
     actions = store.getActions();
     expect(actions).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('Release Actions', () => {
   function expectReleasesRequest() {
     expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(FETCH_RELEASES_REQUEST);
-    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
+    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
     expect(actions[0].loading).toBe(true);
   }
 
@@ -84,7 +84,7 @@ describe('Release Actions', () => {
   function expectReleasesError(msg) {
     expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(FETCH_RELEASES_ERROR);
-    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
+    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
     expect(actions[1].error.message).toBe(msg);
   }
 

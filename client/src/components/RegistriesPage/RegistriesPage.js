@@ -1,4 +1,4 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import RegistriesTable from '../RegistriesTable';
@@ -10,7 +10,7 @@ class RegistriesPage extends Component {
   }
 
   render() {
-    const { registries, fetchRegistries, } = this.props;
+    const { registries, fetchRegistries } = this.props;
 
     return (
       <div className='row'>

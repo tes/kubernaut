@@ -6,7 +6,7 @@ const session = require('express-session');
 */
 module.exports = function() {
 
-  function start({ config, logger, }, cb) {
+  function start({ config, logger }, cb) {
 
     logger.info('Using Memory backed sessions');
 

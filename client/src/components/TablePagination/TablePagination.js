@@ -1,10 +1,10 @@
 import React from 'react';
-import { Pagination, } from 'react-bootstrap';
+import { Pagination } from 'react-bootstrap';
 
-const TablePagination = ({totalPages, currentPage, pageSize, fetchContent,}) => {
+const TablePagination = ({totalPages, currentPage, pageSize, fetchContent}) => {
 
   const onPageSelect = (page) => {
-    fetchContent({ page, pageSize, });
+    fetchContent({ page, pageSize });
   };
 
   const items = Array(totalPages).fill().map((_, i) =>

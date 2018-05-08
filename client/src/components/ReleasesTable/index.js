@@ -1,1 +1,1 @@
-export { default, } from './ReleasesTable';
+export { default } from './ReleasesTable';

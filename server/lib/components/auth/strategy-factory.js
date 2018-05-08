@@ -6,7 +6,7 @@ export default function() {
 
   function start(dependencies, cb) {
 
-    const { config, app, passport, session, } = dependencies;
+    const { config, app, passport, session } = dependencies;
 
     app.use(session);
     app.use(passport.initialize());
@@ -16,7 +16,7 @@ export default function() {
 
     eachSeries(config, (strategyConfig, cb) => {
       const component = require(`./strategy-${strategyConfig.id}`)();
-      component.start({ ...dependencies, config: strategyConfig, }, (err, strategy) => {
+      component.start({ ...dependencies, config: strategyConfig }, (err, strategy) => {
         if (err) return cb(err);
         components.push(component);
         cb(null, strategy);
@@ -31,7 +31,7 @@ export default function() {
         if (entry.app) results.app.push(entry.name);
         if (entry.api) results.api.push(entry.name);
         return results;
-      }, { app: [], api: [], });
+      }, { app: [], api: [] });
     }
 
     function middleware(authenticationMethods) {

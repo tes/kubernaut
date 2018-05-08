@@ -3,7 +3,7 @@ import Boom from 'boom';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, auth, }, cb) {
+  function start({ pkg, app, store, kubernetes, auth }, cb) {
 
     app.use('/api/namespaces', auth('api'));
 
@@ -12,7 +12,7 @@ export default function(options = {}) {
         const namespaces = req.user.listNamespaceIdsWithPermission('namespaces-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findNamespaces({ namespaces, }, limit, offset);
+        const result = await store.findNamespaces({ namespaces }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -40,7 +40,7 @@ export default function(options = {}) {
         if (!req.body.context) return next(Boom.badRequest('context is required'));
 
 
-        const cluster = await store.findCluster({ name: req.body.cluster, });
+        const cluster = await store.findCluster({ name: req.body.cluster });
         if (!cluster) return next(Boom.badRequest(`cluster ${req.body.cluster} was not found`));
 
         const contextOk = await kubernetes.checkContext(cluster.config, req.body.context, res.locals.logger);
@@ -49,8 +49,8 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(cluster.config, req.body.context, req.body.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.name} was not found on ${cluster.name} cluster`));
 
-        const data = { name: req.body.name, cluster, context: req.body.context, };
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const data = { name: req.body.name, cluster, context: req.body.context };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         const namespace = await store.saveNamespace(data, meta);
         res.json(namespace);
       } catch (err) {
@@ -62,7 +62,7 @@ export default function(options = {}) {
       try {
         if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());
 
-        const meta = { date: new Date(), account: { id: req.user.id, }, };
+        const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteNamespace(req.params.id, meta);
         res.status(204).send();
       } catch (err) {

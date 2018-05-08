@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
+import { shallow } from 'enzyme';
 import R from 'ramda';
 import NamespacesTable from './NamespacesTable';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, NamespaceLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, NamespaceLink } from '../Links';
 
 describe('NamespacesTable', () => {
 
@@ -18,8 +18,8 @@ describe('NamespacesTable', () => {
   });
 
   it('should render empty table', () => {
-    const namespaces = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
-    const wrapper = renderNamespacesTable({ namespaces, });
+    const namespaces = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const wrapper = renderNamespacesTable({ namespaces });
 
     expect(wrapper.find('.namespaces-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);
@@ -39,8 +39,8 @@ describe('NamespacesTable', () => {
         },
       };
     }, 50);
-    const namespaces = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
-    const wrapper = renderNamespacesTable({ namespaces, });
+    const namespaces = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const wrapper = renderNamespacesTable({ namespaces });
 
     expect(wrapper.find('.namespaces-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(50);
@@ -56,7 +56,7 @@ describe('NamespacesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderNamespacesTable({ loading: true, });
+    const wrapper = renderNamespacesTable({ loading: true });
 
     expect(wrapper.find('.namespaces-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);
@@ -65,7 +65,7 @@ describe('NamespacesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderNamespacesTable({ error: new Error(), });
+    const wrapper = renderNamespacesTable({ error: new Error() });
 
     expect(wrapper.find('.namespaces-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);

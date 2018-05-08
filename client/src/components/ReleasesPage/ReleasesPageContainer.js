@@ -1,5 +1,5 @@
-import { connect, } from 'react-redux';
-import { fetchReleases, } from '../../actions/release';
+import { connect } from 'react-redux';
+import { fetchReleases } from '../../actions/release';
 
 import ReleasesPage from './ReleasesPage';
 

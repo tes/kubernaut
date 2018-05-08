@@ -7,7 +7,7 @@ const PostgresStore = require('connect-pg-simple')(session);
  */
 module.exports = function() {
 
-  function start({ config, logger, postgres, }, cb) {
+  function start({ config, logger, postgres }, cb) {
 
     logger.info('Using PostgreSQL backed sessions');
 

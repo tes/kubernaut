@@ -1,12 +1,12 @@
 import expect from 'expect';
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeRegistry, makeRootMeta, } from '../factories';
+import { makeRegistry, makeRootMeta } from '../factories';
 
 describe('Registry Store', () => {
 
-  let system = { stop: cb => cb(), };
-  let store = { nuke: () => new Promise(cb => cb()), };
+  let system = { stop: cb => cb() };
+  let store = { nuke: () => new Promise(cb => cb()) };
 
   before(async () => {
     system = createSystem().remove('server');
@@ -71,7 +71,7 @@ describe('Registry Store', () => {
     it('should find a registry by name', async () => {
       const data = makeRegistry();
       const saved = await saveRegistry(data);
-      const registry = await findRegistry({ name: data.name, });
+      const registry = await findRegistry({ name: data.name });
 
       expect(registry).toBeDefined();
       expect(registry.id).toBe(saved.id);
@@ -81,7 +81,7 @@ describe('Registry Store', () => {
       const data = makeRegistry();
       await saveRegistry(data);
 
-      const registry = await findRegistry({ name: 'missing', });
+      const registry = await findRegistry({ name: 'missing' });
       expect(registry).toBe(undefined);
     });
   });
@@ -95,19 +95,19 @@ describe('Registry Store', () => {
           data: makeRegistry({
             name: 'a',
           }),
-          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z') }),
         },
         {
           data: makeRegistry({
             name: 'c',
           }),
-          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z') }),
         },
         {
           data: makeRegistry({
             name: 'b',
           }),
-          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z') }),
         },
       ];
 
@@ -116,7 +116,7 @@ describe('Registry Store', () => {
       }));
 
       const results = await findRegistries();
-      expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c', 'default',]);
+      expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c', 'default']);
       expect(results.count).toBe(4);
       expect(results.limit).toBe(50);
       expect(results.offset).toBe(0);
@@ -136,38 +136,38 @@ describe('Registry Store', () => {
     });
 
     it('should filter by registry ids', async () => {
-      const registry1 = makeRegistry({ name: 'r1', });
-      const registry2 = makeRegistry({ name: 'r2', });
+      const registry1 = makeRegistry({ name: 'r1' });
+      const registry2 = makeRegistry({ name: 'r2' });
 
       const saved1 = await saveRegistry(registry1);
       const saved2 = await saveRegistry(registry2);
 
-      const results1 = await findRegistries({ ids: [ saved1.id, ], });
+      const results1 = await findRegistries({ ids: [ saved1.id ] });
       expect(results1.count).toBe(1);
       expect(results1.items[0].id).toBe(saved1.id);
 
-      const results2 = await findRegistries({ ids: [ saved2.id, ], });
+      const results2 = await findRegistries({ ids: [ saved2.id ] });
       expect(results2.count).toBe(1);
       expect(results2.items[0].id).toBe(saved2.id);
 
-      const results3 = await findRegistries({ ids: [ saved1.id, saved2.id, ], });
+      const results3 = await findRegistries({ ids: [ saved1.id, saved2.id ] });
       expect(results3.count).toBe(2);
       expect(results3.items[0].id).toBe(saved1.id);
       expect(results3.items[1].id).toBe(saved2.id);
     });
 
     it('should filter registry by criteria', async () => {
-      const registry1 = makeRegistry({ name: 'r1', });
-      const registry2 = makeRegistry({ name: 'r2', });
+      const registry1 = makeRegistry({ name: 'r1' });
+      const registry2 = makeRegistry({ name: 'r2' });
 
       const saved1 = await saveRegistry(registry1);
       const saved2 = await saveRegistry(registry2);
 
-      const results1 = await findRegistries({ name: registry1.name, });
+      const results1 = await findRegistries({ name: registry1.name });
       expect(results1.count).toBe(1);
       expect(results1.items[0].id).toBe(saved1.id);
 
-      const results2 = await findRegistries({ name: registry2.name, });
+      const results2 = await findRegistries({ name: registry2.name });
       expect(results2.count).toBe(1);
       expect(results2.items[0].id).toBe(saved2.id);
     });

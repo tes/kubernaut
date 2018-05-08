@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
+import { shallow } from 'enzyme';
 import R from 'ramda';
 import AccountsTable from './AccountsTable';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink } from '../Links';
 
 describe('AccountsTable', () => {
 
@@ -19,8 +19,8 @@ describe('AccountsTable', () => {
 
   it('should render empty table', () => {
 
-    const accounts = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
-    const wrapper = renderAccountsTable({ accounts, });
+    const accounts = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const wrapper = renderAccountsTable({ accounts });
 
     expect(wrapper.find('.accounts-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);
@@ -41,8 +41,8 @@ describe('AccountsTable', () => {
         },
       };
     }, 50);
-    const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
-    const wrapper = renderAccountsTable({ accounts, });
+    const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const wrapper = renderAccountsTable({ accounts });
 
     expect(wrapper.find('.accounts-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(50);
@@ -57,7 +57,7 @@ describe('AccountsTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderAccountsTable({ loading: true, });
+    const wrapper = renderAccountsTable({ loading: true });
 
     expect(wrapper.find('.accounts-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);
@@ -66,7 +66,7 @@ describe('AccountsTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderAccountsTable({ error: new Error(), });
+    const wrapper = renderAccountsTable({ error: new Error() });
 
     expect(wrapper.find('.accounts-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);

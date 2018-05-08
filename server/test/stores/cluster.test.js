@@ -1,12 +1,12 @@
 import expect from 'expect';
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeCluster, makeRootMeta, } from '../factories';
+import { makeCluster, makeRootMeta } from '../factories';
 
 describe('Cluster Store', () => {
 
-  let system = { stop: cb => cb(), };
-  let store = { nuke: () => new Promise(cb => cb()), };
+  let system = { stop: cb => cb() };
+  let store = { nuke: () => new Promise(cb => cb()) };
 
   before(async () => {
     system = createSystem().remove('server');
@@ -84,7 +84,7 @@ describe('Cluster Store', () => {
     it('should find a cluster by name', async () => {
       const data = makeCluster();
       const saved = await saveCluster(data);
-      const cluster = await findCluster({ name: data.name, });
+      const cluster = await findCluster({ name: data.name });
 
       expect(cluster).toBeDefined();
       expect(cluster.id).toBe(saved.id);
@@ -94,7 +94,7 @@ describe('Cluster Store', () => {
       const data = makeCluster();
       await saveCluster(data);
 
-      const cluster = await findCluster({ name: 'missing', });
+      const cluster = await findCluster({ name: 'missing' });
       expect(cluster).toBe(undefined);
     });
   });
@@ -119,19 +119,19 @@ describe('Cluster Store', () => {
           data: makeCluster({
             name: 'a',
           }),
-          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z') }),
         },
         {
           data: makeCluster({
             name: 'c',
           }),
-          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z') }),
         },
         {
           data: makeCluster({
             name: 'b',
           }),
-          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z') }),
         },
       ];
 
@@ -140,7 +140,7 @@ describe('Cluster Store', () => {
       }));
 
       const results = await findClusters();
-      expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c',]);
+      expect(results.items.map(n => n.name)).toEqual(['a', 'b', 'c']);
       expect(results.count).toBe(3);
       expect(results.limit).toBe(50);
       expect(results.offset).toBe(0);

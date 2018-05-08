@@ -1,1 +1,1 @@
-export { default, } from './NamespacesPageContainer';
+export { default } from './NamespacesPageContainer';

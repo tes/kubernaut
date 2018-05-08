@@ -1,9 +1,9 @@
 import React from 'react';
-import { shallow, } from 'enzyme';
+import { shallow } from 'enzyme';
 import R from 'ramda';
 import ReleasesTable from './ReleasesTable';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink } from '../Links';
 
 describe('ReleasesTable', () => {
 
@@ -19,8 +19,8 @@ describe('ReleasesTable', () => {
   });
 
   it('should render empty table', () => {
-    const releases = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [], };
-    const wrapper = renderReleasesTable({ releases, });
+    const releases = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const wrapper = renderReleasesTable({ releases });
 
     expect(wrapper.find('.releases-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
@@ -46,8 +46,8 @@ describe('ReleasesTable', () => {
         version: `v${i+1}`,
       };
     }, 50);
-    const releases = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items, };
-    const wrapper = renderReleasesTable({ releases, });
+    const releases = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const wrapper = renderReleasesTable({ releases });
 
     expect(wrapper.find('.releases-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(50);
@@ -64,7 +64,7 @@ describe('ReleasesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderReleasesTable({ loading: true, });
+    const wrapper = renderReleasesTable({ loading: true });
 
     expect(wrapper.find('.releases-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
@@ -73,7 +73,7 @@ describe('ReleasesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderReleasesTable({ error: new Error(), });
+    const wrapper = renderReleasesTable({ error: new Error() });
 
     expect(wrapper.find('.releases-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);

@@ -1,6 +1,6 @@
 export default class Namespace {
 
-  constructor({ id, name, cluster, context, createdOn, createdBy, }) {
+  constructor({ id, name, cluster, context, createdOn, createdBy }) {
     this.id = id;
     this.name = name;
     this.cluster = cluster;

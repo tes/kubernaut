@@ -3,13 +3,13 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRegistry, makeRootMeta, } from '../factories';
+import { makeRegistry, makeRootMeta } from '../factories';
 
 describe('Registries API', () => {
 
   let config;
-  let system = { stop: cb => cb(), };
-  let store = { nuke: new Promise(cb => cb()), };
+  let system = { stop: cb => cb() };
+  let store = { nuke: new Promise(cb => cb()) };
 
   const loggerOptions = {};
 
@@ -69,7 +69,7 @@ describe('Registries API', () => {
 
       const registries = await request({
         url: `http://${config.server.host}:${config.server.port}/api/registries`,
-        qs: { limit: 40, offset: 0, },
+        qs: { limit: 40, offset: 0 },
         method: 'GET',
         json: true,
       });
@@ -84,7 +84,7 @@ describe('Registries API', () => {
 
       const registries = await request({
         url: `http://${config.server.host}:${config.server.port}/api/registries`,
-        qs: { limit: 50, offset: 10, },
+        qs: { limit: 50, offset: 10 },
         method: 'GET',
         json: true,
       });

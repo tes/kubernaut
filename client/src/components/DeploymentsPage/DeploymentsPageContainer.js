@@ -1,5 +1,5 @@
-import { connect, } from 'react-redux';
-import { fetchDeployments, } from '../../actions/deployment';
+import { connect } from 'react-redux';
+import { fetchDeployments } from '../../actions/deployment';
 
 import DeploymentsPage from './DeploymentsPage';
 

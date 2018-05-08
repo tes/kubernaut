@@ -38,7 +38,7 @@ const levels = {
 
 export default function(options = {}) {
 
-  function start({ config = {}, }, cb) {
+  function start({ config = {} }, cb) {
 
     function onMessage(event) {
       if (options.suppress) return;
@@ -51,7 +51,7 @@ export default function(options = {}) {
         displayLevel: event.level.toUpperCase(),
       });
 
-      const { colour, log, } = level;
+      const { colour, log } = level;
       if (has(event, 'error.message')) log(colour(error.render(data)));
       else if (has(event, 'response.statusCode')) log(colour(response.render(data)));
       else log(colour(info.render(data)));

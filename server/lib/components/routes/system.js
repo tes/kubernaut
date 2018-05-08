@@ -1,6 +1,6 @@
 export default function(options = {}) {
 
-  function start({ pkg, app, loggerMiddleware, }, cb) {
+  function start({ pkg, app, loggerMiddleware }, cb) {
 
     app.get('/__/*', (req, res, next) => {
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -10,7 +10,7 @@ export default function(options = {}) {
     });
 
     app.get('/__/status', loggerMiddleware.disable, (req, res) => {
-      res.json({ name: pkg.name, version: pkg.version, description: pkg.description, });
+      res.json({ name: pkg.name, version: pkg.version, description: pkg.description });
     });
 
     cb();

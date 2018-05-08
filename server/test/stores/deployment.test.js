@@ -1,12 +1,12 @@
 import expect from 'expect';
-import { v4 as uuid, } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeRelease, makeRootMeta, } from '../factories';
+import { makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeRelease, makeRootMeta } from '../factories';
 
 describe('Deployment Store', () => {
 
-  let system = { stop: cb => cb(), };
-  let store = { nuke: () => new Promise(cb => cb()), };
+  let system = { stop: cb => cb() };
+  let store = { nuke: () => new Promise(cb => cb()) };
 
   before(async () => {
     system = createSystem().remove('server');
@@ -28,9 +28,9 @@ describe('Deployment Store', () => {
 
     it('should create a deployment', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       expect(deployment).toBeDefined();
@@ -39,10 +39,10 @@ describe('Deployment Store', () => {
 
     it('should permit repeat deployments', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
 
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment1 = await saveDeployment(data);
       const deployment2 = await saveDeployment(data);
 
@@ -51,8 +51,8 @@ describe('Deployment Store', () => {
 
     it('should report an error if release does not exist', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
-      const data = makeDeployment({ release: { id: uuid(), }, namespace, });
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
+      const data = makeDeployment({ release: { id: uuid() }, namespace });
 
       await expect(
         saveDeployment(data)
@@ -61,9 +61,9 @@ describe('Deployment Store', () => {
 
     it('should report an error if release was deleted', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       await deleteRelease(release.id);
 
       await expect(
@@ -76,9 +76,9 @@ describe('Deployment Store', () => {
 
     it('should update a deployment with apply exit code', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       expect(deployment).toBeDefined();
@@ -100,9 +100,9 @@ describe('Deployment Store', () => {
 
     it('should report an error if deployment was deleted', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       deleteDeployment(deployment.id);
@@ -114,9 +114,9 @@ describe('Deployment Store', () => {
 
     it('should report an error if deployment already has an apply exit code', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       await saveApplyExitCode(deployment.id, 99);
@@ -131,9 +131,9 @@ describe('Deployment Store', () => {
 
     it('should update a deployment with rollout status exit code', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       expect(deployment).toBeDefined();
@@ -155,9 +155,9 @@ describe('Deployment Store', () => {
 
     it('should report an error if deployment was deleted', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       deleteDeployment(deployment.id);
@@ -169,9 +169,9 @@ describe('Deployment Store', () => {
 
     it('should report an error if deployment already has a rollout status exit code', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
       await saveRolloutStatusExitCode(deployment.id, 99);
@@ -186,10 +186,10 @@ describe('Deployment Store', () => {
 
     it('should create deployment log entries', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const deployment = await saveDeployment(makeDeployment({ release, namespace, }));
-      const data = makeDeploymentLogEntry({ deployment, });
+      const deployment = await saveDeployment(makeDeployment({ release, namespace }));
+      const data = makeDeploymentLogEntry({ deployment });
       const logEntry = await saveDeploymentLogEntry(data);
 
       expect(logEntry).toBeDefined();
@@ -201,9 +201,9 @@ describe('Deployment Store', () => {
 
     it('should retrieve deployment by id', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const meta = makeRootMeta();
       const saved = await saveDeployment(data, meta);
       const deployment = await getDeployment(saved.id);
@@ -232,9 +232,9 @@ describe('Deployment Store', () => {
 
     it('should retrieve deployment log entries', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const meta = makeRootMeta();
       const saved = await saveDeployment(data, meta);
 
@@ -296,7 +296,7 @@ describe('Deployment Store', () => {
     it('should list deployments, ordered by createdOn desc and id desc', async () => {
 
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
 
       const deployments = [
         {
@@ -309,7 +309,7 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2014-07-01T10:11:12.000Z') }),
         },
         {
           data: makeDeployment({
@@ -321,7 +321,7 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2015-07-01T10:11:12.000Z') }),
         },
         {
           data: makeDeployment({
@@ -333,7 +333,7 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2013-07-01T10:11:12.000Z') }),
         },
         {
           data: makeDeployment({
@@ -345,7 +345,7 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2016-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2016-07-01T10:11:12.000Z') }),
         },
         {
           data: makeDeployment({
@@ -357,7 +357,7 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2011-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2011-07-01T10:11:12.000Z') }),
         },
         {
           data: makeDeployment({
@@ -369,19 +369,19 @@ describe('Deployment Store', () => {
             },
             namespace,
           }),
-          meta: makeRootMeta({ date: new Date('2012-07-01T10:11:12.000Z'), }),
+          meta: makeRootMeta({ date: new Date('2012-07-01T10:11:12.000Z') }),
         },
       ];
 
       await Promise.all(deployments.map(record => {
         return saveRelease(record.data.release).then(release => {
-          const deployment = { ...record.data, release, };
+          const deployment = { ...record.data, release };
           return saveDeployment(deployment, record.meta);
         });
       }));
 
       const results = await findDeployments();
-      expect(results.items.map(d => `${d.release.service.name}${d.release.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1',]);
+      expect(results.items.map(d => `${d.release.service.name}${d.release.version}`)).toEqual(['b1', 'a2', 'a1', 'a3', 'c2', 'c1']);
       expect(results.count).toBe(6);
       expect(results.limit).toBe(50);
       expect(results.offset).toBe(0);
@@ -389,8 +389,8 @@ describe('Deployment Store', () => {
 
     it('should filter deployments by namespace ids', async () => {
       const cluster = await saveCluster();
-      const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test', });
-      const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test', });
+      const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test' });
+      const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test' });
       const release1 = await saveRelease(makeRelease());
       const release2 = await saveRelease(makeRelease());
       const deployment1 = makeDeployment({
@@ -405,22 +405,22 @@ describe('Deployment Store', () => {
       const saved1 = await saveDeployment(deployment1);
       const saved2 = await saveDeployment(deployment2);
 
-      const results1 = await findDeployments({ namespaces: [ namespace1.id, ], });
+      const results1 = await findDeployments({ namespaces: [ namespace1.id ] });
       expect(results1.count).toBe(1);
       expect(results1.items[0].id).toBe(saved1.id);
 
-      const results2 = await findDeployments({ namespaces: [ namespace2.id, ], });
+      const results2 = await findDeployments({ namespaces: [ namespace2.id ] });
       expect(results2.count).toBe(1);
       expect(results2.items[0].id).toBe(saved2.id);
 
-      const results3 = await findDeployments({ namespaces: [ namespace1.id, namespace2.id, ], });
+      const results3 = await findDeployments({ namespaces: [ namespace1.id, namespace2.id ] });
       expect(results3.count).toBe(2);
     });
 
     it('should filter deployments by criteria', async () => {
       const cluster = await saveCluster();
-      const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test', });
-      const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test', });
+      const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test' });
+      const namespace2 = await saveNamespace({ name: 'ns2', cluster, context: 'test' });
       const release1 = await saveRelease(makeRelease({
         service: {
           name: 's1',
@@ -458,25 +458,25 @@ describe('Deployment Store', () => {
       await saveDeployment(deployment3);
       await saveDeployment(deployment4);
 
-      const results1 = await findDeployments({ namespace: 'ns1', });
+      const results1 = await findDeployments({ namespace: 'ns1' });
       expect(results1.count).toBe(2);
 
-      const results2 = await findDeployments({ service: 's1', });
+      const results2 = await findDeployments({ service: 's1' });
       expect(results2.count).toBe(3);
 
-      const results3 = await findDeployments({ namespace: 'ns2', service: 's1', });
+      const results3 = await findDeployments({ namespace: 'ns2', service: 's1' });
       expect(results3.count).toBe(1);
     });
 
     it('should count active deployments', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
 
       const results1 = await findDeployments();
       expect(results1.count).toBe(0);
 
-      const saved = await saveDeployment(makeDeployment({ release, namespace, }));
+      const saved = await saveDeployment(makeDeployment({ release, namespace }));
       const results2 = await findDeployments();
       expect(results2.count).toBe(1);
 
@@ -487,10 +487,10 @@ describe('Deployment Store', () => {
 
     it('should exclude deleted releases from deployment count', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
 
-      await saveDeployment(makeDeployment({ release, namespace, }));
+      await saveDeployment(makeDeployment({ release, namespace }));
       const results1 = await findDeployments();
       expect(results1.count).toBe(1);
 
@@ -507,7 +507,7 @@ describe('Deployment Store', () => {
         },
       }));
 
-      await saveDeployment(makeDeployment({ release, }));
+      await saveDeployment(makeDeployment({ release }));
       const results1 = await findDeployments();
       expect(results1.count).toBe(1);
 
@@ -520,10 +520,10 @@ describe('Deployment Store', () => {
 
     it('should exclude deleted namespaces from deployment count', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
 
-      await saveDeployment(makeDeployment({ release, namespace, }));
+      await saveDeployment(makeDeployment({ release, namespace }));
       const results1 = await findDeployments();
       expect(results1.count).toBe(1);
 
@@ -538,17 +538,17 @@ describe('Deployment Store', () => {
         const deployments = [];
 
         const cluster = await saveCluster();
-        const namespace = await saveNamespace(makeNamespace({ cluster, }));
+        const namespace = await saveNamespace(makeNamespace({ cluster }));
 
         for (var i = 0; i < 51; i++) {
           deployments.push({
-            data: makeDeployment({ namespace, }),
+            data: makeDeployment({ namespace }),
           });
         }
 
         await Promise.all(deployments.map(async record => {
           const release = await saveRelease(record.data.release);
-          const deployment = { ...record.data, release, };
+          const deployment = { ...record.data, release };
           return saveDeployment(deployment);
         }));
       });
@@ -583,9 +583,9 @@ describe('Deployment Store', () => {
 
     it('should soft delete deployment', async () => {
       const cluster = await saveCluster();
-      const namespace = await saveNamespace(makeNamespace({ cluster, }));
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease());
-      const data = makeDeployment({ release, namespace, });
+      const data = makeDeployment({ release, namespace });
       const saved = await saveDeployment(data);
 
       await deleteDeployment(saved.id);

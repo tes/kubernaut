@@ -1,4 +1,4 @@
-import { Strategy as CustomStrategy, } from 'passport-custom';
+import { Strategy as CustomStrategy } from 'passport-custom';
 
 /*
  Using 'module.exports' to workaround TypeError require is not a function
@@ -6,15 +6,15 @@ import { Strategy as CustomStrategy, } from 'passport-custom';
 */
 module.exports = function() {
 
-  function start({ logger, app, passport, store, }, cb) {
+  function start({ logger, app, passport, store }, cb) {
 
     logger.info('Initialising local authentication strategy');
 
     const strategy = new CustomStrategy(async (req, cb) => {
       try {
-        const profile = { displayName: 'Bob Holness', };
-        const identity = { name: 'blockbusters', provider: 'kubernaut', 'type': 'local', };
-        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000', }, };
+        const profile = { displayName: 'Bob Holness' };
+        const identity = { name: 'blockbusters', provider: 'kubernaut', 'type': 'local' };
+        const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000' } };
         const account = await store.ensureAccount(profile, identity, meta);
         cb(null, account);
       } catch (err) {
@@ -26,7 +26,7 @@ module.exports = function() {
 
     passport.use(strategy);
 
-    cb(null, { name: strategy.name, app: true, api: true, });
+    cb(null, { name: strategy.name, app: true, api: true });
   }
 
   return {

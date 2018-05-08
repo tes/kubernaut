@@ -1,10 +1,10 @@
 // Framework
-import React, { Component, } from 'react';
-import { BrowserRouter as Router, Route, Switch, } from 'react-router-dom';
-import { createStore, combineReducers, applyMiddleware, } from 'redux';
+import React, { Component } from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import { Provider, } from 'react-redux';
-import { composeWithDevTools, } from 'redux-devtools-extension';
+import { Provider } from 'react-redux';
+import { composeWithDevTools } from 'redux-devtools-extension';
 
 // Components
 import Header from './components/Header';
@@ -78,7 +78,7 @@ class App extends Component {
                 <Route exact path='/deployments' render={() =>
                   <DeploymentsPage />
                 } />
-                <Route exact path='/deployments/:deploymentId' render={({ match, }) =>
+                <Route exact path='/deployments/:deploymentId' render={({ match }) =>
                   <DeploymentDetailsPage deploymentId={match.params.deploymentId} />
                 } />
                 <Route path='/' render={() =>

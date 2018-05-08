@@ -8,7 +8,7 @@ import {
   FETCH_REGISTRIES_ERROR,
 } from './registry';
 
-const mockStore = configureStore([thunk,]);
+const mockStore = configureStore([thunk]);
 
 describe('Registry Actions', () => {
 
@@ -20,12 +20,12 @@ describe('Registry Actions', () => {
 
   it('should fetch registries', async () => {
 
-    fetchMock.mock('/api/registries?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3,], });
+    fetchMock.mock('/api/registries?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3] });
 
     await dispatchRegistriesActions();
 
     expectRegistriesRequest();
-    expectRegistriesSuccess([1, 2, 3,]);
+    expectRegistriesSuccess([1, 2, 3]);
   });
 
   it('should tolerate errors fetching registries', async () => {
@@ -59,7 +59,7 @@ describe('Registry Actions', () => {
 
   async function dispatchRegistriesActions(_options) {
     const store = mockStore({});
-    const options = Object.assign({ page: 1, pageSize: 50, quiet: true, }, _options);
+    const options = Object.assign({ page: 1, pageSize: 50, quiet: true }, _options);
     await store.dispatch(fetchRegistries(options));
     actions = store.getActions();
     expect(actions).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('Registry Actions', () => {
   function expectRegistriesRequest() {
     expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(FETCH_REGISTRIES_REQUEST);
-    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
+    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
     expect(actions[0].loading).toBe(true);
   }
 
@@ -84,7 +84,7 @@ describe('Registry Actions', () => {
   function expectRegistriesError(msg) {
     expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(FETCH_REGISTRIES_ERROR);
-    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [], });
+    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
     expect(actions[1].error.message).toBe(msg);
   }
 

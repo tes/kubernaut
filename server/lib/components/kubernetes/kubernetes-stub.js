@@ -1,4 +1,4 @@
-import { safeLoadAll, } from 'js-yaml';
+import { safeLoadAll } from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -29,7 +29,7 @@ export default function(options = {}) {
     };
   }
 
-  function start({ contexts = defaultContexts(), }, cb) {
+  function start({ contexts = defaultContexts() }, cb) {
 
     function apply(config, context, namespace, manifest, emitter) {
       return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ export default function(options = {}) {
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
 
         const manifestJson = safeLoadAll(manifest);
-        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} apply -f \${MANIFEST}`, });
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} apply -f \${MANIFEST}` });
 
         const name = manifestJson[2].metadata.name;
 
@@ -46,7 +46,7 @@ export default function(options = {}) {
         contexts[context].namespaces[namespace].manifests.push(manifestJson);
 
         const status = /^x-/.test(name) ? 'failure' : 'success';
-        contexts[context].namespaces[namespace].deployments.push({ name, status, });
+        contexts[context].namespaces[namespace].deployments.push({ name, status });
         resolve(0);
       });
     }
@@ -90,7 +90,7 @@ export default function(options = {}) {
     function rolloutStatus(config, context, namespace, name, emitter) {
       return new Promise((resolve, reject) => {
         timeoutId = setTimeout(async () => {
-          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}`, });
+          emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} rollout status deployments/${name}` });
 
           if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
           if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
@@ -99,10 +99,10 @@ export default function(options = {}) {
           if (!deployment) return reject(new Error(`Unknown deployment: ${name}`));
 
           if (deployment.status === 'success') {
-            emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `super smashing great`, });
+            emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `super smashing great` });
             return resolve(0);
           } else {
-            emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `booo`, });
+            emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `booo` });
             return resolve(99);
           }
         }, 500);

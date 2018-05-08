@@ -1,1 +1,1 @@
-export { default, } from './NavigationContainer';
+export { default } from './NavigationContainer';

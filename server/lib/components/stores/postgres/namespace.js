@@ -5,13 +5,13 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  const { Op, raw, } = sqb;
+  const { Op, raw } = sqb;
 
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
     async function getNamespace(id) {
       logger.debug(`Getting namespace by id: ${id}`);
-      const result = await db.query(SQL.SELECT_NAMESPACE_BY_ID, [id,]);
+      const result = await db.query(SQL.SELECT_NAMESPACE_BY_ID, [id]);
       logger.debug(`Found ${result.rowCount} namespaces with id: ${id}`);
       return result.rowCount ? toNamespace(result.rows[0]) : undefined;
     }
@@ -77,11 +77,11 @@ export default function(options) {
         return Promise.all([
           connection.query(findNamespacesStatement.sql, findNamespacesStatement.values),
           connection.query(countNamespacesStatement.sql, countNamespacesStatement.values),
-        ]).then(([namespaceResult, countResult,]) => {
+        ]).then(([namespaceResult, countResult]) => {
           const items = namespaceResult.rows.map(row => toNamespace(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} namespaces`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }

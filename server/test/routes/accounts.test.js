@@ -3,13 +3,13 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeRootMeta, } from '../factories';
+import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeRootMeta } from '../factories';
 
 describe('Accounts API', () => {
 
   let config;
-  let system = { stop: new Promise(cb => cb()), };
-  let store = { nuke: new Promise(cb => cb()), };
+  let system = { stop: new Promise(cb => cb()) };
+  let store = { nuke: new Promise(cb => cb()) };
 
   const loggerOptions = {};
 
@@ -69,7 +69,7 @@ describe('Accounts API', () => {
 
       const accounts = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts`,
-        qs: { limit: 40, offset: 0, },
+        qs: { limit: 40, offset: 0 },
         method: 'GET',
         json: true,
       });
@@ -88,7 +88,7 @@ describe('Accounts API', () => {
 
       const accounts = await request({
         url: `http://${config.server.host}:${config.server.port}/api/accounts`,
-        qs: { limit: 50, offset: 22, },
+        qs: { limit: 50, offset: 22 },
         method: 'GET',
         json: true,
       });
@@ -201,12 +201,12 @@ describe('Accounts API', () => {
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/identities`,
         method: 'POST',
-        json: { account: saved.id, ...data, },
+        json: { account: saved.id, ...data },
       });
 
       expect(response.id).toBeDefined();
 
-      const account = await store.findAccount({ ...data, });
+      const account = await store.findAccount({ ...data });
       expect(account).toBeDefined();
       expect(account.displayName).toBe(saved.displayName);
     });
@@ -301,7 +301,7 @@ describe('Accounts API', () => {
     it('should grant a role on a namespace to an account', async () => {
 
       const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
       const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
@@ -319,7 +319,7 @@ describe('Accounts API', () => {
       const account = await store.getAccount(saved.id);
       expect(account).toBeDefined();
       expect(account.roles.admin).toBeDefined();
-      expect(account.roles.admin.namespaces).toEqual([namespace.id,]);
+      expect(account.roles.admin.namespaces).toEqual([namespace.id]);
     });
 
     it('should reject payloads without an account', async () => {
@@ -405,7 +405,7 @@ describe('Accounts API', () => {
       const account = await store.getAccount(saved.id);
       expect(account).toBeDefined();
       expect(account.roles.admin).toBeDefined();
-      expect(account.roles.admin.registries).toEqual([ registry.id, ]);
+      expect(account.roles.admin.registries).toEqual([ registry.id ]);
     });
 
     it('should reject payloads without an account', async () => {

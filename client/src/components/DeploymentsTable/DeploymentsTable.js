@@ -1,14 +1,14 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink } from '../Links';
 import './DeploymentsTable.css';
 
 class DeploymentsTable extends Component {
 
   render() {
-    const { error = null, loading = false, deployments = {}, fetchDeployments, } = this.props;
+    const { error = null, loading = false, deployments = {}, fetchDeployments } = this.props;
 
     const errorTableBody = () =>
       <tbody className='deployments-table__body deployments-table__body--error'>

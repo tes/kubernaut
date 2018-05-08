@@ -1,5 +1,5 @@
 import system from '../lib/system';
-import { fake as clock, } from 'groundhog-day';
+import { fake as clock } from 'groundhog-day';
 import memorySession from '../lib/components/express/session-memory';
 import kubernetes from '../lib/components/kubernetes/kubernetes-stub';
 

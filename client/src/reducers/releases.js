@@ -4,7 +4,7 @@ import {
   FETCH_RELEASES_ERROR,
 } from '../actions/release';
 
-export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [], }, meta: {}, }, action)  {
+export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, currentPage: 0, items: [] }, meta: {} }, action)  {
   switch (action.type) {
     case FETCH_RELEASES_REQUEST:
     case FETCH_RELEASES_SUCCESS:

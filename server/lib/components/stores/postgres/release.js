@@ -8,9 +8,9 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
-    const { Op, raw, } = sqb;
+    const { Op, raw } = sqb;
 
     async function saveRelease(data, meta) {
       return await db.withTransaction(async connection => {
@@ -18,7 +18,7 @@ export default function(options) {
         const template = await _ensureReleaseTemplate(connection, data.template, meta);
         const release = await _saveRelease(connection, service, template, data, meta);
         const attributes = await _saveReleaseAttributes(connection, release, data.attributes);
-        return new Release({ ...release, service, template, attributes, });
+        return new Release({ ...release, service, template, attributes });
       });
     }
 
@@ -83,7 +83,7 @@ export default function(options) {
         name, value: data[name], release: release.id,
       }));
 
-      await connection.query(SQL.SAVE_RELEASE_ATTRIBUTES, [JSON.stringify(attributes),]);
+      await connection.query(SQL.SAVE_RELEASE_ATTRIBUTES, [JSON.stringify(attributes)]);
 
       logger.debug(`Saved release attributes: [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
 
@@ -96,9 +96,9 @@ export default function(options) {
 
       return await db.withTransaction(async connection => {
         return Promise.all([
-          connection.query(SQL.SELECT_RELEASE_BY_ID, [id,]),
-          connection.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id,]),
-        ]).then(([releaseResult, attributesResult,]) => {
+          connection.query(SQL.SELECT_RELEASE_BY_ID, [id]),
+          connection.query(SQL.LIST_RELEASE_ATTRIBUTES_BY_RELEASE, [id]),
+        ]).then(([releaseResult, attributesResult]) => {
           logger.debug(`Found ${releaseResult.rowCount} releases with id: ${id}`);
           return releaseResult.rowCount ? toRelease(releaseResult.rows[0], attributesResult.rows) : undefined;
         });
@@ -157,11 +157,11 @@ export default function(options) {
         return Promise.all([
           connection.query(findReleasesStatement.sql, findReleasesStatement.values),
           connection.query(countReleasesStatement.sql, countReleasesStatement.values),
-        ]).then(([releaseResult, countResult,]) => {
+        ]).then(([releaseResult, countResult]) => {
           const items = releaseResult.rows.map(row => toRelease(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} releases`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }
@@ -193,7 +193,7 @@ export default function(options) {
           checksum: row.template_checksum,
         }) : undefined,
         attributes: attributeRows.reduce((attributes, row) => {
-          return { ...attributes, [row.name]: row.value, };
+          return { ...attributes, [row.name]: row.value };
         }, {}),
         createdOn: row.created_on,
         createdBy: new Account({

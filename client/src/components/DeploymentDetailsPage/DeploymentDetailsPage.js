@@ -1,7 +1,7 @@
-import React, { Component, } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Human, Ago, } from '../DisplayDate';
-import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, } from '../Links';
+import { Human, Ago } from '../DisplayDate';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
 import './DeploymentDetailsPage.css';
 
 class DeploymentDetailsPage extends Component {
@@ -11,7 +11,7 @@ class DeploymentDetailsPage extends Component {
   }
 
   render() {
-    const { meta = {}, deployment, } = this.props;
+    const { meta = {}, deployment } = this.props;
 
     const errorDetails = () =>
       <div>Error loading deployments</div>

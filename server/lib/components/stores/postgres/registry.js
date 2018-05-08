@@ -5,9 +5,9 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  const { Op, raw, } = sqb;
+  const { Op, raw } = sqb;
 
-  function start({ config, logger, db, }, cb) {
+  function start({ config, logger, db }, cb) {
 
     async function saveRegistry(data, meta) {
       logger.debug(`Saving registry: ${data.name}`);
@@ -27,7 +27,7 @@ export default function(options) {
 
     async function getRegistry(id) {
       logger.debug(`Getting registry by id: ${id}`);
-      const result = await db.query(SQL.SELECT_REGISTRY_BY_ID, [id,]);
+      const result = await db.query(SQL.SELECT_REGISTRY_BY_ID, [id]);
       logger.debug(`Found ${result.rowCount} registries with id: ${id}`);
       return result.rowCount ? toRegistry(result.rows[0]) : undefined;
     }
@@ -71,11 +71,11 @@ export default function(options) {
         return Promise.all([
           connection.query(findRegistriesStatement.sql, findRegistriesStatement.values),
           connection.query(countRegistriesStatement.sql, countRegistriesStatement.values),
-        ]).then(([registryResult, countResult,]) => {
+        ]).then(([registryResult, countResult]) => {
           const items = registryResult.rows.map(row => toRegistry(row));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} registries`);
-          return { limit, offset, count, items, };
+          return { limit, offset, count, items };
         });
       });
     }

@@ -1,1 +1,1 @@
-export { default, } from './DeploymentDetailsPageContainer';
+export { default } from './DeploymentDetailsPageContainer';

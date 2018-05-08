@@ -8,9 +8,9 @@ import {
 describe('Deployment Reducer', () => {
 
   it('should indicate when deployment is loading', () => {
-    const state = reduce(undefined, { type: FETCH_DEPLOYMENT_REQUEST, loading: true, data: {}, });
+    const state = reduce(undefined, { type: FETCH_DEPLOYMENT_REQUEST, loading: true, data: {} });
     expect(state.data).toMatchObject({});
-    expect(state.meta).toMatchObject({ loading: true, });
+    expect(state.meta).toMatchObject({ loading: true });
   });
 
   it('should update state when deployment has loaded', () => {
@@ -20,7 +20,7 @@ describe('Deployment Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_SUCCESS, data: { id: 12345, },});
+    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_SUCCESS, data: { id: 12345 }});
     expect(state.data.id).toBe(12345);
     expect(state.meta).toMatchObject({});
   });
@@ -32,9 +32,9 @@ describe('Deployment Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_ERROR, error: 'Oh Noes', data: {}, });
+    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_ERROR, error: 'Oh Noes', data: {} });
     expect(state.data).toMatchObject({});
-    expect(state.meta).toMatchObject({ error: 'Oh Noes', });
+    expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
 
 });

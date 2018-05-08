@@ -1,5 +1,5 @@
-import { connect, } from 'react-redux';
-import { fetchRegistries, } from '../../actions/registry';
+import { connect } from 'react-redux';
+import { fetchRegistries } from '../../actions/registry';
 
 import RegistriesPage from './RegistriesPage';
 

@@ -1,14 +1,14 @@
 import React from 'react';
 import Timeago from 'timeago.js';
 
-export const Human = ({ date, }) => {
+export const Human = ({ date }) => {
   const text = getText(date, inHumanFormat);
   return (
     <span className='display-date display-date--human'>{text}</span>
   );
 };
 
-export const Ago = ({ date, }) => {
+export const Ago = ({ date }) => {
   const text = getText(date, inAgoFormat);
   return (
     <span className='display-date display-date--ago'>{text}</span>

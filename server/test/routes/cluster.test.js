@@ -3,14 +3,14 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeRootMeta, } from '../factories';
+import { makeCluster, makeRootMeta } from '../factories';
 
 describe('Clusters API', () => {
 
   let config;
-  let system = { stop: new Promise(cb => cb()), };
-  let store = { nuke: new Promise(cb => cb()), };
-  let kubernetes = { nuke: new Promise(cb => cb()), };
+  let system = { stop: new Promise(cb => cb()) };
+  let store = { nuke: new Promise(cb => cb()) };
+  let kubernetes = { nuke: new Promise(cb => cb()) };
 
   const loggerOptions = {};
 
@@ -72,7 +72,7 @@ describe('Clusters API', () => {
 
       const clusters = await request({
         url: `http://${config.server.host}:${config.server.port}/api/clusters`,
-        qs: { limit: 40, offset: 0, },
+        qs: { limit: 40, offset: 0 },
         method: 'GET',
         json: true,
       });
@@ -87,7 +87,7 @@ describe('Clusters API', () => {
 
       const clusters = await request({
         url: `http://${config.server.host}:${config.server.port}/api/clusters`,
-        qs: { limit: 50, offset: 10, },
+        qs: { limit: 50, offset: 10 },
         method: 'GET',
         json: true,
       });

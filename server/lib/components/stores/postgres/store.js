@@ -2,7 +2,7 @@ import SQL from './sql';
 
 export default function(options = {}) {
 
-  function start({ config, logger, account, registry, release, cluster, namespace, deployment, db, }, cb) {
+  function start({ config, logger, account, registry, release, cluster, namespace, deployment, db }, cb) {
 
     async function nuke() {
       await db.query(SQL.NUKE);

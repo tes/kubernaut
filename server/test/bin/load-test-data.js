@@ -1,6 +1,6 @@
 import createSystem from '../../lib/system';
 import Chance from 'chance';
-import { makeAccount, makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeMeta, makeRootMeta, } from '../factories';
+import { makeAccount, makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeMeta, makeRootMeta } from '../factories';
 import pLimit from 'p-limit';
 
 const limit = pLimit(10);
@@ -12,7 +12,7 @@ createSystem()
   .remove('server')
   .start(async (err, dependencies) => {
       if (err) throw err;
-      const { store, postgres, } = dependencies;
+      const { store, postgres } = dependencies;
 
       try {
         await store.unlogged();
@@ -20,7 +20,7 @@ createSystem()
 
         const account = await store.saveAccount(makeAccount(), makeRootMeta());
         const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-        const namespace = await store.saveNamespace(makeNamespace({ cluster, }), makeRootMeta());
+        const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
 
         // Iterate services inside versions, as creating a release locks based on service name
         const tasks = [];
@@ -37,17 +37,17 @@ createSystem()
                 version: `${commit}-${v}`,
               },
             });
-            const meta = makeMeta({ account, date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000, })), });
+            const meta = makeMeta({ account, date: new Date(Date.now() - chance.integer({ min: 0, max: 7 * 24 * 60 * 60 * 1000 })) });
 
             tasks.push(limit(async () => {
               const release = await store.saveRelease(data.release, meta);
-              const deployment = await store.saveDeployment({ ...data, release, namespace, }, meta);
-              const applyExitCode = chance.integer({ min: 0, max: 3, });
+              const deployment = await store.saveDeployment({ ...data, release, namespace }, meta);
+              const applyExitCode = chance.integer({ min: 0, max: 3 });
               await store.saveApplyExitCode(deployment.id, applyExitCode);
-              if (applyExitCode === 0) await store.saveRolloutStatusExitCode(deployment.id, chance.integer({ min: 0, max: 3, }));
+              if (applyExitCode === 0) await store.saveRolloutStatusExitCode(deployment.id, chance.integer({ min: 0, max: 3 }));
               const logEntries = [];
               for (let l = 0; l < 5; l++) {
-                logEntries.push(makeDeploymentLogEntry({ deployment: deployment, }));
+                logEntries.push(makeDeploymentLogEntry({ deployment: deployment }));
               }
               for (const logEntry of logEntries) {
                 await store.saveDeploymentLogEntry(logEntry);
