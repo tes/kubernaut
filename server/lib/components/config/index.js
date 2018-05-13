@@ -1,7 +1,7 @@
-import System from 'systemic';
+import systemic from 'systemic';
 import confabulous from './confabulous';
 
-module.exports = new System({ name: 'config' })
+export default () => systemic({ name: 'config' })
   .add('config.overrides', {})
   .add('config', confabulous(), { scoped: true }).dependsOn({ component: 'config.overrides', destination: 'overrides' });
 

@@ -1,4 +1,4 @@
-import System from 'systemic';
+import systemic from 'systemic';
 import system from './system';
 import accounts from './accounts';
 import registries from './registries';
@@ -8,7 +8,7 @@ import namespaces from './namespaces';
 import deployments from './deployments';
 import app from './app';
 
-module.exports = new System({ name: 'routes' })
+export default () => systemic({ name: 'routes' })
   .add('routes.system', system()).dependsOn('config', 'logger', 'app', { component: 'logger.middleware', destination: 'loggerMiddleware' }, 'pkg')
   .add('routes.accounts', accounts()).dependsOn('config', 'logger', 'app', { component: 'logger.middleware', destination: 'loggerMiddleware' }, 'store', 'auth')
   .add('routes.registries', registries()).dependsOn('config', 'logger', 'app', { component: 'logger.middleware', destination: 'loggerMiddleware' }, 'store', 'auth')

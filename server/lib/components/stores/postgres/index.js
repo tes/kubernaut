@@ -1,4 +1,4 @@
-import System from 'systemic';
+import systemic from 'systemic';
 import migrator from './migrator';
 import postgres from 'systemic-pg';
 import db from './db';
@@ -10,7 +10,7 @@ import release from './release';
 import deployment from './deployment';
 import store from './store';
 
-module.exports = new System({ name: 'stores/postgres' })
+export default () => systemic({ name: 'stores/postgres' })
   .add('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config' }, )
   .add('postgres', postgres()).dependsOn('config', 'logger', 'migrator')
   .add('db', db()).dependsOn('config', 'logger', 'postgres')

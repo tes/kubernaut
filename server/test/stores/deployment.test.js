@@ -105,7 +105,7 @@ describe('Deployment Store', () => {
       const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
-      deleteDeployment(deployment.id);
+      await deleteDeployment(deployment.id);
 
       await expect(
         saveApplyExitCode(deployment.id, 99)
@@ -160,7 +160,7 @@ describe('Deployment Store', () => {
       const data = makeDeployment({ release, namespace });
       const deployment = await saveDeployment(data);
 
-      deleteDeployment(deployment.id);
+      await deleteDeployment(deployment.id);
 
       await expect(
         saveRolloutStatusExitCode(deployment.id, 99)

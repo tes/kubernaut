@@ -2,7 +2,7 @@ import expect from 'expect';
 import cheerio from 'cheerio';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
-import createSystem from './test-system';
+import createSystem from '../test-system';
 
 describe('kubernaut', () => {
 

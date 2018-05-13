@@ -1,6 +1,6 @@
-import System from 'systemic';
+import systemic from 'systemic';
 import postgres from './postgres';
 
-module.exports = new System({ name: 'stores' })
+export default () => systemic({ name: 'stores' })
   .include(postgres);
 

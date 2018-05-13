@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import chalk from 'chalk';
 import hogan from 'hogan.js';
 import merge from 'lodash.merge';
@@ -12,27 +14,27 @@ const levels = {
   debug: {
     colour: chalk.gray,
     value: 1,
-    log: console.log, // eslint-disable-line no-console
+    log: console.log,
   },
   info: {
     colour: chalk.white,
     value: 2,
-    log: console.log, // eslint-disable-line no-console
+    log: console.log,
   },
   warn: {
     colour: chalk.yellow,
     value: 3,
-    log: console.warn, // eslint-disable-line no-console
+    log: console.warn,
   },
   error: {
     colour: chalk.red,
     value: 4,
-    log: console.error, // eslint-disable-line no-console
+    log: console.error,
   },
   default: {
     colour: chalk.white,
     value: 1,
-    log: console.log, // eslint-disable-line no-console
+    log: console.log,
   },
 };
 
