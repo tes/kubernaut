@@ -17,9 +17,7 @@ describe('Accounts API', () => {
     system = createSystem()
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
-    const components = await system.start();
-    config = components.config;
-    store = components.store;
+    ({ config, store } = await system.start());
   });
 
   beforeEach(async () => {

@@ -10,9 +10,7 @@ describe('Registry Store', () => {
 
   before(async () => {
     system = createSystem().remove('server');
-
-    const components = await system.start();
-    store = components.store;
+    ({ store } = await system.start());
   });
 
   beforeEach(async () => {

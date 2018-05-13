@@ -18,10 +18,7 @@ describe('Deployments API', () => {
     system = createSystem()
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
-    const components = await system.start();
-    config = components.config;
-    store = components.store;
-    kubernetes = components.kubernetes;
+    ({ config, store, kubernetes } = await system.start());
   });
 
   beforeEach(async () => {
