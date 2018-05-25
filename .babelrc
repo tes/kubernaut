@@ -3,7 +3,13 @@
     [
       "env", {
         "targets": {
-          "node": "current"
+          "node": "current",
+          "plugins": [
+            ["babel-plugin-stack-trace-sourcemap", {
+                "importOverride": ["source-map-support", "install", "_sourceMapSupport"],
+                "execute": true
+            }]
+          ]
         }
       }
     ],
