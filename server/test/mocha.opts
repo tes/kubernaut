@@ -1,4 +1,5 @@
 --require babel-register
+--require babel-polyfill
 --require ./server/test/env.js
 --recursive
 --timeout 5000
