@@ -45,7 +45,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findClustersBuilder = sqb
-        .select('c.id', 'c.name', 'c.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('c.id', 'c.name', 'c.config', 'c.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_cluster__vw c', 'account cb')
         .where(Op.eq('c.created_by', raw('cb.id')))
         .orderBy('c.name asc')
