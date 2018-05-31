@@ -317,12 +317,14 @@ describe('Deployments API', () => {
           replicas: 3,
         },
       });
+      const lines = response.split('\n');
+      const finalOutput = JSON.parse(lines.slice(-1));
 
-      expect(response.id).toBeDefined();
-      expect(response.status).toBe('success');
-      expect(response.log.length).toBe(3);
+      expect(finalOutput.id).toBeDefined();
+      expect(finalOutput.status).toBe('success');
+      expect(finalOutput.log.length).toBe(3);
 
-      const deployment = await store.getDeployment(response.id);
+      const deployment = await store.getDeployment(finalOutput.id);
       expect(deployment.applyExitCode).toBe(0);
       expect(deployment.rolloutStatusExitCode).toBe(0);
       expect(deployment.log.length).toBe(3);
@@ -342,13 +344,12 @@ describe('Deployments API', () => {
 
       loggerOptions.suppress = true;
 
-      await request({
+      const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         qs: {
           wait: 'true',
         },
-        resolveWithFullResponse: true,
         json: {
           namespace: namespace.name,
           cluster: cluster.name,
@@ -357,19 +358,18 @@ describe('Deployments API', () => {
           version: release.version,
           replicas: 3,
         },
-      }).then(() => {
-        throw new Error('Should have failed with 500');
-      }).catch(errors.StatusCodeError, async reason => {
-        expect(reason.response.statusCode).toBe(500);
-        expect(reason.response.body.id).toBeDefined();
-        expect(reason.response.body.status).toBe('failure');
-        expect(reason.response.body.log.length).toBe(3);
-
-        const deployment = await store.getDeployment(reason.response.body.id);
-        expect(deployment.applyExitCode).toBe(0);
-        expect(deployment.rolloutStatusExitCode).toBe(99);
-        expect(deployment.log.length).toBe(3);
       });
+
+      const lines = response.split('\n');
+      const finalOutput = JSON.parse(lines.slice(-1));
+      expect(finalOutput.id).toBeDefined();
+      expect(finalOutput.status).toBe('failure');
+      expect(finalOutput.log.length).toBe(3);
+
+      const deployment = await store.getDeployment(finalOutput.id);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(99);
+      expect(deployment.log.length).toBe(3);
     });
 
     it('should reject payloads without a cluster', async () => {

@@ -7,7 +7,7 @@ import { safeLoadAll as yaml2json } from 'js-yaml';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, auth }, cb) {
+  function start({ pkg, app, store, kubernetes, auth, logger }, cb) {
 
     app.use('/api/deployments', auth('api'));
 
@@ -60,6 +60,8 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
+        const streamResults = !!req.query.wait;
+
         const attributes = Object.assign({}, release.attributes, req.body);
         const manifest = getManifest(release, attributes);
         const data = { namespace, manifest, release, attributes };
@@ -69,30 +71,48 @@ export default function(options = {}) {
         const log = [];
 
         emitter.on('data', async data => {
+          if (streamResults) res.write(data.content);
           log.push(data);
+
           res.locals.logger.info(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data }));
         }).on('error', async data => {
+          if (streamResults) res.write(data.content);
           log.push(data);
+
           res.locals.logger.error(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data }));
         });
 
+        if (streamResults) res.write(`${JSON.stringify({ id: deployment.id })}\n`);
         const applyExitCode = await applyManifest(deployment, emitter);
+
         if (applyExitCode > 0) {
+          if (streamResults) {
+            res.write('ERROR');
+            return res.end();
+          }
           return res.status(500).json({ id: deployment.id, status: 'failure', log });
-        } else if (req.query.wait !== 'true') {
+        } else if (!streamResults) {
           res.status(202).json({ id: deployment.id, status: 'pending', log });
         }
 
         req.setTimeout(0);
 
-        const rolloutStatusExitCode = await getRolloutStatus(deployment, emitter);
+        const rolloutStatusExitCode = await getRolloutStatus(deployment, emitter, streamResults);
+        const finalResponse = {
+          id: deployment.id,
+          status: rolloutStatusExitCode ? 'failure' : 'success',
+          log
+        };
 
-        if (res.headerSent) return;
+        if (streamResults) {
+          res.write(JSON.stringify(finalResponse));
+          return res.end();
+        }
 
         if (rolloutStatusExitCode) {
-          res.status(500).json({ id: deployment.id, status: 'failure', log });
+          res.status(500).json(finalResponse);
         } else {
           res.status(200).json({ id: deployment.id, status: 'success', log });
         }
@@ -133,16 +153,27 @@ export default function(options = {}) {
       return code;
     }
 
-    async function getRolloutStatus(deployment, emitter) {
-      const code = await kubernetes.rolloutStatus(
-        deployment.namespace.cluster.config,
-        deployment.namespace.context,
-        deployment.namespace.name,
-        deployment.release.service.name,
-        emitter
-      );
-      await store.saveRolloutStatusExitCode(deployment.id, code);
-      return code;
+    async function getRolloutStatus(deployment, emitter, requiresDripFeed) {
+      let dripFeed;
+      if (requiresDripFeed) dripFeed = setInterval(() => emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: '<ignore me - prevents connection timeout>' }), 20 * 1000);
+
+      try {
+        const code = await kubernetes.rolloutStatus(
+          deployment.namespace.cluster.config,
+          deployment.namespace.context,
+          deployment.namespace.name,
+          deployment.release.service.name,
+          emitter
+        );
+
+        await store.saveRolloutStatusExitCode(deployment.id, code);
+        clearInterval(dripFeed);
+        return code;
+      } catch (e) {
+        logger.error('Error getting rollout status', e);
+        clearInterval(dripFeed);
+        return Promise.reject(e);
+      }
     }
 
     cb();
