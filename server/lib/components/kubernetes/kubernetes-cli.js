@@ -5,7 +5,7 @@ import os from 'os';
 
 export default function(options = {}) {
 
-  function start(cb) {
+  function start(deps, cb) {
 
     function apply(config, context, namespace, manifest, emitter, ) {
       return new Promise(async (resolve, reject) => {
