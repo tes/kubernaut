@@ -1,16 +1,21 @@
 import passport from 'passport';
-import Account from '../../domain/Account';
 
 export default function() {
 
-  function start({ config }, cb) {
+  function start({ config, store, logger }, cb) {
 
     passport.serializeUser((account, cb) => {
       cb(null, account);
     });
 
-    passport.deserializeUser((account, cb) => {
-      cb(null, new Account({ ...account }));
+    passport.deserializeUser(async (account, cb) => {
+      try {
+        const storeAccount = await store.getAccount(account.id);
+        cb(null, storeAccount);
+      } catch (err) {
+        logger.error(`Error deserializing user ${account.id} - ${account.displayName}`, err);
+        cb(err);
+      }
     });
 
     cb(null, passport);
