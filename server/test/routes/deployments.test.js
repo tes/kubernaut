@@ -442,13 +442,22 @@ describe('Deployments API', () => {
 
       loggerOptions.suppress = true;
 
+      const release = makeRelease({
+        service: {
+          name: 'baz',
+        },
+        version: '22',
+      });
+
+      await store.saveRelease(release, makeRootMeta());
+
       await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
           cluster: 'foo',
-          registry: 'bar',
+          registry: release.service.registry.name,
           service: 'baz',
           version: '22',
         },

@@ -38,21 +38,28 @@ export default function(options = {}) {
 
       try {
         if (!req.body.cluster) return next(Boom.badRequest('cluster is required'));
-        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
+        const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version });
+        if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
-        const namespace = await store.findNamespace({ name: req.body.namespace, cluster: req.body.cluster });
-        if (!namespace) return next(Boom.badRequest(`namespace ${req.body.namespace} was not found`));
+        let deploymentNamespace = req.body.namespace;
+        if (!req.body.namespace) {
+          if (!release.attributes.namespace) {
+            return next(Boom.badRequest('namespace is required'));
+          } else {
+            deploymentNamespace = release.attributes.namespace;
+          }
+        }
+
+        const namespace = await store.findNamespace({ name: deploymentNamespace, cluster: req.body.cluster });
+        if (!namespace) return next(Boom.badRequest(`namespace ${deploymentNamespace} was not found`));
         if (!req.user.hasPermissionOnNamespace(namespace.id, 'deployments-write')) return next(Boom.forbidden());
 
         const registry = await store.findRegistry({ name: req.body.registry });
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
         if (!req.user.hasPermissionOnRegistry(registry.id, 'releases-read')) return next(Boom.forbidden());
-
-        const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version });
-        if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
         const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.context, res.locals.logger);
         if (!contextOk) return next(Boom.badRequest(`context ${namespace.context} was not found`));
