@@ -101,7 +101,7 @@ export default function(options = {}) {
           }
           return res.status(500).json({ id: deployment.id, status: 'failure', log });
         } else if (!streamResults) {
-          res.status(202).json({ id: deployment.id, status: 'pending', log });
+          return res.status(202).json({ id: deployment.id, status: 'pending', log });
         }
 
         req.setTimeout(0);
@@ -123,6 +123,7 @@ export default function(options = {}) {
         } else {
           res.status(200).json({ id: deployment.id, status: 'success', log });
         }
+        res.status(200).json({});
       } catch (err) {
         next(err);
       }

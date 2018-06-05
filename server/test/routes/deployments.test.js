@@ -139,49 +139,47 @@ describe('Deployments API', () => {
 
     it('should save a deployment', async () => {
 
-      // const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      // const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test', }), makeRootMeta());
-      //
-      // const release = makeRelease({
-      //   service: {
-      //     name: 'release-1',
-      //   },
-      //   version: '22',
-      // });
-      // await store.saveRelease(release, makeRootMeta());
-      //
-      // const response = await request({
-      //   url: `http://${config.server.host}:${config.server.port}/api/deployments`,
-      //   method: 'POST',
-      //   json: {
-      //     namespace: namespace.name,
-      //     cluster: cluster.name,
-      //     registry: release.service.registry.name,
-      //     service: release.service.name,
-      //     version: release.version,
-      //     replicas: 3,
-      //   },
-      // });
-      //
-      // expect(response.id).toBeDefined();
-      // expect(response.status).toBe('pending');
-      // expect(response.log.length).toBe(1);
-      //
-      // const deployment = await store.getDeployment(response.id);
-      // expect(deployment).toBeDefined();
-      // expect(deployment.namespace.id).toBe(namespace.id);
-      // expect(deployment.namespace.cluster.id).toBe(cluster.id);
-      // expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
-      // expect(deployment.manifest.json[2].spec.replicas).toBe(3);
-      // expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
-      // expect(deployment.release.service.name).toBe(release.service.name);
-      // expect(deployment.release.version).toBe(release.version);
-      // expect(deployment.applyExitCode).toBe(0);
-      // expect(deployment.rolloutStatusExitCode).toBe(null);
-      // expect(deployment.log.length).toBe(1);
-      // expect(deployment.attributes.replicas).toBe("3");
-      //
-      // console.log("SO FAR SO GOOD!!!!")
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+
+      const release = makeRelease({
+        service: {
+          name: 'release-1',
+        },
+        version: '22',
+      });
+      await store.saveRelease(release, makeRootMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+          replicas: 3,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+      expect(response.status).toBe('pending');
+      expect(response.log.length).toBe(1);
+
+      const deployment = await store.getDeployment(response.id);
+      expect(deployment).toBeDefined();
+      expect(deployment.namespace.id).toBe(namespace.id);
+      expect(deployment.namespace.cluster.id).toBe(cluster.id);
+      expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
+      expect(deployment.manifest.json[2].spec.replicas).toBe(3);
+      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(deployment.release.service.name).toBe(release.service.name);
+      expect(deployment.release.version).toBe(release.version);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(null);
+      expect(deployment.log.length).toBe(1);
+      expect(deployment.attributes.replicas).toBe("3");
     });
 
     it('should report manifest compilation errors', async () => {
