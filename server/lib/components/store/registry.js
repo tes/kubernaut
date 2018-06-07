@@ -1,6 +1,6 @@
 import SQL from './sql';
-import Registry from '../../../domain/Registry';
-import Account from '../../../domain/Account';
+import Registry from '../../domain/Registry';
+import Account from '../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options) {

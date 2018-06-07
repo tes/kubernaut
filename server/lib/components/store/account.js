@@ -1,6 +1,6 @@
 import SQL from './sql';
 import uniq from 'lodash.uniq';
-import Account from '../../../domain/Account';
+import Account from '../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options = {}) {

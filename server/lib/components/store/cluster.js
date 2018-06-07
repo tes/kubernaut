@@ -1,6 +1,6 @@
 import SQL from './sql';
-import Cluster from '../../../domain/Cluster';
-import Account from '../../../domain/Account';
+import Cluster from '../../domain/Cluster';
+import Account from '../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options) {

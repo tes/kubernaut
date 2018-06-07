@@ -1,9 +1,9 @@
 import SQL from './sql';
-import Namespace from '../../../domain/Namespace';
-import Service from '../../../domain/Service';
-import ReleaseTemplate from '../../../domain/ReleaseTemplate';
-import Release from '../../../domain/Release';
-import Account from '../../../domain/Account';
+import Namespace from '../../domain/Namespace';
+import Service from '../../domain/Service';
+import ReleaseTemplate from '../../domain/ReleaseTemplate';
+import Release from '../../domain/Release';
+import Account from '../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options) {
