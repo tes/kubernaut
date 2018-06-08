@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchReleases } from '../../actions/release';
+import { fetchReleases } from '../../modules/releases';
 
 import ReleasesPage from './ReleasesPage';
 
@@ -12,12 +12,8 @@ function mapStateToProps(state, props) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    fetchReleases: (options) => {
-      dispatch(fetchReleases(options));
-    },
-  };
-}
+const mapDispatchToProps = {
+  fetchReleases,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(ReleasesPage);

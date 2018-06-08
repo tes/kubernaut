@@ -20,7 +20,7 @@ import HomePage from './components/HomePage';
 import registries from './modules/registries';
 import namespaces from './modules/namespaces';
 import accounts from './modules/accounts';
-import releases from './reducers/releases';
+import releases from './modules/releases';
 import deployments from './modules/deployments';
 import deployment from './modules/deployment';
 
