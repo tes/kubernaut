@@ -1,13 +1,13 @@
 import React from 'react';
 import { Pagination } from 'react-bootstrap';
 
-const TablePagination = ({totalPages, currentPage, pageSize, fetchContent}) => {
+const TablePagination = ({ pages, currentPage, limit, fetchContent }) => {
 
   const onPageSelect = (page) => {
-    fetchContent({ page, pageSize });
+    fetchContent({ page, limit });
   };
 
-  const items = Array(totalPages).fill().map((_, i) =>
+  const items = Array(pages).fill().map((_, i) =>
     <Pagination.Item
       key={i}
       onClick={() => onPageSelect(i + 1)}
@@ -30,7 +30,7 @@ const TablePagination = ({totalPages, currentPage, pageSize, fetchContent}) => {
     </div>
   ;
 
-  return totalPages > 1 ? pagination() : noPagination();
+  return pages > 1 ? pagination() : noPagination();
 };
 
 export default TablePagination;

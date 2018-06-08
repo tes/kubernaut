@@ -2,10 +2,10 @@ export const FETCH_ACCOUNTS_REQUEST = 'FETCH_ACCOUNTS_REQUEST';
 export const FETCH_ACCOUNTS_SUCCESS = 'FETCH_ACCOUNTS_SUCCESS';
 export const FETCH_ACCOUNTS_ERROR = 'FETCH_ACCOUNTS_ERROR';
 
-export function fetchAccounts(options = { page: 1, pageSize: 50, quiet: false }) {
+export function fetchAccounts(options = { page: 1, limit: 50, quiet: false }) {
   return async (dispatch) => {
-    const limit = options.pageSize;
-    const offset = (options.page - 1) * options.pageSize;
+    const limit = options.limit;
+    const offset = (options.page - 1) * limit;
     let data = { limit, offset, count: 0, items: [] };
     dispatch({ type: FETCH_ACCOUNTS_REQUEST, data, loading: true });
 
@@ -22,4 +22,3 @@ export function fetchAccounts(options = { page: 1, pageSize: 50, quiet: false })
     return dispatch({ type: FETCH_ACCOUNTS_SUCCESS, data });
   };
 }
-

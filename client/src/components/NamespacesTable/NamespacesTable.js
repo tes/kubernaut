@@ -73,9 +73,9 @@ class NamespacesTable extends Component {
           }
         </table>
         <TablePagination
-          totalPages={namespaces.pages}
+          pages={namespaces.pages}
           currentPage={namespaces.currentPage}
-          pageSize={namespaces.limit}
+          limit={namespaces.limit}
           fetchContent={fetchNamespaces}
         />
       </div>

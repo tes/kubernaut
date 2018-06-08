@@ -83,9 +83,9 @@ class DeploymentsTable extends Component {
           }
         </table>
         <TablePagination
-          totalPages={deployments.pages}
+          pages={deployments.pages}
           currentPage={deployments.currentPage}
-          pageSize={deployments.limit}
+          limit={deployments.limit}
           fetchContent={fetchDeployments}
         />
       </div>
