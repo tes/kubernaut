@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Pagination } from 'react-bootstrap';
 
 const TablePagination = ({ pages, page, limit, fetchContent }) => {
@@ -31,6 +32,13 @@ const TablePagination = ({ pages, page, limit, fetchContent }) => {
   ;
 
   return pages > 1 ? pagination() : noPagination();
+};
+
+TablePagination.propTypes = {
+  pages: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
+  limit: PropTypes.number.isRequired,
+  fetchContent: PropTypes.func.isRequired,
 };
 
 export default TablePagination;
