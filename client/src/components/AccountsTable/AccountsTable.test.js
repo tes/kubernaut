@@ -19,8 +19,7 @@ describe('AccountsTable', () => {
 
   it('should render empty table', () => {
 
-    const accounts = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
-    const wrapper = renderAccountsTable({ accounts });
+    const wrapper = renderAccountsTable();
 
     expect(wrapper.find('.accounts-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);
@@ -42,7 +41,8 @@ describe('AccountsTable', () => {
       };
     }, 50);
     const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
-    const wrapper = renderAccountsTable({ accounts });
+    const props = { ...getDefaultProps(), accounts };
+    const wrapper = renderAccountsTable(props);
 
     expect(wrapper.find('.accounts-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(50);
@@ -57,7 +57,8 @@ describe('AccountsTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderAccountsTable({ loading: true });
+    const props = { ...getDefaultProps(), loading:true };
+    const wrapper = renderAccountsTable(props);
 
     expect(wrapper.find('.accounts-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);
@@ -66,15 +67,22 @@ describe('AccountsTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderAccountsTable({ error: new Error() });
+    const props = { ...getDefaultProps(), error: new Error() };
+    const wrapper = renderAccountsTable(props);
 
     expect(wrapper.find('.accounts-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.accounts-table__body__row').length).toBe(1);
     expect(wrapper.find('.accounts-table__body__row').text()).toBe('Error loading accounts');
   });
 
+  function getDefaultProps() {
+    return {
+      accounts: { limit: 50, offset: 0, count: 0, pages: 0, page: 1, items: [] },
+      fetchAccounts: () => {}
+    };
+  }
 
-  function renderAccountsTable(props) {
+  function renderAccountsTable(props = getDefaultProps()) {
     return shallow(
       <AccountsTable { ...props }  />
     );
