@@ -17,7 +17,7 @@ import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import HomePage from './components/HomePage';
 
 // Reducers
-import registries from './reducers/registries';
+import registries from './modules/registries';
 import namespaces from './modules/namespaces';
 import accounts from './modules/accounts';
 import releases from './reducers/releases';
