@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import TableCriteria from '../TableCriteria';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink } from '../Links';
@@ -56,6 +57,10 @@ class ReleasesTable extends Component {
 
     return (
       <div>
+        <TableCriteria
+          criteria={releases.criteria}
+          fetchContent={(criteria) => fetchReleases({ ...releases, criteria })}
+        />
         <table className='releases-table table table-condensed table-hover'>
           <thead className='releases-table__heading'>
             <tr>

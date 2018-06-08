@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import TableCriteria from '../TableCriteria';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink } from '../Links';
@@ -55,6 +56,10 @@ class AccountsTable extends Component {
 
     return (
       <div>
+        <TableCriteria
+          criteria={accounts.criteria}
+          fetchContent={(criteria) => fetchAccounts({ ...accounts, criteria })}
+        />
         <table className='accounts-table table table-condensed table-hover'>
           <thead className='accounts-table__heading'>
             <tr>
