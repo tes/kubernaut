@@ -83,9 +83,9 @@ class DeploymentsTable extends Component {
           }
         </table>
         <TablePagination
-          totalPages={deployments.pages}
-          currentPage={deployments.currentPage}
-          pageSize={deployments.limit}
+          pages={deployments.pages}
+          page={deployments.page}
+          limit={deployments.limit}
           fetchContent={fetchDeployments}
         />
       </div>
@@ -100,7 +100,7 @@ DeploymentsTable.propTypes = {
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
-    currentPage: PropTypes.number.isRequired,
+    page: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),

@@ -1,17 +1,18 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Pagination } from 'react-bootstrap';
 
-const TablePagination = ({totalPages, currentPage, pageSize, fetchContent}) => {
+const TablePagination = ({ pages, page, limit, fetchContent }) => {
 
   const onPageSelect = (page) => {
-    fetchContent({ page, pageSize });
+    fetchContent({ page, limit });
   };
 
-  const items = Array(totalPages).fill().map((_, i) =>
+  const items = Array(pages).fill().map((_, i) =>
     <Pagination.Item
       key={i}
       onClick={() => onPageSelect(i + 1)}
-      active={i + 1 === currentPage}>
+      active={i + 1 === page}>
       {i + 1}
     </Pagination.Item>
   );
@@ -30,7 +31,14 @@ const TablePagination = ({totalPages, currentPage, pageSize, fetchContent}) => {
     </div>
   ;
 
-  return totalPages > 1 ? pagination() : noPagination();
+  return pages > 1 ? pagination() : noPagination();
+};
+
+TablePagination.propTypes = {
+  pages: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
+  limit: PropTypes.number.isRequired,
+  fetchContent: PropTypes.func.isRequired,
 };
 
 export default TablePagination;

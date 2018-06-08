@@ -19,7 +19,7 @@ describe('ReleasesTable', () => {
   });
 
   it('should render empty table', () => {
-    const releases = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const releases = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
     const wrapper = renderReleasesTable({ releases });
 
     expect(wrapper.find('.releases-table__body--empty').exists()).toBe(true);
@@ -46,7 +46,7 @@ describe('ReleasesTable', () => {
         version: `v${i+1}`,
       };
     }, 50);
-    const releases = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const releases = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
     const wrapper = renderReleasesTable({ releases });
 
     expect(wrapper.find('.releases-table__body--data').exists()).toBe(true);

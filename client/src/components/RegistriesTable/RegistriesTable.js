@@ -71,9 +71,9 @@ class RegistriesTable extends Component {
           }
         </table>
         <TablePagination
-          totalPages={registries.pages}
-          currentPage={registries.currentPage}
-          pageSize={registries.limit}
+          pages={registries.pages}
+          page={registries.page}
+          limit={registries.limit}
           fetchContent={fetchRegistries}
         />
       </div>
@@ -88,7 +88,7 @@ RegistriesTable.propTypes = {
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
-    currentPage: PropTypes.number.isRequired,
+    page: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),

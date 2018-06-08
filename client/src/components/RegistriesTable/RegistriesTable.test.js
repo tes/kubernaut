@@ -17,7 +17,7 @@ describe('RegistriesTable', () => {
   });
 
   it('should render empty table', () => {
-    const registries = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const registries = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
     const wrapper = renderRegistriesTable({ registries });
 
     expect(wrapper.find('.registries-table__body--empty').exists()).toBe(true);
@@ -37,7 +37,7 @@ describe('RegistriesTable', () => {
         },
       };
     }, 50);
-    const registries = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const registries = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
     const wrapper = renderRegistriesTable({ registries });
 
     expect(wrapper.find('.registries-table__body--data').exists()).toBe(true);

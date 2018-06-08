@@ -18,7 +18,7 @@ describe('NamespacesTable', () => {
   });
 
   it('should render empty table', () => {
-    const namespaces = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const namespaces = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
     const wrapper = renderNamespacesTable({ namespaces });
 
     expect(wrapper.find('.namespaces-table__body--empty').exists()).toBe(true);
@@ -39,7 +39,7 @@ describe('NamespacesTable', () => {
         },
       };
     }, 50);
-    const namespaces = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const namespaces = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
     const wrapper = renderNamespacesTable({ namespaces });
 
     expect(wrapper.find('.namespaces-table__body--data').exists()).toBe(true);
