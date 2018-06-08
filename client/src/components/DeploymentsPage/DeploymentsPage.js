@@ -6,7 +6,7 @@ import DeploymentsTable from '../DeploymentsTable';
 class DeploymentsPage extends Component {
 
   componentDidMount() {
-    this.props.fetchDeployments();
+    this.props.fetchDeployments(this.props.deployments.data);
   }
 
   render() {

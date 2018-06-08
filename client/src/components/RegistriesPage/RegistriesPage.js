@@ -6,7 +6,7 @@ import RegistriesTable from '../RegistriesTable';
 class RegistriesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchRegistries();
+    this.props.fetchRegistries(this.props.registries.data);
   }
 
   render() {

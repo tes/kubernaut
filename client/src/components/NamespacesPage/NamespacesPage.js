@@ -6,7 +6,7 @@ import NamespacesTable from '../NamespacesTable';
 class NamespacesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchNamespaces();
+    this.props.fetchNamespaces(this.props.namespaces.data);
   }
 
   render() {
