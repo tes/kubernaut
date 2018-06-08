@@ -5,7 +5,7 @@ export const FETCH_DEPLOYMENT_REQUEST = 'FETCH_DEPLOYMENT_REQUEST';
 export const FETCH_DEPLOYMENT_SUCCESS = 'FETCH_DEPLOYMENT_SUCCESS';
 export const FETCH_DEPLOYMENT_ERROR = 'FETCH_DEPLOYMENT_ERROR';
 
-export function fetchDeployments(options = { page: 1, limit: 50, quiet: false }) {
+export function fetchDeployments(options = { page: 1, limit: 20, quiet: false }) {
   return async (dispatch) => {
     const limit = options.limit;
     const offset = (options.page - 1) * limit;

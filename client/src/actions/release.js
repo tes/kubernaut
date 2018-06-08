@@ -2,7 +2,7 @@ export const FETCH_RELEASES_REQUEST = 'FETCH_RELEASES_REQUEST';
 export const FETCH_RELEASES_SUCCESS = 'FETCH_RELEASES_SUCCESS';
 export const FETCH_RELEASES_ERROR = 'FETCH_RELEASES_ERROR';
 
-export function fetchReleases(options = { page: 1, limit: 50, quiet: false }) {
+export function fetchReleases(options = { page: 1, limit: 20, quiet: false }) {
   return async (dispatch) => {
     const limit = options.limit;
     const offset = (options.page - 1) * limit;

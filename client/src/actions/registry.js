@@ -2,7 +2,7 @@ export const FETCH_REGISTRIES_REQUEST = 'FETCH_REGISTRIES_REQUEST';
 export const FETCH_REGISTRIES_SUCCESS = 'FETCH_REGISTRIES_SUCCESS';
 export const FETCH_REGISTRIES_ERROR = 'FETCH_REGISTRIES_ERROR';
 
-export function fetchRegistries(options = { page: 1, limit: 50, quiet: false }) {
+export function fetchRegistries(options = { page: 1, limit: 20, quiet: false }) {
   return async (dispatch) => {
     const limit = options.limit;
     const offset = (options.page - 1) * limit;

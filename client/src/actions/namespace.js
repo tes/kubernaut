@@ -2,7 +2,7 @@ export const FETCH_NAMESPACES_REQUEST = 'FETCH_NAMESPACES_REQUEST';
 export const FETCH_NAMESPACES_SUCCESS = 'FETCH_NAMESPACES_SUCCESS';
 export const FETCH_NAMESPACES_ERROR = 'FETCH_NAMESPACES_ERROR';
 
-export function fetchNamespaces(options = { page: 1, limit: 50, quiet: false }) {
+export function fetchNamespaces(options = { page: 1, limit: 20, quiet: false }) {
   return async (dispatch) => {
     const limit = options.limit;
     const offset = (options.page - 1) * limit;
