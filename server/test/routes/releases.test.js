@@ -67,6 +67,36 @@ describe('Releases API', () => {
       expect(releases.items.length).toBe(50);
     });
 
+    it('should filter releases by criteria', async () => {
+
+      const release1 =  makeRelease({
+        service: {
+          name: 'foo'
+        }
+      });
+      const release2 = makeRelease({
+        service: {
+          name: 'bar'
+        }
+      });
+      const meta = makeRootMeta();
+
+      await store.saveRelease(release1, meta);
+      await store.saveRelease(release2, meta);
+
+      const releases = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        qs: { 'service[]': [ 'foo', 'bar' ] },
+        method: 'GET',
+        json: true,
+      });
+
+      expect(releases.count).toBe(2);
+      expect(releases.offset).toBe(0);
+      expect(releases.limit).toBe(50);
+      expect(releases.items.length).toBe(2);
+    });
+
     it('should limit releases list', async () => {
 
       const releases = await request({
