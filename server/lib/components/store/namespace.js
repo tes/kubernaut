@@ -1,6 +1,6 @@
 import SQL from './sql';
-import Namespace from '../../../domain/Namespace';
-import Account from '../../../domain/Account';
+import Namespace from '../../domain/Namespace';
+import Account from '../../domain/Account';
 import sqb from 'sqb';
 
 export default function(options) {
