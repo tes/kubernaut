@@ -19,7 +19,7 @@ import HomePage from './components/HomePage';
 // Reducers
 import registries from './reducers/registries';
 import namespaces from './reducers/namespaces';
-import accounts from './reducers/accounts';
+import accounts from './modules/accounts';
 import releases from './reducers/releases';
 import deployments from './reducers/deployments';
 import deployment from './reducers/deployment';
