@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import TableCriteria from '../TableCriteria';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink } from '../Links';
@@ -60,6 +61,10 @@ class DeploymentsTable extends Component {
 
     return (
       <div>
+        <TableCriteria
+          criteria={deployments.criteria}
+          fetchContent={(criteria) => fetchDeployments({ ...deployments, criteria })}
+        />
         <table className='deployments-table table table-condensed table-hover'>
           <thead className='deployments-table__heading'>
             <tr>
@@ -85,8 +90,7 @@ class DeploymentsTable extends Component {
         <TablePagination
           pages={deployments.pages}
           page={deployments.page}
-          limit={deployments.limit}
-          fetchContent={fetchDeployments}
+          fetchContent={(page) => fetchDeployments( { ...deployments, page } )}
         />
       </div>
     );

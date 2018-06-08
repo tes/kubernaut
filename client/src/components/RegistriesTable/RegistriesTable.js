@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import TableCriteria from '../TableCriteria';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink } from '../Links';
@@ -53,6 +54,10 @@ class RegistriesTable extends Component {
 
     return (
       <div>
+        <TableCriteria
+          registries={registries.criteria}
+          fetchContent={(criteria) => fetchRegistries({ ...registries, criteria })}
+        />
         <table className='registries-table table table-condensed table-hover'>
           <thead className='registries-table__heading'>
             <tr>
@@ -73,8 +78,7 @@ class RegistriesTable extends Component {
         <TablePagination
           pages={registries.pages}
           page={registries.page}
-          limit={registries.limit}
-          fetchContent={fetchRegistries}
+          fetchContent={(page) => fetchRegistries( { ...registries, page } )}
         />
       </div>
     );

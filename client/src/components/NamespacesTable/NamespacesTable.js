@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import TableCriteria from '../TableCriteria';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, NamespaceLink } from '../Links';
@@ -54,6 +55,10 @@ class NamespacesTable extends Component {
 
     return (
       <div>
+        <TableCriteria
+          criteria={namespaces.criteria}
+          fetchContent={(criteria) => fetchNamespaces({ ...namespaces, criteria })}
+        />
         <table className='namespaces-table table table-condensed table-hover'>
           <thead className='namespaces-table__heading'>
             <tr>
@@ -75,8 +80,7 @@ class NamespacesTable extends Component {
         <TablePagination
           pages={namespaces.pages}
           page={namespaces.page}
-          limit={namespaces.limit}
-          fetchContent={fetchNamespaces}
+          fetchContent={(page) => fetchNamespaces( { ...namespaces, page } )}
         />
       </div>
     );

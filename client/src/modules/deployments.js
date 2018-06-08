@@ -3,28 +3,33 @@ export const FETCH_DEPLOYMENTS_REQUEST = `${actionsPrefix}/FETCH_DEPLOYMENTS_REQ
 export const FETCH_DEPLOYMENTS_SUCCESS = `${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`;
 export const FETCH_DEPLOYMENTS_ERROR = `${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`;
 
-export function fetchDeployments(options = { page: 1, limit: 50, quiet: false }) {
+export function fetchDeployments({ criteria, limit, pages, page, quiet = false, timeout }) {
   return async (dispatch) => {
-    const limit = options.limit;
-    const offset = (options.page - 1) * options.limit;
-    let data = { limit, offset, count: 0, items: [] };
+    const offset = (page - 1) * limit;
+    const data = { criteria, limit, offset, count: 0, items: [] };
     dispatch({ type: FETCH_DEPLOYMENTS_REQUEST, data, loading: true });
 
     try {
-      const url = `/api/deployments?limit=${limit}&offset=${offset}`;
-      const res = await fetch(url, { method: 'GET', timeout: options.timeout, credentials: 'same-origin' });
+      const url = getDeploymentsUrl(criteria, limit, offset);
+      const res = await fetch(url, { method: 'GET', timeout: timeout, credentials: 'same-origin' });
       if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-      data = await res.json();
+      const payload = await res.json();
+      return dispatch({ type: FETCH_DEPLOYMENTS_SUCCESS, data: { ...data, ...payload } });
     } catch(error) {
-      if (options.quiet !== true) console.error(error); // eslint-disable-line no-console
+      if (!quiet) console.error(error); // eslint-disable-line no-console
       return dispatch({ type: FETCH_DEPLOYMENTS_ERROR, data, error });
     }
-
-    return dispatch({ type: FETCH_DEPLOYMENTS_SUCCESS, data });
   };
 }
 
-export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, page: 0, items: [] }, meta: {} }, action)  {
+function getDeploymentsUrl(criteria, limit, offset) {
+  return Object.keys(criteria.terms).reduce((url, name) => {
+    const params = criteria.terms[name].map((value) => `${name}[]=${value}`).join('&');
+    return `${url}&${params}`;
+  }, `/api/deployments?limit=${limit}&offset=${offset}`);
+}
+
+export default function(state = { data: { criteria: { source: '', terms: {} }, limit: 20, offset: 0, count: 0, pages: 0, page: 1, items: [] }, meta: {} }, action)  {
   switch (action.type) {
     case FETCH_DEPLOYMENTS_REQUEST:
     case FETCH_DEPLOYMENTS_SUCCESS:

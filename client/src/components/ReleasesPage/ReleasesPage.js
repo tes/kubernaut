@@ -6,7 +6,7 @@ import ReleasesTable from '../ReleasesTable';
 class ReleasesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchReleases();
+    this.props.fetchReleases(this.props.releases.data);
   }
 
   render() {

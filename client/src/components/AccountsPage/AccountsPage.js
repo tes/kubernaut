@@ -6,7 +6,7 @@ import AccountsTable from '../AccountsTable';
 class AccountsPage extends Component {
 
   componentDidMount() {
-    this.props.fetchAccounts();
+    this.props.fetchAccounts(this.props.accounts.data);
   }
 
   render() {
