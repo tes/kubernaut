@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchRegistries } from '../../actions/registry';
+import { fetchRegistries } from '../../modules/registries';
 
 import RegistriesPage from './RegistriesPage';
 
@@ -12,12 +12,8 @@ function mapStateToProps(state, props) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    fetchRegistries: (options) => {
-      dispatch(fetchRegistries(options));
-    },
-  };
-}
+const mapDispatchToProps = {
+  fetchRegistries,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegistriesPage);

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchAccounts } from '../../actions/account';
+import { fetchAccounts } from '../../modules/accounts';
 
 import AccountsPage from './AccountsPage';
 
@@ -12,12 +12,8 @@ function mapStateToProps(state, props) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    fetchAccounts: (options) => {
-      dispatch(fetchAccounts(options));
-    },
-  };
-}
+const mapDispatchToProps = {
+  fetchAccounts,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(AccountsPage);
