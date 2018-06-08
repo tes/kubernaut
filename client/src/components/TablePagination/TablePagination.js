@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pagination } from 'react-bootstrap';
 
-const TablePagination = ({ pages, currentPage, limit, fetchContent }) => {
+const TablePagination = ({ pages, page, limit, fetchContent }) => {
 
   const onPageSelect = (page) => {
     fetchContent({ page, limit });
@@ -11,7 +11,7 @@ const TablePagination = ({ pages, currentPage, limit, fetchContent }) => {
     <Pagination.Item
       key={i}
       onClick={() => onPageSelect(i + 1)}
-      active={i + 1 === currentPage}>
+      active={i + 1 === page}>
       {i + 1}
     </Pagination.Item>
   );

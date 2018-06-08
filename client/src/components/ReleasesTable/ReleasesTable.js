@@ -77,7 +77,7 @@ class ReleasesTable extends Component {
         </table>
         <TablePagination
           pages={releases.pages}
-          currentPage={releases.currentPage}
+          page={releases.page}
           limit={releases.limit}
           fetchContent={fetchReleases}
         />
@@ -93,7 +93,7 @@ ReleasesTable.propTypes = {
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
-    currentPage: PropTypes.number.isRequired,
+    page: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),

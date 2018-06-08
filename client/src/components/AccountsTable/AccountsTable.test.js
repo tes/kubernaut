@@ -19,7 +19,7 @@ describe('AccountsTable', () => {
 
   it('should render empty table', () => {
 
-    const accounts = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const accounts = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
     const wrapper = renderAccountsTable({ accounts });
 
     expect(wrapper.find('.accounts-table__body--empty').exists()).toBe(true);
@@ -41,7 +41,7 @@ describe('AccountsTable', () => {
         },
       };
     }, 50);
-    const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const accounts = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
     const wrapper = renderAccountsTable({ accounts });
 
     expect(wrapper.find('.accounts-table__body--data').exists()).toBe(true);

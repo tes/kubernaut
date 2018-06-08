@@ -74,7 +74,7 @@ class NamespacesTable extends Component {
         </table>
         <TablePagination
           pages={namespaces.pages}
-          currentPage={namespaces.currentPage}
+          page={namespaces.page}
           limit={namespaces.limit}
           fetchContent={fetchNamespaces}
         />
@@ -90,7 +90,7 @@ NamespacesTable.propTypes = {
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
-    currentPage: PropTypes.number.isRequired,
+    page: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),
