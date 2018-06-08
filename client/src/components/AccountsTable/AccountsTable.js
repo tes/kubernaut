@@ -73,9 +73,9 @@ class AccountsTable extends Component {
           }
         </table>
         <TablePagination
-          totalPages={accounts.pages}
-          currentPage={accounts.currentPage}
-          pageSize={accounts.limit}
+          pages={accounts.pages}
+          page={accounts.page}
+          limit={accounts.limit}
           fetchContent={fetchAccounts}
         />
       </div>
@@ -90,7 +90,7 @@ AccountsTable.propTypes = {
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
-    currentPage: PropTypes.number.isRequired,
+    page: PropTypes.number.isRequired,
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),

@@ -23,7 +23,7 @@ describe('DeploymentsTable', () => {
 
   it('should render empty table', () => {
 
-    const deployments = { limit: 0, offset: 0, count: 0, pages: 10, currentPage: 1, items: [] };
+    const deployments = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
     const wrapper = renderDeploymentsTable({ deployments });
 
     expect(wrapper.find('.deployments-table__body--empty').exists()).toBe(true);
@@ -57,7 +57,7 @@ describe('DeploymentsTable', () => {
         },
       };
     }, 50);
-    const deployments = { limit: 50, offset: 0, count: items.length, pages: 10, currentPage: 1, items };
+    const deployments = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
     const wrapper = renderDeploymentsTable({ deployments });
 
     expect(wrapper.find('.deployments-table__body--data').exists()).toBe(true);

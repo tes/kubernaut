@@ -2,10 +2,10 @@ export const FETCH_REGISTRIES_REQUEST = 'FETCH_REGISTRIES_REQUEST';
 export const FETCH_REGISTRIES_SUCCESS = 'FETCH_REGISTRIES_SUCCESS';
 export const FETCH_REGISTRIES_ERROR = 'FETCH_REGISTRIES_ERROR';
 
-export function fetchRegistries(options = { page: 1, pageSize: 50, quiet: false }) {
+export function fetchRegistries(options = { page: 1, limit: 20, quiet: false }) {
   return async (dispatch) => {
-    const limit = options.pageSize;
-    const offset = (options.page - 1) * options.pageSize;
+    const limit = options.limit;
+    const offset = (options.page - 1) * limit;
     let data = { limit, offset, count: 0, items: [] };
     dispatch({ type: FETCH_REGISTRIES_REQUEST, data, loading: true });
 
@@ -22,4 +22,3 @@ export function fetchRegistries(options = { page: 1, pageSize: 50, quiet: false 
     return dispatch({ type: FETCH_REGISTRIES_SUCCESS, data });
   };
 }
-
