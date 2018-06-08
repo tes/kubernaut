@@ -8,6 +8,7 @@ import { AccountLink, RegistryLink } from '../Links';
 describe('RegistriesTable', () => {
 
   it('should render table heading', () => {
+
     const wrapper = renderRegistriesTable();
 
     expect(wrapper.find('.registries-table__heading').exists()).toBe(true);
@@ -17,8 +18,8 @@ describe('RegistriesTable', () => {
   });
 
   it('should render empty table', () => {
-    const registries = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
-    const wrapper = renderRegistriesTable({ registries });
+
+    const wrapper = renderRegistriesTable();
 
     expect(wrapper.find('.registries-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);
@@ -37,8 +38,10 @@ describe('RegistriesTable', () => {
         },
       };
     }, 50);
+
     const registries = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
-    const wrapper = renderRegistriesTable({ registries });
+    const props = { ...getDefaultProps(), registries };
+    const wrapper = renderRegistriesTable(props);
 
     expect(wrapper.find('.registries-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(50);
@@ -53,7 +56,8 @@ describe('RegistriesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderRegistriesTable({ loading: true });
+    const props = { ...getDefaultProps(), loading:true };
+    const wrapper = renderRegistriesTable(props);
 
     expect(wrapper.find('.registries-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);
@@ -62,15 +66,22 @@ describe('RegistriesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderRegistriesTable({ error: new Error() });
+    const props = { ...getDefaultProps(), error: new Error() };
+    const wrapper = renderRegistriesTable(props);
 
     expect(wrapper.find('.registries-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.registries-table__body__row').length).toBe(1);
     expect(wrapper.find('.registries-table__body__row').text()).toBe('Error loading registries');
   });
 
+  function getDefaultProps() {
+    return {
+      registries: { limit: 50, offset: 0, count: 0, pages: 0, page: 1, items: [] },
+      fetchRegistries: () => {}
+    };
+  }
 
-  function renderRegistriesTable(props) {
+  function renderRegistriesTable(props = getDefaultProps()) {
     return shallow(
       <RegistriesTable { ...props }  />
     );

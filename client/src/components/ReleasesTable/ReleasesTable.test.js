@@ -8,6 +8,7 @@ import { AccountLink, RegistryLink, ServiceLink, ReleaseLink } from '../Links';
 describe('ReleasesTable', () => {
 
   it('should render table heading', () => {
+
     const wrapper = renderReleasesTable();
 
     expect(wrapper.find('.releases-table__heading').exists()).toBe(true);
@@ -19,8 +20,8 @@ describe('ReleasesTable', () => {
   });
 
   it('should render empty table', () => {
-    const releases = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
-    const wrapper = renderReleasesTable({ releases });
+
+    const wrapper = renderReleasesTable();
 
     expect(wrapper.find('.releases-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
@@ -46,8 +47,10 @@ describe('ReleasesTable', () => {
         version: `v${i+1}`,
       };
     }, 50);
+
     const releases = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
-    const wrapper = renderReleasesTable({ releases });
+    const props = { ...getDefaultProps(), releases };
+    const wrapper = renderReleasesTable(props);
 
     expect(wrapper.find('.releases-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(50);
@@ -64,7 +67,8 @@ describe('ReleasesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderReleasesTable({ loading: true });
+    const props = { ...getDefaultProps(), loading:true };
+    const wrapper = renderReleasesTable(props);
 
     expect(wrapper.find('.releases-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
@@ -73,7 +77,8 @@ describe('ReleasesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderReleasesTable({ error: new Error() });
+    const props = { ...getDefaultProps(), error: new Error() };
+    const wrapper = renderReleasesTable(props);
 
     expect(wrapper.find('.releases-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.releases-table__body__row').length).toBe(1);
@@ -81,8 +86,14 @@ describe('ReleasesTable', () => {
 
   });
 
+  function getDefaultProps() {
+    return {
+      releases: { limit: 50, offset: 0, count: 0, pages: 0, page: 1, items: [] },
+      fetchReleases: () => {}
+    };
+  }
 
-  function renderReleasesTable(props) {
+  function renderReleasesTable(props = getDefaultProps()) {
     return shallow(
       <ReleasesTable { ...props }  />
     );

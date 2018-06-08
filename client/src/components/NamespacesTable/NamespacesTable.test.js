@@ -8,6 +8,7 @@ import { AccountLink, NamespaceLink } from '../Links';
 describe('NamespacesTable', () => {
 
   it('should render table heading', () => {
+
     const wrapper = renderNamespacesTable();
 
     expect(wrapper.find('.namespaces-table__heading').exists()).toBe(true);
@@ -18,8 +19,8 @@ describe('NamespacesTable', () => {
   });
 
   it('should render empty table', () => {
-    const namespaces = { limit: 0, offset: 0, count: 0, pages: 10, page: 1, items: [] };
-    const wrapper = renderNamespacesTable({ namespaces });
+
+    const wrapper = renderNamespacesTable();
 
     expect(wrapper.find('.namespaces-table__body--empty').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);
@@ -39,8 +40,10 @@ describe('NamespacesTable', () => {
         },
       };
     }, 50);
+
     const namespaces = { limit: 50, offset: 0, count: items.length, pages: 10, page: 1, items };
-    const wrapper = renderNamespacesTable({ namespaces });
+    const props = { ...getDefaultProps(), namespaces };
+    const wrapper = renderNamespacesTable(props);
 
     expect(wrapper.find('.namespaces-table__body--data').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(50);
@@ -56,7 +59,8 @@ describe('NamespacesTable', () => {
 
   it('should render table while loading', () => {
 
-    const wrapper = renderNamespacesTable({ loading: true });
+    const props = { ...getDefaultProps(), loading:true };
+    const wrapper = renderNamespacesTable(props);
 
     expect(wrapper.find('.namespaces-table__body--loading').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);
@@ -65,7 +69,8 @@ describe('NamespacesTable', () => {
 
   it('should render table with error', () => {
 
-    const wrapper = renderNamespacesTable({ error: new Error() });
+    const props = { ...getDefaultProps(), error: new Error() };
+    const wrapper = renderNamespacesTable(props);
 
     expect(wrapper.find('.namespaces-table__body--error').exists()).toBe(true);
     expect(wrapper.find('.namespaces-table__body__row').length).toBe(1);
@@ -73,7 +78,14 @@ describe('NamespacesTable', () => {
   });
 
 
-  function renderNamespacesTable(props) {
+  function getDefaultProps() {
+    return {
+      namespaces: { limit: 50, offset: 0, count: 0, pages: 0, page: 1, items: [] },
+      fetchNamespaces: () => {}
+    };
+  }
+
+  function renderNamespacesTable(props = getDefaultProps()) {
     return shallow(
       <NamespacesTable { ...props }  />
     );
