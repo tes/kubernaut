@@ -78,8 +78,7 @@ class ReleasesTable extends Component {
         <TablePagination
           pages={releases.pages}
           page={releases.page}
-          limit={releases.limit}
-          fetchContent={fetchReleases}
+          fetchContent={(page) => fetchReleases( { ...releases, page } )}
         />
       </div>
     );

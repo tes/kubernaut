@@ -75,8 +75,7 @@ class NamespacesTable extends Component {
         <TablePagination
           pages={namespaces.pages}
           page={namespaces.page}
-          limit={namespaces.limit}
-          fetchContent={fetchNamespaces}
+          fetchContent={(page) => fetchNamespaces( { ...namespaces, page } )}
         />
       </div>
     );

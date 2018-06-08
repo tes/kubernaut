@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Pagination } from 'react-bootstrap';
 
-const TablePagination = ({ pages, page, limit, fetchContent }) => {
+const TablePagination = ({ pages, page, fetchContent }) => {
 
   const onPageSelect = (page) => {
-    fetchContent({ page, limit });
+    fetchContent(page);
   };
 
   const items = Array(pages).fill().map((_, i) =>
@@ -37,7 +37,6 @@ const TablePagination = ({ pages, page, limit, fetchContent }) => {
 TablePagination.propTypes = {
   pages: PropTypes.number.isRequired,
   page: PropTypes.number.isRequired,
-  limit: PropTypes.number.isRequired,
   fetchContent: PropTypes.func.isRequired,
 };
 
