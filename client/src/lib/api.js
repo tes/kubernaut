@@ -30,3 +30,23 @@ export const fetchReleases = async ({ limit = 20, offset = 0, service= '', regis
     throw error;
   }
 };
+
+export const fetchDeployments = async ({ limit = 20, offset = 0, service= '', registry = '' }) => {
+
+  const qs = makeQueryString({
+    limit,
+    offset,
+    service,
+    registry,
+  });
+
+  const url = `/api/deployments?${qs}`;
+
+  try {
+    const res = await makeRequest(url);
+    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};

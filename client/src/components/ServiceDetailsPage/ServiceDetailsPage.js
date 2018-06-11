@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ServiceReleaseHistory from '../ServiceReleaseHistory';
+import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
 class ServiceDetailsPage extends Component {
   componentDidMount() {
     this.props.fetchReleasesForService({
+      registry: this.props.registryName,
+      service: this.props.serviceName,
+    });
+
+    this.props.fetchDeploymentHistoryForService({
       registry: this.props.registryName,
       service: this.props.serviceName,
     });
@@ -17,6 +23,11 @@ class ServiceDetailsPage extends Component {
         <div>
           <h6>Releases</h6>
           <ServiceReleaseHistory releases={this.props.releasesList} />
+        </div>
+
+        <div>
+          <h6>Deployments</h6>
+          <ServiceDeploymentHistory deployments={this.props.deploymentsList} />
         </div>
       </div>
     );

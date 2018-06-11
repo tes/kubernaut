@@ -13,10 +13,15 @@ export default function(options = {}) {
 
     app.get('/api/deployments', async (req, res, next) => {
       try {
-        const registries = req.user.listNamespaceIdsWithPermission('deployments-read');
+        const criteria = ['registry', 'service', 'version'].reduce((criteria, name) => {
+          if (!req.query[name]) return criteria;
+          return { ...criteria, [name]: req.query[name] };
+        }, {
+          registries: req.user.listNamespaceIdsWithPermission('deployments-read'),
+        });
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findDeployments({ registries }, limit, offset);
+        const result = await store.findDeployments(criteria, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
