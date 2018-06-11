@@ -14,6 +14,7 @@ import AccountsPage from './components/AccountsPage';
 import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
+import ServiceDetailsPage from './components/ServiceDetailsPage';
 import HomePage from './components/HomePage';
 
 // Reducers
@@ -23,6 +24,7 @@ import accounts from './modules/accounts';
 import releases from './modules/releases';
 import deployments from './modules/deployments';
 import deployment from './modules/deployment';
+import service from './modules/service';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -49,6 +51,7 @@ const store = createStore(combineReducers({
   releases,
   deployments,
   deployment,
+  service,
 }), initialState, composeWithDevTools(
   applyMiddleware(thunk)
 ));
@@ -63,27 +66,54 @@ class App extends Component {
             <Header />
             <div className='container'>
               <Switch>
-                <Route exact path='/registries' render={() =>
-                  <RegistriesPage />
-                } />
-                <Route exact path='/namespaces' render={() =>
-                  <NamespacesPage />
-                } />
-                <Route exact path='/accounts' render={() =>
-                  <AccountsPage />
-                } />
-                <Route exact path='/releases' render={() =>
-                  <ReleasesPage />
-                } />
-                <Route exact path='/deployments' render={() =>
-                  <DeploymentsPage />
-                } />
-                <Route exact path='/deployments/:deploymentId' render={({ match }) =>
-                  <DeploymentDetailsPage deploymentId={match.params.deploymentId} />
-                } />
-                <Route path='/' render={() =>
-                  <HomePage />
-                } />
+                <Route
+                  exact
+                  path='/registries'
+                  render={() => <RegistriesPage /> }
+                />
+                <Route
+                  exact
+                  path='/namespaces'
+                  render={() => <NamespacesPage /> }
+                />
+                <Route
+                  exact
+                  path='/accounts'
+                  render={() => <AccountsPage /> }
+                />
+                <Route
+                  exact
+                  path='/releases'
+                  render={() => <ReleasesPage /> }
+                />
+                <Route
+                  exact
+                  path='/deployments'
+                  render={() => <DeploymentsPage /> }
+                />
+                <Route
+                  exact
+                  path='/deployments/:deploymentId'
+                  render={({ match }) =>
+                    <DeploymentDetailsPage
+                      deploymentId={match.params.deploymentId}
+                    />
+                  }
+                />
+                <Route
+                  exact
+                  path='/services/:registry/:name'
+                  render={({ match }) =>
+                    <ServiceDetailsPage
+                      registryName={match.params.registry}
+                      serviceName={match.params.name}
+                    />
+                  }
+                />
+                <Route
+                  path='/'
+                  render={() => <HomePage /> }
+                />
               </Switch>
             </div>
           </div>

@@ -29,6 +29,9 @@ const Navigation = () => {
         <LinkContainer to="/deployments">
           <NavItem eventKey={5}>Deployments</NavItem>
         </LinkContainer>
+        <LinkContainer to="/services">
+          <NavItem eventKey={6}>Services</NavItem>
+        </LinkContainer>
       </Nav>
     </Navbar>
   );
