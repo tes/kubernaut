@@ -212,8 +212,8 @@ export default function(options) {
             id: row.service_id,
             name: row.service_name,
             registry: new Registry({
-              id: row.service_id,
-              name: row.service_name,
+              id: row.registry_id,
+              name: row.registry_name,
             }),
           }),
           version: row.release_version,
