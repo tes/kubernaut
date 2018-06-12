@@ -16,9 +16,8 @@ export const RegistryLink = ({ registry }) => {
 };
 
 export const ServiceLink = ({ service }) => {
-  // TODO Replace with Link when page availalbe
   return (
-    <span>{service.name}</span>
+    <Link to={`/services/${service.registry.name}/${service.name}`}><span>{service.name}</span></Link>
   );
 };
 
