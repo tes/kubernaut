@@ -20,6 +20,7 @@
     "install": "^0.10.1",
     "jquery": "^3.2.1",
     "node-sass-chokidar": "0.0.3",
+    "query-string": "^6.1.0",
     "react": "^16.0.0",
     "react-bootstrap": "^0.32.0",
     "react-dom": "^16.0.0",
@@ -29,7 +30,7 @@
     "react-scripts": "1.0.14",
     "redux": "^3.7.2",
     "redux-devtools-extension": "^2.13.2",
-    "redux-form": "^7.4.0",
+    "redux-form": "^7.3.0",
     "redux-thunk": "^2.2.0",
     "timeago.js": "^3.0.2"
   },
