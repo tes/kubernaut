@@ -4,7 +4,25 @@ import { reduxForm } from 'redux-form';
 import { triggerDeployment } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
-export default connect(() => ({}), { triggerDeployment })(reduxForm({
+const mapStateToProps = (state, props) => {
+  const {
+    registry,
+    service,
+    version,
+    cluster,
+  } = props.parsedLocation;
+
+  return {
+    initialValues: {
+      registry,
+      service,
+      version,
+      cluster,
+    },
+  };
+};
+
+export default connect(mapStateToProps, { triggerDeployment })(reduxForm({
   form: 'deploy',
   enableReinitialize: true,
   destroyOnUnmount: false,

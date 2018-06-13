@@ -8,6 +8,7 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import { reducer as formReducer } from 'redux-form';
 import { composeWithDevTools } from 'redux-devtools-extension';
+import { parse as parseQuery } from 'query-string';
 
 // Components
 import Header from './components/Header';
@@ -124,7 +125,10 @@ class App extends Component {
                 <Route
                   exact
                   path='/deploy'
-                  render={() => <DeployPage />}
+                  render={({ location }) => {
+                    const parsedQueryString = parseQuery(location.search);
+                    return <DeployPage parsedLocation={parsedQueryString} />;
+                  }}
                 />
                 <Route
                   path='/'
