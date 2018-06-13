@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { DeploymentLink } from '../Links';
+import { DeploymentLink, CreateDeploymentLink } from '../Links';
 
 class ServiceDeploymentHistory extends Component {
 
@@ -17,6 +17,16 @@ class ServiceDeploymentHistory extends Component {
             <div className="col-md-1">{item.status}</div>
             <div className="col-md-2">{item.createdBy.displayName}</div>
             <div className="col-md-1"><DeploymentLink deployment={item} icon="external-link"/></div>
+            <div className="col-md-1">
+              <CreateDeploymentLink
+                registry={item.release.service.registry}
+                service={item.release.service}
+                version={item.release.version}
+                cluster={item.namespace.cluster}
+                namespace={item.namespace}
+                text="Re-deploy"
+              />
+            </div>
 
           </div>
         ));

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { stringify } from 'query-string';
 
 export const AccountLink = ({ account }) => {
   // TODO Replace with Link when page availalbe
@@ -45,5 +46,22 @@ export const NamespaceLink = ({ namespace }) => {
 export const DeploymentLink = ({ deployment, icon }) => {
   return (
     <Link to={`/deployments/${deployment.id}`}><i className={`fa fa-${icon}`} aria-hidden='true'></i></Link>
+  );
+};
+
+export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, ...options }) => {
+  const text = options.text || 'Deploy';
+  return (
+    <Link to={{
+        pathname: "/deploy",
+        search: stringify({
+          registry: registry.name || '',
+          service: service.name || '',
+          version,
+          cluster: cluster.name || '',
+          namespace: namespace.name || '',
+        })
+      }}
+    ><span>{text}</span></Link>
   );
 };

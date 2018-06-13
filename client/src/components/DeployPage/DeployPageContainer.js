@@ -10,6 +10,7 @@ const mapStateToProps = (state, props) => {
     service,
     version,
     cluster,
+    namespace,
   } = props.parsedLocation;
 
   return {
@@ -18,6 +19,7 @@ const mapStateToProps = (state, props) => {
       service,
       version,
       cluster,
+      namespace,
     },
   };
 };
