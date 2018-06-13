@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
+import { reducer as formReducer } from 'redux-form';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 // Components
@@ -15,6 +16,7 @@ import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import ServiceDetailsPage from './components/ServiceDetailsPage';
+import DeployPage from './components/DeployPage';
 import HomePage from './components/HomePage';
 
 // Reducers
@@ -45,6 +47,7 @@ require('bootstrap/dist/js/bootstrap.min.js');
 const initialState = {};
 
 const store = createStore(combineReducers({
+  form: formReducer,
   registries,
   namespaces,
   accounts,
@@ -109,6 +112,11 @@ class App extends Component {
                       serviceName={match.params.name}
                     />
                   }
+                />
+                <Route
+                  exact
+                  path='/deploy'
+                  render={() => <DeployPage />}
                 />
                 <Route
                   path='/'

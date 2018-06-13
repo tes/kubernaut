@@ -27,6 +27,7 @@
     "react-scripts": "1.0.14",
     "redux": "^3.7.2",
     "redux-devtools-extension": "^2.13.2",
+    "redux-form": "^7.4.0",
     "redux-thunk": "^2.2.0",
     "timeago.js": "^3.0.2"
   },
