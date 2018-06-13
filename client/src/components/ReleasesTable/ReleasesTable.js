@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
-import { AccountLink, RegistryLink, ServiceLink, ReleaseLink } from '../Links';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, CreateDeploymentLink } from '../Links';
 import './ReleasesTable.css';
 
 class ReleasesTable extends Component {
@@ -47,6 +47,13 @@ class ReleasesTable extends Component {
             <td className='releases-table__body__row__version'><ReleaseLink release={release} /></td>
             <td className='releases-table__body__row__registry-name'><RegistryLink registry={release.service.registry} /></td>
             <td className='releases-table__body__row__created-by'><AccountLink account={release.createdBy} /></td>
+            <td>
+              <CreateDeploymentLink
+                service={release.service}
+                registry={release.service.registry}
+                version={release.version}
+              />
+            </td>
           </tr>;
         })
       }
