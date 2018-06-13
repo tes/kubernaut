@@ -1,4 +1,5 @@
 import { SubmissionError } from 'redux-form';
+import { push } from 'connected-react-router';
 import { makeDeployment } from '../lib/api';
 
 // const actionsPrefix = 'KUBERNAUT/DEPLOY';
@@ -21,6 +22,7 @@ export function triggerDeployment(formValues) {
       return Promise.reject(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' }));
     }
 
-    console.info(data);
+    const { id } = data;
+    return dispatch(push(`/deployments/${id}`));
   };
 }

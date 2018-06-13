@@ -1,6 +1,8 @@
 // Framework
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
+import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router';
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
@@ -44,9 +46,9 @@ following errors on npm start and npm test:
 window.jQuery = window.$ = require('jquery');
 require('bootstrap/dist/js/bootstrap.min.js');
 
+const history = createBrowserHistory();
 const initialState = {};
-
-const store = createStore(combineReducers({
+const rootReducer = combineReducers({
   form: formReducer,
   registries,
   namespaces,
@@ -55,16 +57,22 @@ const store = createStore(combineReducers({
   deployments,
   deployment,
   service,
-}), initialState, composeWithDevTools(
-  applyMiddleware(thunk)
-));
+});
+
+const store = createStore(
+  connectRouter(history)(rootReducer),
+  initialState,
+  composeWithDevTools(
+    applyMiddleware(routerMiddleware(history), thunk)
+  )
+);
 
 
 class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Router>
+        <ConnectedRouter history={history}>
           <div>
             <Header />
             <div className='container'>
@@ -125,7 +133,7 @@ class App extends Component {
               </Switch>
             </div>
           </div>
-        </Router>
+        </ConnectedRouter>
       </Provider>
     );
   }

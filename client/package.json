@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
+    "connected-react-router": "^4.3.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "font-awesome": "^4.7.0",
+    "history": "^4.7.2",
     "install": "^0.10.1",
     "jquery": "^3.2.1",
     "node-sass-chokidar": "0.0.3",
