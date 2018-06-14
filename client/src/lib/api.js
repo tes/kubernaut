@@ -10,7 +10,7 @@ const makeRequest = (url, options) =>
 
 const makeQueryString = (values) => {
   return Object.keys(values).reduce((acc, key) => {
-    if (!values[key]) return acc;
+    if (!values[key] && values[key] !== 0) return acc;
     return `${acc}${key}=${values[key]}&`;
   }, '');
 };
