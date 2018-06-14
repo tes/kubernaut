@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Pagination } from 'react-bootstrap';
+import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
 const TablePagination = ({ pages, page, limit, fetchContent }) => {
 
@@ -9,12 +9,13 @@ const TablePagination = ({ pages, page, limit, fetchContent }) => {
   };
 
   const items = Array(pages).fill().map((_, i) =>
-    <Pagination.Item
+    <PaginationItem
       key={i}
       onClick={() => onPageSelect(i + 1)}
-      active={i + 1 === page}>
-      {i + 1}
-    </Pagination.Item>
+      active={i + 1 === page}
+    >
+      <PaginationLink href="#">{i + 1}</PaginationLink>
+    </PaginationItem>
   );
 
   const pagination = () =>
@@ -26,7 +27,9 @@ const TablePagination = ({ pages, page, limit, fetchContent }) => {
   const noPagination = () =>
     <div className='text-center invisible'>
       <Pagination className='table-pagination'>
-        <Pagination.Item>1</Pagination.Item>
+        <PaginationItem>
+          <PaginationLink href="#">1</PaginationLink>
+        </PaginationItem>
       </Pagination>
     </div>
   ;

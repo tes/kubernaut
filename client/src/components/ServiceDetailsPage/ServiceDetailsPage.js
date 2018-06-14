@@ -18,15 +18,17 @@ class ServiceDetailsPage extends Component {
 
   render() {
     return (
-      <div>
-        <h4>{this.props.registryName}/{this.props.serviceName}</h4>
-        <div>
-          <h6>Releases</h6>
+      <div className="container">
+        <div className="row">
+          <h4>{this.props.registryName}/{this.props.serviceName}</h4>
+        </div>
+        <div className="row mb-5 d-block">
+          <h5>Releases</h5>
           <ServiceReleaseHistory releases={this.props.releasesList} />
         </div>
 
-        <div>
-          <h6>Deployments</h6>
+        <div className="row d-block">
+          <h5>Deployments</h5>
           <ServiceDeploymentHistory deployments={this.props.deploymentsList} />
         </div>
       </div>

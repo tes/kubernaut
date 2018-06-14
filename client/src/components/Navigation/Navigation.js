@@ -1,40 +1,63 @@
-import React from 'react';
-import { Navbar, Nav, NavItem } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+import React, { Component } from 'react';
+import {
+  Collapse,
+  Navbar,
+  NavbarToggler,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+} from 'reactstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import './Navigation.css';
 
-const Navigation = () => {
-  return (
-    <Navbar>
-      <Navbar.Header>
-        <Navbar.Brand>
-          <NavLink to='/'>kubernaut</NavLink>
-        </Navbar.Brand>
-      </Navbar.Header>
-      <Nav>
-        <LinkContainer to="/registries">
-          <NavItem eventKey={1}>Registries</NavItem>
-        </LinkContainer>
-        <LinkContainer to="/namespaces">
-          <NavItem eventKey={2}>Namespaces</NavItem>
-        </LinkContainer>
-        <LinkContainer to="/accounts">
-          <NavItem eventKey={3}>Accounts</NavItem>
-        </LinkContainer>
-        <LinkContainer to="/releases">
-          <NavItem eventKey={4}>Releases</NavItem>
-        </LinkContainer>
-        <LinkContainer to="/deployments">
-          <NavItem eventKey={5}>Deployments</NavItem>
-        </LinkContainer>
-        <LinkContainer to="/services">
-          <NavItem eventKey={6}>Services</NavItem>
-        </LinkContainer>
-      </Nav>
-    </Navbar>
-  );
-};
+
+class Navigation extends Component {
+  constructor(props) {
+    super(props);
+
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      isOpen: false
+    };
+  }
+  toggle() {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+
+  render() {
+    return (
+      <Navbar color="light" light expand="md">
+        <NavbarBrand href="/">kubernaut</NavbarBrand>
+         <NavbarToggler onClick={this.toggle} />
+        <Collapse isOpen={this.state.isOpen} navbar>
+          <Nav className="ml-auto" navbar>
+            <NavItem tag={LinkContainer} to="/registries">
+              <NavLink>Registries</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/namespaces">
+              <NavLink>Namespaces</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/accounts">
+              <NavLink>Accounts</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/releases">
+              <NavLink>Releases</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/deployments">
+              <NavLink>Deployments</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/services">
+              <NavLink>Services</NavLink>
+            </NavItem>
+          </Nav>
+        </Collapse>
+      </Navbar>
+    );
+  }
+}
 
 export default Navigation;

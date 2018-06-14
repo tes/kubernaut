@@ -14,7 +14,7 @@ class RegistriesPage extends Component {
 
     return (
       <div className='row'>
-        <div className='col-12'>
+        <div className='col-sm'>
           <RegistriesTable registries={registries.data} loading={registries.meta.loading} error={registries.meta.error} fetchRegistries={fetchRegistries} />
         </div>
       </div>

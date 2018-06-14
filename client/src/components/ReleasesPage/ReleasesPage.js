@@ -14,7 +14,7 @@ class ReleasesPage extends Component {
 
     return (
       <div className='row'>
-        <div className='col-12'>
+        <div className='col-sm'>
           <ReleasesTable releases={releases.data} loading={releases.meta.loading} error={releases.meta.error} fetchReleases={fetchReleases} />
         </div>
       </div>

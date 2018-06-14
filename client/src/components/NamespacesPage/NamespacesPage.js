@@ -14,7 +14,7 @@ class NamespacesPage extends Component {
 
     return (
       <div className='row'>
-        <div className='col-12'>
+        <div className='col-sm'>
           <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespaces} />
         </div>
       </div>

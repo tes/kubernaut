@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { reducer as formReducer } from 'redux-form';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { parse as parseQuery } from 'query-string';
+import 'bootstrap';
 
 // Components
 import Header from './components/Header';
@@ -45,7 +46,7 @@ following errors on npm start and npm test:
 
 ***************************************************************/
 window.jQuery = window.$ = require('jquery');
-require('bootstrap/dist/js/bootstrap.min.js');
+// require('bootstrap/dist/js/bootstrap.min.js');
 
 const history = createBrowserHistory();
 const initialState = {};

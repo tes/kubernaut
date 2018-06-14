@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Card, CardBody } from 'reactstrap';
 import { CreateDeploymentLink } from '../Links';
 
 class ServiceReleaseHistory extends Component {
@@ -11,15 +12,30 @@ class ServiceReleaseHistory extends Component {
       releases.data.items.forEach(item => {
         rows.push((
           <div className="row" key={item.id}>
-            <div className="col-md-2">{item.createdOn}</div>
-            <div className="col-md-2">{item.version}</div>
-            <div className="col-md-1">
-              <CreateDeploymentLink
-                service={item.service}
-                registry={item.service.registry}
-                version={item.version}
-              />
-            </div>
+            <Card className="col-lg-9">
+              <CardBody className="row p-1">
+                <div className="col-lg">
+                  <dl className="row mb-0">
+                    <dt className="col-lg-3">When:</dt>
+                    <dd className="col-lg-9">{item.createdOn}</dd>
+                    <dt className="col-lg-3">Version:</dt>
+                    <dd className="col-lg-9">{item.version}</dd>
+                  </dl>
+                </div>
+                <div className="col-lg">
+                  <dl className="row mb-0">
+                    <dt className="col-lg-3">Actions:</dt>
+                    <dd className="col-lg-9">
+                      <CreateDeploymentLink
+                        service={item.service}
+                        registry={item.service.registry}
+                        version={item.version}
+                      />
+                    </dd>
+                  </dl>
+                </div>
+              </CardBody>
+            </Card>
           </div>
         ));
       });
