@@ -53,7 +53,7 @@ class RegistriesTable extends Component {
 
     return (
       <div>
-        <table className='registries-table table table-sm table-hover'>
+        <table className='registries-table table table-sm table-responsive-lg table-hover'>
           <thead className='registries-table__heading'>
             <tr>
               <th className='registries-table__heading__created-date'>Created</th>

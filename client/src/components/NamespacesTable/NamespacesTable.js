@@ -54,7 +54,7 @@ class NamespacesTable extends Component {
 
     return (
       <div>
-        <table className='namespaces-table table table-sm table-hover'>
+        <table className='namespaces-table table table-sm table-responsive-lg table-hover'>
           <thead className='namespaces-table__heading'>
             <tr>
               <th className='namespaces-table__heading__created-date'>Created</th>

@@ -60,7 +60,7 @@ class DeploymentsTable extends Component {
 
     return (
       <div>
-        <table className='deployments-table table table-sm table-hover'>
+        <table className='deployments-table table table-sm table-responsive-lg table-hover'>
           <thead className='deployments-table__heading'>
             <tr>
               <th className='deployments-table__heading__created-date'>Created</th>

@@ -55,7 +55,7 @@ class AccountsTable extends Component {
 
     return (
       <div>
-        <table className='accounts-table table table-sm table-hover'>
+        <table className='accounts-table table table-sm table-responsive-lg table-hover'>
           <thead className='accounts-table__heading'>
             <tr>
               <th className='accounts-table__heading__created-date'>Created</th>

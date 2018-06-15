@@ -128,7 +128,7 @@ class DeploymentDetailsPage extends Component {
         </div>
         <div className='row'>
           <div className='col-md-12'>
-            <table className='log-table table table-sm '>
+            <table className='log-table table table-sm table-responsive-lg '>
               <tbody>
               {
                 deployment.log.map(entry => {

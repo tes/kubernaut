@@ -63,7 +63,7 @@ class ReleasesTable extends Component {
 
     return (
       <div>
-        <table className='releases-table table table-sm table-hover'>
+        <table className='releases-table table table-sm table-responsive-lg table-hover'>
           <thead className='releases-table__heading'>
             <tr>
               <th className='releases-table__heading__created-date'>Created</th>
