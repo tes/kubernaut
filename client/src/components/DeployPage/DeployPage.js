@@ -10,12 +10,12 @@ class DeployPage extends Component {
 
     return (
       <div>
+        <h4>Create deployment</h4>
         <form
           onSubmit={this.props.handleSubmit((values) => this.props.triggerDeployment(values))}
-          className="form-horizontal"
         >
-        <div className="form-group">
-          <label className="col-sm-2 control-label" htmlFor="registry">Registry:</label>
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label text-right" htmlFor="registry">Registry:</label>
           <div className="col-sm-5">
             <Field
               className="form-control"
@@ -25,8 +25,8 @@ class DeployPage extends Component {
             />
           </div>
         </div>
-        <div className="form-group">
-          <label className="col-sm-2 control-label" htmlFor="service">What:</label>
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label text-right" htmlFor="service">What:</label>
           <div className="col-sm-5">
             <Field
               className="form-control"
@@ -36,8 +36,8 @@ class DeployPage extends Component {
             />
           </div>
         </div>
-        <div className="form-group">
-          <label className="col-sm-2 control-label" htmlFor="version">Version:</label>
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label text-right" htmlFor="version">Version:</label>
           <div className="col-sm-5">
             <Field
               className="form-control"
@@ -47,8 +47,8 @@ class DeployPage extends Component {
             />
           </div>
         </div>
-        <div className="form-group">
-          <label className="col-sm-2 control-label" htmlFor="cluster">Where:</label>
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label text-right" htmlFor="cluster">Where:</label>
           <div className="col-sm-5">
             <Field
               className="form-control"
@@ -58,8 +58,8 @@ class DeployPage extends Component {
             />
           </div>
         </div>
-        <div className="form-group">
-          <label className="col-sm-2 control-label" htmlFor="namespace">Namespace:</label>
+        <div className="form-group row">
+          <label className="col-sm-2 col-form-label text-right" htmlFor="namespace">Namespace:</label>
           <div className="col-sm-5">
             <Field
               className="form-control"
@@ -69,9 +69,9 @@ class DeployPage extends Component {
             />
           </div>
         </div>
-        <div className="form-group">
-          <div className="col-sm-offset-2 col-sm-10">
-            <button type="submit" className="btn btn-default">Create Deployment</button>
+        <div className="form-group row">
+          <div className="offset-sm-2 col-sm-10">
+            <button type="submit" className="btn btn-dark">Create Deployment</button>
             {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
           </div>
         </div>
