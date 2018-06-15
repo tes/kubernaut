@@ -77,7 +77,7 @@ class App extends Component {
         <ConnectedRouter history={history}>
           <div>
             <Header />
-            <div className='container'>
+            <div className='container mt-1'>
               <Switch>
                 <Route
                   exact
