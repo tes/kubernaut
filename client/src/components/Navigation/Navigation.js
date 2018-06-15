@@ -30,7 +30,7 @@ class Navigation extends Component {
 
   render() {
     return (
-      <Navbar color="light" light expand="md">
+      <Navbar color="light" light expand="md" className="p-0 pl-1">
         <NavbarBrand href="/">kubernaut</NavbarBrand>
          <NavbarToggler onClick={this.toggle} />
         <Collapse isOpen={this.state.isOpen} navbar>
