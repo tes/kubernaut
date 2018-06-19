@@ -31,6 +31,7 @@ import releases from './modules/releases';
 import deployments from './modules/deployments';
 import deployment from './modules/deployment';
 import service from './modules/service';
+import deploy from './modules/deploy';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -59,6 +60,7 @@ const rootReducer = combineReducers({
   deployments,
   deployment,
   service,
+  deploy,
 });
 
 const store = createStore(

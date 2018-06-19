@@ -2,11 +2,26 @@ import React, { Component } from 'react';
 import { Field } from 'redux-form';
 import PropTypes from 'prop-types';
 import RenderInput from '../RenderInput';
+import RenderSelect from '../RenderSelect';
 
 
 class DeployPage extends Component {
+  componentDidMount() {
+    this.props.initialise();
+  }
+
   render() {
-    const { error } = this.props;
+    const {
+      error,
+      valid,
+      asyncValidating,
+      registrySelected,
+      serviceSelected,
+      clusterSelected,
+    } = this.props;
+
+    const validRegistryAndService = (registrySelected && serviceSelected);
+    const validCluster = (validRegistryAndService && clusterSelected);
 
     return (
       <div>
@@ -20,8 +35,8 @@ class DeployPage extends Component {
             <Field
               className="form-control"
               name="registry"
-              component={RenderInput}
-              type="text"
+              component={RenderSelect}
+              options={this.props.registries}
             />
           </div>
         </div>
@@ -33,6 +48,7 @@ class DeployPage extends Component {
               name="service"
               component={RenderInput}
               type="text"
+              disabled={!registrySelected}
             />
           </div>
         </div>
@@ -44,6 +60,7 @@ class DeployPage extends Component {
               name="version"
               component={RenderInput}
               type="text"
+              disabled={!validRegistryAndService}
             />
           </div>
         </div>
@@ -53,8 +70,9 @@ class DeployPage extends Component {
             <Field
               className="form-control"
               name="cluster"
-              component={RenderInput}
-              type="text"
+              component={RenderSelect}
+              options={this.props.clusters}
+              disabled={!validRegistryAndService}
             />
           </div>
         </div>
@@ -64,14 +82,20 @@ class DeployPage extends Component {
             <Field
               className="form-control"
               name="namespace"
-              component={RenderInput}
-              type="text"
+              component={RenderSelect}
+              options={this.props.namespaces}
+              disabled={!validCluster}
             />
           </div>
         </div>
         <div className="form-group row">
           <div className="offset-sm-2 col-sm-10">
-            <button type="submit" className="btn btn-dark">Create Deployment</button>
+            <button
+              type="submit"
+              className="btn btn-dark"
+              disabled={!valid && !asyncValidating}
+            >Create Deployment
+            </button>
             {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
           </div>
         </div>

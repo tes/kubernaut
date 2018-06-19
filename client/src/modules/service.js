@@ -95,7 +95,7 @@ const defaultState = {
   }
 };
 
-export default function(oldState, action)  {
+export default function(oldState, action) {
   const state = oldState ? oldState : defaultState;
   switch (action.type) {
     case FETCH_RELEASES_REQUEST:

@@ -15,13 +15,14 @@ const makeQueryString = (values) => {
   }, '');
 };
 
-export const fetchReleases = async ({ limit = 20, offset = 0, service= '', registry = '' }) => {
+export const fetchReleases = async ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
 
   const qs = makeQueryString({
     limit,
     offset,
     service,
     registry,
+    version,
   });
 
   const url = `/api/releases?${qs}`;
@@ -46,6 +47,28 @@ export const fetchDeployments = async ({ limit = 20, offset = 0, service= '', re
 
   const url = `/api/deployments?${qs}`;
 
+  try {
+    const res = await makeRequest(url);
+    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
+
+export const getRegistries = async () => {
+  const url = '/api/registries';
+  try {
+    const res = await makeRequest(url);
+    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
+
+export const getNamespaces = async () => {
+  const url = '/api/namespaces';
   try {
     const res = await makeRequest(url);
     if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
