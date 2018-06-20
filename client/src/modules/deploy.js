@@ -9,16 +9,22 @@ import {
 
 const actionsPrefix = 'KUBERNAUT/DEPLOY';
 export const INITIALISE = `${actionsPrefix}/INITIALISE`;
+export const INITIALISE_ERROR = `${actionsPrefix}/INITIALISE_ERROR`;
 export const SET_LOADING = `${actionsPrefix}/SET_LOADING`;
 export const CLEAR_LOADING = `${actionsPrefix}/CLEAR_LOADING`;
 export const SET_REGISTRIES = `${actionsPrefix}/SET_REGISTRIES`;
 export const SET_NAMESPACES = `${actionsPrefix}/SET_NAMESPACES`;
 
-export function initialise() {
+export function initialise(options = {}) {
   return async (dispatch) => {
     dispatch({ type: INITIALISE });
-    await dispatch(fetchRegistries());
-    await dispatch(fetchNamespaces());
+    try {
+      await dispatch(fetchRegistries());
+      await dispatch(fetchNamespaces());
+    } catch (error) {
+      if (!options.quiet) console.error(error); // eslint-disable-line no-console
+      dispatch({ type: INITIALISE_ERROR, error });
+    }
   };
 }
 
@@ -35,8 +41,8 @@ export function fetchRegistries() {
       });
       dispatch({ type: CLEAR_LOADING });
     } catch (e) {
-      console.error(e);
       dispatch({ type: CLEAR_LOADING });
+      throw e;
     }
   };
 }
@@ -53,12 +59,12 @@ export function fetchNamespaces() {
         data: data.items.map(({ name, cluster }) => ({ name, cluster })),
       });
     } catch (e) {
-      console.error(e);
+      throw e;
     }
   };
 }
 
-export function triggerDeployment(formValues) {
+export function triggerDeployment(formValues, options = {}) {
   return async (dispatch) => {
     if (!formValues.registry) return Promise.reject(new SubmissionError({ registry: 'A registry is required' }));
     if (!formValues.service) return Promise.reject(new SubmissionError({ service: 'A service name is required' }));
@@ -68,10 +74,10 @@ export function triggerDeployment(formValues) {
 
     let data;
     try {
-      data = await makeDeployment(formValues);
+      data = await makeDeployment(formValues, options);
 
     } catch(err) {
-      console.error(err);
+      if (!options.quiet) console.error(err); // eslint-disable-line no-console
       return Promise.reject(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' }));
     }
 
@@ -119,6 +125,7 @@ export async function asyncValidateForm(values) {
 const defaultState = {
   meta: {
     loading: false,
+    error: '',
   },
   registries: [],
   namespaces: [],
@@ -130,6 +137,14 @@ export default function(oldState, action) {
     case INITIALISE:
       return {
         ...defaultState
+      };
+
+    case INITIALISE_ERROR:
+      return {
+        ...defaultState,
+        meta: {
+          error: action.error,
+        }
       };
 
     case SET_LOADING:

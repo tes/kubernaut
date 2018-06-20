@@ -92,11 +92,12 @@ export const makeDeployment = async (data, options = {}) => {
 
     if (res.status >= 400) {
       let message = `${url} returned ${res.status} ${res.statusText}`;
+
       try {
         const serverError = await res.json();
         if (serverError.message) message = serverError.message;
       } catch(parseError) {
-        console.warn('Could not parse server response', res);
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
       }
 
       throw new Error(message);
