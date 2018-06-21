@@ -126,7 +126,7 @@ export default function(options) {
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('d.namespace', raw('n.id')))
         .where(Op.eq('n.cluster', raw('c.id')))
-        .where(Op.eq('r.created_by', raw('cb.id')))
+        .where(Op.eq('d.created_by', raw('cb.id')))
         .orderBy('d.created_on desc', 'd.id desc')
         .limit(limit)
         .offset(offset);
