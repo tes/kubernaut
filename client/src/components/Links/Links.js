@@ -49,8 +49,8 @@ export const DeploymentLink = ({ deployment, icon }) => {
   );
 };
 
-export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, ...options }) => {
-  const text = options.text || 'Deploy';
+export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, children }) => {
+  const element = children || (<span>Deploy</span>);
   return (
     <Link to={{
         pathname: "/deploy",
@@ -62,6 +62,6 @@ export const CreateDeploymentLink = ({ registry = {}, service = {}, version, clu
           namespace: namespace.name || '',
         })
       }}
-    ><span>{text}</span></Link>
+    >{element}</Link>
   );
 };

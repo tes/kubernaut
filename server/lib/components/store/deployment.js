@@ -14,7 +14,7 @@ export default function(options) {
 
   function start({ config, logger, db }, cb) {
 
-    const { Op, raw } = sqb;
+    const { Op, raw, join } = sqb;
 
     async function saveDeployment(data, meta) {
       return await db.withTransaction(async connection => {
@@ -109,6 +109,41 @@ export default function(options) {
           logger.debug(`Found ${deploymentResult.rowCount} deployments with id: ${id}`);
           return deploymentResult.rowCount ? toDeployment(deploymentResult.rows[0], attributesResults.rows, logEntriesResult.rows) : undefined;
         });
+      });
+    }
+
+    async function findLatestDeploymentsByNamespaceForService(registryId, service, namespaces) {
+      logger.debug(`Getting latest deployment per namespace for service: ${service} ${namespaces}`);
+
+      const builder = sqb
+        .select(raw('distinct d.namespace namespace_id, n.name namespace_name, c.name cluster_name, LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id'))
+        .from('deployment d')
+        .join(join('release r').on(Op.eq('r.id', raw('d.release'))))
+        .join(join('service s').on(Op.eq('s.id', raw('r.service'))))
+        .join(join('registry sr').on(Op.eq('sr.id', raw('s.registry'))))
+        .join(join('namespace n').on(Op.eq('n.id', raw('d.namespace'))))
+        .join(join('cluster c').on(Op.eq('c.id', raw('n.cluster'))))
+        .where(Op.eq('sr.id', registryId))
+        .where(Op.eq('s.name', service))
+        .where(Op.or(...(namespaces.map((id) => (Op.eq('d.namespace', id))))));
+
+
+      return await db.withTransaction(async connection =>
+        connection.query(db.serialize(builder, {}).sql)
+      ).then((result) => {
+        logger.debug(`Found ${result.rowCount} namespaces with deployments for ${service}`);
+        return result.rows.map(({ namespace_id, namespace_name, cluster_name, release_id}) => ({
+          namespace: {
+            id: namespace_id,
+            name: namespace_name,
+          },
+          cluster: {
+            name: cluster_name,
+          },
+          release: {
+            id: release_id,
+          },
+        }));
       });
     }
 
@@ -235,6 +270,7 @@ export default function(options) {
       saveRolloutStatusExitCode,
       saveDeploymentLogEntry,
       getDeployment,
+      findLatestDeploymentsByNamespaceForService,
       findDeployments,
       deleteDeployment,
     });

@@ -78,6 +78,17 @@ export const getNamespaces = async () => {
   }
 };
 
+export const fetchLatestDeploymentsByNamespaceForService = async ({ registry, service }) => {
+  const url = `/api/deployments/latest-by-namespace/${registry}/${service}`;
+  try {
+    const res = await makeRequest(url);
+    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
+
 export const makeDeployment = async (data, options = {}) => {
   const wait = options.wait;
   const qs = makeQueryString({

@@ -17,7 +17,7 @@ export default function(options = {}) {
           if (!req.query[name]) return criteria;
           return { ...criteria, [name]: req.query[name] };
         }, {
-          registries: req.user.listNamespaceIdsWithPermission('deployments-read'),
+          namespaces: req.user.listNamespaceIdsWithPermission('deployments-read'),
         });
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -35,6 +35,20 @@ export default function(options = {}) {
         if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
         res.json(deployment);
       } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/deployments/latest-by-namespace/:registry/:service', async (req, res, next) => {
+      try {
+        const registry = await store.findRegistry({ registry: req.params.registry });
+        const namespaces = req.user.listNamespaceIdsWithPermission('deployments-read');
+
+        if(!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, namespaces);
+        res.json(deployments);
+      } catch(err) {
         next(err);
       }
     });

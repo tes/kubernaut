@@ -415,6 +415,57 @@ describe('Deployment Store', () => {
       expect(results3.count).toBe(2);
     });
 
+    it('should get the latest deployment for any namespace for a service', async () => {
+      const cluster = await saveCluster();
+      const cluster2 = await saveCluster();
+      const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test' });
+      const namespace2 = await saveNamespace({ name: 'ns2', cluster: cluster2, context: 'test' });
+      const release1 = await saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 1 }));
+      const release2 = await saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 2 }));
+      const registryId = release1.service.registry.id;
+      const depsForNs1 = [
+        makeDeployment({
+          release: release1,
+          namespace: namespace1,
+        }),
+        makeDeployment({
+          release: release2,
+          namespace: namespace1,
+        }),
+      ];
+
+      const depsForNs2 = [
+        makeDeployment({
+          release: release1,
+          namespace: namespace2,
+        }),
+        makeDeployment({
+          release: release2,
+          namespace: namespace2,
+        }),
+      ];
+
+      const savedNs1 = [];
+      for (const dep of depsForNs1) {
+        const saved = await saveDeployment(dep);
+        savedNs1.push(saved);
+      }
+
+      const savedNs2 = [];
+      for (const dep of depsForNs2) {
+        const saved = await saveDeployment(dep);
+        savedNs2.push(saved);
+      }
+
+      const { release: { id: latestFromNs1 } } = savedNs1.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0];
+      const { release: { id: latestFromNs2 } } = savedNs2.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0];
+      const namespaceIds = [namespace1.id, namespace2.id];
+
+      const results = await findLatestDeploymentsByNamespaceForService(registryId, 'hello-world', namespaceIds);
+      expect(results.find(({ namespace }) => (namespace.id === namespace1.id)).release.id).toBe(latestFromNs1);
+      expect(results.find(({ namespace }) => (namespace.id === namespace2.id)).release.id).toBe(latestFromNs2);
+    });
+
     it('should filter deployments by criteria', async () => {
       const cluster = await saveCluster();
       const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test' });
@@ -641,5 +692,9 @@ describe('Deployment Store', () => {
 
   function deleteNamespace(id, meta = makeRootMeta()) {
     return store.deleteNamespace(id, meta);
+  }
+
+  function findLatestDeploymentsByNamespaceForService(...args) {
+    return store.findLatestDeploymentsByNamespaceForService(...args);
   }
 });

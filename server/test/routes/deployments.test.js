@@ -135,6 +135,86 @@ describe('Deployments API', () => {
     });
   });
 
+  describe.only('GET /api/deployments/latest-by-namespace/:registry/:service', () => {
+    let registry;
+    let latestFromNs1;
+    let latestFromNs2;
+
+    beforeEach(async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const cluster2 = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace1 = await store.saveNamespace(makeNamespace({ name: 'ns1', cluster, context: 'test' }), makeRootMeta());
+      const namespace2 = await store.saveNamespace(makeNamespace({ name: 'ns2', cluster: cluster2, context: 'test' }), makeRootMeta());
+      const release1 = await store.saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 1 }), makeRootMeta());
+      const release2 = await store.saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 2 }), makeRootMeta());
+      registry = release1.service.registry.name;
+
+      const depsForNs1 = [
+        makeDeployment({
+          release: release1,
+          namespace: namespace1,
+        }),
+        makeDeployment({
+          release: release2,
+          namespace: namespace1,
+        }),
+      ];
+
+      const depsForNs2 = [
+        makeDeployment({
+          release: release1,
+          namespace: namespace2,
+        }),
+        makeDeployment({
+          release: release2,
+          namespace: namespace2,
+        }),
+      ];
+
+      const savedNs1 = [];
+      for (const dep of depsForNs1) {
+        const saved = await store.saveDeployment(dep, makeRootMeta());
+        savedNs1.push(saved);
+      }
+
+      const savedNs2 = [];
+      for (const dep of depsForNs2) {
+        const saved = await store.saveDeployment(dep, makeRootMeta());
+        savedNs2.push(saved);
+      }
+
+      latestFromNs1 = savedNs1.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0].release.id;
+      latestFromNs2 = savedNs2.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0].release.id;
+    });
+
+    it('should return the most recent deployments for each namespace', async () => {
+      const deployments = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments/latest-by-namespace/${registry}/hello-world`,
+        method: 'GET',
+        json: true,
+      });
+
+      expect(deployments.length).toBe(2);
+      expect(deployments.filter(({ namespace: { name } }) => (name === 'ns1')).length).toBe(1);
+      expect(deployments.filter(({ namespace: { name } }) => (name === 'ns2')).length).toBe(1);
+      expect(deployments.find(({ namespace: { name } }) => (name === 'ns1')).release.id).toBe(latestFromNs1);
+      expect(deployments.find(({ namespace: { name } }) => (name === 'ns2')).release.id).toBe(latestFromNs2);
+    });
+
+    it('should return empty for no deployments', async () => {
+
+      loggerOptions.suppress = true;
+
+      const deployments = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments/latest-by-namespace/${registry}/hello-world2`,
+        method: 'GET',
+        json: true,
+      });
+
+      expect(deployments.length).toBe(0);
+    });
+  });
+
   describe('POST /api/deployments', () => {
 
     it('should save a deployment', async () => {

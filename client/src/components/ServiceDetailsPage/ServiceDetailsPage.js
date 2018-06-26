@@ -5,6 +5,11 @@ import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
 class ServiceDetailsPage extends Component {
   componentDidMount() {
+    this.props.fetchLatestDeploymentsByNamespace({
+      registry: this.props.registryName,
+      service: this.props.serviceName,
+    });
+
     this.props.fetchReleasesForService({
       registry: this.props.registryName,
       service: this.props.serviceName,
@@ -22,9 +27,9 @@ class ServiceDetailsPage extends Component {
         <div className="row">
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>
         </div>
-        <div className="row mb-5 d-block">
+        <div className="row mb-3 d-block">
           <h5>Releases</h5>
-          <ServiceReleaseHistory releases={this.props.releasesList} />
+          <ServiceReleaseHistory releases={this.props.releasesList} latestDeployments={this.props.latestDeployments} />
         </div>
 
         <div className="row d-block">
@@ -39,7 +44,9 @@ class ServiceDetailsPage extends Component {
 ServiceDetailsPage.propTypes = {
   registryName: PropTypes.string.isRequired,
   serviceName: PropTypes.string.isRequired,
-  releasesList: PropTypes.object
+  releasesList: PropTypes.object,
+  deploymentsList: PropTypes.object,
+  latestDeployments: PropTypes.array,
 };
 
 export default ServiceDetailsPage;
