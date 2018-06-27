@@ -135,7 +135,7 @@ describe('Deployments API', () => {
     });
   });
 
-  describe.only('GET /api/deployments/latest-by-namespace/:registry/:service', () => {
+  describe('GET /api/deployments/latest-by-namespace/:registry/:service', () => {
     let registry;
     let latestFromNs1;
     let latestFromNs2;
