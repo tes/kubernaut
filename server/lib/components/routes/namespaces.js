@@ -1,5 +1,7 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
+import isCSSColorName from 'is-css-color-name';
+import isCSSColorHex from 'is-css-color-hex';
 
 export default function(options = {}) {
 
@@ -49,7 +51,10 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(cluster.config, req.body.context, req.body.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${req.body.name} was not found on ${cluster.name} cluster`));
 
-        const data = { name: req.body.name, cluster, context: req.body.context };
+        const colorOk = req.body.color && (isCSSColorHex(req.body.color) || isCSSColorName(req.body.color));
+        if (req.body.color && !colorOk) return next(Boom.badRequest(`Unable to verify color`));
+
+        const data = { name: req.body.name, cluster, context: req.body.context, color: req.body.color };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const namespace = await store.saveNamespace(data, meta);
         res.json(namespace);

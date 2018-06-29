@@ -2,6 +2,7 @@ INSERT INTO cluster (
   id,
   name,
   config,
+  color,
   created_on,
   created_by
 ) VALUES (
@@ -9,5 +10,6 @@ INSERT INTO cluster (
   $1,
   $2,
   $3,
-  $4
+  $4,
+  $5
 ) RETURNING id;

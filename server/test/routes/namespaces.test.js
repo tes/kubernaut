@@ -158,6 +158,32 @@ describe('Namespaces API', () => {
       expect(namespace.context).toBe(data.context);
     });
 
+    it('should save a namespace with a color', async () => {
+
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const data = makeNamespace({ name: 'other', cluster, context: 'test' });
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        method: 'POST',
+        json: {
+          name: data.name,
+          cluster: data.cluster.name,
+          context: data.context,
+          color: 'black',
+        },
+      });
+
+      expect(response.id).toBeDefined();
+
+      const namespace = await store.getNamespace(response.id);
+
+      expect(namespace).toBeDefined();
+      expect(namespace.name).toBe(data.name);
+      expect(namespace.context).toBe(data.context);
+      expect(namespace.color).toBe('black');
+    });
+
     it('should reject payloads without a name', async () => {
 
       loggerOptions.suppress = true;
@@ -282,6 +308,30 @@ describe('Namespaces API', () => {
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('namespace missing was not found on Test cluster');
+      });
+    });
+
+    it('should reject payloads where color is invalid', async () => {
+      loggerOptions.suppress = true;
+
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ name: 'other', cluster, context: 'test' });
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: data.name,
+          cluster: cluster.name,
+          context: data.context,
+          color: 'foo',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('Unable to verify color');
       });
     });
 

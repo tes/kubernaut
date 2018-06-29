@@ -116,7 +116,7 @@ export default function(options) {
       logger.debug(`Getting latest deployment per namespace for service: ${service} ${namespaces}`);
 
       const builder = sqb
-        .select(raw('distinct d.namespace namespace_id, n.name namespace_name, c.name cluster_name, LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id'))
+        .select(raw('distinct d.namespace namespace_id, n.name namespace_name, n.color namespace_color, c.name cluster_name, c.color cluster_color, LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id'))
         .from('deployment d')
         .join(join('release r').on(Op.eq('r.id', raw('d.release'))))
         .join(join('service s').on(Op.eq('s.id', raw('r.service'))))
@@ -132,18 +132,7 @@ export default function(options) {
         connection.query(db.serialize(builder, {}).sql)
       ).then((result) => {
         logger.debug(`Found ${result.rowCount} namespaces with deployments for ${service}`);
-        return result.rows.map(({ namespace_id, namespace_name, cluster_name, release_id}) => ({
-          namespace: {
-            id: namespace_id,
-            name: namespace_name,
-          },
-          cluster: {
-            name: cluster_name,
-          },
-          release: {
-            id: release_id,
-          },
-        }));
+        return result.rows.map(toLatestDeployment);
       });
     }
 
@@ -212,6 +201,23 @@ export default function(options) {
       await db.query(SQL.DELETE_DEPLOYMENT, [
         id, meta.date, meta.account.id,
       ]);
+    }
+
+    function toLatestDeployment(row) {
+      return {
+        namespace: new Namespace({
+          id: row.namespace_id,
+          name: row.namespace_name,
+          color: row.namespace_color,
+        }),
+        cluster: new Cluster({
+          name: row.cluster_name,
+          color: row.cluster_color,
+        }),
+        release: new Release({
+          id: row.release_id,
+        }),
+      };
     }
 
     function toDeployment(row, attributeRows = [], logRows = []) {

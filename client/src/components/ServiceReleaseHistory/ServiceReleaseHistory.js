@@ -13,7 +13,7 @@ class ServiceReleaseHistory extends Component {
         const deployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
         const deploymentBadges = deployments.map((dep) => (
           <Col key={dep.namespace.id}>
-            <Badge style={{ backgroundColor: '#3ec200' }} pill>{dep.cluster.name}/{dep.namespace.name}</Badge>
+            <Badge style={{ backgroundColor: dep.namespace.color || dep.cluster.color }} pill>{dep.cluster.name}/{dep.namespace.name}</Badge>
           </Col>
         ));
 

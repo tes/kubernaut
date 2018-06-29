@@ -1,5 +1,7 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
+import isCSSColorName from 'is-css-color-name';
+import isCSSColorHex from 'is-css-color-hex';
 
 export default function(options = {}) {
 
@@ -32,6 +34,7 @@ export default function(options = {}) {
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.config) return next(Boom.badRequest('config is required'));
+        if (!req.body.color) return next(Boom.badRequest('color is required'));
 
         const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
         if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
@@ -39,9 +42,13 @@ export default function(options = {}) {
         const clusterOk = await kubernetes.checkCluster(req.body.config, res.locals.logger);
         if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster`));
 
+        const colorOk = isCSSColorHex(req.body.color) || isCSSColorName(req.body.color);
+        if (!colorOk) return next(Boom.badRequest(`Unable to verify color`));
+
         const data = {
           name: req.body.name,
           config: req.body.config,
+          color: req.body.color,
         };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const cluster = await store.saveCluster(data, meta);

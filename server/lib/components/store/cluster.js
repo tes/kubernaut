@@ -13,7 +13,7 @@ export default function(options) {
       logger.debug(`Saving cluster: ${data.name}`);
 
       const result = await db.query(SQL.SAVE_CLUSTER, [
-        data.name, data.config, meta.date, meta.account.id,
+        data.name, data.config, data.color, meta.date, meta.account.id,
       ]);
 
       const cluster = new Cluster({
@@ -45,7 +45,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findClustersBuilder = sqb
-        .select('c.id', 'c.name', 'c.config', 'c.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('c.id', 'c.name', 'c.config', 'c.created_on', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_cluster__vw c', 'account cb')
         .where(Op.eq('c.created_by', raw('cb.id')))
         .orderBy('c.name asc')
@@ -90,6 +90,7 @@ export default function(options) {
         name: row.name,
         config: row.config,
         createdOn: row.created_on,
+        color: row.color,
         createdBy: new Account({
           id: row.created_by_id,
           displayName: row.created_by_display_name,

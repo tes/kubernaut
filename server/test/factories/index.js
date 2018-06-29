@@ -125,6 +125,7 @@ function makeCluster(overrides = {}) {
   return new Cluster(merge({
     name: chance.word({ length: 32 }),
     config: `.kube/${chance.word()}`,
+    color: 'black',
   }, overrides));
 }
 

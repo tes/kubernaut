@@ -3,6 +3,7 @@ INSERT INTO namespace (
   name,
   cluster,
   context,
+  color,
   created_on,
   created_by
 ) VALUES (
@@ -11,5 +12,6 @@ INSERT INTO namespace (
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 ) RETURNING id;

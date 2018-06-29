@@ -182,6 +182,7 @@ describe('Clusters API', () => {
         resolveWithFullResponse: true,
         json: {
           name: 'foo',
+          color: 'foo',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -202,12 +203,54 @@ describe('Clusters API', () => {
         json: {
           name: 'foo',
           config: 'does-not-exist-123123123',
+          color: 'foo'
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('Config does-not-exist-123123123 was not found');
+      });
+    });
+
+    it('should reject payloads without a color', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+          config: __filename,
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('color is required');
+      });
+    });
+
+    it('should reject payloads with an invalid color', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          name: 'foo',
+          config: __filename,
+          color: 'bob',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('Unable to verify color');
       });
     });
   });

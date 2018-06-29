@@ -3,6 +3,7 @@ SELECT
   n.name,
   n.context,
   n.created_on,
+  n.color,
   c.id AS cluster_id,
   c.name AS cluster_name,
   c.config AS cluster_config,
