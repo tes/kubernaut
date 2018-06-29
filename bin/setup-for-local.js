@@ -29,6 +29,7 @@ request.get({
     body: {
       name: 'local',
       config: resolve(process.env.HOME, '.kube/config'),
+      color: 'saddlebrown',
     },
   }).then((postResponse) => {
     return postResponse;
