@@ -112,20 +112,21 @@ export default function(options = {}) {
 
         if (streamResults) res.write(`${JSON.stringify({ id: deployment.id })}\n`);
         const applyExitCode = await applyManifest(deployment, emitter);
+        let rolloutStatusExitCodePromise;
 
-        if (applyExitCode > 0) {
-          if (streamResults) {
-            res.write('ERROR');
-            return res.end();
-          }
-          return res.status(500).json({ id: deployment.id, status: 'failure', log });
-        } else if (!streamResults) {
-          return res.status(202).json({ id: deployment.id, status: 'pending', log });
+        if (applyExitCode === 0) {
+          rolloutStatusExitCodePromise = getRolloutStatus(deployment, emitter, streamResults);
+          if (!streamResults) return res.status(202).json({ id: deployment.id, status: 'pending', log });
+        } else {
+          if (!streamResults) return res.status(500).json({ id: deployment.id, status: 'failure', log });
+
+          res.write('ERROR');
+          return res.end();
         }
 
         req.setTimeout(0);
+        const rolloutStatusExitCode = await rolloutStatusExitCodePromise;
 
-        const rolloutStatusExitCode = await getRolloutStatus(deployment, emitter, streamResults);
         const finalResponse = {
           id: deployment.id,
           status: rolloutStatusExitCode ? 'failure' : 'success',
