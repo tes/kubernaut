@@ -408,6 +408,47 @@ describe('Deployments API', () => {
       expect(deployment.log.length).toBe(3);
     });
 
+    it('should use namespace attributes', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({
+        name: 'default',
+        cluster,
+        context: 'test',
+        attributes: {
+          replicas: '3',
+        },
+      }), makeRootMeta());
+      const release = makeRelease();
+      await store.saveRelease(release, makeRootMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        method: 'POST',
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+      expect(response.status).toBe('pending');
+      expect(response.log.length).toBe(1);
+
+      const deployment = await store.getDeployment(response.id);
+      expect(deployment).toBeDefined();
+      expect(deployment.namespace.id).toBe(namespace.id);
+      expect(deployment.namespace.cluster.id).toBe(cluster.id);
+      expect(deployment.release.service.name).toBe(release.service.name);
+      expect(deployment.release.version).toBe(release.version);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(null);
+      expect(deployment.log.length).toBe(1);
+      expect(deployment.attributes.replicas).toBe("3");
+    });
+
     it('should report rollout failure', async () => {
 
       const cluster = await store.saveCluster(makeCluster(), makeRootMeta());

@@ -80,6 +80,20 @@ describe('Namespace Store', () => {
       expect(namespace.createdOn.toISOString()).toBe(meta.date.toISOString());
       expect(namespace.createdBy.id).toBe(meta.account.id);
       expect(namespace.createdBy.displayName).toBe(meta.account.displayName);
+      expect(namespace.attributes).toMatchObject({});
+    });
+
+    it('should retrieve namespace attributes', async () => {
+      const cluster = await saveCluster();
+      const attributes = { a: '1', b: '2' };
+      const data = makeNamespace({ cluster, attributes });
+      const meta = makeRootMeta();
+      const saved = await saveNamespace(data, meta);
+      const namespace = await getNamespace(saved.id);
+
+      expect(namespace).toBeDefined();
+      expect(namespace.id).toBe(saved.id);
+      expect(namespace.attributes).toMatchObject(attributes);
     });
 
     it('should return undefined when namespace not found', async () => {

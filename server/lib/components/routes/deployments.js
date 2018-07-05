@@ -63,16 +63,12 @@ export default function(options = {}) {
         const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
-        let deploymentNamespace = req.body.namespace;
-        if (!req.body.namespace) {
-          if (!release.attributes.namespace) {
-            return next(Boom.badRequest('namespace is required'));
-          } else {
-            deploymentNamespace = release.attributes.namespace;
-          }
-        }
+        const releaseDefaultNamespace = release.attributes.namespace;
+        const deploymentNamespace = req.body.namespace || releaseDefaultNamespace;
+        if (!deploymentNamespace) return next(Boom.badRequest('namespace is required'));
 
-        const namespace = await store.findNamespace({ name: deploymentNamespace, cluster: req.body.cluster });
+        const namespace = await store.findNamespace({ name: deploymentNamespace, cluster: req.body.cluster })
+          .then((namespace) => namespace ? store.getNamespace(namespace.id) : namespace);
         if (!namespace) return next(Boom.badRequest(`namespace ${deploymentNamespace} was not found`));
         if (!req.user.hasPermissionOnNamespace(namespace.id, 'deployments-write')) return next(Boom.forbidden());
 
@@ -88,7 +84,7 @@ export default function(options = {}) {
 
         const streamResults = !!req.query.wait;
 
-        const attributes = Object.assign({}, release.attributes, req.body);
+        const attributes = Object.assign({}, namespace.attributes, release.attributes, req.body);
         const manifest = getManifest(release, attributes);
         const data = { namespace, manifest, release, attributes };
         const meta = { date: new Date(), account: { id: req.user.id } };
