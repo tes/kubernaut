@@ -55,7 +55,7 @@ describe('Deploy Form Actions', () => {
 
       await dispatchInitialise();
 
-      expectError(INITIALISE_ERROR, '/api/registries returned 403 Forbidden');
+      expectError(INITIALISE_ERROR.toString(), '/api/registries returned 403 Forbidden');
     });
 
     it('should handle errors for namespaces', async () => {
@@ -71,7 +71,7 @@ describe('Deploy Form Actions', () => {
 
       await dispatchInitialise();
 
-      expectError(INITIALISE_ERROR, '/api/namespaces returned 403 Forbidden');
+      expectError(INITIALISE_ERROR.toString(), '/api/namespaces returned 403 Forbidden');
     });
 
     async function dispatchInitialise() {
@@ -82,10 +82,10 @@ describe('Deploy Form Actions', () => {
 
     async function expectInitialiseSuccess(registryData, namespaceData) {
       expect(actions).toHaveLength(5);
-      expect(actions[2].type).toBe(SET_REGISTRIES);
-      expect(actions[2].data).toMatchObject(registryData);
-      expect(actions[4].type).toBe(SET_NAMESPACES);
-      expect(actions[4].data).toMatchObject(namespaceData);
+      expect(actions[2].type).toBe(SET_REGISTRIES.toString());
+      expect(actions[2].payload.data).toMatchObject(registryData);
+      expect(actions[4].type).toBe(SET_NAMESPACES.toString());
+      expect(actions[4].payload.data).toMatchObject(namespaceData);
     }
   });
 
@@ -106,7 +106,6 @@ describe('Deploy Form Actions', () => {
       });
 
       await dispatchTriggerDeployment(formValues);
-
       await expectPush('/deployments/abcdef123');
     });
 
@@ -142,7 +141,7 @@ describe('Deploy Form Actions', () => {
   function expectError(action, msg) {
     const errorAction = actions.find(({ type }) => (type === action));
     expect(errorAction).not.toBe(undefined);
-    expect(errorAction.error.message).toBe(msg);
+    expect(errorAction.payload.error.message).toBe(msg);
   }
 
 });
@@ -150,7 +149,7 @@ describe('Deploy Form Actions', () => {
 describe('Deploy Form Reducer', () => {
 
   it('should initialise to default state', () => {
-    const state = reduce(undefined, { type: INITIALISE });
+    const state = reduce(undefined, INITIALISE());
     expect(state).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: false });
     expect(state.registries).toMatchObject([]);
@@ -158,27 +157,27 @@ describe('Deploy Form Reducer', () => {
   });
 
   it('should set a loading state', () => {
-    const state = reduce(undefined, { type: SET_LOADING });
+    const state = reduce(undefined, SET_LOADING());
     expect(state).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: true });
   });
 
   it('should clear a loading state', () => {
-    const initialState = reduce(undefined, { type: SET_LOADING });
+    const initialState = reduce(undefined, SET_LOADING());
 
-    const state = reduce(initialState, { type: CLEAR_LOADING });
+    const state = reduce(initialState, CLEAR_LOADING());
     expect(state).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: false });
   });
 
   it('should set registries data', () => {
-    const state = reduce(undefined, { type: SET_REGISTRIES, data: ['bob'] });
+    const state = reduce(undefined, SET_REGISTRIES({ data: ['bob'] }));
     expect(state).toMatchObject({});
     expect(state.registries).toMatchObject(['bob']);
   });
 
   it('should set namespaces data', () => {
-    const state = reduce(undefined, { type: SET_NAMESPACES, data: ['bob'] });
+    const state = reduce(undefined, SET_NAMESPACES({ data: ['bob'] }));
     expect(state).toMatchObject({});
     expect(state.namespaces).toMatchObject(['bob']);
   });

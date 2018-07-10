@@ -24,7 +24,7 @@ describe('Deployment Actions', () => {
       fetchMock.mock('/api/deployments/12345', { id: 12345 });
 
       await dispatchDeploymentActions(12345);
-      expectRequest(FETCH_DEPLOYMENT_REQUEST, {});
+      expectRequest(FETCH_DEPLOYMENT_REQUEST.toString(), {});
       expectDeploymentSuccess({ id: 12345 });
     });
 
@@ -33,7 +33,7 @@ describe('Deployment Actions', () => {
 
       await dispatchDeploymentActions(12345);
 
-      expectError(FETCH_DEPLOYMENT_ERROR, '/api/deployments/12345 returned 403 Forbidden');
+      expectError(FETCH_DEPLOYMENT_ERROR.toString(), '/api/deployments/12345 returned 403 Forbidden');
     });
 
     it('should timeout fetching deployment', async () => {
@@ -44,7 +44,7 @@ describe('Deployment Actions', () => {
 
       await dispatchDeploymentActions(12345);
 
-      expectError(FETCH_DEPLOYMENT_ERROR, 'simulate network timeout');
+      expectError(FETCH_DEPLOYMENT_ERROR.toString(), 'simulate network timeout');
     });
 
     async function dispatchDeploymentActions(id, _options) {
@@ -56,24 +56,24 @@ describe('Deployment Actions', () => {
     }
 
     function expectDeploymentSuccess(deployment) {
-      expect(Object.keys(actions[1]).length).toBe(2);
-      expect(actions[1].type).toBe(FETCH_DEPLOYMENT_SUCCESS);
-      expect(actions[1].data).toMatchObject(deployment);
+      expect(actions[1].type).toBe(FETCH_DEPLOYMENT_SUCCESS.toString());
+      expect(Object.keys(actions[1].payload).length).toBe(1);
+      expect(actions[1].payload.data).toMatchObject(deployment);
     }
   });
 
   function expectRequest(action, data) {
-    expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(action);
-    expect(actions[0].data).toMatchObject(data);
-    expect(actions[0].loading).toBe(true);
+    expect(Object.keys(actions[0].payload).length).toBe(2);
+    expect(actions[0].payload.data).toMatchObject(data);
+    expect(actions[0].payload.loading).toBe(true);
   }
 
   function expectError(action, msg) {
-    expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(action);
-    expect(actions[1].data).toMatchObject({});
-    expect(actions[1].error.message).toBe(msg);
+    expect(Object.keys(actions[1].payload).length).toBe(2);
+    expect(actions[1].payload.data).toMatchObject({});
+    expect(actions[1].payload.error.message).toBe(msg);
   }
 
 });
@@ -81,7 +81,7 @@ describe('Deployment Actions', () => {
 describe('Deployment Reducer', () => {
 
   it('should indicate when deployment is loading', () => {
-    const state = reduce(undefined, { type: FETCH_DEPLOYMENT_REQUEST, loading: true, data: {} });
+    const state = reduce(undefined, FETCH_DEPLOYMENT_REQUEST({ loading: true, data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: true });
   });
@@ -93,7 +93,7 @@ describe('Deployment Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_SUCCESS, data: { id: 12345 }});
+    const state = reduce(initialState, FETCH_DEPLOYMENT_SUCCESS({ data: { id: 12345 }}));
     expect(state.data.id).toBe(12345);
     expect(state.meta).toMatchObject({});
   });
@@ -105,7 +105,7 @@ describe('Deployment Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENT_ERROR, error: 'Oh Noes', data: {} });
+    const state = reduce(initialState, FETCH_DEPLOYMENT_ERROR({ error: 'Oh Noes', data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });

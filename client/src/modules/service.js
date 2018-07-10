@@ -1,20 +1,21 @@
+import { createAction, combineActions, handleActions } from 'redux-actions';
 import {
   fetchReleases,
   fetchDeployments,
   fetchLatestDeploymentsByNamespaceForService,
 } from '../lib/api';
 const actionsPrefix = 'KUBERNAUT/SERVICE';
-export const FETCH_RELEASES_REQUEST = `${actionsPrefix}/FETCH_RELEASES_REQUEST`;
-export const FETCH_RELEASES_SUCCESS = `${actionsPrefix}/FETCH_RELEASES_SUCCESS`;
-export const FETCH_RELEASES_ERROR = `${actionsPrefix}/FETCH_RELEASES_ERROR`;
+export const FETCH_RELEASES_REQUEST = createAction(`${actionsPrefix}/FETCH_RELEASES_REQUEST`);
+export const FETCH_RELEASES_SUCCESS = createAction(`${actionsPrefix}/FETCH_RELEASES_SUCCESS`);
+export const FETCH_RELEASES_ERROR = createAction(`${actionsPrefix}/FETCH_RELEASES_ERROR`);
 
-export const FETCH_DEPLOYMENTS_REQUEST = `${actionsPrefix}/FETCH_DEPLOYMENTS_REQUEST`;
-export const FETCH_DEPLOYMENTS_SUCCESS = `${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`;
-export const FETCH_DEPLOYMENTS_ERROR = `${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`;
+export const FETCH_DEPLOYMENTS_REQUEST = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_REQUEST`);
+export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`);
+export const FETCH_DEPLOYMENTS_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`);
 
-export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST = `${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST`;
-export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS = `${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS`;
-export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = `${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR`;
+export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST`);
+export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS`);
+export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR`);
 
 export function fetchDeploymentHistoryForService(options) {
   return async (dispatch) => {
@@ -27,7 +28,7 @@ export function fetchDeploymentHistoryForService(options) {
     const offset = (page - 1) * limit;
 
     let data = { limit, offset, count: 0, items: [] };
-    dispatch({ type: FETCH_DEPLOYMENTS_REQUEST, data, loading: true });
+    dispatch(FETCH_DEPLOYMENTS_REQUEST({ data, loading: true }));
 
     try {
       data = await fetchDeployments({
@@ -39,10 +40,10 @@ export function fetchDeploymentHistoryForService(options) {
       });
     } catch(error) {
       if (!quiet) console.error(error); // eslint-disable-line no-console
-      return dispatch({ type: FETCH_DEPLOYMENTS_ERROR, data, error });
+      return dispatch(FETCH_DEPLOYMENTS_ERROR({ data, error }));
     }
 
-    return dispatch({ type: FETCH_DEPLOYMENTS_SUCCESS, data });
+    return dispatch(FETCH_DEPLOYMENTS_SUCCESS({ data }));
   };
 }
 
@@ -56,7 +57,7 @@ export function fetchReleasesForService(options) {
     const limit = options.limit || 10;
     const offset = (page - 1) * limit;
     let data = { limit, offset, count: 0, items: [] };
-    dispatch({ type: FETCH_RELEASES_REQUEST, data, loading: true });
+    dispatch(FETCH_RELEASES_REQUEST({ data, loading: true }));
 
     try {
       data = await fetchReleases({
@@ -68,10 +69,10 @@ export function fetchReleasesForService(options) {
       });
     } catch(error) {
       if (!quiet) console.error(error); // eslint-disable-line no-console
-      return dispatch({ type: FETCH_RELEASES_ERROR, data, error });
+      return dispatch(FETCH_RELEASES_ERROR({ data, error }));
     }
 
-    return dispatch({ type: FETCH_RELEASES_SUCCESS, data });
+    return dispatch(FETCH_RELEASES_SUCCESS({ data }));
   };
 }
 
@@ -82,7 +83,7 @@ export function fetchLatestDeploymentsByNamespace(options) {
 
     const quiet = options.quiet || false;
     let data = [];
-    dispatch({ type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST, data, loading: true });
+    dispatch(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST({ data, loading: true }));
 
     try {
       data = await fetchLatestDeploymentsByNamespaceForService({
@@ -91,10 +92,10 @@ export function fetchLatestDeploymentsByNamespace(options) {
       });
     } catch(error) {
       if (!quiet) console.error(error); // eslint-disable-line no-console
-      return dispatch({ type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR, data, error });
+      return dispatch(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR({ data, error }));
     }
 
-    return dispatch({ type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS, data });
+    return dispatch(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS({ data }));
   };
 }
 
@@ -127,61 +128,43 @@ const defaultState = {
   }
 };
 
-export default function(oldState, action) {
-  const state = oldState ? oldState : defaultState;
-  switch (action.type) {
-    case FETCH_RELEASES_REQUEST:
-    case FETCH_RELEASES_SUCCESS:
-    case FETCH_RELEASES_ERROR: {
-      return {
-        ...state,
-        releases: {
-          data: {
-            ...action.data,
-            pages: action.data.limit ? Math.ceil(action.data.count / action.data.limit) : 0,
-            page: action.data.limit ? Math.floor(action.data.offset / action.data.limit) + 1 : 0,
-          },
-          meta: {
-            error: action.error,
-            loading: !!action.loading,
-          },
-        },
-      };
-    }
-    case FETCH_DEPLOYMENTS_REQUEST:
-    case FETCH_DEPLOYMENTS_SUCCESS:
-    case FETCH_DEPLOYMENTS_ERROR: {
-      return {
-        ...state,
-        deployments: {
-          data: {
-            ...action.data,
-            pages: action.data.limit ? Math.ceil(action.data.count / action.data.limit) : 0,
-            page: action.data.limit ? Math.floor(action.data.offset / action.data.limit) + 1 : 0,
-          },
-          meta: {
-            error: action.error,
-            loading: !!action.loading,
-          },
-        },
-      };
-    }
-    case FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST:
-    case FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS:
-    case FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR: {
-      return {
-        ...state,
-        latestDeployments: {
-          data: action.data,
-          meta: {
-            error: action.error,
-            loading: !!action.loading,
-          },
-        },
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-}
+export default handleActions({
+  [combineActions(FETCH_RELEASES_REQUEST, FETCH_RELEASES_SUCCESS, FETCH_RELEASES_ERROR)]: (state, { payload }) => ({
+    ...state,
+    releases: {
+      data: {
+        ...payload.data,
+        pages: payload.data.limit ? Math.ceil(payload.data.count / payload.data.limit) : 0,
+        page: payload.data.limit ? Math.floor(payload.data.offset / payload.data.limit) + 1 : 0,
+      },
+      meta: {
+        error: payload.error,
+        loading: !!payload.loading,
+      },
+    },
+  }),
+  [combineActions(FETCH_DEPLOYMENTS_REQUEST, FETCH_DEPLOYMENTS_SUCCESS, FETCH_DEPLOYMENTS_ERROR)]: (state, { payload }) => ({
+    ...state,
+    deployments: {
+      data: {
+        ...payload.data,
+        pages: payload.data.limit ? Math.ceil(payload.data.count / payload.data.limit) : 0,
+        page: payload.data.limit ? Math.floor(payload.data.offset / payload.data.limit) + 1 : 0,
+      },
+      meta: {
+        error: payload.error,
+        loading: !!payload.loading,
+      },
+    },
+  }),
+  [combineActions(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR)]: (state, { payload }) => ({
+    ...state,
+    latestDeployments: {
+      data: payload.data,
+      meta: {
+        error: payload.error,
+        loading: !!payload.loading,
+      },
+    },
+  }),
+}, defaultState);

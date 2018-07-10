@@ -1,14 +1,15 @@
+import { createAction, combineActions, handleActions } from 'redux-actions';
 const actionsPrefix = `KUBERNAUT/ACCOUNTS`;
-export const FETCH_ACCOUNTS_REQUEST = `${actionsPrefix}/FETCH_ACCOUNTS_REQUEST`;
-export const FETCH_ACCOUNTS_SUCCESS = `${actionsPrefix}/FETCH_ACCOUNTS_SUCCESS`;
-export const FETCH_ACCOUNTS_ERROR = `${actionsPrefix}/FETCH_ACCOUNTS_ERROR`;
+export const FETCH_ACCOUNTS_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_REQUEST`);
+export const FETCH_ACCOUNTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_SUCCESS`);
+export const FETCH_ACCOUNTS_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_ERROR`);
 
 export function fetchAccounts(options = { page: 1, limit: 50, quiet: false }) {
   return async (dispatch) => {
     const limit = options.limit;
     const offset = (options.page - 1) * options.limit;
     let data = { limit, offset, count: 0, items: [] };
-    dispatch({ type: FETCH_ACCOUNTS_REQUEST, data, loading: true });
+    dispatch(FETCH_ACCOUNTS_REQUEST({ data, loading: true }));
 
     try {
       const url = `/api/accounts?limit=${limit}&offset=${offset}`;
@@ -17,33 +18,34 @@ export function fetchAccounts(options = { page: 1, limit: 50, quiet: false }) {
       data = await res.json();
     } catch(error) {
       if (options.quiet !== true) console.error(error); // eslint-disable-line no-console
-      return dispatch({ type: FETCH_ACCOUNTS_ERROR, data, error });
+      return dispatch(FETCH_ACCOUNTS_ERROR({ data, error }));
     }
 
-    return dispatch({ type: FETCH_ACCOUNTS_SUCCESS, data });
+    return dispatch(FETCH_ACCOUNTS_SUCCESS({ data }));
   };
 }
 
-export default function(state = { data: { limit: 0, offset: 0, count: 0, pages: 0, page: 0, items: [] }, meta: {} }, action)  {
-  switch (action.type) {
-    case FETCH_ACCOUNTS_REQUEST:
-    case FETCH_ACCOUNTS_SUCCESS:
-    case FETCH_ACCOUNTS_ERROR: {
-      return {
-        ...state,
-        data: {
-          ...action.data,
-          pages: action.data.limit ? Math.ceil(action.data.count / action.data.limit) : 0,
-          page: action.data.limit ? Math.floor(action.data.offset / action.data.limit) + 1 : 0,
-        },
-        meta: {
-          error: action.error,
-          loading: !!action.loading,
-        },
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-}
+export default handleActions({
+  [combineActions(FETCH_ACCOUNTS_REQUEST, FETCH_ACCOUNTS_SUCCESS, FETCH_ACCOUNTS_ERROR)]: (state, { payload }) => ({
+    ...state,
+    data: {
+      ...payload.data,
+      pages: payload.data.limit ? Math.ceil(payload.data.count / payload.data.limit) : 0,
+      page: payload.data.limit ? Math.floor(payload.data.offset / payload.data.limit) + 1 : 0,
+    },
+    meta: {
+      error: payload.error,
+      loading: !!payload.loading,
+    },
+  })
+}, {
+  data: {
+    limit: 0,
+    offset: 0,
+    count: 0,
+    pages: 0,
+    page: 0,
+    items: []
+  },
+  meta: {},
+});

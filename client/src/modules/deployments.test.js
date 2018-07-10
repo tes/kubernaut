@@ -26,7 +26,7 @@ describe('Deployments Actions', () => {
 
       await dispatchDeploymentsActions();
 
-      expectRequest(FETCH_DEPLOYMENTS_REQUEST, { limit: 50, offset: 0, count: 0, items: [] });
+      expectRequest(FETCH_DEPLOYMENTS_REQUEST.toString(), { limit: 50, offset: 0, count: 0, items: [] });
       expectDeploymentsSuccess([1, 2, 3]);
     });
 
@@ -36,7 +36,7 @@ describe('Deployments Actions', () => {
 
       await dispatchDeploymentsActions();
 
-      expectError(FETCH_DEPLOYMENTS_ERROR, '/api/deployments?limit=50&offset=0 returned 500 Internal Server Error');
+      expectError(FETCH_DEPLOYMENTS_ERROR.toString(), '/api/deployments?limit=50&offset=0 returned 500 Internal Server Error');
     });
 
     it('should timeout fetching deployments', async () => {
@@ -47,7 +47,7 @@ describe('Deployments Actions', () => {
 
       await dispatchDeploymentsActions();
 
-      expectError(FETCH_DEPLOYMENTS_ERROR, 'simulate network timeout');
+      expectError(FETCH_DEPLOYMENTS_ERROR.toString(), 'simulate network timeout');
     });
 
     async function dispatchDeploymentsActions(_options) {
@@ -60,26 +60,26 @@ describe('Deployments Actions', () => {
 
     function expectDeploymentsSuccess(deployments) {
       expect(Object.keys(actions[1]).length).toBe(2);
-      expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_SUCCESS);
-      expect(actions[1].data.items).toMatchObject(deployments);
-      expect(actions[1].data.count).toBe(deployments.length);
-      expect(actions[1].data.limit).toBe(50);
-      expect(actions[1].data.offset).toBe(0);
+      expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_SUCCESS.toString());
+      expect(actions[1].payload.data.items).toMatchObject(deployments);
+      expect(actions[1].payload.data.count).toBe(deployments.length);
+      expect(actions[1].payload.data.limit).toBe(50);
+      expect(actions[1].payload.data.offset).toBe(0);
     }
   });
 
   function expectRequest(action, data) {
-    expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(action);
-    expect(actions[0].data).toMatchObject(data);
-    expect(actions[0].loading).toBe(true);
+    expect(Object.keys(actions[0].payload).length).toBe(2);
+    expect(actions[0].payload.data).toMatchObject(data);
+    expect(actions[0].payload.loading).toBe(true);
   }
 
   function expectError(action, msg) {
-    expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(action);
-    expect(actions[1].data).toMatchObject({});
-    expect(actions[1].error.message).toBe(msg);
+    expect(Object.keys(actions[1].payload).length).toBe(2);
+    expect(actions[1].payload.data).toMatchObject({});
+    expect(actions[1].payload.error.message).toBe(msg);
   }
 
 });
@@ -87,7 +87,7 @@ describe('Deployments Actions', () => {
 describe('Deployments Reducer', () => {
 
   it('should indicate when deployments are loading', () => {
-    const state = reduce(undefined, { type: FETCH_DEPLOYMENTS_REQUEST, loading: true, data: {} });
+    const state = reduce(undefined, FETCH_DEPLOYMENTS_REQUEST({ loading: true, data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: true });
   });
@@ -99,7 +99,7 @@ describe('Deployments Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENTS_SUCCESS, data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] }});
+    const state = reduce(initialState, FETCH_DEPLOYMENTS_SUCCESS({ data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] }}));
     expect(state.data.limit).toBe(50);
     expect(state.data.offset).toBe(0);
     expect(state.data.count).toBe(3);
@@ -114,7 +114,7 @@ describe('Deployments Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENTS_ERROR, error: 'Oh Noes', data: {} });
+    const state = reduce(initialState, FETCH_DEPLOYMENTS_ERROR({ error: 'Oh Noes', data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });

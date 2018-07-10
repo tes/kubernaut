@@ -56,7 +56,7 @@ describe('Service Actions', () => {
 
     await dispatchDeploymentsActions();
 
-    expectRequest(FETCH_DEPLOYMENTS_REQUEST, { limit: 50, offset: 0, count: 0, items: [] });
+    expectRequest(FETCH_DEPLOYMENTS_REQUEST.toString(), { limit: 50, offset: 0, count: 0, items: [] });
     expectDeploymentsSuccess([1, 2, 3]);
   });
 
@@ -65,7 +65,7 @@ describe('Service Actions', () => {
 
     await dispatchDeploymentsActions();
 
-    expectError(FETCH_DEPLOYMENTS_ERROR, '/api/deployments?limit=50&offset=0&service=bob&registry=default& returned 500 Internal Server Error');
+    expectError(FETCH_DEPLOYMENTS_ERROR.toString(), '/api/deployments?limit=50&offset=0&service=bob&registry=default& returned 500 Internal Server Error');
   });
 
   it('should fetch latest deployments', async () => {
@@ -73,7 +73,7 @@ describe('Service Actions', () => {
     fetchMock.mock('/api/deployments/latest-by-namespace/default/hello-world', [data]);
 
     await dispatchLatestDeploymentsActions();
-    expectRequest(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST, []);
+    expectRequest(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST.toString(), []);
     expectLatestDeploymentsSuccess([data]);
   });
 
@@ -82,7 +82,7 @@ describe('Service Actions', () => {
 
     await dispatchLatestDeploymentsActions();
 
-    expectError(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR, '/api/deployments/latest-by-namespace/default/hello-world returned 500 Internal Server Error', []);
+    expectError(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR.toString(), '/api/deployments/latest-by-namespace/default/hello-world returned 500 Internal Server Error', []);
   });
 
   async function dispatchReleasesActions(_options) {
@@ -94,26 +94,26 @@ describe('Service Actions', () => {
   }
 
   function expectReleasesRequest() {
-    expect(Object.keys(actions[0]).length).toBe(3);
-    expect(actions[0].type).toBe(FETCH_RELEASES_REQUEST);
-    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[0].loading).toBe(true);
+    expect(actions[0].type).toBe(FETCH_RELEASES_REQUEST.toString());
+    expect(Object.keys(actions[0].payload).length).toBe(2);
+    expect(actions[0].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
+    expect(actions[0].payload.loading).toBe(true);
   }
 
   function expectReleasesSuccess(releases) {
-    expect(Object.keys(actions[1]).length).toBe(2);
-    expect(actions[1].type).toBe(FETCH_RELEASES_SUCCESS);
-    expect(actions[1].data.items).toMatchObject(releases);
-    expect(actions[1].data.count).toBe(releases.length);
-    expect(actions[1].data.limit).toBe(50);
-    expect(actions[1].data.offset).toBe(0);
+    expect(actions[1].type).toBe(FETCH_RELEASES_SUCCESS.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(1);
+    expect(actions[1].payload.data.items).toMatchObject(releases);
+    expect(actions[1].payload.data.count).toBe(releases.length);
+    expect(actions[1].payload.data.limit).toBe(50);
+    expect(actions[1].payload.data.offset).toBe(0);
   }
 
   function expectReleasesError(msg) {
-    expect(Object.keys(actions[1]).length).toBe(3);
-    expect(actions[1].type).toBe(FETCH_RELEASES_ERROR);
-    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[1].error.message).toBe(msg);
+    expect(actions[1].type).toBe(FETCH_RELEASES_ERROR.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(2);
+    expect(actions[1].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
+    expect(actions[1].payload.error.message).toBe(msg);
   }
 
   async function dispatchDeploymentsActions(_options) {
@@ -125,12 +125,12 @@ describe('Service Actions', () => {
   }
 
   function expectDeploymentsSuccess(deployments) {
-    expect(Object.keys(actions[1]).length).toBe(2);
-    expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_SUCCESS);
-    expect(actions[1].data.items).toMatchObject(deployments);
-    expect(actions[1].data.count).toBe(deployments.length);
-    expect(actions[1].data.limit).toBe(50);
-    expect(actions[1].data.offset).toBe(0);
+    expect(actions[1].type).toBe(FETCH_DEPLOYMENTS_SUCCESS.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(1);
+    expect(actions[1].payload.data.items).toMatchObject(deployments);
+    expect(actions[1].payload.data.count).toBe(deployments.length);
+    expect(actions[1].payload.data.limit).toBe(50);
+    expect(actions[1].payload.data.offset).toBe(0);
   }
 
   async function dispatchLatestDeploymentsActions(_options) {
@@ -142,23 +142,23 @@ describe('Service Actions', () => {
   }
 
   function expectLatestDeploymentsSuccess(data) {
-    expect(Object.keys(actions[1]).length).toBe(2);
-    expect(actions[1].type).toBe(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS);
-    expect(actions[1].data).toMatchObject(data);
+    expect(actions[1].type).toBe(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(1);
+    expect(actions[1].payload.data).toMatchObject(data);
   }
 
   function expectRequest(action, data) {
-    expect(Object.keys(actions[0]).length).toBe(3);
     expect(actions[0].type).toBe(action);
-    expect(actions[0].data).toMatchObject(data);
-    expect(actions[0].loading).toBe(true);
+    expect(Object.keys(actions[0].payload).length).toBe(2);
+    expect(actions[0].payload.data).toMatchObject(data);
+    expect(actions[0].payload.loading).toBe(true);
   }
 
   function expectError(action, msg, data = {}) {
-    expect(Object.keys(actions[1]).length).toBe(3);
     expect(actions[1].type).toBe(action);
-    expect(actions[1].data).toMatchObject(data);
-    expect(actions[1].error.message).toBe(msg);
+    expect(Object.keys(actions[1].payload).length).toBe(2);
+    expect(actions[1].payload.data).toMatchObject(data);
+    expect(actions[1].payload.error.message).toBe(msg);
   }
 
 });
@@ -166,7 +166,7 @@ describe('Service Actions', () => {
 describe('Service Reducer', () => {
 
   it('should indicate when releases are loading', () => {
-    const state = reduce(undefined, { type: FETCH_RELEASES_REQUEST, loading: true, data: {} });
+    const state = reduce(undefined, FETCH_RELEASES_REQUEST({ loading: true, data: {} }));
     expect(state.releases.data).toMatchObject({});
     expect(state.releases.meta).toMatchObject({ loading: true });
   });
@@ -180,7 +180,7 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_RELEASES_SUCCESS, data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] } });
+    const state = reduce(initialState, FETCH_RELEASES_SUCCESS({ data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] } }));
     expect(state.releases.data.limit).toBe(50);
     expect(state.releases.data.offset).toBe(0);
     expect(state.releases.data.count).toBe(3);
@@ -197,13 +197,13 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_RELEASES_ERROR, error: 'Oh Noes', data: {} });
+    const state = reduce(initialState, FETCH_RELEASES_ERROR({ error: 'Oh Noes', data: {} }));
     expect(state.releases.data).toMatchObject({});
     expect(state.releases.meta).toMatchObject({ error: 'Oh Noes' });
   });
 
   it('should indicate when deployments are loading', () => {
-    const state = reduce(undefined, { type: FETCH_DEPLOYMENTS_REQUEST, loading: true, data: {} });
+    const state = reduce(undefined, FETCH_DEPLOYMENTS_REQUEST({ loading: true, data: {} }));
     expect(state.deployments.data).toMatchObject({});
     expect(state.deployments.meta).toMatchObject({ loading: true });
   });
@@ -217,7 +217,7 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENTS_SUCCESS, data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] }});
+    const state = reduce(initialState, FETCH_DEPLOYMENTS_SUCCESS({ data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] }}));
     expect(state.deployments.data.limit).toBe(50);
     expect(state.deployments.data.offset).toBe(0);
     expect(state.deployments.data.count).toBe(3);
@@ -234,13 +234,13 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_DEPLOYMENTS_ERROR, error: 'Oh Noes', data: {} });
+    const state = reduce(initialState, FETCH_DEPLOYMENTS_ERROR({ error: 'Oh Noes', data: {} }));
     expect(state.deployments.data).toMatchObject({});
     expect(state.deployments.meta).toMatchObject({ error: 'Oh Noes' });
   });
 
   it('should indicate when latest deployments are loading', () => {
-    const state = reduce(undefined, { type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST, loading: true, data: [] });
+    const state = reduce(undefined, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST({ loading: true, data: [] }));
     expect(state.latestDeployments.data).toMatchObject([]);
     expect(state.latestDeployments.meta).toMatchObject({ loading: true });
   });
@@ -254,7 +254,7 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS, data: [{ a:1 }] });
+    const state = reduce(initialState, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS({ data: [{ a:1 }] }));
     expect(state.latestDeployments.data).toMatchObject([{ a: 1}]);
     expect(state.latestDeployments.meta).toMatchObject({});
   });
@@ -268,7 +268,7 @@ describe('Service Reducer', () => {
         },
       },
     };
-    const state = reduce(initialState, { type: FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR, error: 'Oh Noes', data: [] });
+    const state = reduce(initialState, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR({ error: 'Oh Noes', data: [] }));
     expect(state.latestDeployments.data).toMatchObject([]);
     expect(state.latestDeployments.meta).toMatchObject({ error: 'Oh Noes' });
   });

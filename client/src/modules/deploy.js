@@ -1,3 +1,4 @@
+import { createAction, handleActions } from 'redux-actions';
 import { SubmissionError } from 'redux-form';
 import { push } from 'connected-react-router';
 import {
@@ -8,40 +9,39 @@ import {
 } from '../lib/api';
 
 const actionsPrefix = 'KUBERNAUT/DEPLOY';
-export const INITIALISE = `${actionsPrefix}/INITIALISE`;
-export const INITIALISE_ERROR = `${actionsPrefix}/INITIALISE_ERROR`;
-export const SET_LOADING = `${actionsPrefix}/SET_LOADING`;
-export const CLEAR_LOADING = `${actionsPrefix}/CLEAR_LOADING`;
-export const SET_REGISTRIES = `${actionsPrefix}/SET_REGISTRIES`;
-export const SET_NAMESPACES = `${actionsPrefix}/SET_NAMESPACES`;
+export const INITIALISE = createAction(`${actionsPrefix}/INITIALISE`);
+export const INITIALISE_ERROR = createAction(`${actionsPrefix}/INITIALISE_ERROR`);
+export const SET_LOADING = createAction(`${actionsPrefix}/SET_LOADING`);
+export const CLEAR_LOADING = createAction(`${actionsPrefix}/CLEAR_LOADING`);
+export const SET_REGISTRIES = createAction(`${actionsPrefix}/SET_REGISTRIES`);
+export const SET_NAMESPACES = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 
 export function initialise(options = {}) {
   return async (dispatch) => {
-    dispatch({ type: INITIALISE });
+    dispatch(INITIALISE());
     try {
       await dispatch(fetchRegistries());
       await dispatch(fetchNamespaces());
     } catch (error) {
       if (!options.quiet) console.error(error); // eslint-disable-line no-console
-      dispatch({ type: INITIALISE_ERROR, error });
+      dispatch(INITIALISE_ERROR({ error }));
     }
   };
 }
 
 export function fetchRegistries() {
   return async (dispatch) => {
-    dispatch({ type: SET_LOADING });
+    dispatch(SET_LOADING());
     let data;
     try {
       data = await getRegistries();
-      if (!data.count) return dispatch({ type: CLEAR_LOADING });
-      dispatch({
-        type: SET_REGISTRIES,
+      if (!data.count) return dispatch(CLEAR_LOADING());
+      dispatch(SET_REGISTRIES({
         data: data.items.map(({ name }) => (name)),
-      });
-      dispatch({ type: CLEAR_LOADING });
+      }));
+      dispatch(CLEAR_LOADING());
     } catch (e) {
-      dispatch({ type: CLEAR_LOADING });
+      dispatch(CLEAR_LOADING());
       throw e;
     }
   };
@@ -54,10 +54,9 @@ export function fetchNamespaces() {
       data = await getNamespaces();
       if (!data.count) return;
 
-      dispatch({
-        type: SET_NAMESPACES,
+      dispatch(SET_NAMESPACES({
         data: data.items.map(({ name, cluster }) => ({ name, cluster })),
-      });
+      }));
     } catch (e) {
       throw e;
     }
@@ -131,52 +130,16 @@ const defaultState = {
   namespaces: [],
 };
 
-export default function(oldState, action) {
-  const state = oldState ? oldState : defaultState;
-  switch (action.type) {
-    case INITIALISE:
-      return {
-        ...defaultState
-      };
-
-    case INITIALISE_ERROR:
-      return {
-        ...defaultState,
-        meta: {
-          error: action.error,
-        }
-      };
-
-    case SET_LOADING:
-      return {
-        ...state,
-        meta: {
-          loading: true,
-        }
-      };
-
-      case CLEAR_LOADING:
-        return {
-          ...state,
-          meta: {
-            loading: false,
-          }
-        };
-
-      case SET_REGISTRIES:
-        return {
-          ...state,
-          registries: action.data,
-        };
-
-      case SET_NAMESPACES:
-        return {
-          ...state,
-          namespaces: action.data,
-        };
-
-    default: {
-      return state;
-    }
-  }
-}
+export default handleActions({
+  [INITIALISE]: () => ({ ...defaultState }),
+  [INITIALISE_ERROR]: (state, { payload }) => ({
+    ...defaultState,
+    meta: {
+      error: payload.error,
+    },
+  }),
+  [SET_LOADING]: (state) => ({ ...state, meta: { loading: true } }),
+  [CLEAR_LOADING]: (state) => ({ ...state, meta: { loading: false } }),
+  [SET_REGISTRIES]: (state, { payload }) => ({ ...state, registries: payload.data }),
+  [SET_NAMESPACES]: (state, { payload }) => ({ ...state, namespaces: payload.data }),
+}, defaultState);

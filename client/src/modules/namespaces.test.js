@@ -66,26 +66,26 @@ describe('Namespace Actions', () => {
   }
 
   function expectNamespacesRequest() {
-    expect(Object.keys(actions[0]).length).toBe(3);
-    expect(actions[0].type).toBe(FETCH_NAMESPACES_REQUEST);
-    expect(actions[0].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[0].loading).toBe(true);
+    expect(actions[0].type).toBe(FETCH_NAMESPACES_REQUEST.toString());
+    expect(Object.keys(actions[0].payload).length).toBe(2);
+    expect(actions[0].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
+    expect(actions[0].payload.loading).toBe(true);
   }
 
   function expectNamespacesSuccess(namespaces) {
-    expect(Object.keys(actions[1]).length).toBe(2);
-    expect(actions[1].type).toBe(FETCH_NAMESPACES_SUCCESS);
-    expect(actions[1].data.items).toMatchObject(namespaces);
-    expect(actions[1].data.count).toBe(namespaces.length);
-    expect(actions[1].data.limit).toBe(50);
-    expect(actions[1].data.offset).toBe(0);
+    expect(actions[1].type).toBe(FETCH_NAMESPACES_SUCCESS.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(1);
+    expect(actions[1].payload.data.items).toMatchObject(namespaces);
+    expect(actions[1].payload.data.count).toBe(namespaces.length);
+    expect(actions[1].payload.data.limit).toBe(50);
+    expect(actions[1].payload.data.offset).toBe(0);
   }
 
   function expectNamespacesError(msg) {
-    expect(Object.keys(actions[1]).length).toBe(3);
-    expect(actions[1].type).toBe(FETCH_NAMESPACES_ERROR);
-    expect(actions[1].data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[1].error.message).toBe(msg);
+    expect(actions[1].type).toBe(FETCH_NAMESPACES_ERROR.toString());
+    expect(Object.keys(actions[1].payload).length).toBe(2);
+    expect(actions[1].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
+    expect(actions[1].payload.error.message).toBe(msg);
   }
 
 });
@@ -93,7 +93,7 @@ describe('Namespace Actions', () => {
 describe('Namespaces Reducer', () => {
 
   it('should indicate when namespaces are loading', () => {
-    const state = reduce(undefined, { type: FETCH_NAMESPACES_REQUEST, loading: true, data: {} });
+    const state = reduce(undefined, FETCH_NAMESPACES_REQUEST({ loading: true, data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: true });
   });
@@ -105,7 +105,7 @@ describe('Namespaces Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_NAMESPACES_SUCCESS, data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] }});
+    const state = reduce(initialState, FETCH_NAMESPACES_SUCCESS({ data: { limit: 50, offset: 0, count: 3, items: [1, 2, 3] } }));
     expect(state.data.limit).toBe(50);
     expect(state.data.offset).toBe(0);
     expect(state.data.count).toBe(3);
@@ -120,7 +120,7 @@ describe('Namespaces Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, { type: FETCH_NAMESPACES_ERROR, error: 'Oh Noes', data: {} });
+    const state = reduce(initialState, FETCH_NAMESPACES_ERROR({ error: 'Oh Noes', data: {} }));
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
