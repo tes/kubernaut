@@ -39,7 +39,7 @@ export const ClusterLink = ({ cluster }) => {
 export const NamespaceLink = ({ namespace }) => {
   // TODO Replace with Link when page availalbe
   return (
-    <span>{namespace.name}</span>
+    <Link to={`/namespaces/${namespace.id}`}><span>{namespace.name}</span></Link>
   );
 };
 

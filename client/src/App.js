@@ -3,10 +3,10 @@ import React, { Component } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router';
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
+import createSagaMiddleware from 'redux-saga';
 import { Provider } from 'react-redux';
-import { reducer as formReducer } from 'redux-form';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { parse as parseQuery } from 'query-string';
 import 'bootstrap';
@@ -15,6 +15,7 @@ import 'bootstrap';
 import Header from './components/Header';
 import RegistriesPage from './components/RegistriesPage';
 import NamespacesPage from './components/NamespacesPage';
+import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import AccountsPage from './components/AccountsPage';
 import ReleasesPage from './components/ReleasesPage';
 import DeploymentsPage from './components/DeploymentsPage';
@@ -24,14 +25,9 @@ import DeployPage from './components/DeployPage';
 import HomePage from './components/HomePage';
 
 // Reducers
-import registries from './modules/registries';
-import namespaces from './modules/namespaces';
-import accounts from './modules/accounts';
-import releases from './modules/releases';
-import deployments from './modules/deployments';
-import deployment from './modules/deployment';
-import service from './modules/service';
-import deploy from './modules/deploy';
+import rootReducer from './modules';
+
+import sagas from './sagas';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
@@ -51,25 +47,17 @@ window.jQuery = window.$ = require('jquery');
 
 const history = createBrowserHistory();
 const initialState = {};
-const rootReducer = combineReducers({
-  form: formReducer,
-  registries,
-  namespaces,
-  accounts,
-  releases,
-  deployments,
-  deployment,
-  service,
-  deploy,
-});
+
+const sagaMiddleware = createSagaMiddleware();
 
 const store = createStore(
   connectRouter(history)(rootReducer),
   initialState,
   composeWithDevTools(
-    applyMiddleware(routerMiddleware(history), thunk)
+    applyMiddleware(routerMiddleware(history), thunk, sagaMiddleware)
   )
 );
+sagaMiddleware.run(sagas);
 
 
 class App extends Component {
@@ -90,6 +78,14 @@ class App extends Component {
                   exact
                   path='/namespaces'
                   render={() => <NamespacesPage /> }
+                />
+                <Route
+                  exact
+                  path='/namespaces/:namespaceId'
+                  render={({ match }) =>
+                    <NamespaceDetailsPage
+                      namespaceId={match.params.namespaceId}
+                    /> }
                 />
                 <Route
                   exact

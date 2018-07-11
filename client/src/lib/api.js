@@ -1,5 +1,5 @@
-const makeRequest = (url, options) =>
-  fetch(url, Object.assign({}, {
+const makeRequest = async (url, options = {}) => {
+  const res = await fetch(url, Object.assign({}, {
     credentials: 'same-origin',
     timeout: 5000,
     method: 'GET',
@@ -7,6 +7,10 @@ const makeRequest = (url, options) =>
       'content-type': 'application/json',
     }
   }, options));
+  if (options.returnResponse) return res;
+  if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+  return await res.json();
+};
 
 const makeQueryString = (values) => {
   return Object.keys(values).reduce((acc, key) => {
@@ -15,8 +19,7 @@ const makeQueryString = (values) => {
   }, '');
 };
 
-export const fetchReleases = async ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
-
+export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
   const qs = makeQueryString({
     limit,
     offset,
@@ -24,20 +27,10 @@ export const fetchReleases = async ({ limit = 20, offset = 0, service= '', regis
     registry,
     version,
   });
-
-  const url = `/api/releases?${qs}`;
-
-  try {
-    const res = await makeRequest(url);
-    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(`/api/releases?${qs}`);
 };
 
-export const fetchDeployments = async ({ limit = 20, offset = 0, service= '', registry = '' }) => {
-
+export const fetchDeployments = ({ limit = 20, offset = 0, service= '', registry = '' }) => {
   const qs = makeQueryString({
     limit,
     offset,
@@ -45,49 +38,16 @@ export const fetchDeployments = async ({ limit = 20, offset = 0, service= '', re
     registry,
   });
 
-  const url = `/api/deployments?${qs}`;
-
-  try {
-    const res = await makeRequest(url);
-    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(`/api/deployments?${qs}`);
 };
 
-export const getRegistries = async () => {
-  const url = '/api/registries';
-  try {
-    const res = await makeRequest(url);
-    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
-};
+export const getRegistries = () => makeRequest('/api/registries');
 
-export const getNamespaces = async () => {
-  const url = '/api/namespaces';
-  try {
-    const res = await makeRequest(url);
-    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
-};
+export const getNamespaces = () => makeRequest('/api/namespaces');
 
-export const fetchLatestDeploymentsByNamespaceForService = async ({ registry, service }) => {
-  const url = `/api/deployments/latest-by-namespace/${registry}/${service}`;
-  try {
-    const res = await makeRequest(url);
-    if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
-};
+export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
+
+export const fetchLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
 export const makeDeployment = async (data, options = {}) => {
   const wait = options.wait;
@@ -98,6 +58,7 @@ export const makeDeployment = async (data, options = {}) => {
   try {
     const res = await makeRequest(url, {
       method: 'POST',
+      returnResponse: true,
       body: JSON.stringify(data),
     });
 
