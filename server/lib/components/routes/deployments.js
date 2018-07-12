@@ -4,6 +4,7 @@ import Boom from 'boom';
 import EventEmitter from 'events';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 import { safeLoadAll as yaml2json } from 'js-yaml';
+import _intersection from 'lodash.intersection';
 
 export default function(options = {}) {
 
@@ -12,12 +13,13 @@ export default function(options = {}) {
     app.use('/api/deployments', auth('api'));
 
     app.get('/api/deployments', async (req, res, next) => {
+      const namespaceIds = req.user.listNamespaceIdsWithPermission('deployments-read');
       try {
         const criteria = ['registry', 'service', 'version'].reduce((criteria, name) => {
           if (!req.query[name]) return criteria;
           return { ...criteria, [name]: req.query[name] };
         }, {
-          namespaces: req.user.listNamespaceIdsWithPermission('deployments-read'),
+          namespaces: req.query.namespace ? _intersection(namespaceIds, [].concat(req.query.namespace)) : namespaceIds,
         });
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;

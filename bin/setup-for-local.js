@@ -40,22 +40,46 @@ request.get({
     headers,
     json: true,
   }).then((response) => {
-    if (response.items && response.items.length !== 0 && response.items.find(({ name, cluster: { id } }) => name === 'default' && id === cluster.id)) {
-      return response.items.find(({ name, cluster: { id } }) => name === 'default' && id === cluster.id);
-    }
+    return Promise.all([
+      Promise.resolve().then(() => {
+        if (response.items && response.items.length !== 0 && response.items.find(({ name, cluster: { id } }) => name === 'default' && id === cluster.id)) {
+          return response.items.find(({ name, cluster: { id } }) => name === 'default' && id === cluster.id);
+        }
 
-    return request.post({
-      url: `${rootUrl}/namespaces`,
-      headers,
-      json: true,
-      body: {
-        name: 'default',
-        cluster: cluster.name,
-        context: 'docker-for-desktop'
-      },
-    }).then((postResponse) => {
-      return postResponse;
-    });
+        return request.post({
+          url: `${rootUrl}/namespaces`,
+          headers,
+          json: true,
+          body: {
+            name: 'default',
+            cluster: cluster.name,
+            context: 'docker-for-desktop'
+          },
+        }).then((postResponse) => {
+          return postResponse;
+        });
+
+      }),
+      Promise.resolve().then(() => {
+        if (response.items && response.items.length !== 0 && response.items.find(({ name, cluster: { id } }) => name === 'another' && id === cluster.id)) {
+          return response.items.find(({ name, cluster: { id } }) => name === 'another' && id === cluster.id);
+        }
+
+        return request.post({
+          url: `${rootUrl}/namespaces`,
+          headers,
+          json: true,
+          body: {
+            name: 'another',
+            cluster: cluster.name,
+            context: 'docker-for-desktop'
+          },
+        }).then((postResponse) => {
+          return postResponse;
+        });
+
+      }),
+    ]);
   });
 })
 .then(() => process.exit(0))

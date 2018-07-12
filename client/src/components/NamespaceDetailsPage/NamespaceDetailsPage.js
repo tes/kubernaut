@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Badge } from 'reactstrap';
-
 import PropTypes from 'prop-types';
+import { Badge, Row } from 'reactstrap';
+import DeploymentsTable from '../DeploymentsTable';
 
 class NamespaceDetailsPage extends Component {
   componentDidMount() {
-    this.props.fetchNamespace(this.props.namespaceId);
+    this.props.fetchNamespacePageData(this.props.namespaceId);
   }
 
   render() {
@@ -13,7 +13,7 @@ class NamespaceDetailsPage extends Component {
 
     const namespaceAttributes = [];
     for (const attribute in namespace.attributes) {
-      namespaceAttributes.push(<dt key={attribute} className="col-md-3">{attribute}</dt>);
+      namespaceAttributes.push(<dt key={attribute} className="col-md-3">{attribute}:</dt>);
       namespaceAttributes.push(<dd
         key={`${attribute}-${namespace.attributes[attribute]}`}
         className="col-md-9"
@@ -25,21 +25,30 @@ class NamespaceDetailsPage extends Component {
 
     return (
       <div className="container">
-        <div className="row">
+        <Row>
           <h4>{headingBadge}</h4>
-        </div>
+        </Row>
 
         <dl className="row">
-          <dt className="col-md-3">Context</dt>
+          <dt className="col-md-3">Context:</dt>
           <dd className="col-md-9">{namespace.context}</dd>
 
-          <dt className="col-md-3">Attributes</dt>
+          <dt className="col-md-3">Attributes:</dt>
           <dd className="col-md-9">
             <dl className="row">
               {namespaceAttributes}
             </dl>
           </dd>
         </dl>
+
+        <Row>
+          <h5>Deployments for this namespace:</h5>
+          <DeploymentsTable
+            deployments={this.props.deployments.data}
+            loading={this.props.deployments.meta.loading}
+            error={this.props.deployments.meta.error}
+          />
+        </Row>
       </div>
     );
   }
@@ -47,6 +56,8 @@ class NamespaceDetailsPage extends Component {
 
 NamespaceDetailsPage.propTypes = {
   namespaceId: PropTypes.string.isRequired,
+  namespace: PropTypes.object.isRequired,
+  deployments: PropTypes.object.isRequired,
 };
 
 export default NamespaceDetailsPage;

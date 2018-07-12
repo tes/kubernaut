@@ -30,12 +30,13 @@ export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = 
   return makeRequest(`/api/releases?${qs}`);
 };
 
-export const fetchDeployments = ({ limit = 20, offset = 0, service= '', registry = '' }) => {
+export const fetchDeployments = ({ limit = 20, offset = 0, service= '', registry = '', namespace = '' }) => {
   const qs = makeQueryString({
     limit,
     offset,
     service,
     registry,
+    namespace,
   });
 
   return makeRequest(`/api/deployments?${qs}`);

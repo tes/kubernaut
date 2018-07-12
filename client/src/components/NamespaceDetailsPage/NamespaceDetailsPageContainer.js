@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
-import { fetchNamespace } from '../../modules/namespace';
+import { fetchNamespacePageData } from '../../modules/namespace';
 import NamespaceDetailsPage from './NamespaceDetailsPage';
 
 export default connect((state, { namespaceId }) => ({
   namespaceId,
-  namespace: state.namespace,
+  namespace: state.namespace.namespace,
+  deployments: state.namespace.deployments,
 }),{
-  fetchNamespace,
+  fetchNamespacePageData,
 })(NamespaceDetailsPage);
