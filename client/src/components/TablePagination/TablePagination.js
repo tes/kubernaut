@@ -11,7 +11,7 @@ const TablePagination = ({ pages, page, limit, fetchContent }) => {
   const items = Array(pages).fill().map((_, i) =>
     <PaginationItem
       key={i}
-      onClick={() => onPageSelect(i + 1)}
+      onClick={(e) => {e.preventDefault(); onPageSelect(i + 1);}}
       active={i + 1 === page}
     >
       <PaginationLink href="#">{i + 1}</PaginationLink>

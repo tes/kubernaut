@@ -5,7 +5,7 @@ import DeploymentsTable from '../DeploymentsTable';
 
 class NamespaceDetailsPage extends Component {
   componentDidMount() {
-    this.props.fetchNamespacePageData(this.props.namespaceId);
+    this.props.fetchNamespacePageData({id: this.props.namespaceId });
   }
 
   render() {
@@ -47,6 +47,12 @@ class NamespaceDetailsPage extends Component {
             deployments={this.props.deployments.data}
             loading={this.props.deployments.meta.loading}
             error={this.props.deployments.meta.error}
+            fetchDeployments={(options) => {
+              this.props.fetchDeploymentsPagination({
+                ...options,
+                namespace: this.props.namespaceId,
+              });
+            }}
           />
         </Row>
       </div>

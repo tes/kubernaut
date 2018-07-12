@@ -1,6 +1,7 @@
 import { createAction, handleActions } from 'redux-actions';
 const actionsPrefix = 'KUBERNAUT/NAMESPACE';
 export const fetchNamespacePageData = createAction(`${actionsPrefix}/FETCH_NAMESPACE_PAGE_DATA`);
+export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);
 
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
@@ -20,7 +21,14 @@ const defaultState = {
   },
   deployments: {
     meta: {},
-    data: {},
+    data: {
+      limit: 0,
+      offset: 0,
+      count: 0,
+      pages: 0,
+      page: 0,
+      items: [],
+    },
   },
 };
 
