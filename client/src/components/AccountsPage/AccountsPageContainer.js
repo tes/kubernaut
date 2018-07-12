@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchAccounts } from '../../modules/accounts';
+import { fetchAccountsPagination } from '../../modules/accounts';
 
 import AccountsPage from './AccountsPage';
 
@@ -13,7 +13,7 @@ function mapStateToProps(state, props) {
 }
 
 const mapDispatchToProps = {
-  fetchAccounts,
+  fetchAccountsPagination,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AccountsPage);

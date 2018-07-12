@@ -19,6 +19,12 @@ const makeQueryString = (values) => {
   }, '');
 };
 
+const computePagination = result => ({
+  ...result,
+  pages: result.limit ? Math.ceil(result.count / result.limit) : 0,
+  page: result.limit ? Math.floor(result.offset / result.limit) + 1 : 0,
+});
+
 export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
   const qs = makeQueryString({
     limit,
@@ -39,12 +45,16 @@ export const fetchDeployments = ({ limit = 20, offset = 0, service= '', registry
     namespace,
   });
 
-  return makeRequest(`/api/deployments?${qs}`)
-    .then(result => ({
-      ...result,
-      pages: result.limit ? Math.ceil(result.count / result.limit) : 0,
-      page: result.limit ? Math.floor(result.offset / result.limit) + 1 : 0,
-    }));
+  return makeRequest(`/api/deployments?${qs}`).then(computePagination);
+};
+
+export const getAccounts = ({ limit = 20, offset = 0 }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/accounts?${qs}`).then(computePagination);
 };
 
 export const getRegistries = () => makeRequest('/api/registries');

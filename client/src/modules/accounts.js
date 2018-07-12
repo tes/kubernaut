@@ -1,5 +1,6 @@
-import { createAction, combineActions, handleActions } from 'redux-actions';
+import { createAction, handleActions } from 'redux-actions';
 const actionsPrefix = `KUBERNAUT/ACCOUNTS`;
+export const fetchAccountsPagination = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_PAGINATION`);
 export const FETCH_ACCOUNTS_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_REQUEST`);
 export const FETCH_ACCOUNTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_SUCCESS`);
 export const FETCH_ACCOUNTS_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_ERROR`);
@@ -25,27 +26,37 @@ export function fetchAccounts(options = { page: 1, limit: 50, quiet: false }) {
   };
 }
 
-export default handleActions({
-  [combineActions(FETCH_ACCOUNTS_REQUEST, FETCH_ACCOUNTS_SUCCESS, FETCH_ACCOUNTS_ERROR)]: (state, { payload }) => ({
-    ...state,
-    data: {
-      ...payload.data,
-      pages: payload.data.limit ? Math.ceil(payload.data.count / payload.data.limit) : 0,
-      page: payload.data.limit ? Math.floor(payload.data.offset / payload.data.limit) + 1 : 0,
-    },
-    meta: {
-      error: payload.error,
-      loading: !!payload.loading,
-    },
-  })
-}, {
+const defaultState = {
   data: {
     limit: 0,
     offset: 0,
     count: 0,
     pages: 0,
     page: 0,
-    items: []
+    items: [],
   },
   meta: {},
-});
+};
+
+export default handleActions({
+  [FETCH_ACCOUNTS_REQUEST]: () => ({
+    ...defaultState,
+    meta: {
+      loading: true,
+    },
+  }),
+  [FETCH_ACCOUNTS_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    data: payload.data,
+    meta: {
+      loading: false,
+    },
+  }),
+  [FETCH_ACCOUNTS_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      error: payload.error,
+      loading: false,
+    },
+  }),
+}, defaultState);

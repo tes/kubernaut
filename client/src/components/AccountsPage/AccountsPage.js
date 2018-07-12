@@ -6,16 +6,16 @@ import AccountsTable from '../AccountsTable';
 class AccountsPage extends Component {
 
   componentDidMount() {
-    this.props.fetchAccounts();
+    this.props.fetchAccountsPagination();
   }
 
   render() {
-    const { accounts, fetchAccounts } = this.props;
+    const { accounts, fetchAccountsPagination } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <AccountsTable accounts={accounts.data} loading={accounts.meta.loading} error={accounts.meta.error} fetchAccounts={fetchAccounts} />
+          <AccountsTable accounts={accounts.data} loading={accounts.meta.loading} error={accounts.meta.error} fetchAccounts={fetchAccountsPagination} />
         </div>
       </div>
     );
