@@ -57,7 +57,7 @@ export const getAccounts = ({ limit = 20, offset = 0 }) => {
   return makeRequest(`/api/accounts?${qs}`).then(computePagination);
 };
 
-export const getRegistries = () => makeRequest('/api/registries');
+export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 

@@ -6,16 +6,16 @@ import RegistriesTable from '../RegistriesTable';
 class RegistriesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchRegistries();
+    this.props.fetchRegistriesPagination();
   }
 
   render() {
-    const { registries, fetchRegistries } = this.props;
+    const { registries, fetchRegistriesPagination } = this.props;
 
     return (
       <div className='row'>
         <div className='col-sm'>
-          <RegistriesTable registries={registries.data} loading={registries.meta.loading} error={registries.meta.error} fetchRegistries={fetchRegistries} />
+          <RegistriesTable registries={registries.data} loading={registries.meta.loading} error={registries.meta.error} fetchRegistries={fetchRegistriesPagination} />
         </div>
       </div>
     );

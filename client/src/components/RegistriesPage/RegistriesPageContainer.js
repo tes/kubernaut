@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchRegistries } from '../../modules/registries';
+import { fetchRegistriesPagination } from '../../modules/registries';
 
 import RegistriesPage from './RegistriesPage';
 
@@ -13,7 +13,7 @@ function mapStateToProps(state, props) {
 }
 
 const mapDispatchToProps = {
-  fetchRegistries,
+  fetchRegistriesPagination,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegistriesPage);
