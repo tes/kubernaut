@@ -6,6 +6,7 @@ import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-reac
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import createSagaMiddleware from 'redux-saga';
+import formActionSaga from 'redux-form-saga';
 import { Provider } from 'react-redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { parse as parseQuery } from 'query-string';
@@ -58,6 +59,7 @@ const store = createStore(
   )
 );
 sagaMiddleware.run(sagas);
+sagaMiddleware.run(formActionSaga);
 
 
 class App extends Component {

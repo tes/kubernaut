@@ -7,11 +7,9 @@ import {
 import _uniq from 'lodash/uniq';
 
 import {
-  triggerDeployment,
-  fetchRegistries,
-  fetchNamespaces,
   asyncValidateForm,
-  initialise,
+  INITIALISE,
+  submitForm,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -44,14 +42,12 @@ const mapStateToProps = (state, props) => {
     registrySelected: !!currentFormValues.registry,
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
     clusterSelected: !!currentFormValues.cluster,
+    submitForm,
   };
 };
 
 export default connect(mapStateToProps, {
-  triggerDeployment,
-  fetchRegistries,
-  fetchNamespaces,
-  initialise,
+  INITIALISE,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

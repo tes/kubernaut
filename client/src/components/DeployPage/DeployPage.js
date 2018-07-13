@@ -7,7 +7,7 @@ import RenderSelect from '../RenderSelect';
 
 class DeployPage extends Component {
   componentDidMount() {
-    this.props.initialise();
+    this.props.INITIALISE();
   }
 
   render() {
@@ -27,7 +27,7 @@ class DeployPage extends Component {
       <div>
         <h4>Create deployment</h4>
         <form
-          onSubmit={this.props.handleSubmit((values) => this.props.triggerDeployment(values))}
+          onSubmit={this.props.handleSubmit(this.props.submitForm)}
         >
         <div className="form-group row">
           <label className="col-sm-2 col-form-label text-right" htmlFor="registry">Registry:</label>
@@ -106,7 +106,11 @@ class DeployPage extends Component {
 }
 
 DeployPage.propTypes = {
-  triggerDeployment: PropTypes.func.isRequired,
+  initialValues: PropTypes.object,
+  registries: PropTypes.array,
+  clusters: PropTypes.array,
+  namespaces: PropTypes.array,
+  submitForm: PropTypes.func.isRequired,
 };
 
 export default DeployPage;
