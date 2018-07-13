@@ -1,7 +1,7 @@
 import { createAction, combineActions, handleActions } from 'redux-actions';
 import {
   fetchReleases,
-  fetchDeployments,
+  getDeployments,
   fetchLatestDeploymentsByNamespaceForService,
 } from '../lib/api';
 const actionsPrefix = 'KUBERNAUT/SERVICE';
@@ -31,7 +31,7 @@ export function fetchDeploymentHistoryForService(options) {
     dispatch(FETCH_DEPLOYMENTS_REQUEST({ data, loading: true }));
 
     try {
-      data = await fetchDeployments({
+      data = await getDeployments({
         registry: options.registry,
         service: options.service,
         page,

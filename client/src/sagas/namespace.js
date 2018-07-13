@@ -9,7 +9,7 @@ import {
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
 } from '../modules/namespace';
-import { getNamespace, fetchDeployments } from '../lib/api';
+import { getNamespace, getDeployments } from '../lib/api';
 
 export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
   yield put(FETCH_NAMESPACE_REQUEST());
@@ -27,7 +27,7 @@ export function* fetchDeploymentsForNamespaceSaga({ payload }) {
   const offset = (page - 1) * limit;
   yield put(FETCH_DEPLOYMENTS_REQUEST());
   try {
-    const data = yield call(fetchDeployments, { namespace: id, offset, limit });
+    const data = yield call(getDeployments, { namespace: id, offset, limit });
     yield put(FETCH_DEPLOYMENTS_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console

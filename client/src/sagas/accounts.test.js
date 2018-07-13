@@ -25,7 +25,7 @@ describe('Accounts sagas', () => {
     expect(gen.next().done).toBe(true);
   });
 
-  it('should tolerate errors fetching namespace info', () => {
+  it('should tolerate errors fetching accounts info', () => {
     const error = new Error('ouch');
     const gen = fetchAccountsDataSaga(fetchAccountsPagination({ quiet: true }));
     expect(gen.next().value).toMatchObject(put(FETCH_ACCOUNTS_REQUEST()));

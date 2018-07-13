@@ -17,7 +17,7 @@ import {
 
 import {
   getNamespace,
-  fetchDeployments
+  getDeployments
 } from '../lib/api';
 
 describe('Namespace sagas', () => {
@@ -48,7 +48,7 @@ describe('Namespace sagas', () => {
 
     const gen = fetchDeploymentsForNamespaceSaga(fetchNamespacePageData(initPayload));
     expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(fetchDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
     expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
     expect(gen.next().done).toBe(true);
   });
@@ -57,7 +57,7 @@ describe('Namespace sagas', () => {
     const error = new Error('ouch');
     const gen = fetchDeploymentsForNamespaceSaga(fetchNamespacePageData(initPayload));
     expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(fetchDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
     expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENTS_ERROR({ error: error.message })));
     expect(gen.next().done).toBe(true);
   });
@@ -67,7 +67,7 @@ describe('Namespace sagas', () => {
 
     const gen = fetchDeploymentsForNamespaceSaga(fetchDeploymentsPagination({ ...initPayload, page: 2 }));
     expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(fetchDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
     expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
     expect(gen.next().done).toBe(true);
   });

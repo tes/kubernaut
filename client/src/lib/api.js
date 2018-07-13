@@ -36,7 +36,7 @@ export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = 
   return makeRequest(`/api/releases?${qs}`);
 };
 
-export const fetchDeployments = ({ limit = 20, offset = 0, service= '', registry = '', namespace = '' }) => {
+export const getDeployments = ({ limit = 20, offset = 0, service= '', registry = '', namespace = '' }) => {
   const qs = makeQueryString({
     limit,
     offset,

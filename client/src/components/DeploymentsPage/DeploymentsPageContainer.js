@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchDeployments } from '../../modules/deployments';
+import { fetchDeploymentsPagination } from '../../modules/deployments';
 
 import DeploymentsPage from './DeploymentsPage';
 
@@ -13,7 +13,7 @@ function mapStateToProps(state, props) {
 }
 
 const mapDispatchToProps = {
-  fetchDeployments,
+  fetchDeploymentsPagination,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(DeploymentsPage);
