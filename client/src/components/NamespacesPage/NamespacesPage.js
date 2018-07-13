@@ -6,16 +6,16 @@ import NamespacesTable from '../NamespacesTable';
 class NamespacesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchNamespaces();
+    this.props.fetchNamespacesPagination();
   }
 
   render() {
-    const { namespaces, fetchNamespaces } = this.props;
+    const { namespaces, fetchNamespacesPagination } = this.props;
 
     return (
       <div className='row'>
         <div className='col-sm'>
-          <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespaces} />
+          <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespacesPagination} />
         </div>
       </div>
     );

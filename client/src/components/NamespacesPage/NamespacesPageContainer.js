@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { fetchNamespaces } from '../../modules/namespaces';
+import { fetchNamespacesPagination } from '../../modules/namespaces';
 
 import NamespacesPage from './NamespacesPage';
 
@@ -13,7 +13,7 @@ function mapStateToProps(state, props) {
 }
 
 const mapDispatchToProps = {
-  fetchNamespaces,
+  fetchNamespacesPagination,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(NamespacesPage);

@@ -1,99 +1,13 @@
-import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import fetchMock from 'fetch-mock';
 import reduce, {
-  fetchNamespaces,
   FETCH_NAMESPACES_REQUEST,
   FETCH_NAMESPACES_SUCCESS,
   FETCH_NAMESPACES_ERROR,
 } from './namespaces';
 
-const mockStore = configureStore([thunk]);
-
-describe('Namespace Actions', () => {
-
-  let actions;
-
-  afterEach(() => {
-    fetchMock.restore();
-  });
-
-  it('should fetch namespaces', async () => {
-
-    fetchMock.mock('/api/namespaces?limit=50&offset=0', { limit: 50, offset: 0, count: 3, items: [1, 2, 3] });
-
-    await dispatchNamespacesActions();
-
-    expectNamespacesRequest();
-    expectNamespacesSuccess([1, 2, 3]);
-  });
-
-  it('should tolerate errors fetching namespaces', async () => {
-
-    fetchMock.mock('/api/namespaces?limit=50&offset=0', 500, );
-
-    await dispatchNamespacesActions();
-
-    expectNamespacesError('/api/namespaces?limit=50&offset=0 returned 500 Internal Server Error');
-  });
-
-  it('should tolerate failures fetching namespaces', async () => {
-
-    fetchMock.mock('/api/namespaces?limit=50&offset=0', 403, );
-
-    await dispatchNamespacesActions();
-
-    expectNamespacesError('/api/namespaces?limit=50&offset=0 returned 403 Forbidden');
-  });
-
-  it('should timeout fetching article', async () => {
-
-    fetchMock.mock('/api/namespaces?limit=50&offset=0', {
-      throws: new Error('simulate network timeout'),
-    });
-
-    await dispatchNamespacesActions();
-
-    expectNamespacesError('simulate network timeout');
-  });
-
-  async function dispatchNamespacesActions(_options) {
-    const store = mockStore({});
-    const options = Object.assign({ page: 1, limit: 50, quiet: true }, _options);
-    await store.dispatch(fetchNamespaces(options));
-    actions = store.getActions();
-    expect(actions).toHaveLength(2);
-  }
-
-  function expectNamespacesRequest() {
-    expect(actions[0].type).toBe(FETCH_NAMESPACES_REQUEST.toString());
-    expect(Object.keys(actions[0].payload).length).toBe(2);
-    expect(actions[0].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[0].payload.loading).toBe(true);
-  }
-
-  function expectNamespacesSuccess(namespaces) {
-    expect(actions[1].type).toBe(FETCH_NAMESPACES_SUCCESS.toString());
-    expect(Object.keys(actions[1].payload).length).toBe(1);
-    expect(actions[1].payload.data.items).toMatchObject(namespaces);
-    expect(actions[1].payload.data.count).toBe(namespaces.length);
-    expect(actions[1].payload.data.limit).toBe(50);
-    expect(actions[1].payload.data.offset).toBe(0);
-  }
-
-  function expectNamespacesError(msg) {
-    expect(actions[1].type).toBe(FETCH_NAMESPACES_ERROR.toString());
-    expect(Object.keys(actions[1].payload).length).toBe(2);
-    expect(actions[1].payload.data).toMatchObject({ limit: 50, offset: 0, count: 0, items: [] });
-    expect(actions[1].payload.error.message).toBe(msg);
-  }
-
-});
-
 describe('Namespaces Reducer', () => {
 
   it('should indicate when namespaces are loading', () => {
-    const state = reduce(undefined, FETCH_NAMESPACES_REQUEST({ loading: true, data: {} }));
+    const state = reduce(undefined, FETCH_NAMESPACES_REQUEST());
     expect(state.data).toMatchObject({});
     expect(state.meta).toMatchObject({ loading: true });
   });
@@ -120,8 +34,8 @@ describe('Namespaces Reducer', () => {
         loading: true,
       },
     };
-    const state = reduce(initialState, FETCH_NAMESPACES_ERROR({ error: 'Oh Noes', data: {} }));
-    expect(state.data).toMatchObject({});
+    const state = reduce(initialState, FETCH_NAMESPACES_ERROR({ error: 'Oh Noes' }));
+    expect(state.data).toMatchObject(initialState.data);
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
 

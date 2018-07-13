@@ -4,6 +4,7 @@ import accountsSagas from './accounts';
 import deploySagas from './deploy';
 import deploymentsSagas from './deployments';
 import namespaceSagas from './namespace';
+import namespacesSagas from './namespaces';
 
 export default function* rootSaga() {
   yield all([
@@ -11,5 +12,6 @@ export default function* rootSaga() {
     ...deploySagas,
     ...deploymentsSagas,
     ...namespaceSagas,
+    ...namespacesSagas,
   ]);
 }

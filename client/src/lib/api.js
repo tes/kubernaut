@@ -59,7 +59,7 @@ export const getAccounts = ({ limit = 20, offset = 0 }) => {
 
 export const getRegistries = () => makeRequest('/api/registries');
 
-export const getNamespaces = () => makeRequest('/api/namespaces');
+export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 
