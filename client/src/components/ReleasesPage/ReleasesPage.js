@@ -6,16 +6,16 @@ import ReleasesTable from '../ReleasesTable';
 class ReleasesPage extends Component {
 
   componentDidMount() {
-    this.props.fetchReleases();
+    this.props.fetchReleasesPagination();
   }
 
   render() {
-    const { releases, fetchReleases } = this.props;
+    const { releases, fetchReleasesPagination } = this.props;
 
     return (
       <div className='row'>
         <div className='col-sm'>
-          <ReleasesTable releases={releases.data} loading={releases.meta.loading} error={releases.meta.error} fetchReleases={fetchReleases} />
+          <ReleasesTable releases={releases.data} loading={releases.meta.loading} error={releases.meta.error} fetchReleases={fetchReleasesPagination} />
         </div>
       </div>
     );
