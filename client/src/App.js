@@ -4,7 +4,6 @@ import { Route, Switch } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router';
 import { createStore, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
 import createSagaMiddleware from 'redux-saga';
 import formActionSaga from 'redux-form-saga';
 import { Provider } from 'react-redux';
@@ -55,7 +54,7 @@ const store = createStore(
   connectRouter(history)(rootReducer),
   initialState,
   composeWithDevTools(
-    applyMiddleware(routerMiddleware(history), thunk, sagaMiddleware)
+    applyMiddleware(routerMiddleware(history), sagaMiddleware)
   )
 );
 sagaMiddleware.run(sagas);
