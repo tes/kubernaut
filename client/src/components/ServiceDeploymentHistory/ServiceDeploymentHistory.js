@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardBody } from 'reactstrap';
+import { Card, CardBody, Row } from 'reactstrap';
+import TablePagination from '../TablePagination';
 import { DeploymentLink, CreateDeploymentLink } from '../Links';
 
 class ServiceDeploymentHistory extends Component {
@@ -11,7 +12,7 @@ class ServiceDeploymentHistory extends Component {
     if (deployments && deployments.data && deployments.data.items) {
       deployments.data.items.forEach(item => {
         rows.push((
-          <div className="row" key={item.id}>
+          <Row key={item.id}>
             <Card className="col-sm">
               <CardBody className="row p-1">
                 <div className="col-lg">
@@ -47,14 +48,21 @@ class ServiceDeploymentHistory extends Component {
                 </div>
               </CardBody>
             </Card>
-
-          </div>
+          </Row>
         ));
       });
     }
     return (
       <div>
         {rows}
+        <Row>
+          <TablePagination
+            pages={deployments.data.pages}
+            page={deployments.data.page}
+            limit={deployments.data.limit}
+            fetchContent={this.props.paginationFunc}
+          />
+        </Row>
       </div>
     );
   }

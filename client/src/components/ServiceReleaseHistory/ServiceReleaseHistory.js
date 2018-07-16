@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table, Row, Col, Badge } from 'reactstrap';
+import TablePagination from '../TablePagination';
 import { CreateDeploymentLink } from '../Links';
 
 class ServiceReleaseHistory extends Component {
@@ -55,6 +56,12 @@ class ServiceReleaseHistory extends Component {
                 {rows}
               </tbody>
             </Table>
+            <TablePagination
+              pages={releases.data.pages}
+              page={releases.data.page}
+              limit={releases.data.limit}
+              fetchContent={this.props.paginationFunc}
+            />
           </Col>
         </Row>
       </div>

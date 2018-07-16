@@ -19,12 +19,33 @@ class ServiceDetailsPage extends Component {
         </div>
         <div className="row mb-3 d-block">
           <h5>Releases</h5>
-          <ServiceReleaseHistory releases={this.props.releasesList} latestDeployments={this.props.latestDeployments} />
+          <ServiceReleaseHistory
+            releases={this.props.releasesList}
+            latestDeployments={this.props.latestDeployments}
+            paginationFunc={({ page, limit }) => {
+              this.props.fetchReleasesPagination({
+                registry: this.props.registryName,
+                service: this.props.serviceName,
+                page,
+                limit,
+              });
+            }}
+          />
         </div>
 
         <div className="row d-block">
           <h5>Deployments</h5>
-          <ServiceDeploymentHistory deployments={this.props.deploymentsList} />
+          <ServiceDeploymentHistory
+            deployments={this.props.deploymentsList}
+            paginationFunc={({ page, limit }) => {
+              this.props.fetchDeploymentsPagination({
+                registry: this.props.registryName,
+                service: this.props.serviceName,
+                page,
+                limit,
+              });
+            }}
+          />
         </div>
       </div>
     );

@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import {
   initServiceDetailPage,
+  fetchReleasesPagination,
+  fetchDeploymentsPagination,
 } from '../../modules/service';
 import ServiceDetailsPage from './ServiceDetailsPage';
 
@@ -14,4 +16,6 @@ export default connect((state, { registryName, serviceName }) => ({
   latestDeployments: state.service.latestDeployments.data,
 }),{
   initServiceDetailPage,
+  fetchReleasesPagination,
+  fetchDeploymentsPagination,
 })(ServiceDetailsPage);
