@@ -25,7 +25,7 @@ const computePagination = result => ({
   page: result.limit ? Math.floor(result.offset / result.limit) + 1 : 0,
 });
 
-export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
+export const getReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
   const qs = makeQueryString({
     limit,
     offset,
@@ -33,7 +33,7 @@ export const fetchReleases = ({ limit = 20, offset = 0, service= '', registry = 
     registry,
     version,
   });
-  return makeRequest(`/api/releases?${qs}`);
+  return makeRequest(`/api/releases?${qs}`).then(computePagination);
 };
 
 export const getDeployments = ({ limit = 20, offset = 0, service= '', registry = '', namespace = '' }) => {
@@ -63,9 +63,7 @@ export const getNamespaces = () => makeRequest('/api/namespaces').then(computePa
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 
-export const getReleases = (id) => makeRequest(`/api/releases`).then(computePagination);
-
-export const fetchLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
+export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
 export const makeDeployment = async (data, options = {}) => {
   const wait = options.wait;

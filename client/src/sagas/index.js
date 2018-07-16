@@ -7,6 +7,7 @@ import namespaceSagas from './namespace';
 import namespacesSagas from './namespaces';
 import registriesSagas from './registries';
 import releasesSagas from './releases';
+import serviceSagas from './service';
 
 export default function* rootSaga() {
   yield all([
@@ -17,5 +18,6 @@ export default function* rootSaga() {
     ...namespacesSagas,
     ...registriesSagas,
     ...releasesSagas,
+    ...serviceSagas,
   ]);
 }

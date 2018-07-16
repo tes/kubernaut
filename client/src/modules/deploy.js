@@ -2,7 +2,7 @@ import { createAction, handleActions } from 'redux-actions';
 import { createFormAction } from 'redux-form-saga';
 
 import {
-  fetchReleases,
+  getReleases,
 } from '../lib/api';
 
 const actionsPrefix = 'KUBERNAUT/DEPLOY';
@@ -25,7 +25,7 @@ export async function asyncValidateForm(values) {
     throw { service: 'Please provide a service name' }; // eslint-disable-line no-throw-literal
   } else {
     try {
-      const data = await fetchReleases({ service, registry });
+      const data = await getReleases({ service, registry });
       if (data.count === 0) throw { service: `'${registry}/${service}' does not exist`}; // eslint-disable-line no-throw-literal
     } catch(error) {
       if (error.service) throw error;
@@ -39,7 +39,7 @@ export async function asyncValidateForm(values) {
     throw { version: 'Please provide a version' }; // eslint-disable-line no-throw-literal
   } else {
     try {
-      const data = await fetchReleases({ service, registry, version });
+      const data = await getReleases({ service, registry, version });
       if (data.count === 0) throw { version: `'${registry}/${service}@${version}' does not exist`}; // eslint-disable-line no-throw-literal
     } catch(error) {
       if (error.version) throw error;

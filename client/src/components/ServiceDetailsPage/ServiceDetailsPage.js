@@ -5,19 +5,9 @@ import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
 class ServiceDetailsPage extends Component {
   componentDidMount() {
-    this.props.fetchLatestDeploymentsByNamespace({
-      registry: this.props.registryName,
-      service: this.props.serviceName,
-    });
-
-    this.props.fetchReleasesForService({
-      registry: this.props.registryName,
-      service: this.props.serviceName,
-    });
-
-    this.props.fetchDeploymentHistoryForService({
-      registry: this.props.registryName,
-      service: this.props.serviceName,
+    this.props.initServiceDetailPage({
+        registry: this.props.registryName,
+        service: this.props.serviceName,
     });
   }
 
