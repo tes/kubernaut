@@ -11,12 +11,6 @@ function mapStateToProps(state, props) {
   };
 }
 
-function mapDispatchToProps(dispatch, props) {
-  return {
-    fetchDeployment: (options) => {
-      dispatch(fetchDeployment(props.deploymentId, options));
-    },
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(DeploymentDetailsPage);
+export default connect(mapStateToProps, {
+  fetchDeployment,
+})(DeploymentDetailsPage);

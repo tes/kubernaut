@@ -63,6 +63,8 @@ export const getNamespaces = () => makeRequest('/api/namespaces').then(computePa
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 
+export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);
+
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
 export const makeDeployment = async (data, options = {}) => {

@@ -15,7 +15,11 @@ class DeploymentsPage extends Component {
     return (
       <div className='row'>
         <div className='col-12'>
-          <DeploymentsTable deployments={deployments.data} loading={deployments.meta.loading} error={deployments.meta.error} fetchDeployments={fetchDeploymentsPagination} />
+          <DeploymentsTable
+            deployments={deployments.data}
+            loading={deployments.meta.loading}
+            error={deployments.meta.error}
+            fetchDeployments={fetchDeploymentsPagination} />
         </div>
       </div>
     );

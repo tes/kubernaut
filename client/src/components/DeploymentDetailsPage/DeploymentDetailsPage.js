@@ -7,7 +7,7 @@ import './DeploymentDetailsPage.css';
 class DeploymentDetailsPage extends Component {
 
   componentDidMount() {
-    this.props.fetchDeployment();
+    this.props.fetchDeployment({ id: this.props.deploymentId });
   }
 
   render() {
