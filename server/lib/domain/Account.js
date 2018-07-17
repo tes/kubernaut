@@ -20,7 +20,9 @@ export default class Account {
   }
 
   hasPermission(permission) {
-    return has(this, 'roles.admin');
+    return Object.keys(this.roles).reduce((hasPermission, roleName) => {
+      return hasPermission || this.roles[roleName].permissions.includes(permission);
+    }, false);
   }
 
   hasPermissionOnAccount(accountId, permission) {
