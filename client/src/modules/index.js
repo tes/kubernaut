@@ -1,25 +1,27 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 
-import registries from './registries';
-import namespaces from './namespaces';
+import account from './account';
 import accounts from './accounts';
-import releases from './releases';
-import deployments from './deployments';
-import deployment from './deployment';
-import service from './service';
 import deploy from './deploy';
+import deployment from './deployment';
+import deployments from './deployments';
 import namespace from './namespace';
+import namespaces from './namespaces';
+import registries from './registries';
+import releases from './releases';
+import service from './service';
 
 export default combineReducers({
   form: formReducer,
-  registries,
-  namespaces,
+  account,
   accounts,
-  releases,
-  deployments,
-  deployment,
-  service,
   deploy,
+  deployment,
+  deployments,
   namespace,
+  namespaces,
+  registries,
+  releases,
+  service,
 });

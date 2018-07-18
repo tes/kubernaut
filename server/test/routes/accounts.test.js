@@ -33,6 +33,19 @@ describe('Accounts API', () => {
     await system.stop();
   });
 
+  describe('GET /api/account', () => {
+    it('should return the current account information', async () => {
+      const account = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/account`,
+        method: 'GET',
+        json: true,
+      });
+
+      expect(account.displayName).toBe('Bob Holness');
+      expect(account.roles.admin).toMatchObject({ name: 'admin' });
+    });
+  });
+
   describe('GET /api/accounts', () => {
 
     beforeEach(async () => {

@@ -5,9 +5,19 @@ export default function(options = {}) {
 
   function start({ pkg, app, loggerMiddleware, store, auth }, cb) {
 
+    app.use('/api/account', auth('api'));
     app.use('/api/accounts', auth('api'));
     app.use('/api/identities', auth('api'));
     app.use('/api/roles', auth('api'));
+
+    app.get('/api/account', async (req, res, next) => {
+      try {
+        const account = await store.getAccount(req.user.id);
+        res.json(account);
+      } catch (err) {
+          next(err);
+      }
+    });
 
     app.get('/api/accounts', async (req, res, next) => {
       try {

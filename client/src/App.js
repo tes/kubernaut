@@ -29,6 +29,8 @@ import rootReducer from './modules';
 
 import sagas from './sagas';
 
+import { fetchAccountInfo } from './modules/account';
+
 // Styles
 import 'font-awesome/css/font-awesome.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -60,6 +62,7 @@ const store = createStore(
 sagaMiddleware.run(sagas);
 sagaMiddleware.run(formActionSaga);
 
+store.dispatch(fetchAccountInfo());
 
 class App extends Component {
   render() {

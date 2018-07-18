@@ -1,8 +1,9 @@
 import { all } from 'redux-saga/effects';
 
+import accountSagas from './account';
 import accountsSagas from './accounts';
 import deploySagas from './deploy';
-import dploymentSagas from './deployment';
+import deploymentSagas from './deployment';
 import deploymentsSagas from './deployments';
 import namespaceSagas from './namespace';
 import namespacesSagas from './namespaces';
@@ -12,9 +13,10 @@ import serviceSagas from './service';
 
 export default function* rootSaga() {
   yield all([
+    ...accountSagas,
     ...accountsSagas,
     ...deploySagas,
-    ...dploymentSagas,
+    ...deploymentSagas,
     ...deploymentsSagas,
     ...namespaceSagas,
     ...namespacesSagas,
