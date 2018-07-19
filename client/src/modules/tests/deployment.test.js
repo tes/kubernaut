@@ -2,7 +2,7 @@ import reduce, {
   FETCH_DEPLOYMENT_REQUEST,
   FETCH_DEPLOYMENT_SUCCESS,
   FETCH_DEPLOYMENT_ERROR,
-} from './deployment';
+} from '../deployment';
 
 describe('Deployment Reducer', () => {
 

@@ -2,7 +2,7 @@ import { put, call } from 'redux-saga/effects';
 import {
   fetchNamespaceInfoSaga,
   fetchDeploymentsForNamespaceSaga,
-} from './namespace';
+} from '../namespace';
 
 import {
   fetchNamespacePageData,
@@ -13,12 +13,12 @@ import {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
-} from '../modules/namespace';
+} from '../../modules/namespace';
 
 import {
   getNamespace,
   getDeployments
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Namespace sagas', () => {
   const namespaceId = 'abc';

@@ -6,7 +6,7 @@ import {
   fetchRegistriesSaga,
   fetchNamespacesSaga,
   triggerDeploymentSaga,
-} from './deploy';
+} from '../deploy';
 
 import {
   INITIALISE,
@@ -16,13 +16,13 @@ import {
   SET_REGISTRIES,
   SET_NAMESPACES,
   submitForm,
-} from '../modules/deploy';
+} from '../../modules/deploy';
 
 import {
   makeDeployment,
   getRegistries,
   getNamespaces,
-} from '../lib/api';
+} from '../../lib/api';
 
 const formValues = {
   registry: 'abc',

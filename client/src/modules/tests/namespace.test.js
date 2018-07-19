@@ -6,7 +6,7 @@ import reduce, {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
-} from './namespace';
+} from '../namespace';
 
 describe('Namespace Reducer', () => {
   const createInitialState = (...args) => reduce(undefined, fetchNamespacePageData(...args));

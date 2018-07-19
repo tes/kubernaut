@@ -1,18 +1,18 @@
 import { put, call } from 'redux-saga/effects';
 import {
   fetchReleasesDataSaga,
-} from './releases';
+} from '../releases';
 
 import {
   fetchReleasesPagination,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
-} from '../modules/releases';
+} from '../../modules/releases';
 
 import {
   getReleases,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Releases sagas', () => {
   it('should fetch releases', () => {

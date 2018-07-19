@@ -2,7 +2,7 @@ import reduce, {
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
-} from './account';
+} from '../account';
 
 describe('Account Reducer', () => {
   it('should indicate when account are loading', () => {

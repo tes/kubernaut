@@ -1,18 +1,18 @@
 import { put, call } from 'redux-saga/effects';
 import {
   fetchDeploymentsDataSaga,
-} from './deployments';
+} from '../deployments';
 
 import {
   fetchDeploymentsPagination,
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
-} from '../modules/deployments';
+} from '../../modules/deployments';
 
 import {
   getDeployments,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Deployments sagas', () => {
   it('should fetch deployments', () => {

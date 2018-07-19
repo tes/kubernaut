@@ -1,18 +1,18 @@
 import { put, call } from 'redux-saga/effects';
 import {
   fetchAccountInfoSaga,
-} from './account';
+} from '../account';
 
 import {
   fetchAccountInfo,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
-} from '../modules/account';
+} from '../../modules/account';
 
 import {
   getAccount,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Account sagas', () => {
   it('should fetch account', () => {

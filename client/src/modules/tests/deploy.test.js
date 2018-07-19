@@ -4,7 +4,7 @@ import reduce, {
   CLEAR_LOADING,
   SET_REGISTRIES,
   SET_NAMESPACES,
-} from './deploy';
+} from '../deploy';
 
 describe('Deploy Form Reducer', () => {
 

@@ -1,18 +1,18 @@
 import { put, call } from 'redux-saga/effects';
 import {
   fetchRegistriesDataSaga,
-} from './registries';
+} from '../registries';
 
 import {
   fetchRegistriesPagination,
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
-} from '../modules/registries';
+} from '../../modules/registries';
 
 import {
   getRegistries,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Registries sagas', () => {
   it('should fetch registries', () => {

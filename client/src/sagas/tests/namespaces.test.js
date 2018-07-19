@@ -1,18 +1,18 @@
 import { put, call } from 'redux-saga/effects';
 import {
   fetchNamespacesDataSaga,
-} from './namespaces';
+} from '../namespaces';
 
 import {
   fetchNamespacesPagination,
   FETCH_NAMESPACES_REQUEST,
   FETCH_NAMESPACES_SUCCESS,
   FETCH_NAMESPACES_ERROR,
-} from '../modules/namespaces';
+} from '../../modules/namespaces';
 
 import {
   getNamespaces,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Namespaces sagas', () => {
   it('should fetch namespaces', () => {

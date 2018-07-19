@@ -8,7 +8,7 @@ import reduce, {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
-} from './service';
+} from '../service';
 
 describe('Service Reducer', () => {
 

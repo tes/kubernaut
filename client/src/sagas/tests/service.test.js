@@ -4,7 +4,7 @@ import {
   fetchReleasesDataSaga,
   fetchDeploymentsDataSaga,
   fetchLatestDeploymentsByNamespaceForServiceSaga,
-} from './service';
+} from '../service';
 
 import {
   initServiceDetailPage,
@@ -19,13 +19,13 @@ import {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
-} from '../modules/service';
+} from '../../modules/service';
 
 import {
   getReleases,
   getDeployments,
   getLatestDeploymentsByNamespaceForService,
-} from '../lib/api';
+} from '../../lib/api';
 
 describe('Service sagas', () => {
   describe('releases', () => {
