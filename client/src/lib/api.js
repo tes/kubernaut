@@ -61,6 +61,8 @@ export const getRegistries = () => makeRequest('/api/registries').then(computePa
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
+export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
+
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 
 export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);

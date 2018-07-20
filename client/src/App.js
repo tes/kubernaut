@@ -12,17 +12,18 @@ import { parse as parseQuery } from 'query-string';
 import 'bootstrap';
 
 // Components
-import Header from './components/Header';
-import RegistriesPage from './components/RegistriesPage';
-import NamespacesPage from './components/NamespacesPage';
-import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import AccountsPage from './components/AccountsPage';
-import ReleasesPage from './components/ReleasesPage';
+import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
-import ServiceDetailsPage from './components/ServiceDetailsPage';
-import DeployPage from './components/DeployPage';
+import Header from './components/Header';
 import HomePage from './components/HomePage';
+import NamespacesPage from './components/NamespacesPage';
+import NamespaceDetailsPage from './components/NamespaceDetailsPage';
+import NamespaceEditPage from './components/NamespaceEditPage';
+import RegistriesPage from './components/RegistriesPage';
+import ReleasesPage from './components/ReleasesPage';
+import ServiceDetailsPage from './components/ServiceDetailsPage';
 
 // Reducers
 import rootReducer from './modules';
@@ -88,6 +89,14 @@ class App extends Component {
                   path='/namespaces/:namespaceId'
                   render={({ match }) =>
                     <NamespaceDetailsPage
+                      namespaceId={match.params.namespaceId}
+                    /> }
+                />
+                <Route
+                  exact
+                  path='/namespaces/:namespaceId/edit'
+                  render={({ match }) =>
+                    <NamespaceEditPage
                       namespaceId={match.params.namespaceId}
                     /> }
                 />

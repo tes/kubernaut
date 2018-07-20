@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Badge, Row } from 'reactstrap';
+import { Badge, Button, Container, Row } from 'reactstrap';
 import DeploymentsTable from '../DeploymentsTable';
+import { EditNamespaceLink } from '../Links';
 
 class NamespaceDetailsPage extends Component {
   componentDidMount() {
@@ -24,9 +25,14 @@ class NamespaceDetailsPage extends Component {
     const headingBadge = <Badge style={{ backgroundColor: namespace.color || namespace.cluster.color }} pill>{namespace.cluster.name}/{namespace.name}</Badge>;
 
     return (
-      <div className="container">
+      <Container>
         <Row>
           <h4>{headingBadge}</h4>
+          { this.props.canEdit ?
+            <EditNamespaceLink namespaceId={this.props.namespaceId}>
+              <Button color="link">edit</Button>
+            </EditNamespaceLink>
+           : null }
         </Row>
 
         <dl className="row">
@@ -55,7 +61,7 @@ class NamespaceDetailsPage extends Component {
             }}
           />
         </Row>
-      </div>
+      </Container>
     );
   }
 }

@@ -37,7 +37,6 @@ export const ClusterLink = ({ cluster }) => {
 };
 
 export const NamespaceLink = ({ namespace }) => {
-  // TODO Replace with Link when page availalbe
   return (
     <Link to={`/namespaces/${namespace.id}`}><span>{namespace.name}</span></Link>
   );
@@ -65,3 +64,6 @@ export const CreateDeploymentLink = ({ registry = {}, service = {}, version, clu
     >{element}</Link>
   );
 };
+
+export const EditNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
+  <Link to={`/namespaces/${namespace.id || namespaceId}/edit`}>{children || <span>Edit</span>}</Link>;
