@@ -22,15 +22,15 @@ COPY client/package.json .
 COPY client/package-lock.json .
 RUN NODE_ENV=development npm install --clean --force
 
-# Now build the client (likely to cachebust)
-COPY client .
-RUN npm run build
-
 # Now build the server (likely to cachebust)
 WORKDIR /opt/kubernaut
 COPY . .
 RUN npm run build-server
 RUN npm run lint
+
+# Now build the client (likely to cachebust)
+COPY client .
+RUN npm run build
 
 # Install the kubectl client
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
