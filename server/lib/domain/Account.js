@@ -1,18 +1,7 @@
-// This file is symlinked to the client dir
+// Some of this file is copied to the client dir
+// Thanks create-react-app for blocking me symlinking it or otherwise.
+
 import has from 'lodash.has';
-
-export function hasPermission(roles, permission) {
-  return Object.keys(roles).reduce((hasPermission, roleName) => {
-    return hasPermission || roles[roleName].permissions.includes(permission);
-  }, false);
-}
-
-export function hasPermissionOnNamespace(roles = {}, namespace, permission) {
-  return Object.keys(roles).reduce((permissions, name) => {
-    if (!roles[name].namespaces.includes(namespace)) return permissions;
-    return permissions.concat(roles[name].permissions);
-  }, []).includes(permission);
-}
 
 export default class Account {
 
@@ -33,16 +22,21 @@ export default class Account {
     return has(this, 'roles.admin.registries');
   }
 
-  hasPermission(...args) {
-    return hasPermission(this.roles, ...args);
+  hasPermission(permission) {
+    return Object.keys(this.roles).reduce((hasPermission, roleName) => {
+      return hasPermission || this.roles[roleName].permissions.includes(permission);
+    }, false);
   }
 
   hasPermissionOnAccount(accountId, permission) {
     return this.hasPermission(permission) || accountId === this.id;
   }
 
-  hasPermissionOnNamespace(...args) {
-    return hasPermissionOnNamespace(this.roles, ...args);
+  hasPermissionOnNamespace(namespace, permission) {
+    return Object.keys(this.roles).reduce((permissions, name) => {
+      if (!this.roles[name].namespaces.includes(namespace)) return permissions;
+      return permissions.concat(this.roles[name].permissions);
+    }, []).includes(permission);
   }
 
   hasPermissionOnRegistry(registry, permission) {
