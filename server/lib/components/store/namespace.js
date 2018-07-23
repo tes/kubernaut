@@ -13,7 +13,7 @@ export default function(options) {
       logger.debug(`Getting namespace by id: ${id}`);
 
       const selectNamespaceBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'n.color', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'n.color', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.color cluster_color', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_namespace__vw n', 'account cb', 'cluster c')
         .where(Op.eq('n.id', id))
         .where(Op.eq('n.cluster', raw('c.id')))
@@ -38,11 +38,12 @@ export default function(options) {
     }
 
     async function saveNamespace(data, meta) {
-      return await db.withTransaction(async connection => {
+      const namespaceId = await db.withTransaction(async connection => {
         const namespace = await _saveNamespace(connection, data, meta);
-        const attributes = await _saveNamespaceAttributes(connection, namespace, data.attributes || {});
-        return new Namespace({ ...namespace, attributes});
+        await _saveNamespaceAttributes(connection, namespace, data.attributes || {});
+        return namespace.id;
       });
+      return await getNamespace(namespaceId);
     }
 
     async function _saveNamespace(connection, data, meta) {
@@ -75,6 +76,37 @@ export default function(options) {
       logger.debug(`Saved namespace attributes: [ ${attributeNames.join(', ')} ] for namespace id: ${namespace.id}`);
 
       return attributes;
+    }
+
+    async function updateNamespace(id, data) {
+      const { attributes = {}, ...updates } = data;
+      await db.withTransaction(async connection => {
+        await _updateNamespace(connection, id, updates);
+        await _updateNamespaceAttributes(connection, id, attributes);
+      });
+      return await getNamespace(id);
+    }
+
+    async function _updateNamespace(connection, id, data) {
+      if (Object.keys(data).length === 0) return;
+      logger.debug(`Updating namespace: ${id}`);
+      const updateBuilder = sqb
+        .update('namespace n', data)
+        .where(Op.eq('n.id', id));
+
+      const result = await connection.query(db.serialize(updateBuilder, {}).sql);
+      logger.debug(`Updated namespace:${id}`);
+      return result;
+    }
+
+    async function _updateNamespaceAttributes(connection, namespaceId, attributes) {
+      logger.debug(`Updating namespace attributes: ${namespaceId}`);
+      const deleteBuilder = sqb
+        .delete('namespace_attribute')
+        .where(Op.eq('namespace', namespaceId));
+
+      await connection.query(db.serialize(deleteBuilder, {}).sql);
+      return await _saveNamespaceAttributes(connection, { id: namespaceId }, attributes);
     }
 
     async function findNamespace(criteria) {
@@ -149,6 +181,7 @@ export default function(options) {
           id: row.cluster_id,
           name: row.cluster_name,
           config: row.cluster_config,
+          color: row.cluster_color,
         },
         createdOn: row.created_on,
         createdBy: new Account({
@@ -167,6 +200,7 @@ export default function(options) {
       findNamespaces,
       saveNamespace,
       deleteNamespace,
+      updateNamespace,
     });
   }
 

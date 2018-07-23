@@ -63,6 +63,48 @@ describe('Namespace Store', () => {
     });
   });
 
+  describe('Update Namespace', () => {
+    it('should update a namespace', async () => {
+      const firstCluster = await saveCluster();
+      const secondCluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster: firstCluster,
+        attributes: {
+          a: '123',
+        }
+      }));
+      expect(namespace).toBeDefined();
+      expect(namespace.id).toBeDefined();
+      expect(namespace.cluster.id).toBe(firstCluster.id);
+      expect(namespace.attributes).toBeDefined();
+      expect(Object.keys(namespace.attributes).length).toBe(1);
+      expect(namespace.attributes).toMatchObject({
+        a: '123',
+      });
+
+      const updatedNamespace = await updateNamespace(namespace.id, {
+        cluster: secondCluster.id,
+        color: 'aliceblue',
+        context: 'bob',
+        attributes: {
+          a: 'abc',
+          b: '123',
+        },
+      });
+
+      expect(updatedNamespace).toBeDefined();
+      expect(updatedNamespace.id).toBe(namespace.id);
+      expect(updatedNamespace.cluster.id).toBe(secondCluster.id);
+      expect(updatedNamespace.color).toBe('aliceblue');
+      expect(updatedNamespace.context).toBe('bob');
+      expect(updatedNamespace.attributes).toBeDefined();
+      expect(updatedNamespace.attributes).toMatchObject({
+        a: 'abc',
+        b: '123',
+      });
+    });
+  });
+
   describe('Get Namespace', () => {
 
     it('should retrieve namespace by id', async () => {
@@ -314,5 +356,9 @@ describe('Namespace Store', () => {
 
   function deleteNamespace(id, meta = makeRootMeta()) {
     return store.deleteNamespace(id, meta);
+  }
+
+  function updateNamespace(id, data) {
+    return store.updateNamespace(id, data);
   }
 });

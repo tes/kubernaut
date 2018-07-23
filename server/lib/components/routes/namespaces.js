@@ -63,6 +63,43 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/namespaces/:id', bodyParser.json(), async (req, res, next) => {
+      try {
+        const namespaceOk = await store.getNamespace(req.params.id);
+        if (!namespaceOk) return next(Boom.notFound(`namespace ${req.params.id} was not found`));
+
+        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());
+
+        const values = ['attributes', 'cluster', 'color', 'context'].reduce((acc, prop) => {
+          if (!({}).hasOwnProperty.call(req.body, prop)) return acc;
+          return (acc[prop] = req.body[prop]), acc;
+        }, {});
+
+        const currentNamespaceInfo = await store.getNamespace(req.params.id);
+
+        if (values.hasOwnProperty('cluster')) {
+          const clusterOk = await store.getCluster(values.cluster);
+          if (!clusterOk) return next(Boom.badRequest(`cluster ${values.cluster} was not found`));
+        }
+
+        if (values.hasOwnProperty('context')) {
+          const cluster = values.cluster ? await store.getCluster(values.cluster) : currentNamespaceInfo.cluster;
+          const contextOk = await kubernetes.checkContext(cluster.config, values.context, res.locals.logger);
+          if (!contextOk) return next(Boom.badRequest(`context ${values.context} was not found on ${cluster.name} cluster`));
+        }
+
+        if (values.hasOwnProperty('color')) {
+          const colorOk = isCSSColorHex(values.color) || isCSSColorName(values.color);
+          if (!colorOk) return next(Boom.badRequest(`Unable to verify color`));
+        }
+
+        const namespace = await store.updateNamespace(req.params.id, values);
+        res.json(namespace);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.delete('/api/namespaces/:id', async (req, res, next) => {
       try {
         if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());

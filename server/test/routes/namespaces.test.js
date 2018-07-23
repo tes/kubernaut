@@ -1,6 +1,7 @@
 import expect from 'expect';
 import request from 'request-promise';
 import errors from 'request-promise/errors';
+import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
 import { makeCluster, makeNamespace, makeRootMeta } from '../factories';
@@ -335,6 +336,132 @@ describe('Namespaces API', () => {
       });
     });
 
+  });
+
+  describe('POST /api/namespaces/:id', () => {
+    it('should update a namespace', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ cluster, color: 'black' });
+      const saved = await store.saveNamespace(data, makeRootMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        method: 'POST',
+        json: {
+          color: 'aliceblue',
+        },
+      });
+      expect(response).toBeDefined();
+      expect(response.id).toBe(saved.id);
+      expect(response.color).toBe('aliceblue');
+    });
+
+    it('should update a namespace\'s attributes', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ cluster, attributes: { a: '1', b: '2' } });
+      const saved = await store.saveNamespace(data, makeRootMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        method: 'POST',
+        json: {
+          attributes: {
+            a: '2',
+          }
+        },
+      });
+      expect(response).toBeDefined();
+      expect(response.id).toBe(saved.id);
+      expect(response.attributes).toMatchObject({
+        a: '2',
+      });
+      expect(response.attributes.b).toBeUndefined();
+    });
+
+    it('should return bad request for missing namespace', async () => {
+      const id = uuid();
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${id}`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          color: 'aliceblue',
+        },
+      }).then(() => {
+        throw new Error('Should have errored with 404');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(404);
+        expect(reason.response.body.message).toBe(`namespace ${id} was not found`);
+      });
+    });
+
+    it('should return bad request for an invalid color', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ cluster, color: 'black' });
+      const saved = await store.saveNamespace(data, makeRootMeta());
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          color: 'notacolor',
+        },
+      }).then(() => {
+        throw new Error('Should have errored with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe(`Unable to verify color`);
+      });
+    });
+
+    it('should return bad request for an invalid cluster', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ cluster, color: 'black' });
+      const saved = await store.saveNamespace(data, makeRootMeta());
+      const invalidClusterId = uuid();
+
+      loggerOptions.suppress = true;
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          cluster: invalidClusterId,
+        },
+      }).then(() => {
+        throw new Error('Should have errored with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe(`cluster ${invalidClusterId} was not found`);
+      });
+    });
+
+    it('should return bad request for an invalid context', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const data = makeNamespace({ cluster, color: 'black' });
+      const saved = await store.saveNamespace(data, makeRootMeta());
+      const invalidContext = 'notacontext';
+
+      loggerOptions.suppress = true;
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          context: invalidContext,
+        },
+      }).then(() => {
+        throw new Error('Should have errored with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe(`context ${invalidContext} was not found on ${cluster.name} cluster`);
+      });
+    });
   });
 
   describe('DELETE /api/namespaces/:id', () => {
