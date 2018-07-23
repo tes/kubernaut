@@ -9,13 +9,13 @@ export default class Account {
   }
 
   hasPermission(permission) {
-    return Object.keys(this.roles).reduce((hasPermission, roleName) => {
+    return Object.keys(this.roles || []).reduce((hasPermission, roleName) => {
       return hasPermission || this.roles[roleName].permissions.includes(permission);
     }, false);
   }
 
   hasPermissionOnNamespace(namespace, permission) {
-    return Object.keys(this.roles).reduce((permissions, name) => {
+    return Object.keys(this.roles || []).reduce((permissions, name) => {
       if (!this.roles[name].namespaces.includes(namespace)) return permissions;
       return permissions.concat(this.roles[name].permissions);
     }, []).includes(permission);
