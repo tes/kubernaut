@@ -89,7 +89,7 @@ export default function(options = {}) {
         }
 
         if (values.hasOwnProperty('color')) {
-          const colorOk = isCSSColorHex(values.color) || isCSSColorName(values.color);
+          const colorOk = values.color === '' || isCSSColorHex(values.color) || isCSSColorName(values.color);
           if (!colorOk) return next(Boom.badRequest(`Unable to verify color`));
         }
 

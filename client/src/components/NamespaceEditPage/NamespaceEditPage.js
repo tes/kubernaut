@@ -31,6 +31,7 @@ class NamespaceEditPage extends Component {
       );
     }
 
+    const error = this.props.error;
     const namespace = this.props.namespace;
     const headingBadge = <Badge
         style={{ backgroundColor: namespace.color }}
@@ -44,7 +45,7 @@ class NamespaceEditPage extends Component {
         <div>
           <h6>Attributes:</h6>
           {props.fields.map((attribute, index) => (
-            <FormGroup className="row">
+            <FormGroup className="row" key={attribute}>
               <Col sm="3">
                 <Field
                   name={`${attribute}.name`}
@@ -92,7 +93,7 @@ class NamespaceEditPage extends Component {
         </Row>
         <Row>
           <Col sm="12">
-            <form onSubmit={(values) => console.info(values) }>
+            <form>
               <FormGroup className="row">
                 <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
                 <Col sm="5">
@@ -130,6 +131,21 @@ class NamespaceEditPage extends Component {
                 name="attributes"
                 component={renderAttributes}
               />
+              <Row className="mt-2">
+                <Col sm="2">
+                  <Button
+                    outline
+                    color="info"
+                    onClick={this.props.handleSubmit(this.props.submitForm)}
+                  >Save
+                  </Button>
+                </Col>
+              </Row>
+              <Row>
+                <Col sm="12">
+                  {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+                </Col>
+              </Row>
             </form>
           </Col>
         </Row>

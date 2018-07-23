@@ -101,3 +101,30 @@ export const makeDeployment = async (data, options = {}) => {
     throw error;
   }
 };
+
+export const editNamespace = async (id, data, options = {}) => {
+  const url = `/api/namespaces/${id}`;
+  try {
+    const res = await makeRequest(url, {
+      method: 'POST',
+      returnResponse: true,
+      body: JSON.stringify(data),
+    });
+
+    if (res.status >= 400) {
+      let message = `${url} returned ${res.status} ${res.statusText}`;
+
+      try {
+        const serverError = await res.json();
+        if (serverError.message) message = serverError.message;
+      } catch(parseError) {
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+      }
+
+      throw new Error(message);
+    }
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};

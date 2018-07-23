@@ -1,4 +1,6 @@
 import { createAction, handleActions } from 'redux-actions';
+import { createFormAction } from 'redux-form-saga';
+
 const actionsPrefix = 'KUBERNAUT/NAMESPACE_EDIT';
 export const initForm = createAction(`${actionsPrefix}/INIT_FORM`);
 
@@ -9,9 +11,12 @@ export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESP
 export const FETCH_CLUSTERS_REQUEST = createAction(`${actionsPrefix}/FETCH_CLUSTERS_REQUEST`);
 export const FETCH_CLUSTERS_SUCCESS = createAction(`${actionsPrefix}/FETCH_CLUSTERS_SUCCESS`);
 export const FETCH_CLUSTERS_ERROR = createAction(`${actionsPrefix}/FETCH_CLUSTERS_ERROR`);
+export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 
+export const selectNamespaceId = (state) => (state.namespaceEdit.id);
 
 const defaultState = {
+  id: '',
   name: '',
   color: '',
   cluster: '',
@@ -55,13 +60,14 @@ export default handleActions({
     meta: {
       loading: false,
     },
+    id: data.id,
     name: data.name,
     cluster: data.cluster.name,
     color: data.color || data.cluster.color,
     initialValues: {
-      context: data.context,
-      color: data.color,
-      cluster: data.cluster.id,
+      context: data.context || '',
+      color: data.color || '',
+      cluster: data.cluster.id || '',
       attributes: Object.keys(data.attributes).reduce((arr, attr) => {
         return arr.concat({ name: attr, value: data.attributes[attr] });
       }, []),
