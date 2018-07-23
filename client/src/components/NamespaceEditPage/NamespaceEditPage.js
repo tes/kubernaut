@@ -52,6 +52,7 @@ class NamespaceEditPage extends Component {
                   className="form-control"
                   component={RenderInput}
                   type="text"
+                  autocomplete="foo-no-really"
                   />
               </Col>
               <Col sm="1"><p>:</p></Col>
@@ -61,6 +62,7 @@ class NamespaceEditPage extends Component {
                   className="form-control"
                   component={RenderInput}
                   type="text"
+                  autoComplete="foo-no-really"
                   />
               </Col>
               <Col>
@@ -153,5 +155,12 @@ class NamespaceEditPage extends Component {
     );
   }
 }
+
+NamespaceEditPage.propTypes = {
+  namespaceId: PropTypes.string.isRequired,
+  canEdit: PropTypes.bool.isRequired,
+  namespace: PropTypes.object.isRequired,
+  clusterOptions: PropTypes.array.isRequired,
+};
 
 export default NamespaceEditPage;

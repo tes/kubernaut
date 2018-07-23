@@ -49,7 +49,7 @@ export function* editNamespaceSaga({ payload: formValues }, options = {}) {
   const { attributes = [], ...data } = formValues;
 
   data.attributes = attributes.reduce((acc, { name, value }) => {
-    return acc[name] = value, acc;
+    return (acc[name] = value, acc);
   }, {});
   try {
     yield call(editNamespace, id, data, options);
