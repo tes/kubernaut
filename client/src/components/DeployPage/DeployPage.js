@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Field } from 'redux-form';
 import PropTypes from 'prop-types';
 import RenderInput from '../RenderInput';
+import RenderTypeAhead from '../RenderTypeAhead';
 import RenderSelect from '../RenderSelect';
 
 
@@ -46,9 +47,15 @@ class DeployPage extends Component {
             <Field
               className="form-control"
               name="service"
-              component={RenderInput}
+              component={RenderTypeAhead}
               type="text"
               disabled={!registrySelected}
+              onChangeListener={() => {
+                this.props.fetchServiceSuggestions();
+              }}
+              useSuggestion={this.props.useServiceSuggestion}
+              suggestions={this.props.serviceSuggestions}
+              autoComplete="foo-no-really"
             />
           </div>
         </div>
@@ -61,6 +68,7 @@ class DeployPage extends Component {
               component={RenderInput}
               type="text"
               disabled={!validRegistryAndService}
+              autoComplete="foo-no-really"
             />
           </div>
         </div>

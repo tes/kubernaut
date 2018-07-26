@@ -1,5 +1,6 @@
 import { createAction, handleActions } from 'redux-actions';
 import { createFormAction } from 'redux-form-saga';
+import { getFormValues } from 'redux-form';
 
 import {
   getReleases,
@@ -13,6 +14,12 @@ export const CLEAR_LOADING = createAction(`${actionsPrefix}/CLEAR_LOADING`);
 export const SET_REGISTRIES = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const SET_NAMESPACES = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
+export const fetchServiceSuggestions = createAction(`${actionsPrefix}/FETCH_SERVICE_SUGGESTIONS`);
+export const setServiceSuggestions = createAction(`${actionsPrefix}/SET_SERVICE_SUGGESTIONS`);
+export const useServiceSuggestion = createAction(`${actionsPrefix}/USE_SERVICE_SUGGESTIONS`);
+export const clearServiceSuggestions = createAction(`${actionsPrefix}/CLEAR_SERVICE_SUGGESTIONS`);
+
+export const getDeployFormValues = getFormValues('deploy');
 
 export async function asyncValidateForm(values) {
   const {
@@ -57,6 +64,7 @@ const defaultState = {
   },
   registries: [],
   namespaces: [],
+  serviceSuggestions: [],
 };
 
 export default handleActions({
@@ -71,4 +79,6 @@ export default handleActions({
   [CLEAR_LOADING]: (state) => ({ ...state, meta: { loading: false } }),
   [SET_REGISTRIES]: (state, { payload }) => ({ ...state, registries: payload.data }),
   [SET_NAMESPACES]: (state, { payload }) => ({ ...state, namespaces: payload.data }),
+  [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
+  [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
 }, defaultState);

@@ -1,11 +1,13 @@
-import { put, call } from 'redux-saga/effects';
-import { SubmissionError } from 'redux-form';
+import { put, call, select } from 'redux-saga/effects';
+import { SubmissionError, change } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
   fetchRegistriesSaga,
   fetchNamespacesSaga,
   triggerDeploymentSaga,
+  fetchServiceSuggestionsSaga,
+  useServiceSuggestionsSaga,
 } from '../deploy';
 
 import {
@@ -16,12 +18,18 @@ import {
   SET_REGISTRIES,
   SET_NAMESPACES,
   submitForm,
+  fetchServiceSuggestions,
+  setServiceSuggestions,
+  getDeployFormValues,
+  useServiceSuggestion,
+  clearServiceSuggestions,
 } from '../../modules/deploy';
 
 import {
   makeDeployment,
   getRegistries,
   getNamespaces,
+  getServiceSuggestions,
 } from '../../lib/api';
 
 const formValues = {
@@ -85,6 +93,33 @@ describe('Deploy sagas', () => {
     const gen = triggerDeploymentSaga(submitForm.request(formValues), options);
     expect(gen.next().value).toMatchObject(call(makeDeployment, formValues, options));
     expect(gen.throw(error).value).toMatchObject(put(submitForm.failure(formError)));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('should fetch service name suggestions based on user input in form', () => {
+    const formValues = { service: 'app-', registry: 'default' };
+    const searchResults = [{ name: 'app-1' }, { name: 'app-2' }];
+    const gen = fetchServiceSuggestionsSaga(fetchServiceSuggestions());
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(call(getServiceSuggestions, formValues.registry, formValues.service));
+    expect(gen.next(searchResults).value).toMatchObject(put(setServiceSuggestions(['app-1', 'app-2'])));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('should handle errors fetching service name suggestions', () => {
+    const formValues = { service: 'app-', registry: 'default' };
+
+    const gen = fetchServiceSuggestionsSaga(fetchServiceSuggestions({ quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(call(getServiceSuggestions, formValues.registry, formValues.service));
+    gen.throw(new Error('ouch'));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('should use a selected service suggestion and then clear suggestions', () => {
+    const gen = useServiceSuggestionsSaga(useServiceSuggestion('app-1'));
+    expect(gen.next().value).toMatchObject(put(change('deploy', 'service', 'app-1')));
+    expect(gen.next().value).toMatchObject(put(clearServiceSuggestions()));
     expect(gen.next().done).toBe(true);
   });
 });

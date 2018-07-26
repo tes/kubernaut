@@ -4,6 +4,8 @@ import reduce, {
   CLEAR_LOADING,
   SET_REGISTRIES,
   SET_NAMESPACES,
+  setServiceSuggestions,
+  clearServiceSuggestions,
 } from '../deploy';
 
 describe('Deploy Form Reducer', () => {
@@ -40,5 +42,15 @@ describe('Deploy Form Reducer', () => {
     const state = reduce(undefined, SET_NAMESPACES({ data: ['bob'] }));
     expect(state).toMatchObject({});
     expect(state.namespaces).toMatchObject(['bob']);
+  });
+
+  it('sets service suggestions', () => {
+    const state = reduce(undefined, setServiceSuggestions([1,2,3]));
+    expect(state.serviceSuggestions).toMatchObject([1,2,3]);
+  });
+
+  it('clears service suggestions', () => {
+    const state = reduce({ serviceSuggestions: [1,2,3]}, clearServiceSuggestions());
+    expect(state.serviceSuggestions).toMatchObject([]);
   });
 });

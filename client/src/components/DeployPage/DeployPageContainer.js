@@ -10,6 +10,8 @@ import {
   asyncValidateForm,
   INITIALISE,
   submitForm,
+  fetchServiceSuggestions,
+  useServiceSuggestion,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -43,11 +45,14 @@ const mapStateToProps = (state, props) => {
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
     clusterSelected: !!currentFormValues.cluster,
     submitForm,
+    serviceSuggestions: deploy.serviceSuggestions,
   };
 };
 
 export default connect(mapStateToProps, {
   INITIALISE,
+  fetchServiceSuggestions,
+  useServiceSuggestion,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

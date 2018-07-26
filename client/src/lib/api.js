@@ -71,6 +71,8 @@ export const getAccount = () => makeRequest('/api/account');
 
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
+export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
+
 export const makeDeployment = async (data, options = {}) => {
   const wait = options.wait;
   const qs = makeQueryString({

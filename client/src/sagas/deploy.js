@@ -1,9 +1,14 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
-import { SubmissionError } from 'redux-form';
+import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { SubmissionError, change } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
   submitForm,
+  fetchServiceSuggestions,
+  setServiceSuggestions,
+  useServiceSuggestion,
+  clearServiceSuggestions,
+  getDeployFormValues,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -16,6 +21,7 @@ import {
   makeDeployment,
   getRegistries,
   getNamespaces,
+  getServiceSuggestions,
 } from '../lib/api';
 
 export function* fetchRegistriesSaga({ payload = {} }) {
@@ -63,8 +69,25 @@ export function* triggerDeploymentSaga({ payload: formValues }, options = {}) {
   yield put(push(`/deployments/${id}`));
 }
 
+export function* fetchServiceSuggestionsSaga({ payload = {} }) {
+  const currentValue = yield select(getDeployFormValues);
+  try {
+    const results = yield call(getServiceSuggestions, currentValue.registry, currentValue.service);
+    yield put(setServiceSuggestions(results.map(({ name }) => (name))));
+  } catch (error) {
+    if (!payload.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* useServiceSuggestionsSaga({ payload }) {
+  yield put(change('deploy', 'service', payload));
+  yield put(clearServiceSuggestions());
+}
+
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
   takeEvery(INITIALISE, fetchNamespacesSaga),
   takeEvery(submitForm.REQUEST, triggerDeploymentSaga),
+  takeEvery(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
+  takeEvery(useServiceSuggestion, useServiceSuggestionsSaga)
 ];
