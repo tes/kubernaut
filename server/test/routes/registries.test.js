@@ -3,7 +3,7 @@ import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRegistry, makeRootMeta } from '../factories';
+import { makeRegistry, makeRootMeta, makeRelease } from '../factories';
 
 describe('Registries API', () => {
 
@@ -186,6 +186,44 @@ describe('Registries API', () => {
 
       const registry = await store.getRegistry(saved.id);
       expect(registry).toBe(undefined);
+    });
+  });
+
+  describe('GET /api/registries/:registry/search/:serviceName', () => {
+    it('should search services and return names similar to provided string', async () => {
+      const registry = await store.saveRegistry(makeRegistry(), makeRootMeta());
+      await store.saveRelease(makeRelease({ service: { name: 'app-1', registry} }), makeRootMeta());
+      await store.saveRelease(makeRelease({ service: { name: 'app-2', registry} }), makeRootMeta());
+      await store.saveRelease(makeRelease({ service: { name: 'service-1', registry} }), makeRootMeta());
+
+      const response = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/registries/${registry.name}/search/app`,
+        method: 'GET',
+        json: true,
+      });
+
+      expect(response).toBeDefined();
+      expect(response.length).toBe(2);
+      expect(response[0].name).toBeDefined();
+      expect(response[0].name).toBe('app-1');
+      expect(response[1].name).toBeDefined();
+      expect(response[1].name).toBe('app-2');
+    });
+
+    it('should return 404 for missing registries', async () => {
+
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/api/registries/does-not-exist/search/nothing`,
+        method: 'GET',
+        resolveWithFullResponse: true,
+        json: true,
+      }).then(() => {
+        throw new Error('Should have failed with 404');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(404);
+      });
     });
   });
 });

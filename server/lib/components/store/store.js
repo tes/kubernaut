@@ -2,7 +2,7 @@ import SQL from './sql';
 
 export default function(options = {}) {
 
-  function start({ config, logger, account, registry, release, cluster, namespace, deployment, db }, cb) {
+  function start({ config, logger, account, registry, release, cluster, namespace, deployment, service, db }, cb) {
 
     async function nuke() {
       await db.query(SQL.NUKE);
@@ -23,6 +23,7 @@ export default function(options = {}) {
       ...cluster,
       ...namespace,
       ...deployment,
+      ...service,
       nuke : config.unsafe ? nuke : undefined,
       logged: config.unsafe ? logged : undefined,
       unlogged: config.unsafe ? unlogged : undefined,

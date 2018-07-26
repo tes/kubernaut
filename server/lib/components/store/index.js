@@ -8,6 +8,7 @@ import namespace from './namespace';
 import account from './account';
 import release from './release';
 import deployment from './deployment';
+import service from './service';
 import store from './store';
 
 export default () => systemic({ name: 'stores/postgres' })
@@ -20,6 +21,7 @@ export default () => systemic({ name: 'stores/postgres' })
   .add('store.account', account()).dependsOn('config', 'logger', 'db')
   .add('store.release', release()).dependsOn('config', 'logger', 'db')
   .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db')
+  .add('store.service', service()).dependsOn('config', 'logger', 'db')
   .add('store', store()).dependsOn(
     'config', 'logger', 'db',
     { component: 'store.registry', destination: 'registry' },
@@ -28,4 +30,5 @@ export default () => systemic({ name: 'stores/postgres' })
     { component: 'store.account', destination: 'account' },
     { component: 'store.release', destination: 'release' },
     { component: 'store.deployment', destination: 'deployment' },
+    { component: 'store.service', destination: 'service' },
   );
