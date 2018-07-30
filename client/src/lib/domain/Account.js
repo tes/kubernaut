@@ -20,4 +20,24 @@ export default class Account {
       return permissions.concat(this.roles[name].permissions);
     }, []).includes(permission);
   }
+
+  listRegistryIdsWithRole() {
+    return Object.keys(this.roles || []).reduce((registries, name) => {
+      this.roles[name].registries.forEach((registry) => {
+        if (registries[registry]) registries[registry].push(name);
+        registries[registry] = [name];
+      });
+      return registries;
+    }, {});
+  }
+
+  listNamespaceIdsWithRole() {
+    return Object.keys(this.roles || []).reduce((namespaces, name) => {
+      this.roles[name].namespaces.forEach((namespace) => {
+        if (namespaces[namespace]) namespaces[namespace].push(name);
+        namespaces[namespace] = [name];
+      });
+      return namespaces;
+    }, {});
+  }
 }

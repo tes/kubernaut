@@ -82,6 +82,16 @@ request.get({
     ]);
   });
 })
+.then(() => {
+  return request.post({
+    url: `${rootUrl}/accounts`,
+    headers,
+    json: true,
+    body: {
+      displayName: 'some user'
+    }
+  });
+})
 .then(() => process.exit(0))
 .catch((err) => {
   console.error(err); // eslint-disable-line no-console

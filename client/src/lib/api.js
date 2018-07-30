@@ -69,6 +69,8 @@ export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);
 
 export const getAccount = () => makeRequest('/api/account');
 
+export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
+
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
 export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
