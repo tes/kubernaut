@@ -24,7 +24,7 @@ describe('Namespace Reducer', () => {
     expect(state.namespace.meta).toMatchObject({ loading: false });
   });
 
-  it('should update state when releases have errored', () => {
+  it('should update state when namespace has errored', () => {
     const initialState = createInitialState();
     const state = reduce(initialState, FETCH_NAMESPACE_ERROR({ error: 'Oh Noes' }));
     expect(state.namespace.data).toBe(initialState.namespace.data);
