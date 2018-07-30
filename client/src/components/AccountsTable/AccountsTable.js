@@ -43,7 +43,9 @@ class AccountsTable extends Component {
               <span className="accounts-table__body__row__created-date__on"><Human date={account.createdOn} /></span>
               <span className="accounts-table__body__row__created-date__ago"><Ago date={account.createdOn} /></span>
             </td>
-            <td className='accounts-table__body__row__display-name'>{account.displayName}</td>
+            <td className='accounts-table__body__row__display-name'>
+              <AccountLink account={account} />
+            </td>
             <td className='accounts-table__body__row__created-by'>
               <AccountLink account={account.createdBy} />
             </td>

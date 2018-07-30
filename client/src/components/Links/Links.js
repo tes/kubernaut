@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import { stringify } from 'query-string';
 
 export const AccountLink = ({ account }) => {
-  // TODO Replace with Link when page availalbe
   return (
-    <span>{account.displayName}</span>
+    <Link to={`/accounts/${account.id}`}><span>{account.displayName}</span></Link>
   );
 };
 
