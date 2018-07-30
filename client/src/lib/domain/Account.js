@@ -24,7 +24,7 @@ export default class Account {
   listRegistryIdsWithRole() {
     return Object.keys(this.roles || []).reduce((registries, name) => {
       this.roles[name].registries.forEach((registry) => {
-        if (registries[registry]) registries[registry].push(name);
+        if (registries[registry]) return registries[registry].push(name);
         registries[registry] = [name];
       });
       return registries;

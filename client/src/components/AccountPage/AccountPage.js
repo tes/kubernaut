@@ -43,7 +43,7 @@ class AccountPage extends Component {
       }
       const registryName = registry.name;
       registryEls.push(<dt key={name} className="col-sm-3">{registryName}</dt>);
-      registryEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles}</dd>);
+      registryEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
     });
 
     const namespaceEls = [];
@@ -56,7 +56,7 @@ class AccountPage extends Component {
       }
       const namespaceName = `${namespace.cluster.name}/${namespace.name}`;
       namespaceEls.push(<dt key={name} className="col-sm-3">{namespaceName}</dt>);
-      namespaceEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles}</dd>);
+      namespaceEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
     });
 
     return (
