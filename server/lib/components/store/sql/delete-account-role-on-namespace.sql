@@ -1,9 +1,10 @@
 UPDATE
   account_role_namespace
 SET
-  deleted_on = $2,
-  deleted_by = $3
-WHERE id = $1
+  deleted_on = $4,
+  deleted_by = $5
+WHERE account = $1
+  AND role = (SELECT id FROM role WHERE name = $2)
+  AND subject = $3
   AND deleted_on IS NULL
 ;
-

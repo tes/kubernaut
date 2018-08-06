@@ -26,6 +26,7 @@ export default class Account {
       this.roles[name].registries.forEach((registry) => {
         if (registries[registry]) return registries[registry].push(name);
         registries[registry] = [name];
+        return registries;
       });
       return registries;
     }, {});
@@ -34,8 +35,25 @@ export default class Account {
   listNamespaceIdsWithRole() {
     return Object.keys(this.roles || []).reduce((namespaces, name) => {
       this.roles[name].namespaces.forEach((namespace) => {
-        if (namespaces[namespace]) namespaces[namespace].push(name);
+        if (namespaces[namespace]) return namespaces[namespace].push(name);
         namespaces[namespace] = [name];
+        return namespaces;
+      });
+      return namespaces;
+    }, {});
+  }
+
+  listNamespaceIdsWithRoleAsObject() {
+    return Object.keys(this.roles || []).reduce((namespaces, name) => {
+      this.roles[name].namespaces.forEach((namespace) => {
+        if (namespaces[namespace]) {
+          namespaces[namespace][name] = true;
+          return namespaces;
+        }
+        namespaces[namespace] = {
+          [name]: true,
+        };
+        return namespaces;
       });
       return namespaces;
     }, {});

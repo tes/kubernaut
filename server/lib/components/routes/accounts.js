@@ -117,6 +117,22 @@ export default function(options = {}) {
       }
     });
 
+    app.delete('/api/roles/namespace', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+
+        if (!req.user.hasPermissionOnNamespace(req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const account = await store.revokeRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
+        res.json(account);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 

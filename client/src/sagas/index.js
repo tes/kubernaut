@@ -5,6 +5,7 @@ import accountsSagas from './accounts';
 import deploySagas from './deploy';
 import deploymentSagas from './deployment';
 import deploymentsSagas from './deployments';
+import editAccountSagas from './editAccount';
 import namespaceSagas from './namespace';
 import namespaceEditSagas from './namespaceEdit';
 import namespacesSagas from './namespaces';
@@ -20,6 +21,7 @@ export default function* rootSaga() {
     ...deploySagas,
     ...deploymentSagas,
     ...deploymentsSagas,
+    ...editAccountSagas,
     ...namespaceSagas,
     ...namespaceEditSagas,
     ...namespacesSagas,

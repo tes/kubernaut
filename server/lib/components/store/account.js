@@ -189,9 +189,11 @@ export default function(options = {}) {
     }
 
     async function grantRoleOnNamespace(accountId, roleName, namespaceId, meta) {
-      return db.withTransaction(async connection => {
-        return _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta);
+      await db.withTransaction(async connection => {
+        await _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta);
       });
+
+      return getAccount(accountId);
     }
 
     async function _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta) {
@@ -209,14 +211,16 @@ export default function(options = {}) {
       return granted;
     }
 
-    async function revokeRoleOnNamespace(id, meta) {
-      logger.debug(`Revoking role: ${id} on namespace`);
+    async function revokeRoleOnNamespace(accountId, roleName, namespaceId, meta) {
+      logger.debug(`Revoking role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
 
       await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_NAMESPACE, [
-        id, meta.date, meta.account.id,
+        accountId, roleName, namespaceId, meta.date, meta.account.id,
       ]);
 
-      logger.debug(`Revoked role: ${id} on namespace`);
+      logger.debug(`Revoked role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
+
+      return getAccount(accountId);
     }
 
     async function _countActiveAdminstrators(connection) {

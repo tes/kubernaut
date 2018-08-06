@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Container, Row, Col, Progress, Button } from 'reactstrap';
 import { EditAccountLink } from '../Links';
+import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import Account from '../../lib/domain/Account';
 
-class AccountPage extends Component {
+class AccountEditPage extends Component {
   componentDidMount() {
     this.props.fetchAccountInfo({ accountId: this.props.accountId });
   }
@@ -22,30 +23,12 @@ class AccountPage extends Component {
     );
 
     const account = new Account(accountData);
-    const registryIds = account.listRegistryIdsWithRole();
-    const registries = Object.keys(registryIds).reduce((acc, registry) => {
-      acc.push({ name: registry, roles: registryIds[registry] });
-      return acc;
-    }, []);
 
     const namespaceIds = account.listNamespaceIdsWithRole();
     const namespaces = Object.keys(namespaceIds).reduce((acc, namespace) => {
       acc.push({ name: namespace, roles: namespaceIds[namespace] });
       return acc;
     }, []);
-
-    const registryEls = [];
-    let hasUnknownRegistries = false;
-    registries.forEach(({ name, roles }) => {
-      const registry = this.props.registries.items.find(({ id }) => (id === name));
-      if (!registry) {
-        hasUnknownRegistries = true;
-        return;
-      }
-      const registryName = registry.name;
-      registryEls.push(<dt key={name} className="col-sm-3">{registryName}</dt>);
-      registryEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
-    });
 
     const namespaceEls = [];
     let hasUnknownNamespaces = false;
@@ -63,12 +46,7 @@ class AccountPage extends Component {
     return (
       <Container>
         <Row className="mt-3">
-            <h4>{account.displayName}</h4>
-            { this.props.canEdit ?
-              <EditAccountLink accountId={this.props.accountId}>
-                <Button color="link">edit</Button>
-              </EditAccountLink>
-             : null }
+            <h4>Editing: {account.displayName}</h4>
         </Row>
         <Row>
             <p><strong>Created:</strong> {account.createdOn}</p>
@@ -76,35 +54,27 @@ class AccountPage extends Component {
         <Row className="mt-3">
           <Col sm="12">
             <h5>Registries:</h5>
-            <dl className="row">
-              {registryEls}
-            </dl>
-            {
-              hasUnknownRegistries ?
-              <Row>
-                <Col sm="12">
-                  <p><small>This user has access to registries you are not permitted to view.</small></p>
-                </Col>
-              </Row>
-              : null
-            }
           </Col>
         </Row>
         <Row className="mt-3">
           <Col sm="12">
             <h5>Namespaces:</h5>
-              <dl className="row">
-                {namespaceEls}
-              </dl>
-              {
-                hasUnknownNamespaces ?
-                <Row>
-                  <Col sm="12">
-                    <p><small>This user has access to namespaces you are not permitted to view.</small></p>
-                  </Col>
-                </Row>
-                : null
-              }
+            <AccountNamespacesRolesForm
+              accountData={accountData}
+              namespaces={this.props.namespaces}
+            />
+            <dl className="row">
+              {namespaceEls}
+            </dl>
+            {
+              hasUnknownNamespaces ?
+              <Row>
+                <Col sm="12">
+                  <p><small>This user has access to namespaces you are not permitted to view.</small></p>
+                </Col>
+              </Row>
+              : null
+            }
           </Col>
         </Row>
       </Container>
@@ -112,10 +82,10 @@ class AccountPage extends Component {
   }
 }
 
-AccountPage.propTypes = {
+AccountEditPage.propTypes = {
   accountId: PropTypes.string.isRequired,
   account: PropTypes.object.isRequired,
   meta: PropTypes.object.isRequired,
 };
 
-export default AccountPage;
+export default AccountEditPage;

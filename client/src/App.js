@@ -12,6 +12,7 @@ import { parse as parseQuery } from 'query-string';
 import 'bootstrap';
 
 // Components
+import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
 import DeployPage from './components/DeployPage';
@@ -111,6 +112,14 @@ class App extends Component {
                   path='/accounts/:accountId'
                   render={({ match }) =>
                     <AccountPage
+                      accountId={match.params.accountId}
+                    /> }
+                />
+                <Route
+                  exact
+                  path='/accounts/:accountId/edit'
+                  render={({ match }) =>
+                    <AccountEditPage
                       accountId={match.params.accountId}
                     /> }
                 />

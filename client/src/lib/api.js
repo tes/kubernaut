@@ -132,3 +132,65 @@ export const editNamespace = async (id, data, options = {}) => {
     throw error;
   }
 };
+
+export const addRoleForNamespace = async (accountId, namespaceId, role, options = {}) => {
+  const url = '/api/roles/namespace';
+  try {
+    const res = await makeRequest(url, {
+      method: 'POST',
+      returnResponse: true,
+      body: JSON.stringify({
+        account: accountId,
+        role,
+        namespace: namespaceId,
+      }),
+    });
+
+    if (res.status >= 400) {
+      let message = `${url} returned ${res.status} ${res.statusText}`;
+
+      try {
+        const serverError = await res.json();
+        if (serverError.message) message = serverError.message;
+      } catch(parseError) {
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+      }
+
+      throw new Error(message);
+    }
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
+
+export const removeRoleForNamespace = async (accountId, namespaceId, role, options = {}) => {
+  const url = '/api/roles/namespace';
+  try {
+    const res = await makeRequest(url, {
+      method: 'DELETE',
+      returnResponse: true,
+      body: JSON.stringify({
+        account: accountId,
+        role,
+        namespace: namespaceId,
+      }),
+    });
+
+    if (res.status >= 400) {
+      let message = `${url} returned ${res.status} ${res.statusText}`;
+
+      try {
+        const serverError = await res.json();
+        if (serverError.message) message = serverError.message;
+      } catch(parseError) {
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+      }
+
+      throw new Error(message);
+    }
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
