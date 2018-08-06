@@ -6,6 +6,9 @@ import {
   updateRolesForNamespace,
   addNewNamespace,
   deleteRolesForNamespace,
+  deleteRolesForRegistry,
+  updateRolesForRegistry,
+  addNewRegistry,
   selectAccount,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
@@ -17,6 +20,7 @@ import {
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
+  UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
 } from '../modules/editAccount';
 
 import {
@@ -25,6 +29,8 @@ import {
   getRegistries,
   addRoleForNamespace,
   removeRoleForNamespace,
+  addRoleForRegistry,
+  removeRoleForRegistry,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -107,6 +113,51 @@ export function* deleteRolesForNamespaceSaga({ payload }) {
   }
 }
 
+export function* updateRolesForRegistrySaga({ payload }) {
+  const { registryId, role, newValue, ...options } = payload;
+  const { id: accountId } = yield select(selectAccount);
+  yield put(startSubmit('accountRegistriesRoles'));
+  try {
+    let data;
+    if (newValue) data = yield call(addRoleForRegistry, accountId, registryId, role, options);
+    else data = yield call(removeRoleForRegistry, accountId, registryId, role, options);
+    yield put(UPDATE_ROLE_FOR_REGISTRY_SUCCESS({ data }));
+    yield put(stopSubmit('accountRegistriesRoles'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopSubmit('accountRegistriesRoles'));
+  }
+}
+
+export function* addNewRegistrySaga({ payload = {} }) {
+  const {
+    newRegistry,
+    roleForNewRegistry,
+  } = yield select(formValueSelector('accountRegistriesRoles'), 'newRegistry', 'roleForNewRegistry');
+
+  if (!newRegistry || !roleForNewRegistry) return;
+
+  yield put(updateRolesForRegistry({
+    registryId: newRegistry,
+    role: roleForNewRegistry,
+    newValue: true,
+    ...payload,
+  }));
+}
+
+export function* deleteRolesForRegistrySaga({ payload }) {
+  const { registryId, ...options } = payload;
+  const roles = yield select(formValueSelector('accountRegistriesRoles'), registryId);
+  for (const role in roles) {
+    yield call(updateRolesForRegistrySaga, { payload : {
+      registryId,
+      role,
+      newValue: false,
+      ...options,
+    } });
+  }
+}
+
 export default [
   takeEvery(fetchAccountInfo, fetchAccountInfoSaga),
   takeEvery(fetchAccountInfo, fetchNamespacesSaga),
@@ -114,4 +165,7 @@ export default [
   takeEvery(updateRolesForNamespace, updateRolesForNamespaceSaga),
   takeEvery(addNewNamespace, addNewNamespaceSaga),
   takeEvery(deleteRolesForNamespace, deleteRolesForNamespaceSaga),
+  takeEvery(updateRolesForRegistry, updateRolesForRegistrySaga),
+  takeEvery(addNewRegistry, addNewRegistrySaga),
+  takeEvery(deleteRolesForRegistry, deleteRolesForRegistrySaga),
 ];

@@ -194,3 +194,65 @@ export const removeRoleForNamespace = async (accountId, namespaceId, role, optio
     throw error;
   }
 };
+
+export const addRoleForRegistry = async (accountId, registryId, role, options = {}) => {
+  const url = '/api/roles/registry';
+  try {
+    const res = await makeRequest(url, {
+      method: 'POST',
+      returnResponse: true,
+      body: JSON.stringify({
+        account: accountId,
+        role,
+        registry: registryId,
+      }),
+    });
+
+    if (res.status >= 400) {
+      let message = `${url} returned ${res.status} ${res.statusText}`;
+
+      try {
+        const serverError = await res.json();
+        if (serverError.message) message = serverError.message;
+      } catch(parseError) {
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+      }
+
+      throw new Error(message);
+    }
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};
+
+export const removeRoleForRegistry = async (accountId, registryId, role, options = {}) => {
+  const url = '/api/roles/registry';
+  try {
+    const res = await makeRequest(url, {
+      method: 'DELETE',
+      returnResponse: true,
+      body: JSON.stringify({
+        account: accountId,
+        role,
+        registry: registryId,
+      }),
+    });
+
+    if (res.status >= 400) {
+      let message = `${url} returned ${res.status} ${res.statusText}`;
+
+      try {
+        const serverError = await res.json();
+        if (serverError.message) message = serverError.message;
+      } catch(parseError) {
+        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+      }
+
+      throw new Error(message);
+    }
+    return await res.json();
+  } catch(error) {
+    throw error;
+  }
+};

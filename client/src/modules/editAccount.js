@@ -5,6 +5,9 @@ const actionsPrefix = `KUBERNAUT/EDIT_ACCOUNT`;
 export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INFO`);
 export const updateRolesForNamespace = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_NAMESPACE`);
 export const addNewNamespace = createAction(`${actionsPrefix}/ADD_NEW_NAMESPACE`);
+export const deleteRolesForRegistry = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_REGISTRY`);
+export const updateRolesForRegistry = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_REGISTRY`);
+export const addNewRegistry = createAction(`${actionsPrefix}/ADD_NEW_REGISTRY`);
 export const deleteRolesForNamespace = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_NAMESPACE`);
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);
@@ -16,6 +19,7 @@ export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REG
 export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
 export const UPDATE_ROLE_FOR_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_NAMESPACE_SUCCESS`);
+export const UPDATE_ROLE_FOR_REGISTRY_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_REGISTRY_SUCCESS`);
 
 export const selectAccount = (state) => (state.editAccount.account);
 
@@ -106,6 +110,10 @@ export default handleActions({
     },
   }),
   [UPDATE_ROLE_FOR_NAMESPACE_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    account: payload.data,
+  }),
+  [UPDATE_ROLE_FOR_REGISTRY_SUCCESS]: (state, { payload }) => ({
     ...state,
     account: payload.data,
   }),

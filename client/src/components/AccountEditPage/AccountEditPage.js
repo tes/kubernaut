@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Container, Row, Col, Progress } from 'reactstrap';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
+import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
 import Account from '../../lib/domain/Account';
 
 class AccountEditPage extends Component {
@@ -13,7 +14,6 @@ class AccountEditPage extends Component {
     const {
       meta,
       account: accountData,
-      namespacesPossibleToAdd,
     } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Container>
@@ -41,13 +41,16 @@ class AccountEditPage extends Component {
             <AccountNamespacesRolesForm
               accountData={accountData}
               namespaces={this.props.namespaces}
-              namespacesPossibleToAdd={namespacesPossibleToAdd}
             />
           </Col>
         </Row>
         <Row className="mt-3">
           <Col sm="12">
             <h5>Registries:</h5>
+              <AccountRegistriesRolesForm
+                accountData={accountData}
+                registries={this.props.registries}
+              />
           </Col>
         </Row>
       </Container>

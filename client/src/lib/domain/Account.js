@@ -58,4 +58,20 @@ export default class Account {
       return namespaces;
     }, {});
   }
+
+  listRegistryIdsWithRoleAsObject() {
+    return Object.keys(this.roles || []).reduce((registries, name) => {
+      this.roles[name].registries.forEach((registry) => {
+        if (registries[registry]) {
+          registries[registry][name] = true;
+          return registries;
+        }
+        registries[registry] = {
+          [name]: true,
+        };
+        return registries;
+      });
+      return registries;
+    }, {});
+  }
 }
