@@ -23,7 +23,12 @@ export default connect((state, props) => {
 
   let formCurrentValues = {};
   if (namespacesOfUserCurrentUserCanSee.length > 0) {
-    formCurrentValues = { ...valuesSelector(state, ...namespacesOfUserCurrentUserCanSee) };
+    namespacesOfUserCurrentUserCanSee.forEach((id) => {
+      formCurrentValues = {
+        ...formCurrentValues,
+        [id]: valuesSelector(state, id),
+      };
+    });
   }
 
   const userNamespaceIds = Object.keys(userNamespaces);
