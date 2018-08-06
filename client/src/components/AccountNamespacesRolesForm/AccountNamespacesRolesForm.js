@@ -19,7 +19,7 @@ class Roles extends Component {
         <th scope="row">{namespace.cluster.name}/{namespace.name}</th>
         {
           ['admin', 'maintainer', 'developer', 'observer'].map((name) => (
-            <td key={name}>
+            <td key={name} className="text-center">
               <Field
                 name={name}
                 component="input"
@@ -57,10 +57,10 @@ class AccountNamespacesRolesForm extends Component {
                 <thead>
                   <tr>
                     <th></th>
-                    <th>Admin</th>
-                    <th>Maintainer</th>
-                    <th>Developer</th>
-                    <th>Observer</th>
+                    <th className="text-center">Admin</th>
+                    <th className="text-center">Maintainer</th>
+                    <th className="text-center">Developer</th>
+                    <th className="text-center">Observer</th>
                   </tr>
                 </thead>
                 <tbody>
