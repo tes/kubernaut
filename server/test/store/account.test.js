@@ -413,8 +413,9 @@ describe('Account Store', () => {
 
     it('should revoke role from account', async () => {
       const saved = await saveAccount();
-      const role = await grantRoleOnRegistry(saved.id, 'admin', null);
-      await revokeRoleOnRegistry(role.id);
+      const registry = await saveRegistry();
+      await grantRoleOnRegistry(saved.id, 'admin', registry.id);
+      await revokeRoleOnRegistry(saved.id, 'admin', registry.id);
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
@@ -500,8 +501,9 @@ describe('Account Store', () => {
 
     it('should revoke role from account', async () => {
       const saved = await saveAccount();
-      const role = await grantRoleOnNamespace(saved.id, 'admin', null);
-      await revokeRoleOnNamespace(role.id);
+      const namespace = await saveNamespace();
+      await grantRoleOnNamespace(saved.id, 'admin', namespace.id);
+      await revokeRoleOnNamespace(saved.id, 'admin', namespace.id);
 
       const account = await getAccount(saved.id);
       expect(account).toBeDefined();
@@ -562,16 +564,16 @@ describe('Account Store', () => {
     return store.grantRoleOnRegistry(id, name, registry, meta);
   }
 
-  function revokeRoleOnRegistry(id, meta = makeRootMeta(), ) {
-    return store.revokeRoleOnRegistry(id, meta);
+  function revokeRoleOnRegistry(accountId, roleName, registryId, meta = makeRootMeta(), ) {
+    return store.revokeRoleOnRegistry(accountId, roleName, registryId, meta);
   }
 
   function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
     return store.grantRoleOnNamespace(id, name, namespace, meta);
   }
 
-  function revokeRoleOnNamespace(id, meta = makeRootMeta(), ) {
-    return store.revokeRoleOnNamespace(id, meta);
+  function revokeRoleOnNamespace(accountId, roleName, namespaceId, meta = makeRootMeta(), ) {
+    return store.revokeRoleOnNamespace(accountId, roleName, namespaceId, meta);
   }
 
   function saveNamespace() {
