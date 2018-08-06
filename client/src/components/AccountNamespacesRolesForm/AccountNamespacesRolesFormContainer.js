@@ -29,7 +29,6 @@ export default connect((state, props) => {
     initialValues: {
       ...namespaces,
     },
-    accountId: props.accountId,
     currentValues: formCurrentValues,
     namespaceIds: namespacesCurrentUserCanSee,
     namespaceData: props.namespaces,

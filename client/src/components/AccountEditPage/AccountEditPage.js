@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col, Progress, Button } from 'reactstrap';
-import { EditAccountLink } from '../Links';
+import { Container, Row, Col, Progress } from 'reactstrap';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import Account from '../../lib/domain/Account';
 
@@ -24,25 +23,6 @@ class AccountEditPage extends Component {
 
     const account = new Account(accountData);
 
-    const namespaceIds = account.listNamespaceIdsWithRole();
-    const namespaces = Object.keys(namespaceIds).reduce((acc, namespace) => {
-      acc.push({ name: namespace, roles: namespaceIds[namespace] });
-      return acc;
-    }, []);
-
-    const namespaceEls = [];
-    let hasUnknownNamespaces = false;
-    namespaces.forEach(({ name, roles }) => {
-      const namespace = this.props.namespaces.items.find(({ id }) => (id === name));
-      if (!namespace) {
-        hasUnknownNamespaces = true;
-        return;
-      }
-      const namespaceName = `${namespace.cluster.name}/${namespace.name}`;
-      namespaceEls.push(<dt key={name} className="col-sm-3">{namespaceName}</dt>);
-      namespaceEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
-    });
-
     return (
       <Container>
         <Row className="mt-3">
@@ -53,28 +33,16 @@ class AccountEditPage extends Component {
         </Row>
         <Row className="mt-3">
           <Col sm="12">
-            <h5>Registries:</h5>
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col sm="12">
             <h5>Namespaces:</h5>
             <AccountNamespacesRolesForm
               accountData={accountData}
               namespaces={this.props.namespaces}
             />
-            <dl className="row">
-              {namespaceEls}
-            </dl>
-            {
-              hasUnknownNamespaces ?
-              <Row>
-                <Col sm="12">
-                  <p><small>This user has access to namespaces you are not permitted to view.</small></p>
-                </Col>
-              </Row>
-              : null
-            }
+          </Col>
+        </Row>
+        <Row className="mt-3">
+          <Col sm="12">
+            <h5>Registries:</h5>
           </Col>
         </Row>
       </Container>

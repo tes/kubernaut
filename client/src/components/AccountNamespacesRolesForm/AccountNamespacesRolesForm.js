@@ -86,7 +86,9 @@ class AccountNamespacesRolesForm extends Component {
 }
 
 AccountNamespacesRolesForm.propTypes = {
-
+  currentValues: PropTypes.object.isRequired,
+  namespaceIds: PropTypes.array.isRequired,
+  namespaceData: PropTypes.object.isRequired,
 };
 
 export default AccountNamespacesRolesForm;

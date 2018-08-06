@@ -75,23 +75,6 @@ class AccountPage extends Component {
         </Row>
         <Row className="mt-3">
           <Col sm="12">
-            <h5>Registries:</h5>
-            <dl className="row">
-              {registryEls}
-            </dl>
-            {
-              hasUnknownRegistries ?
-              <Row>
-                <Col sm="12">
-                  <p><small>This user has access to registries you are not permitted to view.</small></p>
-                </Col>
-              </Row>
-              : null
-            }
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col sm="12">
             <h5>Namespaces:</h5>
               <dl className="row">
                 {namespaceEls}
@@ -105,6 +88,23 @@ class AccountPage extends Component {
                 </Row>
                 : null
               }
+          </Col>
+        </Row>
+        <Row className="mt-3">
+          <Col sm="12">
+            <h5>Registries:</h5>
+            <dl className="row">
+              {registryEls}
+            </dl>
+            {
+              hasUnknownRegistries ?
+              <Row>
+                <Col sm="12">
+                  <p><small>This user has access to registries you are not permitted to view.</small></p>
+                </Col>
+              </Row>
+              : null
+            }
           </Col>
         </Row>
       </Container>

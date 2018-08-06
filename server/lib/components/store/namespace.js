@@ -117,7 +117,7 @@ export default function(options) {
 
     async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
 
-      logger.debug(`Finding up to ${limit} namespaces matching criteria: ${criteria} starting from offset: ${offset}`);
+      logger.debug(`Finding up to ${limit} namespaces matching criteria: ${JSON.stringify(criteria)} starting from offset: ${offset}`);
 
       const bindVariables = {};
 

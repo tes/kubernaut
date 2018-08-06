@@ -1,4 +1,6 @@
 import { createAction, handleActions } from 'redux-actions';
+import computeLoading from './lib/computeLoading';
+
 const actionsPrefix = `KUBERNAUT/VIEW_ACCOUNT`;
 export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INFO`);
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
@@ -10,24 +12,6 @@ export const FETCH_NAMESPACES_ERROR = createAction(`${actionsPrefix}/FETCH_NAMES
 export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REGISTRIES_REQUEST`);
 export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
-
-const computeLoading = (currentLoading, key, isLoading) => {
-  const newLoading = {
-    ...currentLoading,
-    sections: {
-      ...currentLoading.sections,
-      [key]: isLoading,
-    },
-  };
-  const numberOfSections = Object.keys(newLoading.sections).length;
-  const step = Math.floor(100 / numberOfSections);
-  newLoading.loadingPercent = Object.keys(newLoading.sections).reduce((acc, section) => {
-    if (newLoading.sections[section]) return acc - step;
-    return acc;
-  }, 100);
-
-  return newLoading;
-};
 
 const defaultState = {
   account: {},
