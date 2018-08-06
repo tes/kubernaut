@@ -101,6 +101,22 @@ export default function(options = {}) {
       }
     });
 
+    app.delete('/api/roles/registry', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.registry) return next(Boom.badRequest('registry is required'));
+
+        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const account = await store.revokeRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
+        res.json(account);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/roles/namespace', bodyParser.json(), async (req, res, next) => {
       try {
         if (!req.body.account) return next(Boom.badRequest('account is required'));

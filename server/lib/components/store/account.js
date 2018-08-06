@@ -157,9 +157,11 @@ export default function(options = {}) {
     }
 
     async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
-      return db.withTransaction(async connection => {
+      await db.withTransaction(async connection => {
         return _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta);
       });
+
+      return getAccount(accountId);
     }
 
     async function _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta) {
@@ -178,14 +180,16 @@ export default function(options = {}) {
       return granted;
     }
 
-    async function revokeRoleOnRegistry(id, meta) {
-      logger.debug(`Revoking role: ${id} on registry`);
+    async function revokeRoleOnRegistry(accountId, roleName, registryId, meta) {
+      logger.debug(`Revoking role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
 
       await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_REGISTRY, [
-        id, meta.date, meta.account.id,
+        accountId, roleName, registryId, meta.date, meta.account.id,
       ]);
 
-      logger.debug(`Revoked role: ${id} on registry`);
+      logger.debug(`Revoked role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
+
+      return getAccount(accountId);
     }
 
     async function grantRoleOnNamespace(accountId, roleName, namespaceId, meta) {
