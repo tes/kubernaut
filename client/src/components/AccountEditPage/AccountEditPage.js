@@ -10,7 +10,11 @@ class AccountEditPage extends Component {
   }
 
   render() {
-    const { meta, account: accountData } = this.props;
+    const {
+      meta,
+      account: accountData,
+      namespacesPossibleToAdd,
+    } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Container>
         <Row className="d-flex justify-content-center">
@@ -37,6 +41,7 @@ class AccountEditPage extends Component {
             <AccountNamespacesRolesForm
               accountData={accountData}
               namespaces={this.props.namespaces}
+              namespacesPossibleToAdd={namespacesPossibleToAdd}
             />
           </Col>
         </Row>
