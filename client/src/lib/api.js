@@ -59,6 +59,8 @@ export const getAccounts = ({ limit = 20, offset = 0 }) => {
 
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
+export const getServices = () => makeRequest('/api/services').then(computePagination);
+
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
 export const getClusters = () => makeRequest('/api/clusters').then(computePagination);

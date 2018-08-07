@@ -1,6 +1,7 @@
 import sqb from 'sqb';
 import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
+import Account from '../../domain/Account';
 
 export default function(options) {
 
@@ -28,9 +29,10 @@ export default function(options) {
       const bindVariables = {};
 
       const findServicesBuilder = sqb
-        .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name')
-        .from('active_service__vw s', 'active_registry__vw sr')
+        .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
+        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
         .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('s.created_by', raw('a.id')))
         .orderBy('s.name asc')
         .limit(limit)
         .offset(offset);
@@ -70,8 +72,11 @@ export default function(options) {
       return new Service({
         id: row.id,
         name: row.name,
-        createdOn: row.createdOn,
-        createdBy: row.createdBy,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
         registry: new Registry({
           id: row.registry_id,
           name: row.registry_name,

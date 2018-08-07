@@ -13,6 +13,7 @@ import namespaces from './namespaces';
 import registries from './registries';
 import releases from './releases';
 import service from './service';
+import services from './services';
 import viewAccount from './viewAccount';
 
 export default combineReducers({
@@ -29,5 +30,6 @@ export default combineReducers({
   registries,
   releases,
   service,
+  services,
   viewAccount,
 });

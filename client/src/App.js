@@ -25,6 +25,7 @@ import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
 import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
+import ServicesPage from './components/ServicesPage';
 import ServiceDetailsPage from './components/ServiceDetailsPage';
 
 // Reducers
@@ -141,6 +142,11 @@ class App extends Component {
                       deploymentId={match.params.deploymentId}
                     />
                   }
+                />
+                <Route
+                  exact
+                  path='/services'
+                  render={() => <ServicesPage /> }
                 />
                 <Route
                   exact
