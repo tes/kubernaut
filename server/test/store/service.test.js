@@ -2,7 +2,7 @@ import expect from 'expect';
 import createSystem from '../test-system';
 import { makeRegistry, makeRelease, makeRootMeta } from '../factories';
 
-describe.only('Service store', () => {
+describe('Service store', () => {
   let system = { stop: cb => cb() };
   let store = { nuke: () => new Promise(cb => cb()) };
 
