@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, NamespaceLink } from '../Links';
-import './NamespacesTable.css';
 
 class NamespacesTable extends Component {
 
@@ -11,41 +11,41 @@ class NamespacesTable extends Component {
     const { error = null, loading = false, namespaces = {}, fetchNamespaces } = this.props;
 
     const errorTableBody = () =>
-      <tbody className='namespaces-table__body namespaces-table__body--error'>
-        <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>Error loading namespaces</td>
+      <tbody>
+        <tr>
+          <td colSpan='4'>Error loading namespaces</td>
         </tr>
       </tbody>
     ;
 
     const loadingTableBody = () =>
-      <tbody className='namespaces-table__body namespaces-table__body--loading'>
-        <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>Loading namespaces…</td>
+      <tbody>
+        <tr>
+          <td colSpan='4'>Loading namespaces…</td>
         </tr>
       </tbody>
     ;
 
     const emptyTableBody = () =>
-      <tbody className='namespaces-table__body namespaces-table__body--empty'>
-        <tr className='namespaces-table__body__row'>
-          <td className='namespaces-table__body__row__info' colSpan='4'>There are no namespaces</td>
+      <tbody>
+        <tr>
+          <td colSpan='4'>There are no namespaces</td>
         </tr>
       </tbody>
     ;
 
     const NamespacesTableBody = () =>
-      <tbody className='namespaces-table__body namespaces-table__body--data'>
+      <tbody>
       {
         namespaces.items.map(namespace => {
-          return <tr className='namespaces-table__body__row' key={namespace.id} id={namespace.id} >
-            <td className='namespaces-table__body__row__created-date'>
-              <span className='namespaces-table__body__row__created-date__on'><Human date={namespace.createdOn} /></span>
-              <span className='namespaces-table__body__row__created-date__ago'><Ago date={namespace.createdOn} /></span>
+          return <tr key={namespace.id} id={namespace.id} >
+            <td><NamespaceLink namespace={namespace} /></td>
+            <td>{namespace.context}</td>
+            <td>
+              <span className="mr-4"><Human date={namespace.createdOn} /></span>
+              <span className="font-italic"><Ago date={namespace.createdOn} /></span>
             </td>
-            <td className='namespaces-table__body__row__namespace-name'><NamespaceLink namespace={namespace} /></td>
-            <td className='namespaces-table__body__row__context'>{namespace.context}</td>
-            <td className='namespaces-table__body__row__created-by'><AccountLink account={namespace.createdBy} /></td>
+            <td><AccountLink account={namespace.createdBy} /></td>
           </tr>;
         })
       }
@@ -54,13 +54,13 @@ class NamespacesTable extends Component {
 
     return (
       <div>
-        <table className='namespaces-table table table-sm table-responsive-lg table-hover'>
-          <thead className='namespaces-table__heading'>
+        <Table hover size="sm">
+          <thead>
             <tr>
-              <th className='namespaces-table__heading__created-date'>Created</th>
-              <th className='namespaces-table__heading__namespace-name'>Name</th>
-              <th className='namespaces-table__heading__context'>Context</th>
-              <th className='namespaces-table__heading__created-by'>Created By</th>
+              <th>Name</th>
+              <th>Context</th>
+              <th>Created</th>
+              <th>Created By</th>
             </tr>
           </thead>
           {
@@ -71,7 +71,7 @@ class NamespacesTable extends Component {
               else return NamespacesTableBody();
             })()
           }
-        </table>
+        </Table>
         <TablePagination
           pages={namespaces.pages}
           page={namespaces.page}

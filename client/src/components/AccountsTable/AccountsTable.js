@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink } from '../Links';
-import './AccountsTable.css';
 
 class AccountsTable extends Component {
 
@@ -11,42 +11,42 @@ class AccountsTable extends Component {
     const { error = null, loading = false, accounts = {}, fetchAccounts } = this.props;
 
     const errorTableBody = () =>
-      <tbody className='accounts-table__body accounts-table__body--error'>
-        <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='3'>Error loading accounts</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>Error loading accounts</td>
         </tr>
       </tbody>
     ;
 
     const loadingTableBody = () =>
-      <tbody className='accounts-table__body accounts-table__body--loading'>
-        <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='3'>Loading accounts…</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>Loading accounts…</td>
         </tr>
       </tbody>
     ;
 
     const emptyTableBody = () =>
-      <tbody className='accounts-table__body accounts-table__body--empty'>
-        <tr className='accounts-table__body__row'>
-          <td className='accounts-table__body__row__info' colSpan='3'>There are no accounts</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>There are no accounts</td>
         </tr>
       </tbody>
     ;
 
     const AccountsTableBody = () =>
-      <tbody className='accounts-table__body accounts-table__body--data'>
+      <tbody>
       {
         accounts.items.map(account => {
-          return <tr className='accounts-table__body__row' key={account.id} id={account.id} >
-            <td className='accounts-table__body__row__created-date'>
-              <span className="accounts-table__body__row__created-date__on"><Human date={account.createdOn} /></span>
-              <span className="accounts-table__body__row__created-date__ago"><Ago date={account.createdOn} /></span>
-            </td>
-            <td className='accounts-table__body__row__display-name'>
+          return <tr key={account.id} id={account.id} >
+            <td>
               <AccountLink account={account} />
             </td>
-            <td className='accounts-table__body__row__created-by'>
+            <td>
+              <span className="mr-4"><Human date={account.createdOn} /></span>
+              <span className="font-italic"><Ago date={account.createdOn} /></span>
+            </td>
+            <td>
               <AccountLink account={account.createdBy} />
             </td>
           </tr>;
@@ -57,12 +57,12 @@ class AccountsTable extends Component {
 
     return (
       <div>
-        <table className='accounts-table table table-sm table-responsive-lg table-hover'>
-          <thead className='accounts-table__heading'>
+        <Table hover size="sm">
+          <thead>
             <tr>
-              <th className='accounts-table__heading__created-date'>Created</th>
-              <th className='accounts-table__heading__display-name'>Name</th>
-              <th className='accounts-table__heading__created-by'>Created By</th>
+              <th>Name</th>
+              <th>Created</th>
+              <th>Created By</th>
             </tr>
           </thead>
           {
@@ -73,7 +73,7 @@ class AccountsTable extends Component {
               else return AccountsTableBody();
             })()
           }
-        </table>
+        </Table>
         <TablePagination
           pages={accounts.pages}
           page={accounts.page}

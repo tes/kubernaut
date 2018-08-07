@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink } from '../Links';
-import './RegistriesTable.css';
 
 class RegistriesTable extends Component {
 
@@ -11,40 +11,40 @@ class RegistriesTable extends Component {
     const { error = null, loading = false, registries = {}, fetchRegistries } = this.props;
 
     const errorTableBody = () =>
-      <tbody className='registries-table__body registries-table__body--error'>
-        <tr className='registries-table__body__row'>
-          <td className='registries-table__body__row__info' colSpan='3'>Error loading registries</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>Error loading registries</td>
         </tr>
       </tbody>
     ;
 
     const loadingTableBody = () =>
-      <tbody className='registries-table__body registries-table__body--loading'>
-        <tr className='registries-table__body__row'>
-          <td className='registries-table__body__row__info' colSpan='3'>Loading registries…</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>Loading registries…</td>
         </tr>
       </tbody>
     ;
 
     const emptyTableBody = () =>
-      <tbody className='registries-table__body registries-table__body--empty'>
-        <tr className='registries-table__body__row'>
-          <td className='registries-table__body__row__info' colSpan='3'>There are no registries</td>
+      <tbody>
+        <tr>
+          <td colSpan='3'>There are no registries</td>
         </tr>
       </tbody>
     ;
 
     const RegistriesTableBody = () =>
-      <tbody className='registries-table__body registries-table__body--data'>
+      <tbody>
       {
         registries.items.map(registry => {
-          return <tr className='registries-table__body__row' key={registry.id} id={registry.id} >
-            <td className='registries-table__body__row__created-date'>
-              <span className='registries-table__body__row__created-date__on'><Human date={registry.createdOn} /></span>
-              <span className='registries-table__body__row__created-date__ago'><Ago date={registry.createdOn} /></span>
+          return <tr key={registry.id} id={registry.id} >
+            <td><RegistryLink registry={registry} /></td>
+            <td>
+              <span className="mr-4"><Human date={registry.createdOn} /></span>
+              <span className="font-italic"><Ago date={registry.createdOn} /></span>
             </td>
-            <td className='registries-table__body__row__registry-name'><RegistryLink registry={registry} /></td>
-            <td className='registries-table__body__row__created-by'><AccountLink account={registry.createdBy} /></td>
+            <td><AccountLink account={registry.createdBy} /></td>
           </tr>;
         })
       }
@@ -53,12 +53,12 @@ class RegistriesTable extends Component {
 
     return (
       <div>
-        <table className='registries-table table table-sm table-responsive-lg table-hover'>
-          <thead className='registries-table__heading'>
+        <Table hover size="sm">
+          <thead>
             <tr>
-              <th className='registries-table__heading__created-date'>Created</th>
-              <th className='registries-table__heading__registry-name'>Name</th>
-              <th className='registries-table__heading__created-by'>Created By</th>
+              <th>Name</th>
+              <th>Created</th>
+              <th>Created By</th>
             </tr>
           </thead>
           {
@@ -69,7 +69,7 @@ class RegistriesTable extends Component {
               else return RegistriesTableBody();
             })()
           }
-        </table>
+        </Table>
         <TablePagination
           pages={registries.pages}
           page={registries.page}
