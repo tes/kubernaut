@@ -52,7 +52,7 @@ class ServicesTable extends Component {
 
     return (
       <div>
-        <Table>
+        <Table hover size="sm">
           <thead>
             <tr>
               <th>Service</th>
