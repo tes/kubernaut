@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import SQL from './sql';
 import Namespace from '../../domain/Namespace';
 import Account from '../../domain/Account';
@@ -171,6 +172,38 @@ export default function(options) {
       logger.debug(`Deleted namespace id: ${id}`);
     }
 
+    async function enableServiceForNamespace(namespace, service, meta) {
+      logger.debug(`Enabling service ${service.id} to deploy to namespace ${namespace.id}`);
+
+      const findBuilder = sqb
+        .select(raw('count(1) count'))
+        .from('service_namespace sn')
+        .where(Op.eq('sn.namespace', namespace.id))
+        .where(Op.eq('sn.service', service.id))
+        .where(Op.is('sn.deleted_on', null));
+
+      const insertBuilder = sqb
+        .insert('service_namespace', {
+          id: uuid(),
+          namespace: namespace.id,
+          service: service.id,
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await db.withTransaction(async (connection) => {
+        const alreadyExistsResult = await connection.query(db.serialize(findBuilder, {}).sql);
+        const alreadyExists = alreadyExistsResult.rows[0].count > 0;
+        if (alreadyExists) {
+          logger.debug(`Service ${service.id} already could deploy to namespace ${namespace.id}`);
+          return;
+        }
+
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+        logger.debug(`Service ${service.id} can now deploy to namespace ${namespace.id}`);
+      });
+    }
+
     function toNamespace(row, attributeRows = []) {
       return new Namespace({
         id: row.id,
@@ -201,6 +234,7 @@ export default function(options) {
       saveNamespace,
       deleteNamespace,
       updateNamespace,
+      enableServiceForNamespace,
     });
   }
 

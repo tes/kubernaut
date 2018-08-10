@@ -68,6 +68,25 @@ export default function(options) {
       });
     }
 
+    async function checkServiceCanDeploytoNamespace(namespace, service) {
+      logger.debug(`Checking service ${service.id} can deploy to namespace ${namespace.id}`);
+
+      const findBuilder = sqb
+        .select(raw('count(1) count'))
+        .from('service_namespace sn')
+        .where(Op.eq('sn.namespace', namespace.id))
+        .where(Op.eq('sn.service', service.id))
+        .where(Op.is('sn.deleted_on', null));
+
+      const result = await db.query(db.serialize(findBuilder, {}).sql);
+
+      const canDeploy = result.rows[0].count > 0;
+
+      logger.debug(`service ${service.id} ${canDeploy ? 'can' : 'cannot'} be deployed to namespace ${namespace.id}`);
+
+      return canDeploy;
+    }
+
     function toService(row) {
       return new Service({
         id: row.id,
@@ -87,6 +106,7 @@ export default function(options) {
     return cb(null, {
       findServices,
       searchByServiceName,
+      checkServiceCanDeploytoNamespace,
     });
   }
 

@@ -84,6 +84,9 @@ export default function(options = {}) {
         const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
+        const serviceCanDeploytoNamespace = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
+        if (!serviceCanDeploytoNamespace) return next(Boom.badRequest(`service ${release.service.name} is not allowed to deploy to namespace ${namespace.name}`));
+
         const streamResults = !!req.query.wait;
 
         const attributes = Object.assign({}, namespace.attributes, release.attributes, req.body);

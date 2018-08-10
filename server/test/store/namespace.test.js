@@ -1,9 +1,9 @@
 import expect from 'expect';
 import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeCluster, makeNamespace, makeRootMeta } from '../factories';
+import { makeCluster, makeNamespace, makeRootMeta, makeRelease } from '../factories';
 
-describe('Namespace Store', () => {
+describe.only('Namespace Store', () => {
 
   let system = { stop: cb => cb() };
   let store = { nuke: () => new Promise(cb => cb()) };
@@ -334,12 +334,62 @@ describe('Namespace Store', () => {
     });
   });
 
+  describe('Restricting service deployment to namespace', () => {
+    it('should enable a service to deploy to a namespace', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+    });
+
+    it('should not fail enabling a service already permitted', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+    });
+
+    it('should prevent a service not allowed to deploy to a namesace', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+
+      const canDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
+      expect(canDeploy).toBe(false);
+    });
+
+    it('should allow a service that can deploy to a namespace', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const canDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
+      expect(canDeploy).toBe(true);
+    });
+  });
+
   function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
     return store.saveCluster(cluster, meta);
   }
 
   function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
     return store.saveNamespace(namespace, meta);
+  }
+
+  function saveRelease(release = makeRelease(), meta = makeRootMeta()) {
+    return store.saveRelease(release, meta);
   }
 
   function getNamespace(id) {

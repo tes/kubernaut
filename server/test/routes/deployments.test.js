@@ -228,7 +228,8 @@ describe('Deployments API', () => {
         },
         version: '22',
       });
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -275,7 +276,8 @@ describe('Deployments API', () => {
           },
         },
       });
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       loggerOptions.suppress = true;
 
@@ -311,7 +313,8 @@ describe('Deployments API', () => {
         },
         version: '22',
       });
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -347,7 +350,8 @@ describe('Deployments API', () => {
         },
         version: '22',
       });
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       loggerOptions.suppress = true;
 
@@ -378,7 +382,8 @@ describe('Deployments API', () => {
       const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
       const release = makeRelease();
 
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -419,7 +424,8 @@ describe('Deployments API', () => {
         },
       }), makeRootMeta());
       const release = makeRelease();
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
         url: `http://${config.server.host}:${config.server.port}/api/deployments`,
@@ -459,7 +465,8 @@ describe('Deployments API', () => {
         },
       });
 
-      await store.saveRelease(release, makeRootMeta());
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       loggerOptions.suppress = true;
 
