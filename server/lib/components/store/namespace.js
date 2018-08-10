@@ -204,6 +204,21 @@ export default function(options) {
       });
     }
 
+    async function disableServiceForNamespace(namespace, service, meta) {
+      logger.debug(`Disabling service ${service.id} to deploy to namespace ${namespace.id}`);
+
+      const updateBuilder = sqb
+        .update('service_namespace sn', {
+          deleted_by: meta.account.id,
+          deleted_on: meta.date,
+        })
+        .where(Op.eq('sn.namespace', namespace.id))
+        .where(Op.eq('sn.service', service.id));
+
+      await await db.query(db.serialize(updateBuilder, {}).sql);
+      logger.debug(`Service ${service.id} disabled from deploying to namespace ${namespace.id}`);
+    }
+
     function toNamespace(row, attributeRows = []) {
       return new Namespace({
         id: row.id,
@@ -235,6 +250,7 @@ export default function(options) {
       deleteNamespace,
       updateNamespace,
       enableServiceForNamespace,
+      disableServiceForNamespace,
     });
   }
 

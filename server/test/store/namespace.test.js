@@ -378,6 +378,28 @@ describe.only('Namespace Store', () => {
       const canDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
       expect(canDeploy).toBe(true);
     });
+
+    it('should disable a service previously allowed', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+      const release2 = await saveRelease();
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, release2.service, makeRootMeta());
+
+      let canDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
+      expect(canDeploy).toBe(true);
+
+      await store.disableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      canDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
+      expect(canDeploy).toBe(false);
+
+      const otherServiceCanDeploy = await store.checkServiceCanDeploytoNamespace(namespace, release2.service);
+      expect(otherServiceCanDeploy).toBe(true);
+    });
   });
 
   function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
