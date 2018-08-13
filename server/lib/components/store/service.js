@@ -87,6 +87,68 @@ export default function(options) {
       return canDeploy;
     }
 
+    async function findServicesAndShowStatusForNamespace(criteria = {}, limit = 50, offset = 0) {
+      logger.debug(`Listing up to ${limit} services starting from offset: ${offset}`);
+
+      const bindVariables = {};
+
+      const findServicesBuilder = sqb
+        .select(
+          's.id',
+          's.name',
+          's.created_on',
+          's.created_by',
+          'sr.id registry_id',
+          'sr.name registry_name',
+          'a.display_name',
+          sqb
+            .select(raw('count(1) > 0'))
+            .from('service_namespace sn')
+            .where(Op.eq('sn.namespace', criteria.namespace))
+            .where(Op.eq('sn.service', raw('s.id')))
+            .where(Op.is('sn.deleted_on', null))
+            .as('enabled')
+        )
+        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('s.created_by', raw('a.id')))
+        .orderBy('s.name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countServicesBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_service__vw s', 'active_registry__vw sr')
+        .where(Op.eq('s.registry', raw('sr.id')));
+
+      if (criteria.registries) {
+        db.buildWhereClause('sr.id', criteria.registries, bindVariables, findServicesBuilder, countServicesBuilder);
+      }
+
+      const findStatement = db.serialize(findServicesBuilder, bindVariables);
+      const countStatement = db.serialize(countServicesBuilder, bindVariables);
+
+      return db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(findStatement.sql, findStatement.values),
+          connection.query(countStatement.sql, countStatement.values),
+        ]).then(([findResult, countResult]) => {
+          const items = findResult.rows.map(toServiceWithExtras({
+            enabled: 'enabled',
+          }));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} services`);
+
+          return {
+            limit,
+            offset,
+            count,
+            items,
+          };
+        });
+      });
+    }
+
     function toService(row) {
       return new Service({
         id: row.id,
@@ -103,10 +165,25 @@ export default function(options) {
       });
     }
 
+    function toServiceWithExtras(extrasMapping = {}) {
+      return (row) => {
+        const mapped = {
+          service: toService(row),
+        };
+
+        Object.keys(extrasMapping).forEach((columnName) => {
+          mapped[extrasMapping[columnName]] = row[columnName];
+        });
+
+        return mapped;
+      };
+    }
+
     return cb(null, {
       findServices,
       searchByServiceName,
       checkServiceCanDeploytoNamespace,
+      findServicesAndShowStatusForNamespace,
     });
   }
 

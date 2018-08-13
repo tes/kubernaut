@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
 import { makeCluster, makeNamespace, makeRootMeta, makeRelease } from '../factories';
 
-describe.only('Namespace Store', () => {
+describe('Namespace Store', () => {
 
   let system = { stop: cb => cb() };
   let store = { nuke: () => new Promise(cb => cb()) };

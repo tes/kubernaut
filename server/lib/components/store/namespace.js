@@ -213,7 +213,8 @@ export default function(options) {
           deleted_on: meta.date,
         })
         .where(Op.eq('sn.namespace', namespace.id))
-        .where(Op.eq('sn.service', service.id));
+        .where(Op.eq('sn.service', service.id))
+        .where(Op.is('sn.deleted_on', null));
 
       await await db.query(db.serialize(updateBuilder, {}).sql);
       logger.debug(`Service ${service.id} disabled from deploying to namespace ${namespace.id}`);

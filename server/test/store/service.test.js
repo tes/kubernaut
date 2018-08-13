@@ -1,6 +1,12 @@
 import expect from 'expect';
 import createSystem from '../test-system';
-import { makeRegistry, makeRelease, makeRootMeta } from '../factories';
+import {
+  makeRegistry,
+  makeRelease,
+  makeCluster,
+  makeNamespace,
+  makeRootMeta
+} from '../factories';
 
 describe('Service store', () => {
   let system = { stop: cb => cb() };
@@ -104,6 +110,117 @@ describe('Service store', () => {
     });
   });
 
+  describe('List services allowed for deployment to a namespace', () => {
+    it('List services for a namespace, indicating whether enabled or not. Sorted by name asc', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const registry2 = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'app-2', registry2 } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const results = await store.findServicesAndShowStatusForNamespace({
+        namespace: namespace.id,
+      });
+
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 3,
+      });
+      expect(results.items[0].service.name).toBe('app-1');
+      expect(results.items[0].enabled).toBe(true);
+      expect(results.items[1].service.name).toBe('app-2');
+      expect(results.items[1].enabled).toBe(false);
+      expect(results.items[2].service.name).toBe('service-1');
+      expect(results.items[2].enabled).toBe(false);
+    });
+
+    it('List services for a namespace, indicating whether enabled or not. Restricted by registry', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const registry2 = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'app-2', registry2 } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const results = await store.findServicesAndShowStatusForNamespace({
+        namespace: namespace.id,
+        registries: [registry.id],
+      });
+
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 2,
+      });
+      expect(results.items[0].service.name).toBe('app-1');
+      expect(results.items[0].enabled).toBe(true);
+      expect(results.items[1].service.name).toBe('service-1');
+      expect(results.items[1].enabled).toBe(false);
+    });
+
+    it('should limit and offset', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const registry2 = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'app-2', registry2 } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const results = await store.findServicesAndShowStatusForNamespace({
+        namespace: namespace.id,
+      }, 1);
+
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 3,
+      });
+      expect(results.items.length).toBe(1);
+      expect(results.items[0].service.name).toBe('app-1');
+      expect(results.items[0].enabled).toBe(true);
+
+      const results2 = await store.findServicesAndShowStatusForNamespace({
+        namespace: namespace.id,
+      }, 1, 1);
+
+      expect(results2).toBeDefined();
+      expect(results2).toMatchObject({
+        offset: 1,
+        count: 3,
+      });
+      expect(results2.items.length).toBe(1);
+      expect(results2.items[0].service.name).toBe('app-2');
+      expect(results2.items[0].enabled).toBe(false);
+    });
+  });
+
+  function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
+    return store.saveCluster(cluster, meta);
+  }
+
+  function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
+    return store.saveNamespace(namespace, meta);
+  }
 
   function saveRegistry(registry = makeRegistry(), meta = makeRootMeta()) {
     return store.saveRegistry(registry, meta);
