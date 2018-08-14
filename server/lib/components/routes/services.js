@@ -3,6 +3,9 @@ import Boom from 'boom';
 export default function(options = {}) {
   function start({ app, store, auth }, cb) {
     app.use('/api/services', auth('api'));
+    app.use('/api/services-with-status-for-namespace/:namespaceId', auth('api'));
+    app.use('/api/service/:serviceId/enable-deployment/:namespaceId', auth('api'));
+    app.use('/api/service/:serviceId/disable-deployment/:namespaceId', auth('api'));
 
     app.get('/api/services', async (req, res, next) => {
       try {
