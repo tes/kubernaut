@@ -9,6 +9,7 @@ import deployments from './deployments';
 import editAccount from './editAccount';
 import namespace from './namespace';
 import namespaceEdit from './namespaceEdit';
+import namespaceManage from './namespaceManage';
 import namespaces from './namespaces';
 import registries from './registries';
 import releases from './releases';
@@ -26,6 +27,7 @@ export default combineReducers({
   editAccount,
   namespace,
   namespaceEdit,
+  namespaceManage,
   namespaces,
   registries,
   releases,

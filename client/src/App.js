@@ -23,6 +23,7 @@ import HomePage from './components/HomePage';
 import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
+import NamespaceManagePage from './components/NamespaceManagePage';
 import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
 import ServicesPage from './components/ServicesPage';
@@ -100,6 +101,14 @@ class App extends Component {
                   path='/namespaces/:namespaceId/edit'
                   render={({ match }) =>
                     <NamespaceEditPage
+                      namespaceId={match.params.namespaceId}
+                    /> }
+                />
+                <Route
+                  exact
+                  path='/namespaces/:namespaceId/manage'
+                  render={({ match }) =>
+                    <NamespaceManagePage
                       namespaceId={match.params.namespaceId}
                     /> }
                 />

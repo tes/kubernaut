@@ -67,5 +67,8 @@ export const CreateDeploymentLink = ({ registry = {}, service = {}, version, clu
 export const EditNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
   <Link to={`/namespaces/${namespace.id || namespaceId}/edit`}>{children || <span>Edit</span>}</Link>;
 
+export const ManageNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
+  <Link to={`/namespaces/${namespace.id || namespaceId}/manage`}>{children || <span>Manage</span>}</Link>;
+
 export const EditAccountLink = ({ account = {}, accountId, children}) =>
   <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;

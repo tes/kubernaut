@@ -8,7 +8,18 @@ const makeRequest = async (url, options = {}) => {
     }
   }, options));
   if (options.returnResponse) return res;
-  if (res.status >= 400) throw new Error(`${url} returned ${res.status} ${res.statusText}`);
+  if (res.status >= 400) {
+    let message = `${url} returned ${res.status} ${res.statusText}`;
+
+    try {
+      const serverError = await res.json();
+      if (serverError.message) message = serverError.message;
+    } catch(parseError) {
+      if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
+    }
+
+    throw new Error(message);
+  }
   return await res.json();
 };
 
@@ -73,188 +84,99 @@ export const getAccount = () => makeRequest('/api/account');
 
 export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
 
+export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
+  .then(computePagination);
+
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
 
 export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
 
-export const makeDeployment = async (data, options = {}) => {
+export const makeDeployment = (data, options = {}) => {
   const wait = options.wait;
   const qs = makeQueryString({
     wait,
   });
   const url = `/api/deployments?${qs}`;
-  try {
-    const res = await makeRequest(url, {
-      method: 'POST',
-      returnResponse: true,
-      body: JSON.stringify(data),
-    });
-
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
-
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 };
 
-export const editNamespace = async (id, data, options = {}) => {
+export const editNamespace = (id, data, options = {}) => {
   const url = `/api/namespaces/${id}`;
-  try {
-    const res = await makeRequest(url, {
-      method: 'POST',
-      returnResponse: true,
-      body: JSON.stringify(data),
-    });
-
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
-
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 };
 
-export const addRoleForNamespace = async (accountId, namespaceId, role, options = {}) => {
+export const addRoleForNamespace = (accountId, namespaceId, role, options = {}) => {
   const url = '/api/roles/namespace';
-  try {
-    const res = await makeRequest(url, {
-      method: 'POST',
-      returnResponse: true,
-      body: JSON.stringify({
-        account: accountId,
-        role,
-        namespace: namespaceId,
-      }),
-    });
-
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
-
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      namespace: namespaceId,
+    }),
+  });
 };
 
-export const removeRoleForNamespace = async (accountId, namespaceId, role, options = {}) => {
+export const removeRoleForNamespace = (accountId, namespaceId, role, options = {}) => {
   const url = '/api/roles/namespace';
-  try {
-    const res = await makeRequest(url, {
-      method: 'DELETE',
-      returnResponse: true,
-      body: JSON.stringify({
-        account: accountId,
-        role,
-        namespace: namespaceId,
-      }),
-    });
-
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
-
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      namespace: namespaceId,
+    }),
+  });
 };
 
-export const addRoleForRegistry = async (accountId, registryId, role, options = {}) => {
+export const addRoleForRegistry = (accountId, registryId, role, options = {}) => {
   const url = '/api/roles/registry';
-  try {
-    const res = await makeRequest(url, {
-      method: 'POST',
-      returnResponse: true,
-      body: JSON.stringify({
-        account: accountId,
-        role,
-        registry: registryId,
-      }),
-    });
-
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
-
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      registry: registryId,
+    }),
+  });
 };
 
-export const removeRoleForRegistry = async (accountId, registryId, role, options = {}) => {
+export const removeRoleForRegistry = (accountId, registryId, role, options = {}) => {
   const url = '/api/roles/registry';
-  try {
-    const res = await makeRequest(url, {
-      method: 'DELETE',
-      returnResponse: true,
-      body: JSON.stringify({
-        account: accountId,
-        role,
-        registry: registryId,
-      }),
-    });
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      registry: registryId,
+    }),
+  });
+};
 
-    if (res.status >= 400) {
-      let message = `${url} returned ${res.status} ${res.statusText}`;
+export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit) => {
+  const qs = makeQueryString({
+    offset,
+    limit,
+  });
+  const url = `/api/service/${serviceId}/enable-deployment/${namespaceId}?${qs}`;
+  return makeRequest(url, {
+    method: 'POST',
+  }).then(computePagination);
+};
 
-      try {
-        const serverError = await res.json();
-        if (serverError.message) message = serverError.message;
-      } catch(parseError) {
-        if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
-      }
-
-      throw new Error(message);
-    }
-    return await res.json();
-  } catch(error) {
-    throw error;
-  }
+export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit) => {
+  const qs = makeQueryString({
+    offset,
+    limit,
+  });
+  const url = `/api/service/${serviceId}/disable-deployment/${namespaceId}?${qs}`;
+  return makeRequest(url, {
+    method: 'DELETE',
+  }).then(computePagination);
 };

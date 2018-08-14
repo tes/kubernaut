@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Button, Container, Row } from 'reactstrap';
 import DeploymentsTable from '../DeploymentsTable';
-import { EditNamespaceLink } from '../Links';
+import { EditNamespaceLink, ManageNamespaceLink } from '../Links';
 
 class NamespaceDetailsPage extends Component {
   componentDidMount() {
@@ -33,6 +33,12 @@ class NamespaceDetailsPage extends Component {
               <Button color="link">edit</Button>
             </EditNamespaceLink>
            : null }
+
+           { this.props.canManage ?
+             <ManageNamespaceLink namespaceId={this.props.namespaceId}>
+               <Button color="link">manage</Button>
+             </ManageNamespaceLink>
+            : null }
         </Row>
 
         <dl className="row">

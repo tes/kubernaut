@@ -9,6 +9,20 @@ export default function(options) {
 
   function start({ config, logger, db }, cb) {
 
+    async function getService(id) {
+      logger.debug(`Getting service by id ${id}`);
+      const serviceBuilder = sqb
+        .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
+        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('s.created_by', raw('a.id')))
+        .where(Op.eq('s.id', id));
+
+        const result = await db.query(db.serialize(serviceBuilder, {}).sql);
+        logger.debug(`Found ${result.rowCount} services with id: ${id}`);
+        return result.rowCount ? toService(result.rows[0]) : undefined;
+    }
+
     async function searchByServiceName(searchFilter, registry) {
       logger.debug(`Search registry ${registry.id} for services with [${searchFilter}] in the name`);
       const searchBuilder = sqb
@@ -87,7 +101,7 @@ export default function(options) {
       return canDeploy;
     }
 
-    async function findServicesAndShowStatusForNamespace(criteria = {}, limit = 50, offset = 0) {
+    async function findServicesAndShowStatusForNamespace(criteria = {}, limit = 20, offset = 0) {
       logger.debug(`Listing up to ${limit} services starting from offset: ${offset}`);
 
       const bindVariables = {};
@@ -180,6 +194,7 @@ export default function(options) {
     }
 
     return cb(null, {
+      getService,
       findServices,
       searchByServiceName,
       checkServiceCanDeploytoNamespace,
