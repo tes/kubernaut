@@ -17,6 +17,7 @@ export const clearServiceSuggestions = createAction(`${actionsPrefix}/CLEAR_SERV
 export const clearFormFields = createAction(`${actionsPrefix}/CLEAR_FORM_FIELDS`);
 export const validateService = createAction(`${actionsPrefix}/VALIDATE_SERVICE`);
 export const validateVersion = createAction(`${actionsPrefix}/VALIDATE_VERSION`);
+export const fetchNamespacesForService = createAction(`${actionsPrefix}/FETCH_NAMESPACES_FOR_SERVICE`);
 
 export const getDeployFormValues = getFormValues('deploy');
 

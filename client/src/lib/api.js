@@ -74,6 +74,8 @@ export const getServices = () => makeRequest('/api/services').then(computePagina
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
+export const getNamespacesForService = (serviceId) => makeRequest(`/api/namespaces/can-deploy-to-for/${serviceId}`).then(computePagination);
+
 export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);

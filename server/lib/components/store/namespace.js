@@ -220,6 +220,54 @@ export default function(options) {
       logger.debug(`Service ${service.id} disabled from deploying to namespace ${namespace.id}`);
     }
 
+    async function namespacesForService(criteria, limit = 50, offset = 0) {
+      const { namespaces, service } = criteria;
+      logger.debug(`Finding namespaces that service ${service.id} can deploy to`);
+
+      const bindVariables = {};
+
+      const serviceNamespaceBuilder = sqb
+        .select('namespace')
+        .from('service_namespace sn')
+        .where(Op.eq('sn.service', service.id))
+        .where(Op.is('sn.deleted_on', null));
+
+      const selectBuilder = sqb
+        .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_namespace__vw n', 'cluster c', 'account cb')
+        .where(Op.eq('n.cluster', raw('c.id')))
+        .where(Op.eq('n.created_by', raw('cb.id')))
+        .where(Op.in('n.id', serviceNamespaceBuilder))
+        .orderBy('n.name asc', 'c.name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countNamespacesBuilder = sqb
+        .select(raw('count(*)'))
+        .from('active_namespace__vw n', 'cluster c')
+        .where(Op.eq('n.cluster', raw('c.id')))
+        .where(Op.in('n.id', serviceNamespaceBuilder));
+
+      if (namespaces) {
+        db.buildWhereClause('n.id', namespaces, bindVariables, selectBuilder, countNamespacesBuilder);
+      }
+
+      const findNamespacesStatement = db.serialize(selectBuilder, bindVariables);
+      const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
+
+      return db.withTransaction(async connection => {
+        return Promise.all([
+          connection.query(findNamespacesStatement.sql, findNamespacesStatement.values),
+          connection.query(countNamespacesStatement.sql, countNamespacesStatement.values),
+        ]).then(([namespaceResult, countResult]) => {
+          const items = namespaceResult.rows.map(row => toNamespace(row));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} namespaces`);
+          return { limit, offset, count, items };
+        });
+      });
+    }
+
     function toNamespace(row, attributeRows = []) {
       return new Namespace({
         id: row.id,
@@ -252,6 +300,7 @@ export default function(options) {
       updateNamespace,
       enableServiceForNamespace,
       disableServiceForNamespace,
+      namespacesForService,
     });
   }
 

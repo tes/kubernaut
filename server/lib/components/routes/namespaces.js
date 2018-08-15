@@ -112,6 +112,24 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/namespaces/can-deploy-to-for/:serviceId', async (req, res, next) => {
+      try {
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+        const registryOk = req.user.hasPermissionOnRegistry(service.registry.id, 'registries-read');
+        if (!registryOk) return next(Boom.forbidden());
+
+        const userNamespaces = req.user.listNamespaceIdsWithPermission('namespaces-read');
+        const namespaces = await store.namespacesForService({
+          namespaces: userNamespaces,
+          service,
+        });
+        res.json(namespaces);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 

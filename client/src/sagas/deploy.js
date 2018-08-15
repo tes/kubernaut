@@ -18,6 +18,7 @@ import {
   clearFormFields,
   validateService,
   validateVersion,
+  fetchNamespacesForService,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -29,7 +30,7 @@ import {
 import {
   makeDeployment,
   getRegistries,
-  getNamespaces,
+  getNamespacesForService,
   getServiceSuggestions,
   getReleases,
 } from '../lib/api';
@@ -49,7 +50,7 @@ export function* fetchRegistriesSaga({ payload = {} }) {
 
 export function* fetchNamespacesSaga( { payload = {} }) {
   try {
-    const data = yield call(getNamespaces);
+    const data = yield call(getNamespacesForService, payload.serviceId);
     if (!data.count) return;
     yield put(SET_NAMESPACES({
       data: data.items.map(({ name, cluster }) => ({ name, cluster })),
@@ -110,6 +111,7 @@ export function* clearFormFieldsSaga({ payload }) {
 
 export function* validateServiceSaga({ payload: options = {} }) {
   const { service, registry } = yield select(getDeployFormValues);
+  if (!service) return;
   try {
     yield put(startAsyncValidation('deploy'));
     const data = yield call(getReleases, { service, registry });
@@ -118,6 +120,8 @@ export function* validateServiceSaga({ payload: options = {} }) {
       return;
     }
     yield put(stopAsyncValidation('deploy'));
+    const serviceId = data.items[0].service.id;
+    yield put(fetchNamespacesForService({ serviceId, ...options }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(stopAsyncValidation('deploy', { service: 'There was an error looking up services' }));
@@ -126,6 +130,7 @@ export function* validateServiceSaga({ payload: options = {} }) {
 
 export function* validateVersionSaga({ payload: { newValue: version, ...options } }) {
   const { service, registry } = yield select(getDeployFormValues);
+  if (!version) return;
   try {
     yield put(startAsyncValidation('deploy'));
     const data = yield call(getReleases, { service, registry, version });
@@ -143,7 +148,8 @@ export function* validateVersionSaga({ payload: { newValue: version, ...options 
 
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
-  takeEvery(INITIALISE, fetchNamespacesSaga),
+  takeEvery(INITIALISE, validateServiceSaga),
+  takeEvery(fetchNamespacesForService, fetchNamespacesSaga),
   takeEvery(submitForm.REQUEST, triggerDeploymentSaga),
   takeEvery(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
   takeEvery(useServiceSuggestion, useServiceSuggestionsSaga),

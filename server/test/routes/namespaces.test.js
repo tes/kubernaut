@@ -4,7 +4,7 @@ import errors from 'request-promise/errors';
 import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeNamespace, makeRootMeta } from '../factories';
+import { makeCluster, makeNamespace, makeRelease, makeRootMeta } from '../factories';
 
 describe('Namespaces API', () => {
 
@@ -483,6 +483,32 @@ describe('Namespaces API', () => {
 
       const namespace = await store.getNamespace(saved.id);
       expect(namespace).toBe(undefined);
+    });
+  });
+
+  describe('GET /api/namespaces/can-deploy-to-for/:serviceId', () => {
+    it('should list namespaces for a service to deploy to', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(await makeNamespace({
+        cluster,
+      }), makeRootMeta());
+      await store.saveNamespace(await makeNamespace({
+        cluster,
+      }), makeRootMeta());
+
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const namespaces = await request({
+        url: `http://${config.server.host}:${config.server.port}/api/namespaces/can-deploy-to-for/${release.service.id}`,
+        method: 'GET',
+        json: true,
+      });
+
+      expect(namespaces).toBeDefined();
+      expect(namespaces.count).toBe(1);
+      expect(namespaces.items[0].id).toBe(namespace.id);
     });
   });
 });

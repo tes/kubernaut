@@ -29,14 +29,15 @@ import {
   clearFormFields,
   validateService,
   validateVersion,
+  fetchNamespacesForService,
 } from '../../modules/deploy';
 
 import {
   makeDeployment,
   getRegistries,
-  getNamespaces,
   getServiceSuggestions,
   getReleases,
+  getNamespacesForService,
 } from '../../lib/api';
 
 const formValues = {
@@ -68,18 +69,18 @@ describe('Deploy sagas', () => {
     expect(gen.next().done).toBe(true);
   });
 
-  it('should fetch namespaces for form', () => {
+  it('should fetch namespaces for a service to deploy to', () => {
     const data = { items: [{ name: 'abc', cluster: 'bob' }], count:  1 };
-    const gen = fetchNamespacesSaga(INITIALISE({ quiet: true }));
-    expect(gen.next().value).toMatchObject(call(getNamespaces));
+    const gen = fetchNamespacesSaga(fetchNamespacesForService({ serviceId: '1', quiet: true }));
+    expect(gen.next().value).toMatchObject(call(getNamespacesForService, '1'));
     expect(gen.next(data).value).toMatchObject(put(SET_NAMESPACES({ data: data.items })));
     expect(gen.next().done).toBe(true);
   });
 
   it('should handle errors in fetching namespaces', () => {
     const error = new Error('ouch');
-    const gen = fetchNamespacesSaga(INITIALISE({ quiet: true }));
-    expect(gen.next().value).toMatchObject(call(getNamespaces));
+    const gen = fetchNamespacesSaga(fetchNamespacesForService({ serviceId: '1', quiet: true }));
+    expect(gen.next().value).toMatchObject(call(getNamespacesForService, '1'));
     expect(gen.throw(error).value).toMatchObject(put(INITIALISE_ERROR({ error })));
     expect(gen.next().done).toBe(true);
   });
@@ -147,11 +148,13 @@ describe('Deploy sagas', () => {
 
   it('validates service field entry when valid', () => {
     const formValues = { registry: 'default', service: 'abc' };
+    const response = { count: 1, items: [{ service: { id: 'abc' } }] };
     const gen = validateServiceSaga(validateService({ quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
     expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
-    expect(gen.next({ count: 1 }).value).toMatchObject(put(stopAsyncValidation('deploy')));
+    expect(gen.next(response).value).toMatchObject(put(stopAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(put(fetchNamespacesForService({ serviceId: 'abc' })));
     expect(gen.next().done).toBe(true);
   });
 

@@ -402,6 +402,28 @@ describe('Namespace Store', () => {
     });
   });
 
+  describe('Listing namespaces a service is allowed to deploy to', () => {
+    it('should list only the namespaces a service can deploy to', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const release = await saveRelease();
+
+      await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
+
+      const namespaces = await store.namespacesForService({
+        service: release.service,
+      });
+      expect(namespaces).toBeDefined();
+      expect(namespaces.count).toBe(1);
+      expect(namespaces.items[0].id).toBe(namespace.id);
+    });
+  });
+
   function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
     return store.saveCluster(cluster, meta);
   }
