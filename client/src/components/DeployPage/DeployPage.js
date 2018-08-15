@@ -19,6 +19,7 @@ class DeployPage extends Component {
       registrySelected,
       serviceSelected,
       clusterSelected,
+      clearFormFields,
     } = this.props;
 
     const validRegistryAndService = (registrySelected && serviceSelected);
@@ -38,6 +39,9 @@ class DeployPage extends Component {
               name="registry"
               component={RenderSelect}
               options={this.props.registries}
+              onChange={() => {
+                clearFormFields({ source: 'registry' });
+              }}
             />
           </div>
         </div>
@@ -52,6 +56,7 @@ class DeployPage extends Component {
               disabled={!registrySelected}
               onChangeListener={() => {
                 this.props.fetchServiceSuggestions();
+                clearFormFields({ source: 'service' });
               }}
               useSuggestion={this.props.useServiceSuggestion}
               suggestions={this.props.serviceSuggestions}
@@ -69,6 +74,9 @@ class DeployPage extends Component {
               type="text"
               disabled={!validRegistryAndService}
               autoComplete="foo-no-really"
+              onChange={() => {
+                clearFormFields({ source: 'version' });
+              }}
             />
           </div>
         </div>
@@ -81,6 +89,9 @@ class DeployPage extends Component {
               component={RenderSelect}
               options={this.props.clusters}
               disabled={!validRegistryAndService}
+              onChange={() => {
+                clearFormFields({ source: 'cluster' });
+              }}
             />
           </div>
         </div>

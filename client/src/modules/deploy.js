@@ -18,6 +18,7 @@ export const fetchServiceSuggestions = createAction(`${actionsPrefix}/FETCH_SERV
 export const setServiceSuggestions = createAction(`${actionsPrefix}/SET_SERVICE_SUGGESTIONS`);
 export const useServiceSuggestion = createAction(`${actionsPrefix}/USE_SERVICE_SUGGESTIONS`);
 export const clearServiceSuggestions = createAction(`${actionsPrefix}/CLEAR_SERVICE_SUGGESTIONS`);
+export const clearFormFields = createAction(`${actionsPrefix}/CLEAR_FORM_FIELDS`);
 
 export const getDeployFormValues = getFormValues('deploy');
 

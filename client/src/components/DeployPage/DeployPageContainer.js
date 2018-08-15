@@ -12,6 +12,7 @@ import {
   submitForm,
   fetchServiceSuggestions,
   useServiceSuggestion,
+  clearFormFields,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -53,6 +54,7 @@ export default connect(mapStateToProps, {
   INITIALISE,
   fetchServiceSuggestions,
   useServiceSuggestion,
+  clearFormFields,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

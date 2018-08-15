@@ -1,5 +1,5 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
-import { SubmissionError, change } from 'redux-form';
+import { SubmissionError, change, clearFields } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
@@ -9,6 +9,7 @@ import {
   useServiceSuggestion,
   clearServiceSuggestions,
   getDeployFormValues,
+  clearFormFields,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -84,10 +85,25 @@ export function* useServiceSuggestionsSaga({ payload }) {
   yield put(clearServiceSuggestions());
 }
 
+const formFieldsOrder = [
+  'registry',
+  'service',
+  'version',
+  'cluster',
+  'namespace',
+];
+export function* clearFormFieldsSaga({ payload }) {
+  const index = formFieldsOrder.indexOf(payload.source);
+  if (index < 0) return;
+  const fields = formFieldsOrder.slice(index + 1);
+  yield put(clearFields('deploy', false, false, ...fields));
+}
+
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
   takeEvery(INITIALISE, fetchNamespacesSaga),
   takeEvery(submitForm.REQUEST, triggerDeploymentSaga),
   takeEvery(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
-  takeEvery(useServiceSuggestion, useServiceSuggestionsSaga)
+  takeEvery(useServiceSuggestion, useServiceSuggestionsSaga),
+  takeEvery(clearFormFields, clearFormFieldsSaga),
 ];

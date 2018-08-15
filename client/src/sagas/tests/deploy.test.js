@@ -1,5 +1,5 @@
 import { put, call, select } from 'redux-saga/effects';
-import { SubmissionError, change } from 'redux-form';
+import { SubmissionError, change, clearFields } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
@@ -8,6 +8,7 @@ import {
   triggerDeploymentSaga,
   fetchServiceSuggestionsSaga,
   useServiceSuggestionsSaga,
+  clearFormFieldsSaga,
 } from '../deploy';
 
 import {
@@ -23,6 +24,7 @@ import {
   getDeployFormValues,
   useServiceSuggestion,
   clearServiceSuggestions,
+  clearFormFields,
 } from '../../modules/deploy';
 
 import {
@@ -121,5 +123,10 @@ describe('Deploy sagas', () => {
     expect(gen.next().value).toMatchObject(put(change('deploy', 'service', 'app-1')));
     expect(gen.next().value).toMatchObject(put(clearServiceSuggestions()));
     expect(gen.next().done).toBe(true);
+  });
+
+  it('clears field data on changes', () => {
+    const gen = clearFormFieldsSaga(clearFormFields({ source: 'service' }));
+    expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace')));
   });
 });
