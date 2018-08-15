@@ -7,12 +7,13 @@ import {
 import _uniq from 'lodash/uniq';
 
 import {
-  asyncValidateForm,
   INITIALISE,
   submitForm,
   fetchServiceSuggestions,
   useServiceSuggestion,
   clearFormFields,
+  validateService,
+  validateVersion,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -55,10 +56,10 @@ export default connect(mapStateToProps, {
   fetchServiceSuggestions,
   useServiceSuggestion,
   clearFormFields,
+  validateService,
+  validateVersion,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-  asyncValidate: asyncValidateForm,
-  asyncChangeFields: ['service', 'version'],
 })(DeployPage));

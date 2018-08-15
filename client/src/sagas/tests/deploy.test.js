@@ -1,5 +1,5 @@
 import { put, call, select } from 'redux-saga/effects';
-import { SubmissionError, change, clearFields } from 'redux-form';
+import { SubmissionError, change, clearFields, startAsyncValidation, stopAsyncValidation } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
@@ -9,6 +9,8 @@ import {
   fetchServiceSuggestionsSaga,
   useServiceSuggestionsSaga,
   clearFormFieldsSaga,
+  validateServiceSaga,
+  validateVersionSaga,
 } from '../deploy';
 
 import {
@@ -25,6 +27,8 @@ import {
   useServiceSuggestion,
   clearServiceSuggestions,
   clearFormFields,
+  validateService,
+  validateVersion,
 } from '../../modules/deploy';
 
 import {
@@ -32,6 +36,7 @@ import {
   getRegistries,
   getNamespaces,
   getServiceSuggestions,
+  getReleases,
 } from '../../lib/api';
 
 const formValues = {
@@ -128,5 +133,68 @@ describe('Deploy sagas', () => {
   it('clears field data on changes', () => {
     const gen = clearFormFieldsSaga(clearFormFields({ source: 'service' }));
     expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace')));
+  });
+
+  it('validates service field entry and error', () => {
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateServiceSaga(validateService({ quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
+    expect(gen.next({ count: 0 }).value).toMatchObject(put(stopAsyncValidation('deploy', { service: `'${formValues.registry}/${formValues.service}' does not exist`})));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('validates service field entry when valid', () => {
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateServiceSaga(validateService({ quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
+    expect(gen.next({ count: 1 }).value).toMatchObject(put(stopAsyncValidation('deploy')));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('handles and error validating service value', () => {
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateServiceSaga(validateService({ quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
+    expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopAsyncValidation('deploy', { service: 'There was an error looking up services' })));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('validates version field entry and error', () => {
+    const newValue = '1';
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
+    expect(gen.next({ count: 0 }).value).toMatchObject(put(stopAsyncValidation('deploy', { version: `'${formValues.registry}/${formValues.service}@${newValue}' does not exist`})));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('validates version field entry when valid', () => {
+    const newValue = '1';
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
+    expect(gen.next({ count: 1 }).value).toMatchObject(put(stopAsyncValidation('deploy')));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('handles and error validating version value', () => {
+    const newValue = '1';
+    const formValues = { registry: 'default', service: 'abc' };
+    const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
+    expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopAsyncValidation('deploy', { version: 'There was an error looking up versions' })));
+    expect(gen.next().done).toBe(true);
   });
 });

@@ -1,5 +1,11 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
-import { SubmissionError, change, clearFields } from 'redux-form';
+import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
+import {
+  SubmissionError,
+  change,
+  clearFields,
+  stopAsyncValidation,
+  startAsyncValidation
+} from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
@@ -10,6 +16,8 @@ import {
   clearServiceSuggestions,
   getDeployFormValues,
   clearFormFields,
+  validateService,
+  validateVersion,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -23,6 +31,7 @@ import {
   getRegistries,
   getNamespaces,
   getServiceSuggestions,
+  getReleases,
 } from '../lib/api';
 
 export function* fetchRegistriesSaga({ payload = {} }) {
@@ -99,6 +108,39 @@ export function* clearFormFieldsSaga({ payload }) {
   yield put(clearFields('deploy', false, false, ...fields));
 }
 
+export function* validateServiceSaga({ payload: options = {} }) {
+  const { service, registry } = yield select(getDeployFormValues);
+  try {
+    yield put(startAsyncValidation('deploy'));
+    const data = yield call(getReleases, { service, registry });
+    if (data.count === 0) {
+      yield put(stopAsyncValidation('deploy', { service: `'${registry}/${service}' does not exist`}));
+      return;
+    }
+    yield put(stopAsyncValidation('deploy'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopAsyncValidation('deploy', { service: 'There was an error looking up services' }));
+  }
+}
+
+export function* validateVersionSaga({ payload: { newValue: version, ...options } }) {
+  const { service, registry } = yield select(getDeployFormValues);
+  try {
+    yield put(startAsyncValidation('deploy'));
+    const data = yield call(getReleases, { service, registry, version });
+    if (data.count === 0) {
+      yield put(stopAsyncValidation('deploy', { version: `'${registry}/${service}@${version}' does not exist`}));
+      return;
+    }
+    yield put(stopAsyncValidation('deploy'));
+
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopAsyncValidation('deploy', { version: 'There was an error looking up versions' }));
+  }
+}
+
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
   takeEvery(INITIALISE, fetchNamespacesSaga),
@@ -106,4 +148,6 @@ export default [
   takeEvery(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
   takeEvery(useServiceSuggestion, useServiceSuggestionsSaga),
   takeEvery(clearFormFields, clearFormFieldsSaga),
+  takeLatest(validateService, validateServiceSaga),
+  takeLatest(validateVersion, validateVersionSaga),
 ];
