@@ -31,10 +31,14 @@ class ServiceDeploymentHistory extends Component {
                   <dl className="row mb-0">
                     <dt className="col-lg-3">Who:</dt>
                     <dd className="col-lg-9">{item.createdBy.displayName}</dd>
-                    <dt className="col-lg-3">View:</dt>
-                    <dd className="col-lg-9"><DeploymentLink deployment={item} icon="external-link"/></dd>
                     <dt className="col-lg-3">Actions:</dt>
                     <dd className="col-lg-9">
+                      <DeploymentLink
+                        deployment={item}
+                        icon="external-link"
+                      >
+                        <span className="mr-2">View</span>
+                      </DeploymentLink>
                       <CreateDeploymentLink
                         registry={item.release.service.registry}
                         service={item.release.service}

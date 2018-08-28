@@ -209,6 +209,10 @@ export default function(options) {
           id: row.namespace_id,
           name: row.namespace_name,
           color: row.namespace_color,
+          cluster: new Cluster({
+            name: row.cluster_name,
+            color: row.cluster_color,
+          }),
         }),
         cluster: new Cluster({
           name: row.cluster_name,

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Table, Row, Col, Badge } from 'reactstrap';
+import { Table, Row, Col } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { CreateDeploymentLink } from '../Links';
+import { CreateDeploymentLink, NamespaceLink } from '../Links';
 
 class ServiceReleaseHistory extends Component {
 
@@ -14,7 +14,11 @@ class ServiceReleaseHistory extends Component {
         const deployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
         const deploymentBadges = deployments.map((dep) => (
           <Col key={dep.namespace.id}>
-            <Badge style={{ backgroundColor: dep.namespace.color || dep.cluster.color }} pill>{dep.cluster.name}/{dep.namespace.name}</Badge>
+            <NamespaceLink
+              namespace={dep.namespace}
+              pill
+              showCluster
+            />
           </Col>
         ));
 

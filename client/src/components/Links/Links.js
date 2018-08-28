@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { stringify } from 'query-string';
+import { Badge } from 'reactstrap';
 
 export const AccountLink = ({ account }) => {
   return (
@@ -35,20 +36,26 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
-export const NamespaceLink = ({ namespace }) => {
+export const NamespaceLink = ({ namespace, pill = false, showCluster = false }) => {
+  const text = `${showCluster ? `${namespace.cluster.name}/` : ''}${namespace.name}`;
+  const element = pill ? (
+    <Badge style={{ backgroundColor: namespace.color || namespace.cluster.color }} pill>{namespace.cluster.name}/{namespace.name}</Badge>
+  ) : (<span>{text}</span>);
+
   return (
-    <Link to={`/namespaces/${namespace.id}`}><span>{namespace.name}</span></Link>
+    <Link to={`/namespaces/${namespace.id}`}>{element}</Link>
   );
 };
 
-export const DeploymentLink = ({ deployment, icon }) => {
+export const DeploymentLink = ({ deployment, icon, children }) => {
+  const element = children || (<i className={`fa fa-${icon}`} aria-hidden='true'></i>);
   return (
-    <Link to={`/deployments/${deployment.id}`}><i className={`fa fa-${icon}`} aria-hidden='true'></i></Link>
+    <Link to={`/deployments/${deployment.id}`}>{element}</Link>
   );
 };
 
-export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, children }) => {
-  const element = children || (<span>Deploy</span>);
+export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, text, children }) => {
+  const element = children || (<span>{text ? text : 'Deploy'}</span>);
   return (
     <Link to={{
         pathname: "/deploy",
