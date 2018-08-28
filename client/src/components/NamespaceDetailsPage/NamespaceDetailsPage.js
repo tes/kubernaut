@@ -55,6 +55,8 @@ class NamespaceDetailsPage extends Component {
 
         <Row>
           <h5>Deployments for this namespace:</h5>
+        </Row>
+        <Row>
           <DeploymentsTable
             deployments={this.props.deployments.data}
             loading={this.props.deployments.meta.loading}
@@ -65,6 +67,7 @@ class NamespaceDetailsPage extends Component {
                 namespace: this.props.namespaceId,
               });
             }}
+            omitColumns={['cluster', 'namespace']}
           />
         </Row>
       </Container>
