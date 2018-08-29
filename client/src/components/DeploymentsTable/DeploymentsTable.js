@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
+import { isEqual, curry } from 'lodash';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
-import { AccountLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink, DeploymentLink } from '../Links';
+import { AccountLink, ServiceLink, ReleaseLink, NamespaceLink, DeploymentLink } from '../Links';
 
 const columns = [
   { key: 'service', label: 'Service' },
   { key: 'version', label: 'Version' },
   { key: 'created', label: 'Created' },
-  { key: 'cluster', label: 'Cluster' },
-  { key: 'namespace', label: 'Namespace' },
+  { key: 'where', label: 'Where' },
   { key: 'status', label: 'Status' },
   { key: 'createdBy', label: 'Created By' },
   { key: 'deployLink', label: '' }
 ];
+
+const isEqualC = curry(isEqual);
 
 class DeploymentsTable extends Component {
 
@@ -52,14 +54,13 @@ class DeploymentsTable extends Component {
     ;
 
     const deploymentsTableBody = () => {
-      const omitService = omitColumns.indexOf('service') > -1;
-      const omitVersion = omitColumns.indexOf('version') > -1;
-      const omitCreated = omitColumns.indexOf('created') > -1;
-      const omitCluster = omitColumns.indexOf('cluster') > -1;
-      const omitNamespace = omitColumns.indexOf('namespace') > -1;
-      const omitStatus = omitColumns.indexOf('status') > -1;
-      const omitCreatedBy = omitColumns.indexOf('createdBy') > -1;
-      const omitDeployLink = omitColumns.indexOf('deployLink') > -1;
+      const omitService = omitColumns.find(isEqualC('service'));
+      const omitVersion = omitColumns.find(isEqualC('version'));
+      const omitCreated = omitColumns.find(isEqualC('created'));
+      const omitWhere = omitColumns.find(isEqualC('where'));
+      const omitStatus = omitColumns.find(isEqualC('status'));
+      const omitCreatedBy = omitColumns.find(isEqualC('createdBy'));
+      const omitDeployLink = omitColumns.find(isEqualC('deployLink'));
 
       return (
         <tbody>
@@ -72,8 +73,7 @@ class DeploymentsTable extends Component {
                   <span className="mr-4"><Human date={deployment.createdOn} /></span>
                   <span className="font-italic"><Ago date={deployment.createdOn} /></span>
                 </td> }
-                { omitCluster ? null : <td><ClusterLink cluster={deployment.namespace.cluster} /></td> }
-                { omitNamespace ? null : <td><NamespaceLink namespace={deployment.namespace} /></td> }
+                { omitWhere ? null : <td><NamespaceLink pill showCluster namespace={deployment.namespace} /></td> }
                 { omitStatus ? null : <td>{deployment.status}</td> }
                 { omitCreatedBy ? null : <td>
                   <AccountLink account={deployment.createdBy} />

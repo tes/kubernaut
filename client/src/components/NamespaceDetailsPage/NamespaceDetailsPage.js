@@ -67,7 +67,7 @@ class NamespaceDetailsPage extends Component {
                 namespace: this.props.namespaceId,
               });
             }}
-            omitColumns={['cluster', 'namespace']}
+            omitColumns={['where']}
           />
         </Row>
       </Container>
