@@ -47,7 +47,7 @@ export function* fetchReleasesDataSaga({ payload = {} }) {
 }
 
 export function* fetchDeploymentsDataSaga({ payload = {} }) {
-  const { page = 1, limit = 10, registry, service, ...options } = payload;
+  const { page = 1, limit = 12, registry, service, ...options } = payload;
   if (!registry) throw new Error('provide a registry');
   if (!service) throw new Error('provide a service');
   const offset = (page - 1) * limit;
