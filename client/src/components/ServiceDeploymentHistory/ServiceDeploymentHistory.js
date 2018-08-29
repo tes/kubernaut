@@ -5,7 +5,6 @@ import {
   CardBody,
   Row,
   Col,
-  CardDeck,
   CardHeader,
   CardFooter,
 } from 'reactstrap';
@@ -26,42 +25,48 @@ class ServiceDeploymentHistory extends Component {
     if (deployments && deployments.data && deployments.data.items) {
       deployments.data.items.forEach(item => {
         cards.push((
-          <Col sm="4" className="p-0">
-            <Card key={item.id} className="m-1">
-              <CardHeader className="d-flex justify-content-between px-2 py-1">
-                <div><Human date={item.createdOn} /></div>
-                <div>{item.status}</div>
-              </CardHeader>
-              <CardBody className="row p-1">
-                <Col sm="12">
-                  <dl className="row mb-0">
-                    <dt className="col-lg-3">Version:</dt>
-                    <dd className="col-lg-9">{item.release.version}</dd>
-                    <dt className="col-lg-3">Where:</dt>
-                    <dd className="col-lg-9"><NamespaceLink namespace={item.namespace} pill showCluster /></dd>
-                    <dt className="col-lg-3">Who:</dt>
-                    <dd className="col-lg-9"><AccountLink account={item.createdBy} /></dd>
-                  </dl>
-                </Col>
-              </CardBody>
-              <CardFooter className="d-flex justify-content-between px-2 py-1">
-                <DeploymentLink
-                  deployment={item}
-                  icon="external-link"
-                  >
-                  <span className="mr-2">View</span>
-                </DeploymentLink>
-                <CreateDeploymentLink
-                  registry={item.release.service.registry}
-                  service={item.release.service}
-                  version={item.release.version}
-                  cluster={item.namespace.cluster}
-                  namespace={item.namespace}
-                  text="Re-deploy"
-                  />
-              </CardFooter>
-            </Card>
-          </Col>
+          <Row key={item.id}>
+            <Col sm="12" className="p-0">
+              <Card className="m-1">
+                <CardHeader className="d-flex justify-content-between px-2 py-1">
+                  <div><Human date={item.createdOn} /></div>
+                  <div>{item.status}</div>
+                </CardHeader>
+                <CardBody className="row p-1">
+                  <Col sm="11" className="d-flex justify-content-around">
+                    <div className="d-flex">
+                      <div className="mr-1"><strong>Version:</strong></div>
+                      <div>{item.release.version}</div>
+                    </div>
+                    <div className="d-flex">
+                      <div className="mr-1"><strong>Where:</strong></div>
+                      <div><NamespaceLink namespace={item.namespace} pill showCluster /></div>
+                    </div>
+                    <div className="d-flex">
+                      <div className="mr-1"><strong>Who:</strong></div>
+                      <div><AccountLink account={item.createdBy} /></div>
+                    </div>
+                  </Col>
+                </CardBody>
+                <CardFooter className="d-flex justify-content-end px-2 py-1">
+                  <DeploymentLink
+                    deployment={item}
+                    icon="external-link"
+                    >
+                    <span className="mr-2">View</span>
+                  </DeploymentLink>
+                  <CreateDeploymentLink
+                    registry={item.release.service.registry}
+                    service={item.release.service}
+                    version={item.release.version}
+                    cluster={item.namespace.cluster}
+                    namespace={item.namespace}
+                    text="Re-deploy"
+                    />
+                </CardFooter>
+              </Card>
+            </Col>
+          </Row>
         ));
       });
     }
@@ -69,11 +74,7 @@ class ServiceDeploymentHistory extends Component {
       <div>
         <Row>
           <Col sm="12">
-            <CardDeck>
-              <Row>
-                {cards}
-              </Row>
-            </CardDeck>
+            {cards}
           </Col>
         </Row>
         <Row>
