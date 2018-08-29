@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Container, Row, Col, Table } from 'reactstrap';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
-import './DeploymentDetailsPage.css';
 
 class DeploymentDetailsPage extends Component {
 
@@ -21,141 +21,105 @@ class DeploymentDetailsPage extends Component {
       <div>Loading deployments</div>
     ;
 
-    const deploymentDetails = () =>
-      <div className='deployment_details'>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Service:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><ServiceLink service={deployment.release.service} /></span>
-          </div>
+    const deploymentDetails = () => {
+      const attributesEls = [];
+
+      for (const name in deployment.attributes) {
+        attributesEls.push(<dt key={name} className='col-md-3'>{name}:</dt>);
+        attributesEls.push(<dd key={`${name}-val`}className='col-md-9'>{deployment.attributes[name]}</dd>);
+      }
+
+      return (
+        <div>
+          <Row>
+            <Col sm="12">
+              <dl className="row">
+                  <dt className='col-md-3'>Service:</dt>
+                  <dd className='col-md-9'><ServiceLink service={deployment.release.service} /></dd>
+                  <dt className='col-md-3'>Version:</dt>
+                  <dd className='col-md-9'><ReleaseLink release={deployment.release} /></dd>
+                  <dt className='col-md-3'>Registry:</dt>
+                  <dd className='col-md-9'><RegistryLink registry={deployment.release.service.registry} /></dd>
+                  <dt className='col-md-3'>Cluster:</dt>
+                  <dd className='col-md-9'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
+                  <dt className='col-md-3'>Namespace:</dt>
+                  <dd className='col-md-9'><NamespaceLink namespace={deployment.namespace} /></dd>
+                  <dt className='col-md-3'>Status:</dt>
+                  <dd className='col-md-9'>{deployment.status}</dd>
+                  <dt className='col-md-3'>Apply Exit Code:</dt>
+                  <dd className='col-md-9'>{deployment.applyExitCode}</dd>
+                  <dt className='col-md-3'>Rollout Status Exit Code:</dt>
+                  <dd className='col-md-9'>{deployment.rolloutStatusExitCode}</dd>
+                  <dt className='col-md-3'>Created On:</dt>
+                  <dd className='col-md-9'>
+                    <span><Human date={deployment.createdOn} /></span>&nbsp;
+                    <span>(<Ago date={deployment.createdOn} />)</span>
+                  </dd>
+                  <dt className='col-md-3'>Created By:</dt>
+                  <dd className='col-md-9'><AccountLink account={deployment.createdBy} /></dd>
+                </dl>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col sm="12">
+                <h4>Deployment Attributes</h4>
+              </Col>
+            </Row>
+            <dl className="row">
+              {attributesEls}
+            </dl>
+
+            <Row>
+              <Col sm="12">
+                <h4>Deployment Log</h4>
+              </Col>
+            </Row>
+            <Row>
+              <Col sm="12">
+                <Table hover responsive size="sm">
+                  <tbody>
+                    {
+                      deployment.log.map(entry => {
+                        let textClass = 'text-secondary';
+                        if (entry.writtenTo === 'stdin') textClass = 'text-info';
+                        if (entry.writtenTo === 'sterr') textClass = 'text-danger';
+                        return <tr key={entry.id}>
+                          <td><Human date={entry.writtenOn} /></td>
+                          <td className={textClass}>{entry.content}</td>
+                        </tr>;
+                      })
+                    }
+                  </tbody>
+                </Table>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col sm="12">
+                <h4>Kubernetes Manifest</h4>
+              </Col>
+            </Row>
+            <Row>
+              <Col sm="12">
+                <pre className="bg-light p-2">
+                  <code>
+                    {deployment.manifest.yaml}
+                  </code>
+                </pre>
+              </Col>
+            </Row>
         </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Version:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><ReleaseLink release={deployment.release} /></span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Registry:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><RegistryLink registry={deployment.release.service.registry} /></span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Cluster:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><ClusterLink cluster={deployment.namespace.cluster} /></span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Namespace:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><NamespaceLink namespace={deployment.namespace} /></span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Status:</span>
-          </div>
-          <div className='col-md-10'>
-            <span className='deployment_details__status'>{deployment.status}</span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Apply Exit Code:</span>
-          </div>
-          <div className='col-md-10'>
-            <span>{deployment.applyExitCode}</span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Rollout Status Exit Code:</span>
-          </div>
-          <div className='col-md-10'>
-            <span>{deployment.rolloutStatusExitCode}</span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Created On:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><Human date={deployment.createdOn} /></span>&nbsp;
-            <span>(<Ago date={deployment.createdOn} />)</span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-2'>
-            <span className='deployment_details__label'>Created By:</span>
-          </div>
-          <div className='col-md-10'>
-            <span><AccountLink account={deployment.createdBy} /></span>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-12'>
-            <h2>Deployment Attributes</h2>
-          </div>
-        </div>
-        {
-          Object.keys(deployment.attributes).map(name => {
-            return <div key={name} className='row'>
-              <div className='col-md-2'>
-                <span className='deployment_details__label'>{name}</span>
-              </div>
-              <div className='col-md-10'>
-                <span>{deployment.attributes[name]}</span>
-              </div>
-            </div>;
-          })
-        }
-        <div className='row'>
-          <div className='col-md-12'>
-            <h2>Deployment Log</h2>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-12'>
-            <table className='log-table table table-sm table-responsive-lg '>
-              <tbody>
-              {
-                deployment.log.map(entry => {
-                  return <tr key={entry.id} className={`log-table log-table__row--${entry.writtenTo}`}>
-                    <td className='log-table__row__written-on'><Human date={entry.writtenOn} /></td>
-                    <td className='log-table__row__content'>{entry.content}</td>
-                  </tr>;
-                })
-              }
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className='row'>
-          <div className='col-md-12'>
-            <h2>Kubernetes Manifest</h2>
-          </div>
-          <div className='col-md-12 bg-light'>
-            <pre><code>{deployment.manifest.yaml}</code></pre>
-          </div>
-        </div>
-      </div>
-    ;
+      );
+    };
 
     return (
-      <div>
-        <h2>Deployment Details</h2>
+      <Container>
+        <Row>
+          <Col sm="12">
+            <h3>Deployment Details:</h3>
+          </Col>
+        </Row>
         {
           (() => {
             if (meta.error) return errorDetails();
@@ -163,7 +127,7 @@ class DeploymentDetailsPage extends Component {
             else return deploymentDetails();
           })()
         }
-      </div>
+      </Container>
     );
   }
 }
