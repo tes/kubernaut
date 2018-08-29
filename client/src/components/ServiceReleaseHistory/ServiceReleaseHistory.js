@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table, Row, Col } from 'reactstrap';
 import TablePagination from '../TablePagination';
+import { Human } from '../DisplayDate';
 import { CreateDeploymentLink, NamespaceLink } from '../Links';
 
 class ServiceReleaseHistory extends Component {
@@ -25,7 +26,7 @@ class ServiceReleaseHistory extends Component {
         rows.push((
           <tr key={item.id} className="row">
             <td className="col-1">{item.version}</td>
-          <td className="col-3">{item.createdOn}</td>
+            <td className="col-3"><Human date={item.createdOn} /></td>
             <td className="col-auto">
               <CreateDeploymentLink
                 service={item.service}

@@ -18,7 +18,7 @@ class ServiceDetailsPage extends Component {
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>
         </div>
         <div className="row mb-3 d-block">
-          <h5>Releases</h5>
+          <h5>Releases:</h5>
           <ServiceReleaseHistory
             releases={this.props.releasesList}
             latestDeployments={this.props.latestDeployments}
@@ -34,7 +34,7 @@ class ServiceDetailsPage extends Component {
         </div>
 
         <div className="row d-block">
-          <h5>Deployments</h5>
+          <h5>Deployments:</h5>
           <ServiceDeploymentHistory
             deployments={this.props.deploymentsList}
             paginationFunc={({ page, limit }) => {

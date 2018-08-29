@@ -2,7 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Card, CardBody, Row } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { DeploymentLink, CreateDeploymentLink } from '../Links';
+import { Human } from '../DisplayDate';
+import {
+  DeploymentLink,
+  CreateDeploymentLink,
+  NamespaceLink,
+  AccountLink,
+} from '../Links';
 
 class ServiceDeploymentHistory extends Component {
 
@@ -13,24 +19,24 @@ class ServiceDeploymentHistory extends Component {
       deployments.data.items.forEach(item => {
         rows.push((
           <Row key={item.id}>
-            <Card className="col-sm">
+            <Card className="col-sm mb-2">
               <CardBody className="row p-1">
                 <div className="col-lg">
                   <dl className="row mb-0">
                     <dt className="col-lg-3">When:</dt>
-                    <dd className="col-lg-9">{item.createdOn}</dd>
+                    <dd className="col-lg-9"><Human date={item.createdOn} /></dd>
                     <dt className="col-lg-3">Version:</dt>
                     <dd className="col-lg-9">{item.release.version}</dd>
                     <dt className="col-lg-3">Where:</dt>
-                    <dd className="col-lg-9">{item.namespace.cluster.name}</dd>
-                    <dt className="col-lg-3">Status:</dt>
-                    <dd className="col-lg-9">{item.status}</dd>
+                    <dd className="col-lg-9"><NamespaceLink namespace={item.namespace} pill showCluster /></dd>
                   </dl>
                 </div>
                 <div className="col-lg">
                   <dl className="row mb-0">
+                    <dt className="col-lg-3">Status:</dt>
+                    <dd className="col-lg-9">{item.status}</dd>
                     <dt className="col-lg-3">Who:</dt>
-                    <dd className="col-lg-9">{item.createdBy.displayName}</dd>
+                    <dd className="col-lg-9"><AccountLink account={item.createdBy} /></dd>
                     <dt className="col-lg-3">Actions:</dt>
                     <dd className="col-lg-9">
                       <DeploymentLink
