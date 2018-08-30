@@ -33,16 +33,16 @@ class ServiceDeploymentHistory extends Component {
                   <div>{item.status}</div>
                 </CardHeader>
                 <CardBody className="row p-1">
-                  <Col sm="11" className="d-flex justify-content-around">
-                    <div className="d-flex">
+                  <Col sm="11" className="d-flex justify-content-around mx-auto">
+                    <div className="d-flex w-100">
                       <div className="mr-1"><strong>Version:</strong></div>
                       <div>{item.release.version}</div>
                     </div>
-                    <div className="d-flex">
+                    <div className="d-flex w-100">
                       <div className="mr-1"><strong>Where:</strong></div>
                       <div><NamespaceLink namespace={item.namespace} pill showCluster /></div>
                     </div>
-                    <div className="d-flex">
+                    <div className="d-flex w-100">
                       <div className="mr-1"><strong>Who:</strong></div>
                       <div><AccountLink account={item.createdBy} /></div>
                     </div>
