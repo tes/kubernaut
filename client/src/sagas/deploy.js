@@ -113,7 +113,7 @@ export function* validateServiceSaga({ payload: options = {} }) {
   const { service, registry } = yield select(getDeployFormValues);
   if (!service) return;
   try {
-    yield put(startAsyncValidation('deploy'));
+    yield put(startAsyncValidation('deploy', 'service'));
     const data = yield call(getReleases, { service, registry });
     if (data.count === 0) {
       yield put(stopAsyncValidation('deploy', { service: `'${registry}/${service}' does not exist`}));
@@ -132,7 +132,7 @@ export function* validateVersionSaga({ payload: { newValue: version, ...options 
   const { service, registry } = yield select(getDeployFormValues);
   if (!version) return;
   try {
-    yield put(startAsyncValidation('deploy'));
+    yield put(startAsyncValidation('deploy', 'version'));
     const data = yield call(getReleases, { service, registry, version });
     if (data.count === 0) {
       yield put(stopAsyncValidation('deploy', { version: `'${registry}/${service}@${version}' does not exist`}));

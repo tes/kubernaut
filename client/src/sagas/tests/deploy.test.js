@@ -140,7 +140,7 @@ describe('Deploy sagas', () => {
     const formValues = { registry: 'default', service: 'abc' };
     const gen = validateServiceSaga(validateService({ quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'service')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
     expect(gen.next({ count: 0 }).value).toMatchObject(put(stopAsyncValidation('deploy', { service: `'${formValues.registry}/${formValues.service}' does not exist`})));
     expect(gen.next().done).toBe(true);
@@ -151,7 +151,7 @@ describe('Deploy sagas', () => {
     const response = { count: 1, items: [{ service: { id: 'abc' } }] };
     const gen = validateServiceSaga(validateService({ quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'service')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
     expect(gen.next(response).value).toMatchObject(put(stopAsyncValidation('deploy')));
     expect(gen.next().value).toMatchObject(put(fetchNamespacesForService({ serviceId: 'abc' })));
@@ -162,7 +162,7 @@ describe('Deploy sagas', () => {
     const formValues = { registry: 'default', service: 'abc' };
     const gen = validateServiceSaga(validateService({ quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'service')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
     expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopAsyncValidation('deploy', { service: 'There was an error looking up services' })));
     expect(gen.next().done).toBe(true);
@@ -173,7 +173,7 @@ describe('Deploy sagas', () => {
     const formValues = { registry: 'default', service: 'abc' };
     const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'version')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
     expect(gen.next({ count: 0 }).value).toMatchObject(put(stopAsyncValidation('deploy', { version: `'${formValues.registry}/${formValues.service}@${newValue}' does not exist`})));
     expect(gen.next().done).toBe(true);
@@ -184,7 +184,7 @@ describe('Deploy sagas', () => {
     const formValues = { registry: 'default', service: 'abc' };
     const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'version')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
     expect(gen.next({ count: 1 }).value).toMatchObject(put(stopAsyncValidation('deploy')));
     expect(gen.next().done).toBe(true);
@@ -195,7 +195,7 @@ describe('Deploy sagas', () => {
     const formValues = { registry: 'default', service: 'abc' };
     const gen = validateVersionSaga(validateVersion({ newValue, quiet: true }));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
-    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy')));
+    expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'version')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
     expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopAsyncValidation('deploy', { version: 'There was an error looking up versions' })));
     expect(gen.next().done).toBe(true);
