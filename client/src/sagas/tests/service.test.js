@@ -77,7 +77,7 @@ describe('Service sagas', () => {
 
       const gen = fetchDeploymentsDataSaga(fetchDeploymentsPagination({ service: 'a', registry: 'b' }));
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 20, offset: 0 }));
+      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 10, offset: 0 }));
       expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
       expect(gen.next().done).toBe(true);
     });
@@ -86,7 +86,7 @@ describe('Service sagas', () => {
       const error = new Error('ouch');
       const gen = fetchDeploymentsDataSaga(fetchDeploymentsPagination({ service: 'a', registry: 'b', quiet: true }));
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 20, offset: 0 }));
+      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 10, offset: 0 }));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENTS_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });
@@ -96,7 +96,7 @@ describe('Service sagas', () => {
 
       const gen = fetchDeploymentsDataSaga(fetchDeploymentsPagination({ service: 'a', registry: 'b', page: 2 }));
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 20, offset: 20 }));
+      expect(gen.next().value).toMatchObject(call(getDeployments, { service: 'a', registry: 'b', limit: 10, offset: 10 }));
       expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
       expect(gen.next().done).toBe(true);
     });
