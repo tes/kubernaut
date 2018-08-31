@@ -19,12 +19,14 @@ import {
   validateService,
   validateVersion,
   fetchNamespacesForService,
+  fetchLatestDeploymentsPerNamespace,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
   CLEAR_LOADING,
   SET_REGISTRIES,
   SET_NAMESPACES,
+  SET_DEPLOYMENTS,
 } from '../modules/deploy';
 
 import {
@@ -33,6 +35,7 @@ import {
   getNamespacesForService,
   getServiceSuggestions,
   getReleases,
+  getLatestDeploymentsByNamespaceForService,
 } from '../lib/api';
 
 export function* fetchRegistriesSaga({ payload = {} }) {
@@ -53,7 +56,7 @@ export function* fetchNamespacesSaga( { payload = {} }) {
     const data = yield call(getNamespacesForService, payload.serviceId);
     if (!data.count) return;
     yield put(SET_NAMESPACES({
-      data: data.items.map(({ name, cluster }) => ({ name, cluster })),
+      data: data.items,
     }));
   } catch(error) {
     if (!payload.quiet) console.error(error); // eslint-disable-line no-console
@@ -91,8 +94,10 @@ export function* fetchServiceSuggestionsSaga({ payload = {} }) {
 }
 
 export function* useServiceSuggestionsSaga({ payload }) {
+  const { registry } = yield select(getDeployFormValues);
   yield put(change('deploy', 'service', payload));
   yield put(clearServiceSuggestions());
+  yield put(fetchLatestDeploymentsPerNamespace({ service: payload, registry }));
 }
 
 const formFieldsOrder = [
@@ -122,6 +127,7 @@ export function* validateServiceSaga({ payload: options = {} }) {
     yield put(stopAsyncValidation('deploy'));
     const serviceId = data.items[0].service.id;
     yield put(fetchNamespacesForService({ serviceId, ...options }));
+    yield put(fetchLatestDeploymentsPerNamespace({ service, registry }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(stopAsyncValidation('deploy', { service: 'There was an error looking up services' }));
@@ -146,6 +152,15 @@ export function* validateVersionSaga({ payload: { newValue: version, ...options 
   }
 }
 
+export function* fetchLatestDeploymentsPerNamespaceSaga({ payload: { service, registry, ...options }}) {
+  try {
+    const data = yield call(getLatestDeploymentsByNamespaceForService, { registry, service });
+    yield put(SET_DEPLOYMENTS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
   takeEvery(INITIALISE, validateServiceSaga),
@@ -156,4 +171,5 @@ export default [
   takeEvery(clearFormFields, clearFormFieldsSaga),
   takeLatest(validateService, validateServiceSaga),
   takeLatest(validateVersion, validateVersionSaga),
+  takeEvery(fetchLatestDeploymentsPerNamespace, fetchLatestDeploymentsPerNamespaceSaga),
 ];

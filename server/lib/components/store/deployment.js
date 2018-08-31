@@ -116,7 +116,16 @@ export default function(options) {
       logger.debug(`Getting latest deployment per namespace for service: ${service} ${namespaces}`);
 
       const builder = sqb
-        .select(raw('distinct d.namespace namespace_id, n.name namespace_name, n.color namespace_color, c.name cluster_name, c.color cluster_color, LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id'))
+        .select(raw(`
+          distinct
+            d.namespace namespace_id,
+            n.name namespace_name,
+            n.color namespace_color,
+            c.name cluster_name,
+            c.color cluster_color,
+            LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id,
+            LAST_VALUE(r.version) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_version
+          `))
         .from('deployment d')
         .join(join('release r').on(Op.eq('r.id', raw('d.release'))))
         .join(join('service s').on(Op.eq('s.id', raw('r.service'))))
@@ -126,7 +135,6 @@ export default function(options) {
         .where(Op.eq('sr.id', registryId))
         .where(Op.eq('s.name', service))
         .where(Op.or(...(namespaces.map((id) => (Op.eq('d.namespace', id))))));
-
 
       return await db.withTransaction(async connection =>
         connection.query(db.serialize(builder, {}).sql)
@@ -220,6 +228,7 @@ export default function(options) {
         }),
         release: new Release({
           id: row.release_id,
+          version: row.release_version
         }),
       };
     }

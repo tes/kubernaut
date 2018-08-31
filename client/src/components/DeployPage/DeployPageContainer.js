@@ -42,12 +42,15 @@ const mapStateToProps = (state, props) => {
     registries: deploy.registries,
     clusters: _uniq(deploy.namespaces.map(({ cluster }) => (cluster.name))),
     namespaces: deploy.namespaces.filter((namespace) => (namespace.cluster.name === currentFormValues.cluster)).map(({ name }) => (name)),
+    namespacesRich: deploy.namespaces.filter((namespace) => (namespace.cluster.name === currentFormValues.cluster)),
     meta: deploy.meta,
     registrySelected: !!currentFormValues.registry,
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
     clusterSelected: !!currentFormValues.cluster,
     submitForm,
     serviceSuggestions: deploy.serviceSuggestions,
+    deployments: deploy.deployments,
+    currentFormValues,
   };
 };
 

@@ -9,6 +9,7 @@ export const SET_LOADING = createAction(`${actionsPrefix}/SET_LOADING`);
 export const CLEAR_LOADING = createAction(`${actionsPrefix}/CLEAR_LOADING`);
 export const SET_REGISTRIES = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const SET_NAMESPACES = createAction(`${actionsPrefix}/SET_NAMESPACES`);
+export const SET_DEPLOYMENTS = createAction(`${actionsPrefix}/SET_DEPLOYMENTS`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const fetchServiceSuggestions = createAction(`${actionsPrefix}/FETCH_SERVICE_SUGGESTIONS`);
 export const setServiceSuggestions = createAction(`${actionsPrefix}/SET_SERVICE_SUGGESTIONS`);
@@ -18,6 +19,7 @@ export const clearFormFields = createAction(`${actionsPrefix}/CLEAR_FORM_FIELDS`
 export const validateService = createAction(`${actionsPrefix}/VALIDATE_SERVICE`);
 export const validateVersion = createAction(`${actionsPrefix}/VALIDATE_VERSION`);
 export const fetchNamespacesForService = createAction(`${actionsPrefix}/FETCH_NAMESPACES_FOR_SERVICE`);
+export const fetchLatestDeploymentsPerNamespace = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PER_NAMESPACE`);
 
 export const getDeployFormValues = getFormValues('deploy');
 
@@ -29,6 +31,7 @@ const defaultState = {
   registries: [],
   namespaces: [],
   serviceSuggestions: [],
+  deployments: [],
 };
 
 export default handleActions({
@@ -43,6 +46,7 @@ export default handleActions({
   [CLEAR_LOADING]: (state) => ({ ...state, meta: { loading: false } }),
   [SET_REGISTRIES]: (state, { payload }) => ({ ...state, registries: payload.data }),
   [SET_NAMESPACES]: (state, { payload }) => ({ ...state, namespaces: payload.data }),
+  [SET_DEPLOYMENTS]: (state, { payload }) => ({ ...state, deployments: payload.data }),
   [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
   [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
 }, defaultState);

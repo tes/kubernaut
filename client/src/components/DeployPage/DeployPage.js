@@ -1,9 +1,21 @@
 import React, { Component } from 'react';
 import { Field } from 'redux-form';
 import PropTypes from 'prop-types';
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  FormGroup,
+  Label,
+  Card,
+  CardHeader,
+  CardBody,
+} from 'reactstrap';
 import RenderInput from '../RenderInput';
 import RenderTypeAhead from '../RenderTypeAhead';
 import RenderSelect from '../RenderSelect';
+import { NamespaceLink } from '../Links';
 
 
 class DeployPage extends Component {
@@ -27,105 +39,167 @@ class DeployPage extends Component {
     const validRegistryAndService = (registrySelected && serviceSelected);
     const validCluster = (validRegistryAndService && clusterSelected);
 
+    const { namespace: formNamespace, version: formVersion } = this.props.currentFormValues;
+    const chosenNamespace = this.props.namespacesRich.find(({ name }) => (formNamespace === name));
+    const previouslyDeployedToChosenNamespace = chosenNamespace && this.props.deployments.find((dep) => (dep.namespace.name === chosenNamespace.name));
+
     return (
-      <div>
-        <h4>Create deployment</h4>
-        <form
-          onSubmit={this.props.handleSubmit(this.props.submitForm)}
-        >
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label text-right" htmlFor="registry">Registry:</label>
-          <div className="col-sm-5">
-            <Field
-              className="form-control"
-              name="registry"
-              component={RenderSelect}
-              options={this.props.registries}
-              onChange={() => {
-                clearFormFields({ source: 'registry' });
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label text-right" htmlFor="service">What:</label>
-          <div className="col-sm-5">
-            <Field
-              className="form-control"
-              name="service"
-              component={RenderTypeAhead}
-              type="text"
-              disabled={!registrySelected}
-              onChangeListener={() => {
-                this.props.fetchServiceSuggestions();
-                clearFormFields({ source: 'service' });
-                validateService();
-              }}
-              useSuggestion={this.props.useServiceSuggestion}
-              suggestions={this.props.serviceSuggestions}
-              autoComplete="foo-no-really"
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label text-right" htmlFor="version">Version:</label>
-          <div className="col-sm-5">
-            <Field
-              className="form-control"
-              name="version"
-              component={RenderInput}
-              type="text"
-              disabled={!validRegistryAndService}
-              autoComplete="foo-no-really"
-              onChange={(evt, newValue) => {
-                clearFormFields({ source: 'version' });
-                validateVersion({
-                  newValue
-                });
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label text-right" htmlFor="cluster">Where:</label>
-          <div className="col-sm-5">
-            <Field
-              className="form-control"
-              name="cluster"
-              component={RenderSelect}
-              options={this.props.clusters}
-              disabled={!validRegistryAndService}
-              onChange={() => {
-                clearFormFields({ source: 'cluster' });
-              }}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label text-right" htmlFor="namespace">Namespace:</label>
-          <div className="col-sm-5">
-            <Field
-              className="form-control"
-              name="namespace"
-              component={RenderSelect}
-              options={this.props.namespaces}
-              disabled={!validCluster}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <div className="offset-sm-2 col-sm-10">
-            <button
-              type="submit"
-              className="btn btn-dark"
-              disabled={!valid && !asyncValidating}
-            >Create Deployment
-            </button>
-            {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
-          </div>
-        </div>
-        </form>
-      </div>
+      <Container>
+        <Row>
+          <h4>Create deployment</h4>
+        </Row>
+        <Row>
+          <Col md="5">
+            <Form onSubmit={this.props.handleSubmit(this.props.submitForm)}>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="registry">Registry:</Label>
+                <Col sm="9">
+                  <Field
+                    className="form-control"
+                    name="registry"
+                    component={RenderSelect}
+                    options={this.props.registries}
+                    onChange={() => {
+                      clearFormFields({ source: 'registry' });
+                    }}
+                    />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="service">What:</Label>
+                <Col sm="9">
+                  <Field
+                    className="form-control"
+                    name="service"
+                    component={RenderTypeAhead}
+                    type="text"
+                    disabled={!registrySelected}
+                    onChangeListener={() => {
+                      this.props.fetchServiceSuggestions();
+                      clearFormFields({ source: 'service' });
+                      validateService();
+                    }}
+                    useSuggestion={this.props.useServiceSuggestion}
+                    suggestions={this.props.serviceSuggestions}
+                    autoComplete="foo-no-really"
+                    />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="version">Version:</Label>
+                <Col sm="9">
+                  <Field
+                    className="form-control"
+                    name="version"
+                    component={RenderInput}
+                    type="text"
+                    disabled={!validRegistryAndService}
+                    autoComplete="foo-no-really"
+                    onChange={(evt, newValue) => {
+                      clearFormFields({ source: 'version' });
+                      validateVersion({
+                        newValue
+                      });
+                    }}
+                    />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="cluster">Where:</Label>
+                <Col sm="9">
+                  <Field
+                    className="form-control"
+                    name="cluster"
+                    component={RenderSelect}
+                    options={this.props.clusters}
+                    disabled={!validRegistryAndService}
+                    onChange={() => {
+                      clearFormFields({ source: 'cluster' });
+                    }}
+                    />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="namespace">Namespace:</Label>
+                <Col sm="9">
+                  <Field
+                    className="form-control"
+                    name="namespace"
+                    component={RenderSelect}
+                    options={this.props.namespaces}
+                    disabled={!validCluster}
+                    />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Col sm={{ size: 9, offset: 3 }}>
+                  <button
+                    type="submit"
+                    className="btn btn-dark"
+                    disabled={!valid && !asyncValidating}
+                    >Create Deployment
+                  </button>
+                  {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+                </Col>
+              </FormGroup>
+            </Form>
+          </Col>
+          <Col sm="5">
+            {
+              this.props.deployments.length ? (
+                <Card>
+                  <CardHeader>Summary:</CardHeader>
+                  <CardBody>
+                    {
+                      this.props.deployments.map((dep) => {
+                        const deployingToThisNamespace = chosenNamespace && (dep.namespace.name === chosenNamespace.name);
+                        return (
+                          <Row key={dep.namespace.id}>
+                            <Col xs="6">
+                              <div className="float-right">
+                                <NamespaceLink namespace={dep.namespace} showCluster pill />
+                              </div>
+                            </Col>
+                            <Col xs="6" className="pl-0">
+                              <div>
+                                { deployingToThisNamespace ? (
+                                  (<span>
+                                    <s>
+                                      <span style={{ backgroundColor: '#fdb8c0' }}>{dep.release.version}</span>
+                                    </s>
+                                    &nbsp;
+                                    <span style={{ backgroundColor: '#acf2bd' }}>{formVersion}</span>
+                                  </span>)
+                                ) : dep.release.version }
+                              </div>
+                            </Col>
+                          </Row>
+                        );
+                      })
+                    }
+                    {
+                      chosenNamespace && (previouslyDeployedToChosenNamespace ? null : (
+                        <Row>
+                          <Col xs="6">
+                            <div className="float-right">
+                              <NamespaceLink namespace={chosenNamespace} showCluster pill />
+                            </div>
+                          </Col>
+                          <Col xs="6" className="pl-0">
+                            <div>
+                              <span style={{ backgroundColor: '#acf2bd' }}>{formVersion}</span>
+                            </div>
+                          </Col>
+                        </Row>
+                      ))
+                    }
+                  </CardBody>
+                </Card>
+              ) : null
+            }
+          </Col>
+        </Row>
+      </Container>
     );
   }
 }
@@ -136,6 +210,7 @@ DeployPage.propTypes = {
   clusters: PropTypes.array,
   namespaces: PropTypes.array,
   submitForm: PropTypes.func.isRequired,
+  deployments: PropTypes.array,
 };
 
 export default DeployPage;

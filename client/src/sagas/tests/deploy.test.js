@@ -11,6 +11,7 @@ import {
   clearFormFieldsSaga,
   validateServiceSaga,
   validateVersionSaga,
+  fetchLatestDeploymentsPerNamespaceSaga,
 } from '../deploy';
 
 import {
@@ -20,6 +21,7 @@ import {
   CLEAR_LOADING,
   SET_REGISTRIES,
   SET_NAMESPACES,
+  SET_DEPLOYMENTS,
   submitForm,
   fetchServiceSuggestions,
   setServiceSuggestions,
@@ -30,6 +32,7 @@ import {
   validateService,
   validateVersion,
   fetchNamespacesForService,
+  fetchLatestDeploymentsPerNamespace,
 } from '../../modules/deploy';
 
 import {
@@ -38,6 +41,7 @@ import {
   getServiceSuggestions,
   getReleases,
   getNamespacesForService,
+  getLatestDeploymentsByNamespaceForService,
 } from '../../lib/api';
 
 const formValues = {
@@ -125,9 +129,12 @@ describe('Deploy sagas', () => {
   });
 
   it('should use a selected service suggestion and then clear suggestions', () => {
+    const registry = 'abc';
     const gen = useServiceSuggestionsSaga(useServiceSuggestion('app-1'));
-    expect(gen.next().value).toMatchObject(put(change('deploy', 'service', 'app-1')));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next({ registry }).value).toMatchObject(put(change('deploy', 'service', 'app-1')));
     expect(gen.next().value).toMatchObject(put(clearServiceSuggestions()));
+    expect(gen.next().value).toMatchObject(put(fetchLatestDeploymentsPerNamespace({ service: 'app-1', registry })));
     expect(gen.next().done).toBe(true);
   });
 
@@ -155,6 +162,7 @@ describe('Deploy sagas', () => {
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues }));
     expect(gen.next(response).value).toMatchObject(put(stopAsyncValidation('deploy')));
     expect(gen.next().value).toMatchObject(put(fetchNamespacesForService({ serviceId: 'abc' })));
+    expect(gen.next().value).toMatchObject(put(fetchLatestDeploymentsPerNamespace({ service: 'abc', registry: 'default' })));
     expect(gen.next().done).toBe(true);
   });
 
@@ -198,6 +206,16 @@ describe('Deploy sagas', () => {
     expect(gen.next(formValues).value).toMatchObject(put(startAsyncValidation('deploy', 'version')));
     expect(gen.next().value).toMatchObject(call(getReleases, { ...formValues, version: newValue }));
     expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopAsyncValidation('deploy', { version: 'There was an error looking up versions' })));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('fetches current deployment information for a service', () => {
+    const service = 'abc';
+    const registry = '123';
+    const data = { a: 1 };
+    const gen = fetchLatestDeploymentsPerNamespaceSaga(fetchLatestDeploymentsPerNamespace({ service, registry, quiet: true}));
+    expect(gen.next().value).toMatchObject(call(getLatestDeploymentsByNamespaceForService, { registry, service }));
+    expect(gen.next(data).value).toMatchObject(put(SET_DEPLOYMENTS({ data })));
     expect(gen.next().done).toBe(true);
   });
 });

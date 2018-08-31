@@ -4,6 +4,7 @@ import reduce, {
   CLEAR_LOADING,
   SET_REGISTRIES,
   SET_NAMESPACES,
+  SET_DEPLOYMENTS,
   setServiceSuggestions,
   clearServiceSuggestions,
 } from '../deploy';
@@ -52,5 +53,11 @@ describe('Deploy Form Reducer', () => {
   it('clears service suggestions', () => {
     const state = reduce({ serviceSuggestions: [1,2,3]}, clearServiceSuggestions());
     expect(state.serviceSuggestions).toMatchObject([]);
+  });
+
+  it('should set deployments data', () => {
+    const state = reduce(undefined, SET_DEPLOYMENTS({ data: ['bob'] }));
+    expect(state).toMatchObject({});
+    expect(state.deployments).toMatchObject(['bob']);
   });
 });
