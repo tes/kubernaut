@@ -32,9 +32,14 @@ module.exports = function() {
       /^\/$/,
       '/registries/:registry?',
       '/namespaces/:namespace?',
+      '/namespaces/:namespace/edit',
+      '/namespaces/:namespace/manage',
       '/accounts/:account?',
+      '/accounts/:account/edit',
       '/releases/:release?',
       '/deployments/:deployment?',
+      '/services',
+      '/services/:registry/:service'
     ], clientApp(200));
 
     // Serve other static resources with logging disabled
