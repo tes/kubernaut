@@ -148,8 +148,6 @@ describe('kubernaut', () => {
     });
   });
 
-
-
   function expectStatus(res, value) {
     expect(res.statusCode).toBe(value);
   }
