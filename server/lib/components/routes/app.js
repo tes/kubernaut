@@ -49,15 +49,21 @@ module.exports = function() {
       '/deployments/:deployment?',
       '/services',
       '/services/:registry/:service',
-      '/login',
     ], clientApp(200));
 
     // Serve other static resources with logging disabled
+    app.use('/loginAssets', loggerMiddleware.disable, express.static('./client/build/loginAssets', {
+      setHeaders: (res, path) => {
+        res.set('Cache-Control', 'public, max-age=600, must-revalidate');
+      },
+    }));
+
     app.get(APP_ROUTES, loggerMiddleware.disable, express.static('./client/build', {
       setHeaders: (res, path) => {
         res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       },
     }));
+
 
     // Ensure client 404's are handled by the app
     app.get(APP_ROUTES, loggerMiddleware.enable, clientApp(404));

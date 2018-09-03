@@ -8,8 +8,7 @@
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <link rel="stylesheet" href="/loginAssets/bootstrap.min.css">
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -22,11 +21,19 @@
     <title>Login - Kubernaut</title>
   </head>
   <body>
-    <div>
-      <h4>Login:</h4>
-      <form method="POST">
-        <button>Login</button>
-      </form>
+    <div className="container">
+      <div className="row">
+        <div className="col-sm-12">
+          <h4>Login:</h4>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-sm-12">
+          <form method="POST">
+            <button>Login</button>
+          </form>
+        </div>
+      </div>
     </div>
   </body>
 </html>
