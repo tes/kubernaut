@@ -50,70 +50,105 @@ describe('kubernaut', () => {
     });
   });
 
-  it('should respond to client app requests', async () => {
-
-    const res = await request({
+  it('should redirect to /login when requesting app and are logged out', async () => {
+    await request({
       url: `http://${config.server.host}:${config.server.port}/`,
       resolveWithFullResponse: true,
       followRedirect: false,
-    });
-
-    expectStatus(res, 200);
-    expectHeader(res, 'content-type', 'text/html; charset=utf-8');
-    expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
-    expectHeader(res, 'etag');
-
-    const $ = cheerio.load(res.body);
-    expect($('title').text()).toBe('Kubernaut');
-  });
-
-  it('should redirect /index.html to /', async () => {
-
-    await request({
-      url: `http://${config.server.host}:${config.server.port}/index.html`,
-      resolveWithFullResponse: true,
-      followRedirect: false,
+      json: true,
     }).then(() => {
-        throw new Error('Should have failed with 301');
+        throw new Error('Should have failed with 302');
     }).catch(errors.StatusCodeError, (reason) => {
-      expectStatus(reason.response, 301);
-      expectHeader(reason.response, 'location', '/');
+      expectStatus(reason.response, 302);
+      expectHeader(reason.response, 'location', '/login');
     });
   });
 
-  it('should respond to releases requests', async () => {
+  describe('Logged in requests', () => {
+    let jar;
 
-    const res = await request({
-      url: `http://${config.server.host}:${config.server.port}/releases`,
-      resolveWithFullResponse: true,
-      followRedirect: false,
+    beforeEach(async () => {
+      jar = request.jar();
+
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/login`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        simple: false,
+        jar,
+      });
     });
 
-    expectStatus(res, 200);
-    expectHeader(res, 'content-type', 'text/html; charset=utf-8');
-    expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
-    expectHeader(res, 'etag');
+    it('should respond to client app requests', async () => {
+      const res = await request({
+        url: `http://${config.server.host}:${config.server.port}/`,
+        resolveWithFullResponse: true,
+        followRedirect: false,
+        jar,
+      });
 
-    const $ = cheerio.load(res.body);
-    expect($('title').text()).toBe('Kubernaut');
-  });
+      expectStatus(res, 200);
+      expectHeader(res, 'content-type', 'text/html; charset=utf-8');
+      expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
+      expectHeader(res, 'etag');
 
-  it('should respond to deployments requests', async () => {
-
-    const res = await request({
-      url: `http://${config.server.host}:${config.server.port}/deployments`,
-      resolveWithFullResponse: true,
-      followRedirect: false,
+      const $ = cheerio.load(res.body);
+      expect($('title').text()).toBe('Kubernaut');
     });
 
-    expectStatus(res, 200);
-    expectHeader(res, 'content-type', 'text/html; charset=utf-8');
-    expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
-    expectHeader(res, 'etag');
+    it('should redirect /index.html to /', async () => {
 
-    const $ = cheerio.load(res.body);
-    expect($('title').text()).toBe('Kubernaut');
+      await request({
+        url: `http://${config.server.host}:${config.server.port}/index.html`,
+        resolveWithFullResponse: true,
+        followRedirect: false,
+        jar,
+      }).then(() => {
+          throw new Error('Should have failed with 301');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expectStatus(reason.response, 301);
+        expectHeader(reason.response, 'location', '/');
+      });
+    });
+
+    it('should respond to releases requests', async () => {
+
+      const res = await request({
+        url: `http://${config.server.host}:${config.server.port}/releases`,
+        resolveWithFullResponse: true,
+        followRedirect: false,
+        jar,
+      });
+
+      expectStatus(res, 200);
+      expectHeader(res, 'content-type', 'text/html; charset=utf-8');
+      expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
+      expectHeader(res, 'etag');
+
+      const $ = cheerio.load(res.body);
+      expect($('title').text()).toBe('Kubernaut');
+    });
+
+    it('should respond to deployments requests', async () => {
+
+      const res = await request({
+        url: `http://${config.server.host}:${config.server.port}/deployments`,
+        resolveWithFullResponse: true,
+        followRedirect: false,
+        jar,
+      });
+
+      expectStatus(res, 200);
+      expectHeader(res, 'content-type', 'text/html; charset=utf-8');
+      expectHeader(res, 'cache-control', 'public, max-age=600, must-revalidate');
+      expectHeader(res, 'etag');
+
+      const $ = cheerio.load(res.body);
+      expect($('title').text()).toBe('Kubernaut');
+    });
   });
+
+
 
   function expectStatus(res, value) {
     expect(res.statusCode).toBe(value);
