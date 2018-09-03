@@ -10,15 +10,15 @@ module.exports = function() {
 
     logger.info('Initialising local authentication strategy');
 
-    const strategy = new CustomStrategy(async (req, cb) => {
+    const strategy = new CustomStrategy(async (req, passportCallback) => {
       try {
         const profile = { displayName: 'Bob Holness' };
         const identity = { name: 'blockbusters', provider: 'kubernaut', 'type': 'local' };
         const meta = { date: new Date(), account: { id: '00000000-0000-0000-0000-000000000000' } };
         const account = await store.ensureAccount(profile, identity, meta);
-        cb(null, account);
+        passportCallback(null, account);
       } catch (err) {
-        cb(err);
+        passportCallback(err);
       }
     });
 

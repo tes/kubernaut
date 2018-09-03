@@ -1,7 +1,7 @@
 import path from 'path';
 import express from 'systemic-express/express';
 
-const APP_ROUTES = /^(?!(?:\/auth\/|\/api\/|\/__\/)).*/;
+const APP_ROUTES = /^(?!(?:\/auth\/|\/api\/|\/__\/|\/login)).*/;
 
 module.exports = function() {
 
@@ -16,6 +16,15 @@ module.exports = function() {
         res.sendFile(path.join(process.cwd(), 'client', 'build', 'index.html'));
       };
     };
+
+    app.get('/login', (req, res) => {
+      if (req.isAuthenticated()) {
+        return res.redirect('/');
+      }
+      res.set('Cache-Control', 'public, max-age=600, must-revalidate');
+      res.status(200);
+      res.sendFile(path.join(process.cwd(), 'client', 'build', 'login.html'));
+    });
 
     // Disable logging for Kubernetes
     app.use((req, res, next) => {
@@ -39,7 +48,8 @@ module.exports = function() {
       '/releases/:release?',
       '/deployments/:deployment?',
       '/services',
-      '/services/:registry/:service'
+      '/services/:registry/:service',
+      '/login',
     ], clientApp(200));
 
     // Serve other static resources with logging disabled

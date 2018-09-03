@@ -23,6 +23,23 @@ export default function() {
       });
     }, (err, strategies) => {
       if (err) return cb(err);
+
+      app.post('/login', (req, res, next) => {
+        if (req.isAuthenticated()) return next();
+        passport.authenticate(getAuthenticationsMethods(strategies)['app'], (passportError, user, info) => {
+          if (passportError) return next(passportError);
+          if (!user) return res.redirect('/login');
+
+          req.logIn(user, function(loginError) {
+            if (loginError) { return next(loginError); }
+            req.session.save((sessionError) => { // Thanks express session for your race conditions, forcing me to have to do this.
+              if (sessionError) { return next(sessionError); }
+              res.redirect('/');
+            });
+          });
+        })(req, res, next);
+      });
+
       cb(null, middleware(getAuthenticationsMethods(strategies)));
     });
 
@@ -38,6 +55,8 @@ export default function() {
       return function(method) {
         return function(req, res, next) {
           if (req.isAuthenticated()) return next();
+          if (method === 'app') return res.redirect('/login');
+
           passport.authenticate(authenticationMethods[method])(req, res, next);
         };
       };
