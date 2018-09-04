@@ -1,12 +1,19 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRelease, makeCluster, makeNamespace, makeDeployment, makeRootMeta } from '../factories';
+import {
+  makeRelease,
+  makeCluster,
+  makeNamespace,
+  makeDeployment,
+  makeRootMeta,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Deployments API', () => {
 
+  let request;
   let config;
   let system = { stop: new Promise(cb => cb()) };
   let store = { nuke: new Promise(cb => cb()) };
@@ -19,6 +26,7 @@ describe('Deployments API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store, kubernetes } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -58,9 +66,8 @@ describe('Deployments API', () => {
 
     it('should return a list of deployments', async () => {
       const deployments = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'GET',
-        json: true,
       });
 
       expect(deployments.count).toBe(51);
@@ -72,10 +79,9 @@ describe('Deployments API', () => {
     it('should limit deployments list', async () => {
 
       const deployments = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(deployments.count).toBe(51);
@@ -87,10 +93,9 @@ describe('Deployments API', () => {
     it('should page deployments list', async () => {
 
       const deployments = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(deployments.count).toBe(51);
@@ -110,9 +115,8 @@ describe('Deployments API', () => {
       const saved = await saveDeployment({ namespace });
 
       const deployment = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
+        url: `/api/deployments/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(deployment.id).toBe(saved.id);
@@ -123,10 +127,9 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/142bc001-1819-459b-bf95-14e25be17fe5`,
+        url: `/api/deployments/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, reason => {
@@ -189,9 +192,8 @@ describe('Deployments API', () => {
 
     it('should return the most recent deployments for each namespace', async () => {
       const deployments = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/latest-by-namespace/${registry}/hello-world`,
+        url: `/api/deployments/latest-by-namespace/${registry}/hello-world`,
         method: 'GET',
-        json: true,
       });
 
       expect(deployments.length).toBe(2);
@@ -206,9 +208,8 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       const deployments = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/latest-by-namespace/${registry}/hello-world2`,
+        url: `/api/deployments/latest-by-namespace/${registry}/hello-world2`,
         method: 'GET',
-        json: true,
       });
 
       expect(deployments.length).toBe(0);
@@ -232,7 +233,7 @@ describe('Deployments API', () => {
       await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         json: {
           namespace: namespace.name,
@@ -282,7 +283,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         json: {
           namespace: namespace.name,
@@ -317,7 +318,7 @@ describe('Deployments API', () => {
       await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         json: {
           namespace: namespace.name,
@@ -356,7 +357,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         json: {
           namespace: namespace.name,
@@ -386,7 +387,7 @@ describe('Deployments API', () => {
       await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         qs: {
           wait: 'true',
@@ -428,7 +429,7 @@ describe('Deployments API', () => {
       await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         json: {
           namespace: namespace.name,
@@ -471,7 +472,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         qs: {
           wait: 'true',
@@ -503,7 +504,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -525,7 +526,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -547,7 +548,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -578,7 +579,7 @@ describe('Deployments API', () => {
       await store.saveRelease(release, makeRootMeta());
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -600,7 +601,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -627,7 +628,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -655,7 +656,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -682,7 +683,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -714,7 +715,7 @@ describe('Deployments API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments`,
+        url: `/api/deployments`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -743,10 +744,10 @@ describe('Deployments API', () => {
       const saved = await saveDeployment({ namespace });
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/deployments/${saved.id}`,
+        url: `/api/deployments/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
+
       });
 
       expect(response.statusCode).toBe(204);

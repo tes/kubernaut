@@ -1,13 +1,19 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeNamespace, makeRelease, makeRootMeta } from '../factories';
+import {
+  makeCluster,
+  makeNamespace,
+  makeRelease,
+  makeRootMeta,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Namespaces API', () => {
 
+  let request;
   let config;
   let system = { stop: cb => cb() };
   let store = { nuke: new Promise(cb => cb()) };
@@ -21,6 +27,7 @@ describe('Namespaces API', () => {
     const components = await system.start();
     config = components.config;
     store = components.store;
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -57,9 +64,8 @@ describe('Namespaces API', () => {
 
     it('should return a list of namespaces', async () => {
       const namespaces = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'GET',
-        json: true,
       });
 
       expect(namespaces.count).toBe(51);
@@ -71,10 +77,9 @@ describe('Namespaces API', () => {
     it('should limit namespaces list', async () => {
 
       const namespaces = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(namespaces.count).toBe(51);
@@ -86,10 +91,9 @@ describe('Namespaces API', () => {
     it('should page namespaces list', async () => {
 
       const namespaces = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(namespaces.count).toBe(51);
@@ -108,9 +112,8 @@ describe('Namespaces API', () => {
       const saved = await store.saveNamespace(data, makeRootMeta());
 
       const namespace = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(namespace.id).toBe(saved.id);
@@ -121,10 +124,9 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/does-not-exist`,
+        url: `/api/namespaces/does-not-exist`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
@@ -141,7 +143,7 @@ describe('Namespaces API', () => {
       const data = makeNamespace({ name: 'other', cluster, context: 'test' });
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         json: {
           name: data.name,
@@ -165,7 +167,7 @@ describe('Namespaces API', () => {
       const data = makeNamespace({ name: 'other', cluster, context: 'test' });
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         json: {
           name: data.name,
@@ -190,7 +192,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -210,7 +212,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -230,7 +232,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -250,7 +252,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -273,7 +275,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -296,7 +298,7 @@ describe('Namespaces API', () => {
       const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -319,7 +321,7 @@ describe('Namespaces API', () => {
       const data = makeNamespace({ name: 'other', cluster, context: 'test' });
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces`,
+        url: `/api/namespaces`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -345,7 +347,7 @@ describe('Namespaces API', () => {
       const saved = await store.saveNamespace(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'POST',
         json: {
           color: 'aliceblue',
@@ -362,7 +364,7 @@ describe('Namespaces API', () => {
       const saved = await store.saveNamespace(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'POST',
         json: {
           attributes: {
@@ -383,7 +385,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${id}`,
+        url: `/api/namespaces/${id}`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -405,7 +407,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -427,7 +429,7 @@ describe('Namespaces API', () => {
 
       loggerOptions.suppress = true;
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -449,7 +451,7 @@ describe('Namespaces API', () => {
 
       loggerOptions.suppress = true;
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -473,10 +475,9 @@ describe('Namespaces API', () => {
       const saved = await store.saveNamespace(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/${saved.id}`,
+        url: `/api/namespaces/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
       });
 
       expect(response.statusCode).toBe(204);
@@ -501,9 +502,8 @@ describe('Namespaces API', () => {
       await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
 
       const namespaces = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/namespaces/can-deploy-to-for/${release.service.id}`,
+        url: `/api/namespaces/can-deploy-to-for/${release.service.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(namespaces).toBeDefined();

@@ -1,12 +1,12 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeCluster, makeRootMeta } from '../factories';
+import { makeCluster, makeRootMeta, makeRequestWithDefaults } from '../factories';
 
 describe('Clusters API', () => {
 
+  let request;
   let config;
   let system = { stop: new Promise(cb => cb()) };
   let store = { nuke: new Promise(cb => cb()) };
@@ -19,6 +19,7 @@ describe('Clusters API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store, kubernetes } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -54,9 +55,8 @@ describe('Clusters API', () => {
 
     it('should return a list of clusters', async () => {
       const clusters = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'GET',
-        json: true,
       });
 
       expect(clusters.count).toBe(51);
@@ -68,10 +68,9 @@ describe('Clusters API', () => {
     it('should limit clusters list', async () => {
 
       const clusters = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(clusters.count).toBe(51);
@@ -83,10 +82,9 @@ describe('Clusters API', () => {
     it('should page clusters list', async () => {
 
       const clusters = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(clusters.count).toBe(51);
@@ -105,9 +103,8 @@ describe('Clusters API', () => {
       const saved = await store.saveCluster(data, makeRootMeta());
 
       const cluster = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters/${saved.id}`,
+        url: `/api/clusters/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(cluster.id).toBe(saved.id);
@@ -118,10 +115,9 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters/142bc001-1819-459b-bf95-14e25be17fe5`,
+        url: `/api/clusters/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
@@ -139,7 +135,7 @@ describe('Clusters API', () => {
       });
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         json: data,
       });
@@ -158,7 +154,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -177,7 +173,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -197,7 +193,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -218,7 +214,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -238,7 +234,7 @@ describe('Clusters API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters`,
+        url: `/api/clusters`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -263,10 +259,9 @@ describe('Clusters API', () => {
       const saved = await store.saveCluster(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/clusters/${saved.id}`,
+        url: `/api/clusters/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
       });
 
       expect(response.statusCode).toBe(204);

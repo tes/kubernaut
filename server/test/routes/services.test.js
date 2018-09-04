@@ -1,11 +1,16 @@
 import expect from 'expect';
-import request from 'request-promise';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRelease, makeRootMeta, makeCluster, makeNamespace } from '../factories';
+import {
+  makeRelease,
+  makeRootMeta,
+  makeCluster,
+  makeNamespace,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Services API', () => {
-
+  let request;
   let config;
   let system = { stop: cb => cb() };
   let store = { nuke: new Promise(cb => cb()) };
@@ -17,12 +22,12 @@ describe('Services API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
     await store.nuke();
   });
-
   afterEach(() => {
     loggerOptions.suppress = false;
   });
@@ -53,9 +58,8 @@ describe('Services API', () => {
 
     it('should return a list of services', async () => {
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services`,
+        url: `/api/services`,
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);
@@ -67,10 +71,9 @@ describe('Services API', () => {
     it('should limit services list', async () => {
 
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services`,
+        url: `/api/services`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);
@@ -82,10 +85,9 @@ describe('Services API', () => {
     it('should page results', async () => {
 
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services`,
+        url: `/api/services`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);
@@ -109,9 +111,8 @@ describe('Services API', () => {
       }));
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/service/${release.service.id}/enable-deployment/${namespace.id}`,
+        url: `/api/service/${release.service.id}/enable-deployment/${namespace.id}`,
         method: 'POST',
-        json: true,
       });
 
       expect(response.count).toBe(1);
@@ -135,10 +136,9 @@ describe('Services API', () => {
       }));
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/service/${release2.service.id}/enable-deployment/${namespace.id}`,
+        url: `/api/service/${release2.service.id}/enable-deployment/${namespace.id}`,
         qs: { limit: 1, offset: 1 },
         method: 'POST',
-        json: true,
       });
 
       expect(response.count).toBe(2);
@@ -169,9 +169,8 @@ describe('Services API', () => {
       await store.enableServiceForNamespace(namespace, release.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/service/${release.service.id}/disable-deployment/${namespace.id}`,
+        url: `/api/service/${release.service.id}/disable-deployment/${namespace.id}`,
         method: 'DELETE',
-        json: true,
       });
 
       expect(response.count).toBe(1);
@@ -197,10 +196,9 @@ describe('Services API', () => {
       await store.enableServiceForNamespace(namespace, release2.service, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/service/${release2.service.id}/disable-deployment/${namespace.id}`,
+        url: `/api/service/${release2.service.id}/disable-deployment/${namespace.id}`,
         qs: { limit: 1, offset: 1 },
         method: 'DELETE',
-        json: true,
       });
 
       expect(response.count).toBe(2);
@@ -242,9 +240,8 @@ describe('Services API', () => {
       }));
 
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services-with-status-for-namespace/${namespace.id}`,
+        url: `/api/services-with-status-for-namespace/${namespace.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);
@@ -260,10 +257,9 @@ describe('Services API', () => {
       }));
 
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services-with-status-for-namespace/${namespace.id}`,
+        url: `/api/services-with-status-for-namespace/${namespace.id}`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);
@@ -279,10 +275,9 @@ describe('Services API', () => {
       }));
 
       const services = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/services-with-status-for-namespace/${namespace.id}`,
+        url: `/api/services-with-status-for-namespace/${namespace.id}`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(services.count).toBe(51);

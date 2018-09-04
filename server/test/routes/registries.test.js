@@ -1,12 +1,17 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRegistry, makeRootMeta, makeRelease } from '../factories';
+import {
+  makeRegistry,
+  makeRootMeta,
+  makeRelease,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Registries API', () => {
 
+  let request;
   let config;
   let system = { stop: cb => cb() };
   let store = { nuke: new Promise(cb => cb()) };
@@ -18,6 +23,7 @@ describe('Registries API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -52,9 +58,8 @@ describe('Registries API', () => {
 
     it('should return a list of registries', async () => {
       const registries = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries`,
+        url: `/api/registries`,
         method: 'GET',
-        json: true,
       });
 
       expect(registries.count).toBe(52);
@@ -66,10 +71,9 @@ describe('Registries API', () => {
     it('should limit registries list', async () => {
 
       const registries = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries`,
+        url: `/api/registries`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(registries.count).toBe(52);
@@ -81,10 +85,9 @@ describe('Registries API', () => {
     it('should page namepaces list', async () => {
 
       const registries = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries`,
+        url: `/api/registries`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(registries.count).toBe(52);
@@ -103,9 +106,8 @@ describe('Registries API', () => {
       const saved = await store.saveRegistry(data, makeRootMeta());
 
       const registry = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries/${saved.id}`,
+        url: `/api/registries/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(registry.id).toBe(saved.id);
@@ -116,10 +118,9 @@ describe('Registries API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries/does-not-exist`,
+        url: `/api/registries/does-not-exist`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 403');
       }).catch(errors.StatusCodeError, (reason) => {
@@ -135,7 +136,7 @@ describe('Registries API', () => {
       const data = makeRegistry();
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries`,
+        url: `/api/registries`,
         method: 'POST',
         json: data,
       });
@@ -153,7 +154,7 @@ describe('Registries API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries`,
+        url: `/api/registries`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -176,10 +177,9 @@ describe('Registries API', () => {
       const saved = await store.saveRegistry(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries/${saved.id}`,
+        url: `/api/registries/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
       });
 
       expect(response.statusCode).toBe(204);
@@ -197,9 +197,8 @@ describe('Registries API', () => {
       await store.saveRelease(makeRelease({ service: { name: 'service-1', registry} }), makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries/${registry.name}/search/app`,
+        url: `/api/registries/${registry.name}/search/app`,
         method: 'GET',
-        json: true,
       });
 
       expect(response).toBeDefined();
@@ -215,10 +214,9 @@ describe('Registries API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/registries/does-not-exist/search/nothing`,
+        url: `/api/registries/does-not-exist/search/nothing`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {

@@ -1,12 +1,20 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeAccount, makeIdentity, makeRegistry, makeCluster, makeNamespace, makeRootMeta } from '../factories';
+import {
+  makeAccount,
+  makeIdentity,
+  makeRegistry,
+  makeCluster,
+  makeNamespace,
+  makeRootMeta,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Accounts API', () => {
 
+  let request;
   let config;
   let system = { stop: new Promise(cb => cb()) };
   let store = { nuke: new Promise(cb => cb()) };
@@ -18,6 +26,7 @@ describe('Accounts API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -36,9 +45,8 @@ describe('Accounts API', () => {
   describe('GET /api/account', () => {
     it('should return the current account information', async () => {
       const account = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/account`,
+        url: `/api/account`,
         method: 'GET',
-        json: true,
       });
 
       expect(account.displayName).toBe('Bob Holness');
@@ -65,9 +73,8 @@ describe('Accounts API', () => {
 
     it('should return a list of accounts', async () => {
       const accounts = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts`,
+        url: `/api/accounts`,
         method: 'GET',
-        json: true,
       });
 
       expect(accounts.count).toBe(62);
@@ -79,10 +86,9 @@ describe('Accounts API', () => {
     it('should limit accounts list', async () => {
 
       const accounts = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts`,
+        url: `/api/accounts`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(accounts.count).toBe(62);
@@ -98,10 +104,9 @@ describe('Accounts API', () => {
       // also be created
 
       const accounts = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts`,
+        url: `/api/accounts`,
         qs: { limit: 50, offset: 22 },
         method: 'GET',
-        json: true,
       });
 
       expect(accounts.count).toBe(62);
@@ -120,9 +125,8 @@ describe('Accounts API', () => {
       const saved = await store.saveAccount(data, makeRootMeta());
 
       const account = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts/${saved.id}`,
+        url: `/api/accounts/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(account.id).toBe(saved.id);
@@ -131,10 +135,9 @@ describe('Accounts API', () => {
     it('should return 404 for missing accounts', async () => {
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts/142bc001-1819-459b-bf95-14e25be17fe5`,
+        url: `/api/accounts/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
@@ -150,7 +153,7 @@ describe('Accounts API', () => {
       const data = makeAccount();
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts`,
+        url: `/api/accounts`,
         method: 'POST',
         json: data,
       });
@@ -168,7 +171,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts`,
+        url: `/api/accounts`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {},
@@ -189,10 +192,9 @@ describe('Accounts API', () => {
       const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/accounts/${saved.id}`,
+        url: `/api/accounts/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
       });
 
       expect(response.statusCode).toBe(204);
@@ -210,7 +212,7 @@ describe('Accounts API', () => {
       const data = makeIdentity();
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities`,
+        url: `/api/identities`,
         method: 'POST',
         json: { account: saved.id, ...data },
       });
@@ -227,7 +229,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities`,
+        url: `/api/identities`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -248,7 +250,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities`,
+        url: `/api/identities`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -269,7 +271,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities`,
+        url: `/api/identities`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -290,7 +292,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/identities`,
+        url: `/api/identities`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -316,7 +318,7 @@ describe('Accounts API', () => {
       const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
+        url: `/api/roles/namespace`,
         method: 'POST',
         json: {
           account: saved.id,
@@ -338,7 +340,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
+        url: `/api/roles/namespace`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -358,7 +360,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
+        url: `/api/roles/namespace`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -378,7 +380,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/namespace`,
+        url: `/api/roles/namespace`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -402,7 +404,7 @@ describe('Accounts API', () => {
       const saved = await store.saveAccount(makeAccount(), makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        url: `/api/roles/registry`,
         method: 'POST',
         json: {
           account: saved.id,
@@ -424,7 +426,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        url: `/api/roles/registry`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -444,7 +446,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        url: `/api/roles/registry`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {
@@ -464,7 +466,7 @@ describe('Accounts API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/roles/registry`,
+        url: `/api/roles/registry`,
         method: 'POST',
         resolveWithFullResponse: true,
         json: {

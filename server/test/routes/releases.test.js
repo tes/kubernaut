@@ -1,14 +1,18 @@
 import expect from 'expect';
-import request from 'request-promise';
 import errors from 'request-promise/errors';
 import fs from 'fs';
 import path from 'path';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
-import { makeRelease, makeRootMeta, makeReleaseForm } from '../factories';
+import {
+  makeRelease,
+  makeRootMeta,
+  makeReleaseForm,
+  makeRequestWithDefaults,
+} from '../factories';
 
 describe('Releases API', () => {
-
+  let request;
   let config;
   let system = { stop: cb => cb() };
   let store = { nuke: new Promise(cb => cb()) };
@@ -20,6 +24,7 @@ describe('Releases API', () => {
       .set('transports.human', human(loggerOptions)).dependsOn('config');
 
     ({ config, store } = await system.start());
+    request = makeRequestWithDefaults(config);
   });
 
   beforeEach(async () => {
@@ -56,9 +61,8 @@ describe('Releases API', () => {
 
     it('should return a list of releases', async () => {
       const releases = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'GET',
-        json: true,
       });
 
       expect(releases.count).toBe(51);
@@ -85,10 +89,9 @@ describe('Releases API', () => {
       await store.saveRelease(release2, meta);
 
       const releases = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         qs: { 'service[]': [ 'foo', 'bar' ] },
         method: 'GET',
-        json: true,
       });
 
       expect(releases.count).toBe(2);
@@ -100,10 +103,9 @@ describe('Releases API', () => {
     it('should limit releases list', async () => {
 
       const releases = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         qs: { limit: 40, offset: 0 },
         method: 'GET',
-        json: true,
       });
 
       expect(releases.count).toBe(51);
@@ -115,10 +117,9 @@ describe('Releases API', () => {
     it('should page results', async () => {
 
       const releases = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         qs: { limit: 50, offset: 10 },
         method: 'GET',
-        json: true,
       });
 
       expect(releases.count).toBe(51);
@@ -137,9 +138,8 @@ describe('Releases API', () => {
       const saved = await store.saveRelease(data, makeRootMeta());
 
       const release = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,
+        url: `/api/releases/${saved.id}`,
         method: 'GET',
-        json: true,
       });
 
       expect(release.id).toBe(saved.id);
@@ -150,10 +150,9 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/142bc001-1819-459b-bf95-14e25be17fe5`,
+        url: `/api/releases/142bc001-1819-459b-bf95-14e25be17fe5`,
         method: 'GET',
         resolveWithFullResponse: true,
-        json: true,
       }).then(() => {
         throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
@@ -169,10 +168,11 @@ describe('Releases API', () => {
       const formData = makeReleaseForm();
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         resolveWithFullResponse: true,
         formData,
+        json: false,
       });
 
       const id = JSON.parse(response.body).id;
@@ -198,7 +198,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await expect(request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
@@ -212,7 +212,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await expect(request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
@@ -226,7 +226,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await expect(request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
@@ -244,7 +244,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await expect(request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
@@ -262,7 +262,7 @@ describe('Releases API', () => {
       loggerOptions.suppress = true;
 
       await expect(request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases`,
+        url: `/api/releases`,
         method: 'POST',
         formData,
       })).rejects.toHaveProperty('statusCode', 400);
@@ -277,10 +277,9 @@ describe('Releases API', () => {
       const saved = await store.saveRelease(data, makeRootMeta());
 
       const response = await request({
-        url: `http://${config.server.host}:${config.server.port}/api/releases/${saved.id}`,
+        url: `/api/releases/${saved.id}`,
         method: 'DELETE',
         resolveWithFullResponse: true,
-        json: true,
       });
 
       expect(response.statusCode).toBe(204);

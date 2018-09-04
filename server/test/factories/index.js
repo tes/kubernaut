@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import pm from 'power-merge';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json } from 'js-yaml';
+import request from 'request-promise';
 
 import Account from '../../lib/domain/Account';
 import Registry from '../../lib/domain/Registry';
@@ -210,6 +211,16 @@ function makeReleaseForm(overrides = {}) {
   }, overrides);
 }
 
+function makeRequestWithDefaults(config) {
+  return request.defaults({
+    baseUrl: `http://${config.server.host}:${config.server.port}`,
+    json: true,
+    headers: {
+      bearer: 'djE6NWE1YjA4MjI5NjhlYWE3ODhkZDE2YmQ1MzU4OTBiN2M6M2ZiNzI4Mjc1N2RhNzc3MGRmODdiN2I0MDNmNDZiMzQ4OTE5YzJkM2Q0ZDc5NTc5MTk3ODk1NmE4OWJjZGI1ZTgxNDY4ZmQ5Mjg3ODcwOTkzOTcxZmY4MDljYTkwZDgy',
+    },
+  });
+}
+
 export {
   makeIdentity,
   makeAccount,
@@ -222,4 +233,5 @@ export {
   makeDeploymentLogEntry,
   makeMeta,
   makeRootMeta,
+  makeRequestWithDefaults,
 };
