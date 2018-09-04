@@ -7,6 +7,10 @@ const makeRequest = async (url, options = {}) => {
       'content-type': 'application/json',
     }
   }, options));
+
+  if (res.status === 401 && res.headers.has('Location')) {
+    return window.location = res.headers.get('Location');
+  }
   if (options.returnResponse) return res;
   if (res.status >= 400) {
     let message = `${url} returned ${res.status} ${res.statusText}`;

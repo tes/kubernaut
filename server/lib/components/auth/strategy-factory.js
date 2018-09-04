@@ -56,8 +56,9 @@ export default function() {
         return function(req, res, next) {
           if (req.isAuthenticated()) return next();
           if (method === 'app') return res.redirect('/login');
+          if (req.headers.bearer) return passport.authenticate(authenticationMethods[method])(req, res, next);
 
-          passport.authenticate(authenticationMethods[method])(req, res, next);
+          return res.location('/login').sendStatus(401);
         };
       };
     }
