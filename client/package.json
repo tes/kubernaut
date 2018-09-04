@@ -9,6 +9,9 @@
     },
     "/auth/github": {
       "target": "http://localhost:3001/"
+    },
+    "/login": {
+      "target": "http://localhost:3001/"
     }
   },
   "dependencies": {

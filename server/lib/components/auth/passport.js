@@ -11,6 +11,7 @@ export default function() {
     passport.deserializeUser(async (account, cb) => {
       try {
         const storeAccount = await store.getAccount(account.id);
+        if(!storeAccount) return cb(null, false);
         cb(null, storeAccount);
       } catch (err) {
         logger.error(`Error deserializing user ${account.id} - ${account.displayName}`, err);
