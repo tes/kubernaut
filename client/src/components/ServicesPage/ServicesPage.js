@@ -6,16 +6,24 @@ import ServicesTable from '../ServicesTable';
 class ServicesPage extends Component {
 
   componentDidMount() {
+    this.props.initialise();
     this.props.fetchServicesPagination();
   }
 
   render() {
-    const { services, fetchServicesPagination } = this.props;
+    const { services, fetchServicesPagination, toggleSort, sort } = this.props;
 
     return (
       <div className='row'>
         <div className='col-sm'>
-          <ServicesTable services={services.data} loading={services.meta.loading} error={services.meta.error} fetchServices={fetchServicesPagination} />
+          <ServicesTable
+            services={services.data}
+            loading={services.meta.loading}
+            error={services.meta.error}
+            fetchServices={fetchServicesPagination}
+            toggleSort={toggleSort}
+            sort={sort}
+          />
         </div>
       </div>
     );

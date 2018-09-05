@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
-const TablePagination = ({ pages, page, limit, fetchContent }) => {
+const TablePagination = ({ pages, page, limit, fetchContent, sort, order }) => {
 
   const onPageSelect = (page) => {
-    fetchContent({ page, limit });
+    fetchContent({ page, limit, sort, order });
   };
 
   const items = Array(pages).fill().map((_, i) =>
@@ -42,6 +42,8 @@ TablePagination.propTypes = {
   page: PropTypes.number.isRequired,
   limit: PropTypes.number.isRequired,
   fetchContent: PropTypes.func.isRequired,
+  sort: PropTypes.string,
+  order: PropTypes.oneOf(['asc', 'desc']),
 };
 
 export default TablePagination;

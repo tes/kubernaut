@@ -74,7 +74,8 @@ export const getAccounts = ({ limit = 20, offset = 0 }) => {
 
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
-export const getServices = () => makeRequest('/api/services').then(computePagination);
+export const getServices = ({ offset, limit, sort, order }) =>
+  makeRequest(`/api/services?${makeQueryString({ offset, limit, sort, order })}`).then(computePagination);
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 

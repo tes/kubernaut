@@ -8,7 +8,7 @@ import { AccountLink, RegistryLink, ServiceLink } from '../Links';
 class ServicesTable extends Component {
 
   render() {
-    const { error = null, loading = false, services = {}, fetchServices } = this.props;
+    const { error = null, loading = false, services = {}, fetchServices, toggleSort, sort } = this.props;
 
     const errorTableBody = () =>
       <tbody >
@@ -49,16 +49,24 @@ class ServicesTable extends Component {
       </tbody>
     ;
 
+    const arrowClass = sort.order === 'asc' ? 'arrow-up' : 'arrow-down';
+    const arrowEl = <i className={`fa fa-${arrowClass}`} aria-hidden='true'></i>;
+    const sortIcons = {
+      name: sort.column === 'name' ? arrowEl : null,
+      registry: sort.column === 'registry' ? arrowEl : null,
+      createdOn: sort.column === 'createdOn' ? arrowEl : null,
+      createdBy: sort.column === 'createdBy' ? arrowEl : null,
+    };
 
     return (
       <div>
         <Table hover size="sm">
           <thead>
             <tr>
-              <th>Service</th>
-              <th>Registry</th>
-              <th>Created</th>
-              <th>Created By</th>
+              <th onClick={() => toggleSort('name')}>Service {sortIcons['name']}</th>
+              <th onClick={() => toggleSort('registry')}>Registry {sortIcons['registry']}</th>
+              <th onClick={() => toggleSort('createdOn')}>Created {sortIcons['createdOn']}</th>
+              <th onClick={() => toggleSort('createdBy')}>Created By {sortIcons['createdBy']}</th>
             </tr>
           </thead>
           {
@@ -75,6 +83,8 @@ class ServicesTable extends Component {
           page={services.page}
           limit={services.limit}
           fetchContent={fetchServices}
+          sort={sort.column}
+          order={sort.order}
         />
       </div>
     );
@@ -93,6 +103,11 @@ ServicesTable.propTypes = {
     items: PropTypes.array.isRequired,
   }),
   fetchServices: PropTypes.func,
+  toggleSort: PropTypes.func,
+  sort: PropTypes.shape({
+    column: PropTypes.string.isRequired,
+    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+  }),
 };
 
 export default ServicesTable;

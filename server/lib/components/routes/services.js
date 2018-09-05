@@ -14,8 +14,10 @@ export default function(options = {}) {
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+        const sort = req.query.sort ? req.query.sort : 'name';
+        const order = req.query.order ? req.query.order : 'asc';
 
-        const result = await store.findServices(criteria, limit, offset);
+        const result = await store.findServices(criteria, limit, offset, sort, order);
         res.json(result);
       } catch (err) {
         next(err);

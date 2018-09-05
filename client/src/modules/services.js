@@ -1,9 +1,13 @@
 import { createAction, handleActions } from 'redux-actions';
 const actionsPrefix = 'KUBERNAUT/SERVICES';
 export const fetchServicesPagination = createAction(`${actionsPrefix}/FETCH_SERVICES_PAGINATION`);
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
+export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const FETCH_SERVICES_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICES_REQUEST`);
 export const FETCH_SERVICES_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICES_SUCCESS`);
 export const FETCH_SERVICES_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICES_ERROR`);
+
+export const selectSortState = (state) => (state.services.sort);
 
 const defaultState = {
   data: {
@@ -15,11 +19,21 @@ const defaultState = {
     items: [],
   },
   meta: {},
+  sort: {
+    column: 'name',
+    order: 'asc',
+  },
 };
 
 export default handleActions({
-  [FETCH_SERVICES_REQUEST]: () => ({
+  [initialise]: () => ({
     ...defaultState,
+  }),
+  [FETCH_SERVICES_REQUEST]: (state) => ({
+    ...state,
+    data: {
+      ...defaultState.data,
+    },
     meta: {
       loading: true,
     },
@@ -36,6 +50,13 @@ export default handleActions({
     meta: {
       error: payload.error,
       loading: false,
+    },
+  }),
+  [toggleSort]: (state, { payload }) => ({
+    ...state,
+    sort: {
+      column: payload,
+      order: state.sort.column === payload ? (state.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
     },
   }),
 }, defaultState);

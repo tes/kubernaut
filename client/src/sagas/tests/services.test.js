@@ -14,13 +14,13 @@ import {
   getServices,
 } from '../../lib/api';
 
-describe('Releases sagas', () => {
+describe('Services sagas', () => {
   it('should fetch services', () => {
     const servicesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
 
     const gen = fetchServicesDataSaga(fetchServicesPagination());
     expect(gen.next().value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0 }));
+    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0, sort: 'name', order: 'asc' }));
     expect(gen.next(servicesData).value).toMatchObject(put(FETCH_SERVICES_SUCCESS({ data: servicesData } )));
     expect(gen.next().done).toBe(true);
   });
@@ -29,7 +29,7 @@ describe('Releases sagas', () => {
     const error = new Error('ouch');
     const gen = fetchServicesDataSaga(fetchServicesPagination({ quiet: true }));
     expect(gen.next().value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0 }));
+    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0, sort: 'name', order: 'asc' }));
     expect(gen.throw(error).value).toMatchObject(put(FETCH_SERVICES_ERROR({ error: error.message })));
     expect(gen.next().done).toBe(true);
   });
@@ -39,7 +39,7 @@ describe('Releases sagas', () => {
 
     const gen = fetchServicesDataSaga(fetchServicesPagination({ page: 2 }));
     expect(gen.next().value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 50 }));
+    expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 50, sort: 'name', order: 'asc' }));
     expect(gen.next(servicesData).value).toMatchObject(put(FETCH_SERVICES_SUCCESS({ data: servicesData } )));
     expect(gen.next().done).toBe(true);
   });

@@ -108,6 +108,42 @@ describe('Service store', () => {
       expect(results2.items.length).toBe(1);
       expect(results2.items[0].name).toBe('app-2');
     });
+
+    it('should sort services by a valid column', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+
+      await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'app-2', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+      const results = await store.findServices({ sort: 'name', order: 'desc' });
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 3,
+      });
+      expect(results.items[2].name).toBe('service-1');
+      expect(results.items[1].name).toBe('app-2');
+      expect(results.items[0].name).toBe('app-1');
+    });
+
+    it('should default sorting service with an invalid column', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+
+      await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'app-2', registry } }), makeRootMeta());
+      await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+      const results = await store.findServices({ sort: 'not_a_valid\'_column', order: 'desc' });
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 3,
+      });
+      expect(results.items[0].name).toBe('app-1');
+      expect(results.items[1].name).toBe('app-2');
+      expect(results.items[2].name).toBe('service-1');
+    });
   });
 
   describe('List services allowed for deployment to a namespace', () => {

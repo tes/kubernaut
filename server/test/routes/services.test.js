@@ -96,6 +96,22 @@ describe('Services API', () => {
       expect(services.items.length).toBe(41);
     });
 
+    it('should sort results', async () => {
+      const services = await request({
+        url: `/api/services`,
+        qs: { sort: 'name', order: 'desc' },
+        method: 'GET',
+      });
+
+      expect(services.count).toBe(51);
+      expect(services.offset).toBe(0);
+      expect(services.limit).toBe(50);
+      expect(services.items.length).toBe(50);
+      const first = services.items[0];
+      const last = services.items[49];
+      expect(first.name > last.name).toBe(true);
+    });
+
   });
 
   describe('POST /api/service/:serviceId/enable-deployment/:namespaceId', () => {

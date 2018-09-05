@@ -37,17 +37,27 @@ export default function(options) {
       return result.rows;
     }
 
-    async function findServices(criteria = {}, limit = 50, offset = 0) {
+    const sortMapping = {
+      createdOn: 's.created_on',
+      createdBy: 'a.created_by',
+      name: 's.name',
+      registry: 'registry_name'
+    };
+
+    async function findServices(criteria = {}, limit = 50, offset = 0, sort = 'name', order = 'asc') {
       logger.debug(`Listing up to ${limit} services starting from offset: ${offset}`);
 
       const bindVariables = {};
+
+      const sortColumn = sortMapping[sort] || 's.name';
+      const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findServicesBuilder = sqb
         .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
         .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('s.created_by', raw('a.id')))
-        .orderBy('s.name asc')
+        .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
         .offset(offset);
 
