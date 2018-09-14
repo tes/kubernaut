@@ -116,15 +116,15 @@ describe('Service store', () => {
       await saveRelease(makeRelease({ service: { name: 'app-2', registry } }), makeRootMeta());
       await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
 
-      const results = await store.findServices({ sort: 'name', order: 'desc' });
+      const results = await store.findServices({}, 10, 0, 'name', 'desc');
       expect(results).toBeDefined();
       expect(results).toMatchObject({
         offset: 0,
         count: 3,
       });
-      expect(results.items[2].name).toBe('service-1');
+      expect(results.items[0].name).toBe('service-1');
       expect(results.items[1].name).toBe('app-2');
-      expect(results.items[0].name).toBe('app-1');
+      expect(results.items[2].name).toBe('app-1');
     });
 
     it('should default sorting service with an invalid column', async () => {
@@ -134,15 +134,85 @@ describe('Service store', () => {
       await saveRelease(makeRelease({ service: { name: 'app-2', registry } }), makeRootMeta());
       await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
 
-      const results = await store.findServices({ sort: 'not_a_valid\'_column', order: 'desc' });
+      const results = await store.findServices({}, 10, 0, 'not_a_valid\'_column', 'desc');
       expect(results).toBeDefined();
       expect(results).toMatchObject({
         offset: 0,
         count: 3,
       });
-      expect(results.items[0].name).toBe('app-1');
+      expect(results.items[0].name).toBe('service-1');
       expect(results.items[1].name).toBe('app-2');
-      expect(results.items[2].name).toBe('service-1');
+      expect(results.items[2].name).toBe('app-1');
+    });
+
+    describe('filters', () => {
+      it('should filter by name', async () => {
+        const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+
+        await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+        const results = await store.findServices({ filters: { name: [{ value: 'app-' }] } });
+        expect(results).toBeDefined();
+        expect(results).toMatchObject({
+          offset: 0,
+          count: 2,
+        });
+        expect(results.items[0].name).toBe('app-1');
+        expect(results.items[1].name).toBe('app-11');
+      });
+
+      it('should filter by name exactly', async () => {
+        const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+
+        await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
+
+        const results = await store.findServices({ filters: { name: [{ value: 'app-1', exact: true }] } });
+        expect(results).toBeDefined();
+        expect(results).toMatchObject({
+          offset: 0,
+          count: 1,
+        });
+        expect(results.items[0].name).toBe('app-1');
+      });
+
+      it('should filter by registry name', async () => {
+        const registry = await saveRegistry(makeRegistry({ name: 'default1' }), makeRootMeta());
+        const registry2 = await saveRegistry(makeRegistry({ name: 'not-default1' }), makeRootMeta());
+
+        await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'service-1', registry: registry2 } }), makeRootMeta());
+
+        const results = await store.findServices({ filters: { registry: [{ value: '-default1' }] } });
+        expect(results).toBeDefined();
+        expect(results).toMatchObject({
+          offset: 0,
+          count: 1,
+        });
+        expect(results.items[0].name).toBe('service-1');
+      });
+
+      it('should filter by registry name exactly', async () => {
+        const registry = await saveRegistry(makeRegistry({ name: 'default1' }), makeRootMeta());
+        const registry2 = await saveRegistry(makeRegistry({ name: 'not-default1' }), makeRootMeta());
+
+        await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
+        await saveRelease(makeRelease({ service: { name: 'service-1', registry: registry2 } }), makeRootMeta());
+
+        const results = await store.findServices({ filters: { registry: [{ value: 'default1', exact: true }] } });
+        expect(results).toBeDefined();
+        expect(results).toMatchObject({
+          offset: 0,
+          count: 2,
+        });
+        expect(results.items[0].name).toBe('app-1');
+        expect(results.items[1].name).toBe('app-11');
+      });
     });
   });
 

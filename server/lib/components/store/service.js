@@ -3,9 +3,10 @@ import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
 
+const { Op, raw } = sqb;
+
 export default function(options) {
 
-  const { Op, raw } = sqb;
 
   function start({ config, logger, db }, cb) {
 
@@ -68,6 +69,20 @@ export default function(options) {
 
       if (criteria.registries) {
         db.buildWhereClause('sr.id', criteria.registries, bindVariables, findServicesBuilder, countServicesBuilder);
+      }
+
+      if (criteria.filters) {
+        if (criteria.filters.name) {
+          db.applyFilter(criteria.filters.name, 's.name', findServicesBuilder, countServicesBuilder);
+        }
+
+        if (criteria.filters.registry) {
+          db.applyFilter(criteria.filters.registry, 'sr.name', findServicesBuilder, countServicesBuilder);
+        }
+
+        if (criteria.filters.createdBy) {
+          db.applyFilter(criteria.filters.createdBy, 'a.display_name', findServicesBuilder, countServicesBuilder);
+        }
       }
 
       const findStatement = db.serialize(findServicesBuilder, bindVariables);

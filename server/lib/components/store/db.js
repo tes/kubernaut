@@ -34,7 +34,17 @@ export default function(options = {}) {
     }
 
     function serialize(builder, bindVariables) {
-      return builder.generate({ dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR }, bindVariables);
+      return builder.generate({ dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, values: bindVariables });
+    }
+
+    function applyFilter (filter, column, ...builders) {
+      filter.forEach(({ value, exact, not }) => {
+        const op = exact ?
+          (not ? Op.ne(column, value) : Op.eq(column, value)) :
+          (not ? Op.notLike(column, `%${value}%`) : Op.like(column, `%${value}%`));
+
+        builders.forEach((builder) => builder.where(op));
+      });
     }
 
     function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
@@ -55,6 +65,7 @@ export default function(options = {}) {
       withTransaction,
       serialize,
       buildWhereClause,
+      applyFilter,
     });
   }
 

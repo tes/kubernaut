@@ -1,4 +1,5 @@
 import Boom from 'boom';
+import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
   function start({ app, store, auth }, cb) {
@@ -9,8 +10,10 @@ export default function(options = {}) {
 
     app.get('/api/services', async (req, res, next) => {
       try {
+        const filters = parseFilters(req.query, ['name', 'createdBy', 'registry']);
         const criteria = {
           registries: req.user.listRegistryIdsWithPermission('registries-read'),
+          filters,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
