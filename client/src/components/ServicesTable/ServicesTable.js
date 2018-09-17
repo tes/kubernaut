@@ -4,11 +4,28 @@ import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink } from '../Links';
+import TableFilter from '../TableFilter';
 
 class ServicesTable extends Component {
 
   render() {
-    const { error = null, loading = false, services = {}, fetchServices, toggleSort, sort } = this.props;
+    const {
+      error = null,
+      loading = false,
+      services = {},
+      fetchServices,
+      toggleSort,
+      sort,
+      filters,
+      initialValues,
+      addFilter,
+      removeFilter,
+      search,
+      clearSearch,
+      showFilters,
+      hideFilters,
+      expandFilters,
+    } = this.props;
 
     const errorTableBody = () =>
       <tbody >
@@ -60,6 +77,23 @@ class ServicesTable extends Component {
 
     return (
       <div>
+        <TableFilter
+          formPrefix="services"
+          columns={[
+            { value: 'name', display: 'Service' },
+            { value: 'registry', display: 'Registry' },
+            { value: 'createdBy', display: 'Created By' },
+          ]}
+          filters={filters}
+          initialValues={initialValues}
+          addFilter={addFilter}
+          removeFilter={removeFilter}
+          search={search}
+          clearSearch={clearSearch}
+          show={expandFilters}
+          showFilters={showFilters}
+          hideFilters={hideFilters}
+        />
         <Table hover size="sm">
           <thead>
             <tr>

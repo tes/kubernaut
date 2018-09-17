@@ -11,7 +11,21 @@ class ServicesPage extends Component {
   }
 
   render() {
-    const { services, fetchServicesPagination, toggleSort, sort } = this.props;
+    const {
+      services,
+      fetchServicesPagination,
+      toggleSort,
+      sort,
+      filters,
+      addFilter,
+      removeFilter,
+      search,
+      clearSearch,
+      initialValues,
+      showFilters,
+      hideFilters,
+      expandFilters,
+    } = this.props;
 
     return (
       <div className='row'>
@@ -23,6 +37,15 @@ class ServicesPage extends Component {
             fetchServices={fetchServicesPagination}
             toggleSort={toggleSort}
             sort={sort}
+            filters={filters}
+            addFilter={addFilter}
+            removeFilter={removeFilter}
+            initialValues={initialValues}
+            search={search}
+            clearSearch={clearSearch}
+            showFilters={showFilters}
+            hideFilters={hideFilters}
+            expandFilters={expandFilters}
           />
         </div>
       </div>

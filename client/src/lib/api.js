@@ -1,3 +1,14 @@
+import { stringify as makeQueryString } from 'querystring';
+
+const stringifyFilters = (filters) => {
+  return Object.keys(filters).reduce((acc, key) => {
+    return {
+      ...acc,
+      [key]: filters[key].map((filter) => makeQueryString(filter, ',', ':')),
+    };
+  }, {});
+};
+
 const makeRequest = async (url, options = {}) => {
   const res = await fetch(url, Object.assign({}, {
     credentials: 'same-origin',
@@ -25,13 +36,6 @@ const makeRequest = async (url, options = {}) => {
     throw new Error(message);
   }
   return await res.json();
-};
-
-const makeQueryString = (values) => {
-  return Object.keys(values).reduce((acc, key) => {
-    if (!values[key] && values[key] !== 0) return acc;
-    return `${acc}${key}=${values[key]}&`;
-  }, '');
 };
 
 const computePagination = result => ({
@@ -74,8 +78,8 @@ export const getAccounts = ({ limit = 20, offset = 0 }) => {
 
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
-export const getServices = ({ offset, limit, sort, order }) =>
-  makeRequest(`/api/services?${makeQueryString({ offset, limit, sort, order })}`).then(computePagination);
+export const getServices = ({ offset, limit, sort, order, filters = {} }) =>
+  makeRequest(`/api/services?${makeQueryString({ offset, limit, sort, order, ...stringifyFilters(filters) })}`).then(computePagination);
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
