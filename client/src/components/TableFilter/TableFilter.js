@@ -8,7 +8,7 @@ import RenderSelect from '../RenderSelect';
 class TableFilter extends Component {
 
   render() {
-    if (!this.props.show) return (
+    if (!this.props.expandFilters) return (
       <Row className="mb-2">
         <Col className="d-flex justify-content-end">
           <Button

@@ -16,15 +16,7 @@ class ServicesTable extends Component {
       fetchServices,
       toggleSort,
       sort,
-      filters,
-      initialValues,
-      addFilter,
-      removeFilter,
-      search,
-      clearSearch,
-      showFilters,
-      hideFilters,
-      expandFilters,
+      filterProps
     } = this.props;
 
     const errorTableBody = () =>
@@ -84,15 +76,7 @@ class ServicesTable extends Component {
             { value: 'registry', display: 'Registry' },
             { value: 'createdBy', display: 'Created By' },
           ]}
-          filters={filters}
-          initialValues={initialValues}
-          addFilter={addFilter}
-          removeFilter={removeFilter}
-          search={search}
-          clearSearch={clearSearch}
-          show={expandFilters}
-          showFilters={showFilters}
-          hideFilters={hideFilters}
+          {...filterProps}
         />
         <Table hover size="sm">
           <thead>
