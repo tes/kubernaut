@@ -67,7 +67,10 @@ class TableFilter extends Component {
                   color="primary"
                   type="submit"
                   className="mr-2"
-                  onClick={this.props.handleSubmit((values) => this.props.search(values))}
+                  onClick={this.props.handleSubmit((values) => {
+                    if (!values.searchVal) return this.props.clearSearch();
+                    this.props.search(values);
+                  })}
                 >Search</Button>
                 <Button
                   outline

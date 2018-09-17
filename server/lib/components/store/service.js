@@ -3,7 +3,7 @@ import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
 
-const { Op, raw } = sqb;
+const { Op, raw, innerJoin } = sqb;
 
 export default function(options) {
 
@@ -55,17 +55,22 @@ export default function(options) {
 
       const findServicesBuilder = sqb
         .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
-        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
-        .where(Op.eq('s.registry', raw('sr.id')))
-        .where(Op.eq('s.created_by', raw('a.id')))
+        .from('active_service__vw s')
+        .join(
+          innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
+          innerJoin('active_account__vw a').on(Op.eq('s.created_by', raw('a.id')))
+        )
         .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
         .offset(offset);
 
       const countServicesBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_service__vw s', 'active_registry__vw sr')
-        .where(Op.eq('s.registry', raw('sr.id')));
+        .from('active_service__vw s')
+        .join(
+          innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
+          innerJoin('active_account__vw a').on(Op.eq('s.created_by', raw('a.id')))
+        );
 
       if (criteria.registries) {
         db.buildWhereClause('sr.id', criteria.registries, bindVariables, findServicesBuilder, countServicesBuilder);
