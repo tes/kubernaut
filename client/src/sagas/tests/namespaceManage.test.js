@@ -28,7 +28,7 @@ import {
   disableServiceForNamespace,
 } from '../../lib/api';
 
-describe.only('NamespaceManageSagas', () => {
+describe('NamespaceManageSagas', () => {
   it('should initialise the page', () => {
     const initAction = initialise({ id: 1 });
     const gen = initialiseSaga(initAction);
