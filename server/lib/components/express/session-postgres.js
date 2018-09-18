@@ -13,7 +13,7 @@ module.exports = function() {
 
     const store = new PostgresStore({
       pool: postgres,
-      errorLog: logger,
+      errorLog: logger.error,
     });
 
     store.on('error', err => {
