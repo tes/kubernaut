@@ -1,16 +1,11 @@
-import reduce, {
+import reduce, * as allExports from '../services';
+import filterTests from './lib/filterTests';
+const {
   FETCH_SERVICES_REQUEST,
   FETCH_SERVICES_SUCCESS,
   FETCH_SERVICES_ERROR,
   toggleSort,
-  initialise,
-  addFilter,
-  removeFilter,
-  showFilters,
-  hideFilters,
-  search,
-  clearSearch,
-} from '../services';
+} = allExports;
 
 describe('Services Reducer', () => {
 
@@ -75,86 +70,5 @@ describe('Services Reducer', () => {
     expect(result.sort.order).toBe('asc');
   });
 
-  it('should add a filter', () => {
-    const initialState = reduce({}, initialise());
-    const columns = [{ value: 'abc', display: 'Abc' }];
-    const filterDetails = {
-      searchVal: 'abc',
-      column: 'abc',
-      not: true,
-      exact: true,
-    };
-    const result = reduce(initialState, addFilter({ form: filterDetails, columns }));
-    expect(result.filter.filters.length).toBe(1);
-    expect(result.filter.filters[0]).toMatchObject({
-      key: filterDetails.column,
-      value: filterDetails.searchVal,
-      exact: true,
-      not: true,
-      displayName: 'Abc',
-    });
-  });
-
-  it('should remove a filter', () => {
-    const initialState = {
-      filter: {
-        filters: [
-          { uuid: 'abc'}
-        ]
-      }
-    };
-
-    const result = reduce(initialState, removeFilter('abc'));
-    expect(result.filter.filters.length).toBe(0);
-  });
-
-  it('should set filters to display', () => {
-    const initialState = reduce({}, initialise());
-    const result = reduce(initialState, showFilters());
-    expect(result.filter.show).toBe(true);
-  });
-
-  it('should set filters to hide', () => {
-    const initialState = reduce({}, showFilters());
-    const result = reduce(initialState, hideFilters());
-    expect(result.filter.show).toBe(false);
-  });
-
-  it('should set search values', () => {
-    const initialState = reduce({}, initialise());
-    const searchForm = {
-      searchVal: 'abc',
-      column: 'abc',
-      not: true,
-      exact: true,
-    };
-
-    const result = reduce(initialState, search(searchForm));
-    expect(result.filter.filters.length).toBe(0);
-    expect(result.filter.search).toMatchObject({
-      key: searchForm.column,
-      value: searchForm.searchVal,
-      exact: true,
-      not: true,
-    });
-  });
-
-  it('should clear search values', () => {
-    const initialState = {
-      filter: {
-        search: {
-          key: 'abc',
-          value: '123',
-          exact: true,
-          not: true,
-        }
-      }
-    };
-
-    const result = reduce(initialState, clearSearch());
-    expect(result.filter.search.key).toBe('');
-    expect(result.filter.search.value).toBe('');
-    expect(result.filter.search.exact).toBe(false);
-    expect(result.filter.search.not).toBe(false);
-  });
+  filterTests(allExports);
 });

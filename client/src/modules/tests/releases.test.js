@@ -1,8 +1,10 @@
-import reduce, {
+import reduce, * as allExports from '../releases';
+import filterTests from './lib/filterTests';
+const {
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
-} from '../releases';
+} = allExports;
 
 describe('Releases Reducer', () => {
 
@@ -39,4 +41,5 @@ describe('Releases Reducer', () => {
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
 
+  filterTests(allExports);
 });
