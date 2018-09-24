@@ -130,24 +130,43 @@ export default function(options) {
 
       const countReleasesBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_release__vw r', 'service s', 'registry sr')
+        .from('active_release__vw r', 'service s', 'registry sr', 'account cb')
         .where(Op.eq('r.service', raw('s.id')))
-        .where(Op.eq('s.registry', raw('sr.id')));
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('r.created_by', raw('cb.id')));
 
       if (criteria.hasOwnProperty('version')) {
-        db.buildWhereClause('r.version', criteria.version, bindVariables, findReleasesBuilder, countReleasesBuilder);
+        db.applyFilter({ value: criteria.version }, 'r.version', findReleasesBuilder, countReleasesBuilder);
       }
 
       if (criteria.hasOwnProperty('service')) {
-        db.buildWhereClause('s.name', criteria.service, bindVariables, findReleasesBuilder, countReleasesBuilder);
+        db.applyFilter({ value: criteria.service }, 's.name', findReleasesBuilder, countReleasesBuilder);
       }
 
       if (criteria.hasOwnProperty('registry')) {
-        db.buildWhereClause('sr.name', criteria.registry, bindVariables, findReleasesBuilder, countReleasesBuilder);
+        db.applyFilter({ value: criteria.registry }, 'sr.name', findReleasesBuilder, countReleasesBuilder);
       }
 
       if (criteria.hasOwnProperty('registries')) {
-        db.buildWhereClause('sr.id', criteria.registries, bindVariables, findReleasesBuilder, countReleasesBuilder);
+        db.applyFilter({ value: criteria.registries }, 'sr.id', findReleasesBuilder, countReleasesBuilder);
+      }
+
+      if (criteria.filters) {
+        if (criteria.filters.service) {
+          db.applyFilter(criteria.filters.service, 's.name', findReleasesBuilder, countReleasesBuilder);
+        }
+
+        if (criteria.filters.version) {
+          db.applyFilter(criteria.filters.version, 'r.version', findReleasesBuilder, countReleasesBuilder);
+        }
+
+        if (criteria.filters.registry) {
+          db.applyFilter(criteria.filters.registry, 'sr.name', findReleasesBuilder, countReleasesBuilder);
+        }
+
+        if (criteria.filters.createdBy) {
+          db.applyFilter(criteria.filters.createdBy, 'cb.display_name', findReleasesBuilder, countReleasesBuilder);
+        }
       }
 
       const findReleasesStatement = db.serialize(findReleasesBuilder, bindVariables);

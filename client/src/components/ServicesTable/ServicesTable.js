@@ -16,7 +16,7 @@ class ServicesTable extends Component {
       fetchServices,
       toggleSort,
       sort,
-      filterProps
+      filterActions
     } = this.props;
 
     const errorTableBody = () =>
@@ -71,12 +71,13 @@ class ServicesTable extends Component {
       <div>
         <TableFilter
           formPrefix="services"
+          statePath="services.filter"
           columns={[
             { value: 'name', display: 'Service' },
             { value: 'registry', display: 'Registry' },
             { value: 'createdBy', display: 'Created By' },
           ]}
-          {...filterProps}
+          {...filterActions}
         />
         <Table hover size="sm">
           <thead>

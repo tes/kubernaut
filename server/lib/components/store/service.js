@@ -73,7 +73,7 @@ export default function(options) {
         );
 
       if (criteria.registries) {
-        db.buildWhereClause('sr.id', criteria.registries, bindVariables, findServicesBuilder, countServicesBuilder);
+        db.applyFilter({ value: criteria.registries }, 'sr.id', findServicesBuilder, countServicesBuilder);
       }
 
       if (criteria.filters) {

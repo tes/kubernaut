@@ -20,9 +20,6 @@ function mapStateToProps(state, props) {
       meta: state.services.meta,
     },
     sort: state.services.sort,
-    filters: state.services.filter.filters,
-    expandFilters: state.services.filter.show,
-    initialValues: state.services.filter.initialValues,
   };
 }
 

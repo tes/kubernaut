@@ -1,5 +1,14 @@
 import { connect } from 'react-redux';
-import { fetchReleasesPagination } from '../../modules/releases';
+import {
+  initialise,
+  fetchReleasesPagination,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
+} from '../../modules/releases';
 
 import ReleasesPage from './ReleasesPage';
 
@@ -13,7 +22,14 @@ function mapStateToProps(state, props) {
 }
 
 const mapDispatchToProps = {
+  initialise,
   fetchReleasesPagination,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ReleasesPage);

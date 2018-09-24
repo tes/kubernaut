@@ -4,11 +4,18 @@ import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, CreateDeploymentLink } from '../Links';
+import TableFilter from '../TableFilter';
 
 class ReleasesTable extends Component {
 
   render() {
-    const { error = null, loading = false, releases = {}, fetchReleases } = this.props;
+    const {
+      error = null,
+      loading = false,
+      releases = {},
+      fetchReleases,
+      filterActions,
+    } = this.props;
 
     const errorTableBody = () =>
       <tbody>
@@ -63,6 +70,17 @@ class ReleasesTable extends Component {
 
     return (
       <div>
+        <TableFilter
+          formPrefix="releases"
+          statePath="releases.filter"
+          columns={[
+            { value: 'service', display: 'Service' },
+            { value: 'version', display: 'Version' },
+            { value: 'registry', display: 'Registry' },
+            { value: 'createdBy', display: 'Created By' },
+          ]}
+          {...filterActions}
+        />
         <Table hover size="sm">
           <thead>
             <tr>

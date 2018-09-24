@@ -1,13 +1,20 @@
 import qs from 'querystring';
 
 const _parseFilter = (query) => {
-  const { value, exact = false, not = false } = qs.parse(query, ',', ':');
-  return {
+  const parsed = qs.parse(query, ',', ':');
+  const value = ({}).hasOwnProperty.call(parsed, 'value') ? parsed.value : query;
+  const exact = ({}).hasOwnProperty.call(parsed, 'exact') ? parsed.exact : true;
+  const not = ({}).hasOwnProperty.call(parsed, 'not') ? parsed.not : false;
+
+  const filter = {
     value,
-    exact: exact === 'true',
-    not: not === 'true',
+    exact: typeof(exact) === 'boolean' ? exact : exact === 'true',
+    not: typeof(not) === 'boolean' ? not: not === 'true',
   };
+
+  return filter;
 };
+
 export default (query, filterNames) => {
   return filterNames.reduce((acc, name) => {
     if(!query[name]) return acc;

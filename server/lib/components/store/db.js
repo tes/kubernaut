@@ -37,14 +37,30 @@ export default function(options = {}) {
       return builder.generate({ dialect: 'pg', prettyPrint: true, paramType: sqb.ParamType.DOLLAR, values: bindVariables });
     }
 
-    function applyFilter (filter, column, ...builders) {
-      filter.forEach(({ value, exact, not }) => {
+    function _applyfilter(filterOption, column, ...builders) {
+      const { value, not = false, exact = true } = filterOption;
+
+      if (Array.isArray(value) && value.length) {
+        const op = not ?
+          Op.notIn(column, value) :
+          Op.in(column, value);
+
+          builders.forEach((builder) => builder.where(op));
+      } else {
         const op = exact ?
-          (not ? Op.ne(column, value) : Op.eq(column, value)) :
-          (not ? Op.notLike(column, `%${value}%`) : Op.like(column, `%${value}%`));
+        (not ? Op.ne(column, value) : Op.eq(column, value)) :
+        (not ? Op.notILike(column, `%${value}%`) : Op.ilike(column, `%${value}%`));
 
         builders.forEach((builder) => builder.where(op));
+      }
+    }
+
+    function applyFilter(filter, column, ...builders) {
+      if (Array.isArray(filter)) return filter.forEach((options) => {
+        _applyfilter(options, column, ...builders);
       });
+
+      return _applyfilter(filter, column, ...builders);
     }
 
     function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {

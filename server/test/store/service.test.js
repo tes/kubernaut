@@ -153,7 +153,7 @@ describe('Service store', () => {
         await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
         await saveRelease(makeRelease({ service: { name: 'service-1', registry } }), makeRootMeta());
 
-        const results = await store.findServices({ filters: { name: [{ value: 'app-' }] } });
+        const results = await store.findServices({ filters: { name: [{ value: 'app-', exact: false }] } });
         expect(results).toBeDefined();
         expect(results).toMatchObject({
           offset: 0,
@@ -187,7 +187,7 @@ describe('Service store', () => {
         await saveRelease(makeRelease({ service: { name: 'app-11', registry } }), makeRootMeta());
         await saveRelease(makeRelease({ service: { name: 'service-1', registry: registry2 } }), makeRootMeta());
 
-        const results = await store.findServices({ filters: { registry: [{ value: '-default1' }] } });
+        const results = await store.findServices({ filters: { registry: [{ value: '-default1', exact: false }] } });
         expect(results).toBeDefined();
         expect(results).toMatchObject({
           offset: 0,

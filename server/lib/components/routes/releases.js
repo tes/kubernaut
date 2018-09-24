@@ -2,6 +2,7 @@ import multer from 'multer';
 import Boom from 'boom';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json } from 'js-yaml';
+import parseFilters from './lib/parseFilters';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -14,12 +15,11 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
-        const criteria = ['registry', 'service', 'version'].reduce((criteria, name) => {
-          if (!req.query[name]) return criteria;
-          return { ...criteria, [name]: req.query[name] };
-        }, {
+        const filters = parseFilters(req.query, ['service', 'version', 'registry', 'createdBy']);
+        const criteria = {
           registries: req.user.listRegistryIdsWithPermission('releases-read'),
-        });
+          filters,
+        };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 

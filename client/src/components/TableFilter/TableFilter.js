@@ -8,7 +8,7 @@ import RenderSelect from '../RenderSelect';
 class TableFilter extends Component {
 
   render() {
-    if (!this.props.expandFilters) return (
+    if (!this.props.show) return (
       <Row className="mb-2">
         <Col className="d-flex justify-content-end">
           <Button
@@ -93,7 +93,7 @@ class TableFilter extends Component {
             <Col sm="1">
               <Button
                 outline
-                onClick={this.props.hideFilters}
+                onClick={(e) => {e.preventDefault(); this.props.hideFilters(); }}
               >Hide</Button>
             </Col>
           </Row>
@@ -121,7 +121,14 @@ class TableFilter extends Component {
 
 TableFilter.propTypes = {
   columns: PropTypes.array.isRequired,
-  filters: PropTypes.array.isRequired,
+  show: PropTypes.bool.isRequired,
+  filters: PropTypes.arrayOf(PropTypes.shape({
+    uuid: PropTypes.string.isRequired,
+    displayName: PropTypes.string.isRequired,
+    not: PropTypes.bool,
+    exact: PropTypes.bool,
+    value: PropTypes.string.isRequired,
+  })).isRequired,
 };
 
 export default TableFilter;

@@ -44,13 +44,14 @@ const computePagination = result => ({
   page: result.limit ? Math.floor(result.offset / result.limit) + 1 : 0,
 });
 
-export const getReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '' }) => {
+export const getReleases = ({ limit = 20, offset = 0, service= '', registry = '', version = '', filters = {} }) => {
   const qs = makeQueryString({
     limit,
     offset,
     service,
     registry,
     version,
+    ...stringifyFilters(filters)
   });
   return makeRequest(`/api/releases?${qs}`).then(computePagination);
 };

@@ -6,9 +6,11 @@ import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
 import {
   makeRelease,
+  makeRegistry,
   makeRootMeta,
   makeReleaseForm,
   makeRequestWithDefaults,
+  makeRequestFilter,
 } from '../factories';
 
 describe('Releases API', () => {
@@ -90,7 +92,7 @@ describe('Releases API', () => {
 
       const releases = await request({
         url: `/api/releases`,
-        qs: { 'service[]': [ 'foo', 'bar' ] },
+        qs: { 'service': makeRequestFilter([ 'foo', 'bar' ]) },
         method: 'GET',
       });
 
@@ -128,6 +130,193 @@ describe('Releases API', () => {
       expect(releases.items.length).toBe(41);
     });
 
+    describe('filters', () => {
+      it('should filter by service name', async () => {
+        await store.nuke();
+
+        const release1 =  makeRelease({
+          service: {
+            name: 'foo'
+          }
+        });
+        const release2 =  makeRelease({
+          service: {
+            name: 'foo2'
+          }
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'service': makeRequestFilter('foo', { exact: false, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(2);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(2);
+      });
+
+      it('should filter by service name exactly', async () => {
+        await store.nuke();
+
+        const release1 =  makeRelease({
+          service: {
+            name: 'foo'
+          }
+        });
+        const release2 =  makeRelease({
+          service: {
+            name: 'foo2'
+          }
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'service': makeRequestFilter('foo', { exact: true, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(1);
+      });
+
+      it('should filter by version', async () => {
+        await store.nuke();
+
+        const release1 =  makeRelease({
+          version: 'abcdef-123'
+        });
+        const release2 =  makeRelease({
+          version: 'abcdef-1234'
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'version': makeRequestFilter('abcdef', { exact: false, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(2);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(2);
+      });
+
+      it('should filter by version exactly', async () => {
+        await store.nuke();
+
+        const release1 =  makeRelease({
+          version: 'abcdef-123'
+        });
+        const release2 =  makeRelease({
+          version: 'abcdef-1234'
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'version': makeRequestFilter('abcdef-123', { exact: true, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(1);
+      });
+
+      it('should filter by registry name', async () => {
+        await store.nuke();
+        const registry = await store.saveRegistry(makeRegistry({ name: 'default1' }), makeRootMeta());
+        const registry2 = await store.saveRegistry(makeRegistry({ name: 'not-default1' }), makeRootMeta());
+
+        const release1 =  makeRelease({
+          version: 'abcdef-123',
+          service: {
+            registry: registry,
+          },
+        });
+        const release2 =  makeRelease({
+          version: 'abcdef-1234',
+          service: {
+            registry: registry2,
+          },
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'registry': makeRequestFilter('default1', { exact: false, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(2);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(2);
+      });
+
+      it('should filter by registry name exactly', async () => {
+        await store.nuke();
+        const registry = await store.saveRegistry(makeRegistry({ name: 'default1' }), makeRootMeta());
+        const registry2 = await store.saveRegistry(makeRegistry({ name: 'not-default1' }), makeRootMeta());
+
+        const release1 =  makeRelease({
+          version: 'abcdef-123',
+          service: {
+            registry: registry,
+          },
+        });
+        const release2 =  makeRelease({
+          version: 'abcdef-1234',
+          service: {
+            registry: registry2,
+          },
+        });
+
+        const meta = makeRootMeta();
+
+        await store.saveRelease(release1, meta);
+        await store.saveRelease(release2, meta);
+
+        const releases = await request({
+          url: `/api/releases`,
+          qs: { 'registry': makeRequestFilter('default1', { exact: true, not: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+        expect(releases.offset).toBe(0);
+        expect(releases.limit).toBe(50);
+        expect(releases.items.length).toBe(1);
+      });
+    });
   });
 
   describe('GET /api/releases/:id', () => {

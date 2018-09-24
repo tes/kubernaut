@@ -16,7 +16,7 @@ class ServicesPage extends Component {
       fetchServicesPagination,
       toggleSort,
       sort,
-      ...filterProps
+      ...filterActions
     } = this.props;
 
     return (
@@ -29,7 +29,7 @@ class ServicesPage extends Component {
             fetchServices={fetchServicesPagination}
             toggleSort={toggleSort}
             sort={sort}
-            filterProps={filterProps}
+            filterActions={filterActions}
           />
         </div>
       </div>

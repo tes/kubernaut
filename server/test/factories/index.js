@@ -9,6 +9,7 @@ import pm from 'power-merge';
 import hogan from 'hogan.js';
 import { safeLoadAll as yaml2json } from 'js-yaml';
 import request from 'request-promise';
+import { stringify } from 'querystring';
 
 import Account from '../../lib/domain/Account';
 import Registry from '../../lib/domain/Registry';
@@ -221,6 +222,21 @@ function makeRequestWithDefaults(config) {
   });
 }
 
+function stringifyRequestFilter(filter) {
+  return stringify(filter, ',', ':');
+}
+
+function makeRequestFilter(value, options = {}) {
+  const { exact = true, not = false, stringify = true } = options;
+  const filter = {
+    value,
+    exact,
+    not,
+  };
+
+  return stringify ? stringifyRequestFilter(filter) : filter;
+}
+
 export {
   makeIdentity,
   makeAccount,
@@ -234,4 +250,6 @@ export {
   makeMeta,
   makeRootMeta,
   makeRequestWithDefaults,
+  makeRequestFilter,
+  stringifyRequestFilter,
 };
