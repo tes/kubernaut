@@ -14,6 +14,8 @@ class ReleasesPage extends Component {
     const {
       releases,
       fetchReleasesPagination,
+      toggleSort,
+      sort,
       ...filterActions
     } = this.props;
 
@@ -25,6 +27,8 @@ class ReleasesPage extends Component {
             loading={releases.meta.loading}
             error={releases.meta.error}
             fetchReleases={fetchReleasesPagination}
+            toggleSort={toggleSort}
+            sort={sort}
             filterActions={filterActions}
           />
         </div>

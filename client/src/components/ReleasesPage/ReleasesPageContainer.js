@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import {
   initialise,
   fetchReleasesPagination,
+  toggleSort,
   addFilter,
   removeFilter,
   search,
@@ -18,11 +19,13 @@ function mapStateToProps(state, props) {
       data: state.releases.data,
       meta: state.releases.meta,
     },
+    sort: state.releases.sort,
   };
 }
 
 const mapDispatchToProps = {
   initialise,
+  toggleSort,
   fetchReleasesPagination,
   addFilter,
   removeFilter,

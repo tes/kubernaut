@@ -14,6 +14,8 @@ class ReleasesTable extends Component {
       loading = false,
       releases = {},
       fetchReleases,
+      toggleSort,
+      sort,
       filterActions,
     } = this.props;
 
@@ -67,6 +69,16 @@ class ReleasesTable extends Component {
       </tbody>
     ;
 
+    const arrowClass = sort.order === 'asc' ? 'arrow-up' : 'arrow-down';
+    const arrowEl = <i className={`fa fa-${arrowClass}`} aria-hidden='true'></i>;
+    const sortIcons = {
+      created: sort.column === 'created' ? arrowEl : null,
+      service: sort.column === 'service' ? arrowEl : null,
+      version: sort.column === 'version' ? arrowEl : null,
+      registry: sort.column === 'registry' ? arrowEl : null,
+      createdBy: sort.column === 'createdBy' ? arrowEl : null,
+    };
+
 
     return (
       <div>
@@ -84,11 +96,11 @@ class ReleasesTable extends Component {
         <Table hover size="sm">
           <thead>
             <tr>
-              <th>Created</th>
-              <th>Service</th>
-              <th>Version</th>
-              <th>Registry</th>
-              <th>Created By</th>
+              <th onClick={() => toggleSort('created')}>Created {sortIcons['created']}</th>
+              <th onClick={() => toggleSort('service')}>Service {sortIcons['service']}</th>
+              <th onClick={() => toggleSort('version')}>Version {sortIcons['version']}</th>
+              <th onClick={() => toggleSort('registry')}>Registry {sortIcons['registry']}</th>
+              <th onClick={() => toggleSort('createdBy')}>Created By {sortIcons['createdBy']}</th>
             </tr>
           </thead>
           {

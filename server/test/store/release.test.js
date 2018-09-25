@@ -378,6 +378,55 @@ describe('Release Store', () => {
       expect(results2.count).toBe(0);
     });
 
+    it('should sort services by a valid column', async () => {
+      const registry = await saveRegistry(makeRegistry());
+      await saveRelease(makeRelease({
+        service: {
+          name: 'app-1',
+          registry,
+        },
+      }));
+      await saveRelease(makeRelease({
+        service: {
+          name: 'app-2',
+          registry,
+        },
+      }));
+
+      const results = await store.findReleases({}, 10, 0, 'service', 'desc');
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 2,
+      });
+      expect(results.items[0].service.name).toBe('app-2');
+      expect(results.items[1].service.name).toBe('app-1');
+    });
+
+    it('should default sorting releases when invalid column is requested', async () => {
+      const registry = await saveRegistry(makeRegistry());
+      await saveRelease(makeRelease({
+        service: {
+          name: 'app-1',
+          registry,
+        },
+      }));
+      await saveRelease(makeRelease({
+        service: {
+          name: 'app-2',
+          registry,
+        },
+      }));
+
+      const results = await store.findReleases({}, 10, 0, 'bob', 'desc');
+      expect(results).toBeDefined();
+      expect(results).toMatchObject({
+        offset: 0,
+        count: 2,
+      });
+      expect(results.items[0].createdOn.getTime()).toBeGreaterThan(results.items[1].createdOn.getTime());
+    });
+
     describe('Pagination', () => {
 
       beforeEach(async () => {

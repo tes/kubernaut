@@ -112,11 +112,22 @@ export default function(options) {
       return getRelease(list.items[0].id); // Lazy way to get release attributes
     }
 
-    async function findReleases(criteria = {}, limit = 50, offset = 0) {
+    const sortMapping = {
+      created: 'r.created_on',
+      service: 's.name',
+      version: 'r.version',
+      registry: 'sr.name',
+      createdBy: 'cb.display_name',
+    };
+
+    async function findReleases(criteria = {}, limit = 50, offset = 0, sort = 'created', order = 'desc') {
 
       logger.debug(`Listing up to ${limit} releases starting from offset: ${offset}`);
 
       const bindVariables = {};
+
+      const sortColumn = sortMapping[sort] || 'r.created_on';
+      const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findReleasesBuilder = sqb
         .select('r.id', 'r.version', 'r.created_on', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
@@ -124,7 +135,7 @@ export default function(options) {
         .where(Op.eq('r.service', raw('s.id')))
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('r.created_by', raw('cb.id')))
-        .orderBy('r.created_on desc', 'r.id desc')
+        .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
         .offset(offset);
 

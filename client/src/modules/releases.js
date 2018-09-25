@@ -8,6 +8,7 @@ import {
 const actionsPrefix = 'KUBERNAUT/RELEASES';
 const filterActions = createFilterActions(actionsPrefix);
 export const fetchReleasesPagination = createAction(`${actionsPrefix}/FETCH_RELEASES_PAGINATION`);
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
 export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const FETCH_RELEASES_REQUEST = createAction(`${actionsPrefix}/FETCH_RELEASES_REQUEST`);
 export const FETCH_RELEASES_SUCCESS = createAction(`${actionsPrefix}/FETCH_RELEASES_SUCCESS`);
@@ -21,6 +22,7 @@ export const {
   hideFilters,
 } = filterActions;
 
+export const selectSortState = (state) => (state.releases.sort);
 export const {
   selectTableFilters
 } = createFilterSelectors('releases.filter');
@@ -38,6 +40,10 @@ const defaultState = {
     items: [],
   },
   meta: {},
+  sort: {
+    column: 'created',
+    order: 'desc',
+  },
   filter: defaultFilterState,
 };
 
@@ -66,6 +72,13 @@ export default handleActions({
     meta: {
       error: payload.error,
       loading: false,
+    },
+  }),
+  [toggleSort]: (state, { payload }) => ({
+    ...state,
+    sort: {
+      column: payload,
+      order: state.sort.column === payload ? (state.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
     },
   }),
   ...createFilterReducers(filterActions, defaultFilterState),
