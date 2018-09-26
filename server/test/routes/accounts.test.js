@@ -9,7 +9,9 @@ import {
   makeCluster,
   makeNamespace,
   makeRootMeta,
+  makeMeta,
   makeRequestWithDefaults,
+  makeRequestFilter,
 } from '../factories';
 
 describe('Accounts API', () => {
@@ -113,6 +115,87 @@ describe('Accounts API', () => {
       expect(accounts.offset).toBe(22);
       expect(accounts.limit).toBe(50);
       expect(accounts.items.length).toBe(40);
+    });
+
+    describe('filters', () => {
+      it('should filter by account name', async () => {
+        await store.nuke();
+        const account1 = await store.saveAccount(makeAccount({
+          displayName: 'acc1',
+        }), makeRootMeta());
+
+        await store.saveAccount(makeAccount({
+          displayName: 'acc2',
+        }), makeRootMeta());
+
+        const releases = await request({
+          url: `/api/accounts`,
+          qs: { 'name': makeRequestFilter('1', { exact: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+        expect(releases.items[0].displayName).toBe(account1.displayName);
+      });
+
+      it('should filter by account name exactly', async () => {
+        await store.nuke();
+        const account1 = await store.saveAccount(makeAccount({
+          displayName: 'acc1',
+        }), makeRootMeta());
+
+        await store.saveAccount(makeAccount({
+          displayName: 'acc12',
+        }), makeRootMeta());
+
+        const releases = await request({
+          url: `/api/accounts`,
+          qs: { 'name': makeRequestFilter('acc1', { exact: true }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+        expect(releases.items[0].displayName).toBe(account1.displayName);
+      });
+
+      it('should filter by createdBy', async () => {
+        await store.nuke();
+        const account1 = await store.saveAccount(makeAccount({
+          displayName: 'acc1',
+        }), makeRootMeta());
+        await store.saveAccount(makeAccount({
+          displayName: 'acc12',
+        }), makeMeta({ account: account1 }));
+
+        const releases = await request({
+          url: `/api/accounts`,
+          qs: { 'createdBy': makeRequestFilter('acc', { exact: false }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+      });
+
+      it('should filter by createdBy', async () => {
+        await store.nuke();
+        const account1 = await store.saveAccount(makeAccount({
+          displayName: 'acc1',
+        }), makeRootMeta());
+        const account2 = await store.saveAccount(makeAccount({
+          displayName: 'acc12',
+        }), makeMeta({ account: account1 }));
+        await store.saveAccount(makeAccount({
+          displayName: 'acc123',
+        }), makeMeta({ account: account2 }));
+
+        const releases = await request({
+          url: `/api/accounts`,
+          qs: { 'createdBy': makeRequestFilter('acc1', { exact: true }) },
+          method: 'GET',
+        });
+
+        expect(releases.count).toBe(1);
+      });
     });
 
   });

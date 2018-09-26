@@ -84,23 +84,42 @@ export default function(options = {}) {
       return getAccount(account.rows[0].id);
     }
 
-    async function findAccounts(criteria = {}, limit = 50, offset = 0) {
+    const sortMapping = {
+      name: 'a.display_name',
+      createdOn: 'a.created_on',
+      createdBy: 'created_by_display_name',
+    };
+
+    async function findAccounts(criteria = {}, limit = 50, offset = 0, sort = 'name', order = 'asc') {
 
       logger.debug(`Finding up to ${limit} accounts matching criteria: ${criteria} starting from offset: ${offset}`);
 
       const bindVariables = {};
+      const sortColumn = sortMapping[sort] || 'a.display_name';
+      const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findAccountsBuilder = sqb
         .select('a.id', 'a.display_name', 'a.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_account__vw a', 'account cb')
         .where(Op.eq('a.created_by', raw('cb.id')))
-        .orderBy('a.display_name asc')
+        .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
         .offset(offset);
 
       const countAccountsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_account__vw a');
+        .from('active_account__vw a', 'account cb')
+        .where(Op.eq('a.created_by', raw('cb.id')));
+
+      if (criteria && criteria.filters) {
+        if (criteria.filters.name) {
+          db.applyFilter(criteria.filters.name, 'a.display_name', findAccountsBuilder, countAccountsBuilder);
+        }
+
+        if (criteria.filters.createdBy) {
+          db.applyFilter(criteria.filters.createdBy, 'cb.display_name', findAccountsBuilder, countAccountsBuilder);
+        }
+      }
 
       const findAccountsStatement = db.serialize(findAccountsBuilder, bindVariables);
       const countAccountsStatement = db.serialize(countAccountsBuilder, bindVariables);

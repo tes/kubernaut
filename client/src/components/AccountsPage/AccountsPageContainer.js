@@ -1,5 +1,15 @@
 import { connect } from 'react-redux';
-import { fetchAccountsPagination } from '../../modules/accounts';
+import {
+  fetchAccountsPagination,
+  initialise,
+  toggleSort,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
+} from '../../modules/accounts';
 
 import AccountsPage from './AccountsPage';
 
@@ -9,11 +19,20 @@ function mapStateToProps(state, props) {
       data: state.accounts.data,
       meta: state.accounts.meta,
     },
+    sort: state.accounts.sort,
   };
 }
 
 const mapDispatchToProps = {
   fetchAccountsPagination,
+  initialise,
+  toggleSort,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AccountsPage);

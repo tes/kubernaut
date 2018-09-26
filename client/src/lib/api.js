@@ -70,10 +70,13 @@ export const getDeployments = ({ limit = 20, offset = 0, service= '', registry =
   return makeRequest(`/api/deployments?${qs}`).then(computePagination);
 };
 
-export const getAccounts = ({ limit = 20, offset = 0 }) => {
+export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} }) => {
   const qs = makeQueryString({
     limit,
     offset,
+    sort,
+    order,
+    ...stringifyFilters(filters)
   });
 
   return makeRequest(`/api/accounts?${qs}`).then(computePagination);

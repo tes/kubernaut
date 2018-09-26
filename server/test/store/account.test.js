@@ -1,7 +1,15 @@
 import expect from 'expect';
 import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeIdentity, makeAccount, makeRegistry, makeCluster, makeNamespace, makeRootMeta } from '../factories';
+import {
+  makeIdentity,
+  makeAccount,
+  makeRegistry,
+  makeCluster,
+  makeNamespace,
+  makeRootMeta,
+  makeMeta,
+} from '../factories';
 
 describe('Account Store', () => {
 
@@ -226,6 +234,44 @@ describe('Account Store', () => {
       const results3 = await findAccounts();
       expect(results3.items.length).toBe(1);
       expect(results3.count).toBe(1);
+    });
+
+    it('should filter by name', async () => {
+      await saveAccount(makeAccount({ displayName: 'a' }));
+      await saveAccount(makeAccount({ displayName: 'b' }));
+      await saveAccount(makeAccount({ displayName: 'ab' }));
+
+      const results = await findAccounts({ filters: { name: [{ value: 'a', exact: false }]}});
+      expect(results.count).toBe(2);
+    });
+
+    it('should filter by name exactly', async () => {
+      await saveAccount(makeAccount({ displayName: 'a' }));
+      await saveAccount(makeAccount({ displayName: 'b' }));
+      await saveAccount(makeAccount({ displayName: 'ab' }));
+
+      const results = await findAccounts({ filters: { name: [{ value: 'a', exact: true }]}});
+      expect(results.count).toBe(1);
+    });
+
+    it('should filter by createdBy', async () => {
+      const acc = await saveAccount(makeAccount({ displayName: 'a' }));
+      const acc2 = await saveAccount(makeAccount({ displayName: 'ab' }), makeMeta({ account: acc }));
+      await saveAccount(makeAccount({ displayName: 'b' }), makeMeta({ account: acc }));
+      await saveAccount(makeAccount({ displayName: 'abc' }), makeMeta({ account: acc2 }));
+
+      const results = await findAccounts({ filters: { createdBy: [{ value: 'a', exact: false }]}});
+      expect(results.count).toBe(3);
+    });
+
+    it('should filter by createdBy exactly', async () => {
+      const acc = await saveAccount(makeAccount({ displayName: 'a' }));
+      const acc2 = await saveAccount(makeAccount({ displayName: 'ab' }), makeMeta({ account: acc }));
+      await saveAccount(makeAccount({ displayName: 'b' }), makeMeta({ account: acc }));
+      await saveAccount(makeAccount({ displayName: 'abc' }), makeMeta({ account: acc2 }));
+
+      const results = await findAccounts({ filters: { createdBy: [{ value: 'a', exact: true }]}});
+      expect(results.count).toBe(2);
     });
 
     describe('Pagination', () => {

@@ -6,16 +6,31 @@ import AccountsTable from '../AccountsTable';
 class AccountsPage extends Component {
 
   componentDidMount() {
+    this.props.initialise();
     this.props.fetchAccountsPagination();
   }
 
   render() {
-    const { accounts, fetchAccountsPagination } = this.props;
+    const {
+      accounts,
+      fetchAccountsPagination,
+      toggleSort,
+      sort,
+      ...filterActions
+    } = this.props;
 
     return (
       <div className='row'>
         <div className='col-12'>
-          <AccountsTable accounts={accounts.data} loading={accounts.meta.loading} error={accounts.meta.error} fetchAccounts={fetchAccountsPagination} />
+          <AccountsTable
+            accounts={accounts.data}
+            loading={accounts.meta.loading}
+            error={accounts.meta.error}
+            fetchAccounts={fetchAccountsPagination}
+            toggleSort={toggleSort}
+            sort={sort}
+            filterActions={filterActions}
+          />
         </div>
       </div>
     );

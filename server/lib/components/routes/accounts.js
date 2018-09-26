@@ -1,5 +1,6 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
+import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
 
@@ -22,10 +23,12 @@ export default function(options = {}) {
     app.get('/api/accounts', async (req, res, next) => {
       try {
         if (!req.user.hasPermission('accounts-read')) return next(Boom.forbidden());
-
+        const filters = parseFilters(req.query, ['name', 'createdBy']);
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findAccounts({}, limit, offset);
+        const sort = req.query.sort ? req.query.sort : 'name';
+        const order = req.query.order ? req.query.order : 'asc';
+        const result = await store.findAccounts({ filters }, limit, offset, sort, order);
         res.json(result);
       } catch (err) {
         next(err);
