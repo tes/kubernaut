@@ -1,4 +1,5 @@
 const { resolve } = require('path');
+import Promise from 'bluebird';
 import system from '../server/lib/system';
 import {
   makeRootMeta,
@@ -71,25 +72,25 @@ try {
         }
       });
 
-      await Promise.all(
-        newReleases.map(release =>
-          store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {})
-        )
+      await Promise.map(newReleases, release =>
+        store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {}),
+        { concurrency: 1 }
       );
 
-      return await store.findReleases({}, 200, 0).items;
+      return (await store.findReleases({}, 200, 0)).items;
     })();
 
     await (async () => {
       const existing = await store.findDeployments({}, 200, 0);
       if (existing.count) return;
 
-      await Promise.all(releases.map(release =>
+      await Promise.map(releases, release =>
         store.saveDeployment(makeDeployment({
           namespace: defaultNS,
           release,
-        }), makeRootMeta({ date: new Date() })).catch(() => {})
-      ));
+        }), makeRootMeta({ date: new Date() })).catch(() => {}),
+        { concurrency: 1 }
+      );
     })();
 
     process.exit(0);
