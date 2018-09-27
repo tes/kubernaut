@@ -48,6 +48,6 @@ try {
     process.exit(0);
   })();
 } catch (e) {
-  console.error('Ouch', e);
+  console.error('Ouch', e); // eslint-disable-line no-console
   process.exit(1);
 }
