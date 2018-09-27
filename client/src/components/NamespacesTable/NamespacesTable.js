@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
-import { AccountLink, NamespaceLink } from '../Links';
+import { AccountLink, NamespaceLink, ClusterLink } from '../Links';
 
 class NamespacesTable extends Component {
 
@@ -40,7 +40,7 @@ class NamespacesTable extends Component {
         namespaces.items.map(namespace => {
           return <tr key={namespace.id} id={namespace.id} >
             <td><NamespaceLink namespace={namespace} /></td>
-            <td>{namespace.context}</td>
+            <td><ClusterLink cluster={namespace.cluster} /></td>
             <td>
               <span className="mr-4"><Human date={namespace.createdOn} /></span>
               <span className="font-italic"><Ago date={namespace.createdOn} /></span>
@@ -58,7 +58,7 @@ class NamespacesTable extends Component {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Context</th>
+              <th>Cluster</th>
               <th>Created</th>
               <th>Created By</th>
             </tr>
