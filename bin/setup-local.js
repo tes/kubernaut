@@ -6,6 +6,7 @@ import {
   makeNamespace,
   makeRelease,
   makeService,
+  makeDeployment,
 } from '../server/test/factories';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 try {
@@ -26,7 +27,7 @@ try {
       }), makeRootMeta({ date: new Date() }));
     })();
 
-    await (async () => {
+    const defaultNS = await (async () => {
       const existing = await store.findNamespace({ name: 'default', cluster: cluster.name });
       if (existing) return existing;
 
@@ -48,22 +49,48 @@ try {
       }), makeRootMeta({ date: new Date() }));
     })();
 
-    const services = [];
-    while (services.length < 6) {
-      services.push(makeService());
-    }
-    const releases = [];
-    services.forEach(service => {
-      for (let i = 0; i < 20; i++) {
-        releases.push(makeRelease({ service }));
-      }
-    });
+    const services = await (async () => {
+      const existing = await store.findServices();
+      if (existing.count) return existing.items;
 
-    await Promise.all(
-      releases.map(release =>
-        store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {})
-      )
-    );
+      const newServices = [];
+      while (newServices.length < 6) {
+        newServices.push(makeService());
+      }
+      return newServices;
+    })();
+
+    const releases = await (async () => {
+      const existing = await store.findReleases({}, 200, 0);
+      if (existing.count) return existing.items;
+
+      const newReleases = [];
+      services.forEach(service => {
+        for (let i = 0; i < 20; i++) {
+          newReleases.push(makeRelease({ service }));
+        }
+      });
+
+      await Promise.all(
+        newReleases.map(release =>
+          store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {})
+        )
+      );
+
+      return await store.findReleases({}, 200, 0).items;
+    })();
+
+    await (async () => {
+      const existing = await store.findDeployments({}, 200, 0);
+      if (existing.count) return;
+
+      await Promise.all(releases.map(release =>
+        store.saveDeployment(makeDeployment({
+          namespace: defaultNS,
+          release,
+        }), makeRootMeta({ date: new Date() })).catch(() => {})
+      ));
+    })();
 
     process.exit(0);
   })();
