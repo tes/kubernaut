@@ -4,6 +4,8 @@ import {
   makeRootMeta,
   makeCluster,
   makeNamespace,
+  makeRelease,
+  makeService,
 } from '../server/test/factories';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 try {
@@ -45,6 +47,24 @@ try {
         context: 'docker-for-desktop',
       }), makeRootMeta({ date: new Date() }));
     })();
+
+    const services = [];
+    while (services.length < 6) {
+      services.push(makeService());
+    }
+    const releases = [];
+    services.forEach(service => {
+      for (let i = 0; i < 20; i++) {
+        releases.push(makeRelease({ service }));
+      }
+    });
+
+    await Promise.all(
+      releases.map(release =>
+        store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {})
+      )
+    );
+
     process.exit(0);
   })();
 } catch (e) {

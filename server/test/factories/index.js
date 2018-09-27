@@ -242,6 +242,7 @@ export {
   makeAccount,
   makeRegistry,
   makeRelease,
+  makeService,
   makeReleaseForm,
   makeCluster,
   makeNamespace,
