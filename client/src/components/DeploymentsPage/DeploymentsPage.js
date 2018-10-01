@@ -6,11 +6,18 @@ import DeploymentsTable from '../DeploymentsTable';
 class DeploymentsPage extends Component {
 
   componentDidMount() {
+    this.props.initialise();
     this.props.fetchDeploymentsPagination();
   }
 
   render() {
-    const { deployments, fetchDeploymentsPagination } = this.props;
+    const {
+      deployments,
+      fetchDeploymentsPagination,
+      toggleSort,
+      sort,
+      ...filterActions
+    } = this.props;
 
     return (
       <div className='row'>
@@ -19,7 +26,11 @@ class DeploymentsPage extends Component {
             deployments={deployments.data}
             loading={deployments.meta.loading}
             error={deployments.meta.error}
-            fetchDeployments={fetchDeploymentsPagination} />
+            fetchDeployments={fetchDeploymentsPagination}
+            toggleSort={toggleSort}
+            sort={sort}
+            filterActions={filterActions}
+          />
         </div>
       </div>
     );

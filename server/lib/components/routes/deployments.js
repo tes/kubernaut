@@ -4,7 +4,7 @@ import Boom from 'boom';
 import EventEmitter from 'events';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 import { safeLoadAll as yaml2json } from 'js-yaml';
-import _intersection from 'lodash.intersection';
+import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
 
@@ -15,15 +15,17 @@ export default function(options = {}) {
     app.get('/api/deployments', async (req, res, next) => {
       const namespaceIds = req.user.listNamespaceIdsWithPermission('deployments-read');
       try {
-        const criteria = ['registry', 'service', 'version'].reduce((criteria, name) => {
-          if (!req.query[name]) return criteria;
-          return { ...criteria, [name]: req.query[name] };
-        }, {
-          namespaces: req.query.namespace ? _intersection(namespaceIds, [].concat(req.query.namespace)) : namespaceIds,
-        });
+        const filters = parseFilters(req.query, ['registry', 'service', 'version', 'namespace', 'cluster']);
+        const criteria = {
+          filters,
+          namespaces: namespaceIds,
+        };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findDeployments(criteria, limit, offset);
+        const sort = req.query.sort ? req.query.sort : 'created';
+        const order = req.query.order ? req.query.order : 'asc';
+
+        const result = await store.findDeployments(criteria, limit, offset, sort, order);
         res.json(result);
       } catch (err) {
         next(err);

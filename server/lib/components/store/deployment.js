@@ -144,7 +144,20 @@ export default function(options) {
       });
     }
 
-    async function findDeployments(criteria = {}, limit = 50, offset = 0) {
+    const sortMapping = (sort, order) => {
+      const sortOrder = (order === 'asc' ? 'asc' : 'desc');
+
+      switch(sort) {
+        case 'service': return `s.name ${sortOrder}, d.created_on desc`;
+        case 'version': return `r.version ${sortOrder}, d.created_on desc`;
+        case 'where': return `c.name ${sortOrder}, n.name ${sortOrder}, d.created_on desc`;
+        case 'createdBy': return `cb.display_name ${sortOrder}, d.created_on desc`;
+        case 'created':
+        default: return `d.created_on ${sortOrder}, d.id desc`;
+      }
+    };
+
+    async function findDeployments(criteria = {}, limit = 50, offset = 0, sort = 'created', order = 'desc') {
 
       logger.debug(`Listing up to ${limit} deploymentss starting from offset: ${offset}`);
 
@@ -159,7 +172,7 @@ export default function(options) {
         .where(Op.eq('d.namespace', raw('n.id')))
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('d.created_by', raw('cb.id')))
-        .orderBy('d.created_on desc', 'd.id desc')
+        .orderBy(raw(sortMapping(sort, order)))
         .limit(limit)
         .offset(offset);
 
@@ -173,19 +186,36 @@ export default function(options) {
         .where(Op.eq('n.cluster', raw('c.id')));
 
       if (criteria.hasOwnProperty('service')) {
-        db.buildWhereClause('s.name', criteria.service, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+        db.applyFilter({ value: criteria.service }, 's.name', findDeploymentsBuilder, countDeploymentsBuilder);
       }
 
       if (criteria.hasOwnProperty('namespace')) {
-        db.buildWhereClause('n.name', criteria.namespace, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+        db.applyFilter({ value: criteria.namespace }, 'n.name', findDeploymentsBuilder, countDeploymentsBuilder);
       }
 
       if (criteria.hasOwnProperty('cluster')) {
-        db.buildWhereClause('c.name', criteria.cluster, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+        db.applyFilter({ value: criteria.cluster }, 'c.name', findDeploymentsBuilder, countDeploymentsBuilder);
       }
 
       if (criteria.hasOwnProperty('namespaces')) {
-        db.buildWhereClause('n.id', criteria.namespaces, bindVariables, findDeploymentsBuilder, countDeploymentsBuilder);
+        db.applyFilter({ value: criteria.namespaces }, 'n.id', findDeploymentsBuilder, countDeploymentsBuilder);
+      }
+
+      if (criteria.filters) {
+        if (criteria.filters.service) {
+          db.applyFilter(criteria.filters.service, 's.name', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+        if (criteria.filters.namespace) {
+          db.applyFilter(criteria.filters.namespace, 'n.name', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+
+        if (criteria.filters.cluster) {
+          db.applyFilter(criteria.filters.cluster, 'c.name', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+
+        if (criteria.filters.namespaces) {
+          db.applyFilter(criteria.filters.namespace, 'n.id', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
       }
 
       const findDeploymentsStatement = db.serialize(findDeploymentsBuilder, bindVariables);

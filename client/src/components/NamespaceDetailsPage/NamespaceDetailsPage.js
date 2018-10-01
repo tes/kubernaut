@@ -64,10 +64,13 @@ class NamespaceDetailsPage extends Component {
             fetchDeployments={(options) => {
               this.props.fetchDeploymentsPagination({
                 ...options,
-                namespace: this.props.namespaceId,
+                id: this.props.namespaceId,
               });
             }}
+            sort={this.props.deployments.sort}
+            toggleSort={this.props.toggleSort}
             omitColumns={['where']}
+            hideFilters
           />
         </Row>
       </Container>

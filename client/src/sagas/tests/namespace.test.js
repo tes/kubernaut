@@ -1,4 +1,4 @@
-import { put, call } from 'redux-saga/effects';
+import { put, call, select } from 'redux-saga/effects';
 import {
   fetchNamespaceInfoSaga,
   fetchDeploymentsForNamespaceSaga,
@@ -7,6 +7,7 @@ import {
 import {
   fetchNamespacePageData,
   fetchDeploymentsPagination,
+  selectNamespace,
   FETCH_NAMESPACE_REQUEST,
   FETCH_NAMESPACE_SUCCESS,
   FETCH_NAMESPACE_ERROR,
@@ -23,6 +24,10 @@ import {
 describe('Namespace sagas', () => {
   const namespaceId = 'abc';
   const initPayload = { id: namespaceId, quiet: true };
+  const namespaceData = {
+    name: 'abcde',
+    cluster: { name: 'xyz' },
+  };
 
   it('should fetch namespace info', () => {
     const namespaceData = { name: 'bob', id: namespaceId, attributes: {} };
@@ -47,8 +52,9 @@ describe('Namespace sagas', () => {
     const deploymentsData = { count: 1, items: [{}], limit: 20, offset: 0 };
 
     const gen = fetchDeploymentsForNamespaceSaga(fetchNamespacePageData(initPayload));
-    expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(select(selectNamespace));
+    expect(gen.next(namespaceData).value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceData.name, cluster: namespaceData.cluster.name, limit: 20, offset: 0 }));
     expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
     expect(gen.next().done).toBe(true);
   });
@@ -56,8 +62,9 @@ describe('Namespace sagas', () => {
   it('should tolerate errors fetching deployments', () => {
     const error = new Error('ouch');
     const gen = fetchDeploymentsForNamespaceSaga(fetchNamespacePageData(initPayload));
-    expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(select(selectNamespace));
+    expect(gen.next(namespaceData).value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceData.name, cluster: namespaceData.cluster.name, limit: 20, offset: 0 }));
     expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENTS_ERROR({ error: error.message })));
     expect(gen.next().done).toBe(true);
   });
@@ -66,8 +73,9 @@ describe('Namespace sagas', () => {
     const deploymentsData = { count: 1, items: [{}], limit: 20, offset: 0 };
 
     const gen = fetchDeploymentsForNamespaceSaga(fetchDeploymentsPagination({ ...initPayload, page: 2 }));
-    expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
-    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceId }));
+    expect(gen.next().value).toMatchObject(select(selectNamespace));
+    expect(gen.next(namespaceData).value).toMatchObject(put(FETCH_DEPLOYMENTS_REQUEST()));
+    expect(gen.next().value).toMatchObject(call(getDeployments, { namespace: namespaceData.name, cluster: namespaceData.cluster.name, limit: 20, offset: 20 }));
     expect(gen.next(deploymentsData).value).toMatchObject(put(FETCH_DEPLOYMENTS_SUCCESS({ data: deploymentsData } )));
     expect(gen.next().done).toBe(true);
   });

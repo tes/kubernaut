@@ -1,5 +1,9 @@
 import { connect } from 'react-redux';
-import { fetchNamespacePageData, fetchDeploymentsPagination } from '../../modules/namespace';
+import {
+  fetchNamespacePageData,
+  fetchDeploymentsPagination,
+  toggleSort,
+} from '../../modules/namespace';
 import NamespaceDetailsPage from './NamespaceDetailsPage';
 import Account from '../../lib/domain/Account';
 
@@ -12,4 +16,5 @@ export default connect((state, { namespaceId }) => ({
 }),{
   fetchNamespacePageData,
   fetchDeploymentsPagination,
+  toggleSort,
 })(NamespaceDetailsPage);

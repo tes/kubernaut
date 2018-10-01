@@ -11,6 +11,11 @@ export const FETCH_DEPLOYMENTS_REQUEST = createAction(`${actionsPrefix}/FETCH_DE
 export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`);
 export const FETCH_DEPLOYMENTS_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`);
 
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
+
+export const selectNamespace = (state) => (state.namespace.namespace.data);
+export const selectSortState = (state) => (state.namespace.deployments.sort);
+
 const defaultState = {
   namespace: {
     meta: {},
@@ -28,6 +33,10 @@ const defaultState = {
       pages: 0,
       page: 0,
       items: [],
+    },
+    sort: {
+      column: 'created',
+      order: 'desc',
     },
   },
 };
@@ -93,5 +102,15 @@ export default handleActions({
         error: payload.error,
       },
     },
+  }),
+  [toggleSort]: (state, { payload }) => ({
+    ...state,
+    deployments: {
+      ...state.deployments,
+      sort: {
+        column: payload,
+        order: state.deployments.sort.column === payload ? (state.deployments.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
+      },
+    }
   }),
 }, defaultState);

@@ -58,13 +58,17 @@ export const getReleases = ({ limit = 20, offset = 0, service, registry, version
   return makeRequest(`/api/releases?${qs}`).then(computePagination);
 };
 
-export const getDeployments = ({ limit = 20, offset = 0, service= '', registry = '', namespace = '' }) => {
+export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {} }) => {
   const qs = makeQueryString({
     limit,
     offset,
     service,
     registry,
     namespace,
+    cluster,
+    sort,
+    order,
+    ...stringifyFilters(filters)
   });
 
   return makeRequest(`/api/deployments?${qs}`).then(computePagination);

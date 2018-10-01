@@ -5,15 +5,16 @@ import { isEqual, curry } from 'lodash';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, ServiceLink, ReleaseLink, NamespaceLink, DeploymentLink } from '../Links';
+import TableFilter from '../TableFilter';
 
 const columns = [
   { key: 'service', label: 'Service' },
   { key: 'version', label: 'Version' },
   { key: 'created', label: 'Created' },
   { key: 'where', label: 'Where' },
-  { key: 'status', label: 'Status' },
+  { key: 'status', label: 'Status', sortable: false },
   { key: 'createdBy', label: 'Created By' },
-  { key: 'deployLink', label: '' }
+  { key: 'deployLink', label: '', sortable: false }
 ];
 
 const isEqualC = curry(isEqual);
@@ -27,6 +28,10 @@ class DeploymentsTable extends Component {
       deployments = {},
       fetchDeployments,
       omitColumns = [],
+      hideFilters = false,
+      toggleSort,
+      sort,
+      filterActions,
     } = this.props;
 
     const errorTableBody = () =>
@@ -87,12 +92,38 @@ class DeploymentsTable extends Component {
     }
     ;
 
+    const arrowClass = sort.order === 'asc' ? 'arrow-up' : 'arrow-down';
+    const arrowEl = <i className={`fa fa-${arrowClass}`} aria-hidden='true'></i>;
+
     return (
       <div>
+        { hideFilters ?
+          null :
+          <TableFilter
+            formPrefix="deployments"
+            statePath="deployments.filter"
+            columns={[
+              { value: 'service', display: 'Service' },
+              { value: 'version', display: 'Version' },
+              { value: 'registry', display: 'Registry' },
+              { value: 'cluster', display: 'Cluster' },
+              { value: 'namespace', display: 'Namespace' },
+            ]}
+            {...filterActions}
+            />
+        }
         <Table hover size="sm">
           <thead>
             <tr>
-              {columns.map(({ key, label }) => (omitColumns.indexOf(key) > -1 ? null : <th>{label}</th>))}
+              {columns.map(({ key, label, sortable = true }) => {
+                return omitColumns.indexOf(key) > -1 ?
+                  null :
+                  <th
+                    key={key}
+                    onClick={ sortable ? () => toggleSort(key) : null }
+                    >{label} {sort.column === key ? arrowEl : null}
+                  </th>;
+              })}
             </tr>
           </thead>
           {
@@ -109,6 +140,8 @@ class DeploymentsTable extends Component {
           page={deployments.page}
           limit={deployments.limit}
           fetchContent={fetchDeployments}
+          sort={sort.column}
+          order={sort.order}
         />
       </div>
     );
