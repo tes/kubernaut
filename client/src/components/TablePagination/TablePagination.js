@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
+import { range as _range } from 'lodash';
 
 const TablePagination = ({ pages, page, limit, fetchContent, sort, order }) => {
 
@@ -8,13 +9,25 @@ const TablePagination = ({ pages, page, limit, fetchContent, sort, order }) => {
     fetchContent({ page, limit, sort, order });
   };
 
-  const items = Array(pages).fill().map((_, i) =>
+  const maxPagesShown = 10;
+
+  let pageNosToShow;
+  if (pageNosToShow <= maxPagesShown) pageNosToShow = _range(pages);
+  else {
+    pageNosToShow = [0];
+    const minOffset = page > pages - (maxPagesShown - 2) ? pages - maxPagesShown + 1 : Math.max(1, page - 2);
+    const maxOffset = page < 4 ? maxPagesShown - 1 : Math.min(pages - 1, page + maxPagesShown - 4);
+    pageNosToShow.push(..._range(minOffset, maxOffset));
+    pageNosToShow.push(pages - 1);
+  }
+
+  const items = pageNosToShow.map((pageNo) =>
     <PaginationItem
-      key={i}
-      onClick={(e) => {e.preventDefault(); onPageSelect(i + 1);}}
-      active={i + 1 === page}
+      key={pageNo + 1}
+      onClick={(e) => {e.preventDefault(); onPageSelect(pageNo + 1);}}
+      active={(pageNo + 1) === page}
     >
-      <PaginationLink href="#">{i + 1}</PaginationLink>
+      <PaginationLink href="#">{pageNo + 1}</PaginationLink>
     </PaginationItem>
   );
 
