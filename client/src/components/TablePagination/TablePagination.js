@@ -12,7 +12,7 @@ const TablePagination = ({ pages, page, limit, fetchContent, sort, order }) => {
   const maxPagesShown = 10;
 
   let pageNosToShow;
-  if (pageNosToShow <= maxPagesShown) pageNosToShow = _range(pages);
+  if (pages <= maxPagesShown) pageNosToShow = _range(pages);
   else {
     pageNosToShow = [0];
     const minOffset = page > pages - (maxPagesShown - 2) ? pages - maxPagesShown + 1 : Math.max(1, page - 2);
