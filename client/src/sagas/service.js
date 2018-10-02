@@ -38,7 +38,7 @@ export function* fetchReleasesDataSaga({ payload = {} }) {
 
   yield put(FETCH_RELEASES_REQUEST());
   try {
-    const data = yield call(getReleases, { registry, service, offset, limit });
+    const data = yield call(getReleases, { registry, service, offset, limit, sort: 'created', order: 'desc' });
     yield put(FETCH_RELEASES_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
@@ -54,7 +54,7 @@ export function* fetchDeploymentsDataSaga({ payload = {} }) {
 
   yield put(FETCH_DEPLOYMENTS_REQUEST());
   try {
-    const data = yield call(getDeployments, { registry, service, offset, limit });
+    const data = yield call(getDeployments, { registry, service, offset, limit, sort: 'created', order: 'desc' });
     yield put(FETCH_DEPLOYMENTS_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
