@@ -55,7 +55,7 @@ try {
       if (existing.count) return existing.items;
 
       const newServices = [];
-      while (newServices.length < 6) {
+      while (newServices.length < 100) {
         newServices.push(makeService());
       }
       return newServices;
@@ -66,18 +66,19 @@ try {
       if (existing.count) return existing.items;
 
       const newReleases = [];
+      const releasesPerService = 20;
       services.forEach(service => {
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < releasesPerService; i++) {
           newReleases.push(makeRelease({ service }));
         }
       });
 
       await Promise.map(newReleases, release =>
-        store.saveRelease(release, makeRootMeta({ date: new Date() })).catch(() => {}),
+        store.saveRelease(release, makeRootMeta()).catch(() => {}),
         { concurrency: 1 }
       );
 
-      return (await store.findReleases({}, 200, 0)).items;
+      return (await store.findReleases({}, services.length * releasesPerService, 0, 'created', 'asc')).items;
     })();
 
     await (async () => {
@@ -88,7 +89,7 @@ try {
         store.saveDeployment(makeDeployment({
           namespace: defaultNS,
           release,
-        }), makeRootMeta({ date: new Date() })).catch(() => {}),
+        }), makeRootMeta({ date: release.createdOn })).catch(() => {}),
         { concurrency: 1 }
       );
     })();
