@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 import {
   fetchServicesPagination,
   toggleSort,
-  initialise,
   addFilter,
   removeFilter,
   search,
@@ -26,7 +25,6 @@ function mapStateToProps(state, props) {
 const mapDispatchToProps = {
   fetchServicesPagination,
   toggleSort,
-  initialise,
   addFilter,
   removeFilter,
   search,

@@ -1,15 +1,46 @@
 import { createAction } from 'redux-actions';
-import { get as _get } from 'lodash';
+import { get as _get, pickBy as _pickBy, identity as _identity } from 'lodash';
 import uuid from 'uuid';
+import { parse, stringify as makeQueryString } from 'querystring';
 
-export const createFilterActions= (actionsPrefix) => ({
+export const createFilterActions = (actionsPrefix) => ({
   addFilter: createAction(`${actionsPrefix}/ADD_FILTER`),
   removeFilter: createAction(`${actionsPrefix}/REMOVE_FILTER`),
   search: createAction(`${actionsPrefix}/SEARCH`),
   clearSearch: createAction(`${actionsPrefix}/CLEAR_SEARCH`),
   showFilters: createAction(`${actionsPrefix}/SHOW_FILTERS`),
   hideFilters: createAction(`${actionsPrefix}/HIDE_FILTERS`),
+  setFilters: createAction(`${actionsPrefix}/SET_FILTERS`),
 });
+
+export const parseFiltersFromQS = (qs) => {
+  const simpleParsed = parse(qs.match(/\??(.*)/)[1]);
+  const filters = [];
+  for (const key in simpleParsed) {
+    [].concat(simpleParsed[key]).forEach(filterString => {
+      const { value, not, exact } = parse(filterString, ',', ':');
+      filters.push({
+        uuid: uuid.v4(),
+        key,
+        value,
+        not: not === 'true',
+        exact: exact === 'true',
+      });
+    });
+  }
+
+  return filters;
+};
+
+const stripFalsy = (obj) => (_pickBy(obj, _identity));
+export const stringifyFiltersForQS = (filters) => {
+  return makeQueryString(Object.keys(filters).reduce((acc, key) => {
+    return {
+      ...acc,
+      [key]: filters[key].map((filter) => makeQueryString(stripFalsy(filter), ',', ':')),
+    };
+  }, {}));
+};
 
 export const createFilterSelectors = (statePath) => ({
   selectTableFilters: (state) => {
@@ -54,6 +85,7 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
     clearSearch,
     showFilters,
     hideFilters,
+    setFilters,
   } = actions;
 
   return {
@@ -63,7 +95,7 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
         column,
         not = false,
         exact = false,
-      }, columns } = payload;
+      } } = payload;
 
       if (!searchVal || !column) return state;
       const newState = {
@@ -77,7 +109,6 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
             value: searchVal,
             exact,
             not,
-            displayName: columns.find(({ value }) => (value === column)).display,
           }),
         }
       };
@@ -133,6 +164,14 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
       [statePath]: {
         ..._get(state, statePath),
         show: false,
+      }
+    }),
+    [setFilters]: (state, { payload }) => ({
+      ...state,
+      [statePath]: {
+        ..._get(state, statePath),
+        filters: payload,
+        show: _get(state, statePath).show || payload.length > 0,
       }
     }),
   };

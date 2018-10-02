@@ -5,11 +5,6 @@ import ServicesTable from '../ServicesTable';
 
 class ServicesPage extends Component {
 
-  componentDidMount() {
-    this.props.initialise();
-    this.props.fetchServicesPagination();
-  }
-
   render() {
     const {
       services,

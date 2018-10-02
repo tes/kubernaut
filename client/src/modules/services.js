@@ -9,7 +9,7 @@ const actionsPrefix = 'KUBERNAUT/SERVICES';
 const filterActions = createFilterActions(actionsPrefix);
 export const fetchServicesPagination = createAction(`${actionsPrefix}/FETCH_SERVICES_PAGINATION`);
 export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
-export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
+export const setSort = createAction(`${actionsPrefix}/SET_SORT`);
 export const FETCH_SERVICES_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICES_REQUEST`);
 export const FETCH_SERVICES_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICES_SUCCESS`);
 export const FETCH_SERVICES_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICES_ERROR`);
@@ -20,6 +20,7 @@ export const {
   clearSearch,
   showFilters,
   hideFilters,
+  setFilters,
 } = filterActions;
 
 export const selectSortState = (state) => (state.services.sort);
@@ -48,9 +49,6 @@ const defaultState = {
 };
 
 export default handleActions({
-  [initialise]: () => ({
-    ...defaultState,
-  }),
   [FETCH_SERVICES_REQUEST]: (state) => ({
     ...state,
     data: {
@@ -79,6 +77,13 @@ export default handleActions({
     sort: {
       column: payload,
       order: state.sort.column === payload ? (state.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
+    },
+  }),
+  [setSort]: (state, { payload = {} }) => ({
+    ...state,
+    sort: {
+      column: payload.column || defaultState.sort.column,
+      order: payload.order || defaultState.sort.order,
     },
   }),
   ...createFilterReducers(filterActions, defaultFilterState),

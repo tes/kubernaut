@@ -3,7 +3,6 @@ import { get as _get } from 'lodash';
 export default (module, statePath = 'filter') => {
   const reduce = module.default;
   const {
-    initialise,
     addFilter,
     removeFilter,
     showFilters,
@@ -14,7 +13,7 @@ export default (module, statePath = 'filter') => {
 
   describe('Filter tests', () => {
     it('should add a filter', () => {
-      const initialState = reduce({}, initialise());
+      const initialState = reduce(undefined, { });
       const columns = [{ value: 'abc', display: 'Abc' }];
       const filterDetails = {
         searchVal: 'abc',
@@ -29,7 +28,6 @@ export default (module, statePath = 'filter') => {
         value: filterDetails.searchVal,
         exact: true,
         not: true,
-        displayName: 'Abc',
       });
     });
 
@@ -47,7 +45,7 @@ export default (module, statePath = 'filter') => {
     });
 
     it('should set filters to display', () => {
-      const initialState = reduce({}, initialise());
+      const initialState = reduce(undefined, { });
       const result = reduce(initialState, showFilters());
       expect(_get(result, statePath).show).toBe(true);
     });
@@ -59,7 +57,7 @@ export default (module, statePath = 'filter') => {
     });
 
     it('should set search values', () => {
-      const initialState = reduce({}, initialise());
+      const initialState = reduce(undefined, { });
       const searchForm = {
         searchVal: 'abc',
         column: 'abc',

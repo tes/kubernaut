@@ -78,7 +78,6 @@ class TableFilter extends Component {
                   color="secondary"
                   onClick={this.props.handleSubmit((values) => this.props.addFilter({
                     form: values,
-                    columns: this.props.columns,
                   }))}
                 ><i className='fa fa-plus' aria-hidden='true'></i> Add to filters</Button>
                 <Button
@@ -102,15 +101,23 @@ class TableFilter extends Component {
               <div className="mr-2">
                 <h6>Filters:</h6>
               </div>
-              {
-                this.props.filters.map((filter) => (
+              {this.props.filters.map((filter) => {
+                const displayName = this.props.columns.find(({ value }) => (value === filter.key)).display;
+                const filterValue = filter.exact ? `"${filter.value}"` : filter.value;
+                const closeEl = <i
+                    onClick={() => this.props.removeFilter(filter.uuid)}
+                    className='fa fa-times'
+                    aria-hidden='true'
+                  ></i>;
+
+                return (
                   <div key={filter.uuid}>
                     <Badge color={filter.not ? 'danger' : 'success'} className="mr-2">
-                      <span>{filter.displayName} : {filter.exact ? `"${filter.value}"` : filter.value} <i onClick={() => this.props.removeFilter(filter.uuid)} className='fa fa-times' aria-hidden='true'></i></span>
+                      <span>{displayName} : {filterValue} {closeEl}</span>
                     </Badge>
                   </div>
-                ))
-              }
+                );
+              })}
             </Col>
           </Row>
         </Col>
@@ -124,7 +131,6 @@ TableFilter.propTypes = {
   show: PropTypes.bool.isRequired,
   filters: PropTypes.arrayOf(PropTypes.shape({
     uuid: PropTypes.string.isRequired,
-    displayName: PropTypes.string.isRequired,
     not: PropTypes.bool,
     exact: PropTypes.bool,
     value: PropTypes.string.isRequired,
