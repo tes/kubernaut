@@ -36,8 +36,8 @@ export const parseFiltersFromQS = (qs) => {
 export const parseSearchFromQS = (qs) => {
   const parsed = parse(qs);
   return {
-    key: parsed.key,
-    value: parsed.value,
+    key: parsed.key || '',
+    value: parsed.value || '',
     not: parsed.not === 'true',
     exact: parsed.exact === 'true',
   };
@@ -194,9 +194,9 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
       [statePath]: {
         ..._get(state, statePath),
         search: { ...defaultState.search, ...payload },
-        show: _get(state, statePath).show || payload.value !== '',
+        show: _get(state, statePath).show || !!payload.value,
         initialValues: {
-          searchVal: payload.value || defaultState.initialValues.value,
+          searchVal: payload.value || defaultState.initialValues.searchVal,
           column: payload.key || defaultState.initialValues.column,
           exact: payload.exact || defaultState.initialValues.exact,
           not: payload.not || defaultState.initialValues.not,
