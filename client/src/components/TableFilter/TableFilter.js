@@ -102,7 +102,7 @@ class TableFilter extends Component {
                 <h6>Filters:</h6>
               </div>
               {this.props.filters.map((filter) => {
-                const displayName = this.props.columns.find(({ value }) => (value === filter.key)).display;
+                const displayName = (this.props.columns.find(({ value }) => (value === filter.key)) || {}).display;
                 const filterValue = filter.exact ? `"${filter.value}"` : filter.value;
                 const closeEl = <i
                     onClick={() => this.props.removeFilter(filter.uuid)}

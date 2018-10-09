@@ -11,6 +11,7 @@ export const createFilterActions = (actionsPrefix) => ({
   showFilters: createAction(`${actionsPrefix}/SHOW_FILTERS`),
   hideFilters: createAction(`${actionsPrefix}/HIDE_FILTERS`),
   setFilters: createAction(`${actionsPrefix}/SET_FILTERS`),
+  setSearch: createAction(`${actionsPrefix}/SET_SEARCH`),
 });
 
 export const parseFiltersFromQS = (qs) => {
@@ -32,6 +33,16 @@ export const parseFiltersFromQS = (qs) => {
   return filters;
 };
 
+export const parseSearchFromQS = (qs) => {
+  const parsed = parse(qs);
+  return {
+    key: parsed.key,
+    value: parsed.value,
+    not: parsed.not === 'true',
+    exact: parsed.exact === 'true',
+  };
+};
+
 const stripFalsy = (obj) => (_pickBy(obj, _identity));
 export const stringifyFiltersForQS = (filters) => {
   return makeQueryString(Object.keys(filters).reduce((acc, key) => {
@@ -41,6 +52,8 @@ export const stringifyFiltersForQS = (filters) => {
     };
   }, {}));
 };
+
+export const stringifySearchForQS = (obj) => makeQueryString(stripFalsy(obj));
 
 export const createFilterSelectors = (statePath) => ({
   selectTableFilters: (state) => {
@@ -58,6 +71,7 @@ export const createFilterSelectors = (statePath) => ({
       };
     }, starter);
   },
+  selectSearchFilter: (state) => _get(state, statePath).search,
 });
 
 export const createDefaultFilterState = ({ defaultColumn }) => ({
@@ -86,6 +100,7 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
     showFilters,
     hideFilters,
     setFilters,
+    setSearch,
   } = actions;
 
   return {
@@ -172,6 +187,20 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
         ..._get(state, statePath),
         filters: payload,
         show: _get(state, statePath).show || payload.length > 0,
+      }
+    }),
+    [setSearch]: (state, { payload }) => ({
+      ...state,
+      [statePath]: {
+        ..._get(state, statePath),
+        search: { ...defaultState.search, ...payload },
+        show: _get(state, statePath).show || payload.value !== '',
+        initialValues: {
+          searchVal: payload.value || defaultState.initialValues.value,
+          column: payload.key || defaultState.initialValues.column,
+          exact: payload.exact || defaultState.initialValues.exact,
+          not: payload.not || defaultState.initialValues.not,
+        }
       }
     }),
   };

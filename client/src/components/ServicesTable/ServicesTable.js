@@ -102,8 +102,6 @@ class ServicesTable extends Component {
           page={services.page}
           limit={services.limit}
           fetchContent={fetchServices}
-          sort={sort.column}
-          order={sort.order}
         />
       </div>
     );
