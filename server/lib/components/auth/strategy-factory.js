@@ -34,7 +34,7 @@ export default function() {
             if (loginError) { return next(loginError); }
             req.session.save((sessionError) => { // Thanks express session for your race conditions, forcing me to have to do this.
               if (sessionError) { return next(sessionError); }
-              res.redirect('/');
+              res.redirect(req.query.return || '/');
             });
           });
         })(req, res, next);

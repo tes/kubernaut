@@ -20,7 +20,8 @@ const makeRequest = async (url, options = {}) => {
   }, options));
 
   if (res.status === 401 && res.headers.has('Location')) {
-    return window.location = res.headers.get('Location');
+    const currentLocation = `${window.location.pathname}${window.location.search}`;
+    return window.location = `${res.headers.get('Location')}?return=${encodeURIComponent(currentLocation)}`;
   }
   if (options.returnResponse) return res;
   if (res.status >= 400) {
