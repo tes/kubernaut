@@ -45,7 +45,7 @@ describe('Services sagas', () => {
       const gen = fetchServicesDataSaga(fetchServicesPagination());
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
-      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters));
+      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
       expect(gen.next({}).value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0, sort: 'name', order: 'asc' }));
       expect(gen.next(servicesData).value).toMatchObject(put(FETCH_SERVICES_SUCCESS({ data: servicesData } )));
@@ -57,7 +57,7 @@ describe('Services sagas', () => {
       const gen = fetchServicesDataSaga(fetchServicesPagination({ quiet: true }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
-      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters));
+      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
       expect(gen.next({}).value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 0, sort: 'name', order: 'asc' }));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_SERVICES_ERROR({ error: error.message })));
@@ -70,7 +70,7 @@ describe('Services sagas', () => {
       const gen = fetchServicesDataSaga(fetchServicesPagination({ page: 2 }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next({ page: 2, limit: 50 }).value).toMatchObject(select(selectSortState));
-      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters));
+      expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
       expect(gen.next({}).value).toMatchObject(put(FETCH_SERVICES_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getServices, { limit: 50, offset: 50, sort: 'name', order: 'asc' }));
       expect(gen.next(servicesData).value).toMatchObject(put(FETCH_SERVICES_SUCCESS({ data: servicesData } )));

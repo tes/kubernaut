@@ -36,12 +36,14 @@ import {
 
 import { getServices } from '../lib/api';
 
+const pageUrl = '/services';
+
 export function* fetchServicesDataSaga({ payload = {} }) {
   const options = payload;
   const { page, limit } = yield select(selectPaginationState);
   const offset = (page - 1) * limit;
   const { column, order } = yield select(selectSortState);
-  const filters = yield select(selectTableFilters);
+  const filters = yield select(selectTableFilters, true);
   yield put(FETCH_SERVICES_REQUEST());
   try {
     const data = yield call(getServices, { offset, limit, sort: column, order, filters });
@@ -56,7 +58,7 @@ export function* addFilterSaga() {
   yield put(reset('services_table_filter'));
   const location = yield select(getLocation);
   const filters = yield select(selectTableFilters);
-  yield put(push(`/services?${alterQuery(location.search, {
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
     filters: stringifyFiltersForQS(filters),
     pagination: null,
     search: null,
@@ -66,7 +68,7 @@ export function* addFilterSaga() {
 export function* removeFilterSaga() {
   const location = yield select(getLocation);
   const filters = yield select(selectTableFilters);
-  yield put(push(`/services?${alterQuery(location.search, {
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
     filters: stringifyFiltersForQS(filters),
     pagination: null,
   })}`));
@@ -75,7 +77,7 @@ export function* removeFilterSaga() {
 export function* searchSaga() {
   const location = yield select(getLocation);
   const searchFilter = yield select(selectSearchFilter);
-  yield put(push(`/services?${alterQuery(location.search, {
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
     search: stringifySearchForQS(searchFilter),
     pagination: null,
   })}`));
@@ -84,7 +86,7 @@ export function* searchSaga() {
 export function* toggleSortSaga() {
   const location = yield select(getLocation);
   const sort = yield select(selectSortState);
-  yield put(push(`/services?${alterQuery(location.search, {
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
     sort: makeQueryString({ ...sort }),
     pagination: null,
   })}`));
@@ -93,11 +95,11 @@ export function* toggleSortSaga() {
 export function* paginationSaga() {
   const location = yield select(getLocation);
   const pagination = yield select(selectPaginationState);
-  yield put(push(`/services?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
+  yield put(push(`${pageUrl}?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  if (payload.location.pathname !== '/services') return;
+  if (payload.location.pathname !== pageUrl) return;
 
   const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
   const search = parseSearchFromQS(extractFromQuery(payload.location.search, 'search') || '');

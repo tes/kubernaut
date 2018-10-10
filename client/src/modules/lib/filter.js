@@ -56,12 +56,12 @@ export const stringifyFiltersForQS = (filters) => {
 export const stringifySearchForQS = (obj) => makeQueryString(stripFalsy(obj));
 
 export const createFilterSelectors = (statePath) => ({
-  selectTableFilters: (state) => {
+  selectTableFilters: (state, withSearch = false) => {
     const filters = _get(state, statePath).filters;
     const search = _get(state, statePath).search;
-    const starter = search.key === '' ? {} : {
+    const starter = (withSearch && search.key !== '') ? {
       [search.key]: [{ value: search.value, not: search.not, exact: search.exact }],
-    };
+    } : {};
 
     return filters.reduce((acc, { key, value, not, exact }) => {
       if (!acc[key]) return { ...acc, [key]: [{ value, not, exact }]};
