@@ -41,7 +41,7 @@ describe('Releases sagas', () => {
     it('should fetch releases', () => {
       const releasesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchReleasesDataSaga(fetchReleasesPagination());
+      const gen = fetchReleasesDataSaga(fetchReleases());
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
@@ -53,7 +53,7 @@ describe('Releases sagas', () => {
 
     it('should tolerate errors fetching releases', () => {
       const error = new Error('ouch');
-      const gen = fetchReleasesDataSaga(fetchReleasesPagination({ quiet: true }));
+      const gen = fetchReleasesDataSaga(fetchReleases({ quiet: true }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
@@ -66,7 +66,7 @@ describe('Releases sagas', () => {
     it('should fetch releases pagination', () => {
       const releasesData = { limit: 50, offset: 50, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchReleasesDataSaga(fetchReleasesPagination({ page: 2 }));
+      const gen = fetchReleasesDataSaga(fetchReleases({ page: 2 }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next({ page: 2, limit: 50 }).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));

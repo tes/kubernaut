@@ -42,7 +42,7 @@ describe('Services sagas', () => {
     it('should fetch services', () => {
       const servicesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchServicesDataSaga(fetchServicesPagination());
+      const gen = fetchServicesDataSaga(fetchServices());
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
@@ -54,7 +54,7 @@ describe('Services sagas', () => {
 
     it('should tolerate errors fetching services', () => {
       const error = new Error('ouch');
-      const gen = fetchServicesDataSaga(fetchServicesPagination({ quiet: true }));
+      const gen = fetchServicesDataSaga(fetchServices({ quiet: true }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next(paginationState).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));
@@ -67,7 +67,7 @@ describe('Services sagas', () => {
     it('should fetch services pagination', () => {
       const servicesData = { limit: 50, offset: 50, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchServicesDataSaga(fetchServicesPagination({ page: 2 }));
+      const gen = fetchServicesDataSaga(fetchServices({ page: 2 }));
       expect(gen.next().value).toMatchObject(select(selectPaginationState));
       expect(gen.next({ page: 2, limit: 50 }).value).toMatchObject(select(selectSortState));
       expect(gen.next(sortState).value).toMatchObject(select(selectTableFilters, true));

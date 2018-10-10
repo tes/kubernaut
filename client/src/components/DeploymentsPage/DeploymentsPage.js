@@ -5,11 +5,6 @@ import DeploymentsTable from '../DeploymentsTable';
 
 class DeploymentsPage extends Component {
 
-  componentDidMount() {
-    this.props.initialise();
-    this.props.fetchDeploymentsPagination();
-  }
-
   render() {
     const {
       deployments,
