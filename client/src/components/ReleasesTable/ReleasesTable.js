@@ -117,8 +117,6 @@ class ReleasesTable extends Component {
           page={releases.page}
           limit={releases.limit}
           fetchContent={fetchReleases}
-          sort={sort.column}
-          order={sort.order}
         />
       </div>
     );

@@ -5,11 +5,6 @@ import ReleasesTable from '../ReleasesTable';
 
 class ReleasesPage extends Component {
 
-  componentDidMount() {
-    this.props.initialise();
-    this.props.fetchReleasesPagination();
-  }
-
   render() {
     const {
       releases,
