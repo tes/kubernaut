@@ -5,11 +5,6 @@ import AccountsTable from '../AccountsTable';
 
 class AccountsPage extends Component {
 
-  componentDidMount() {
-    this.props.initialise();
-    this.props.fetchAccountsPagination();
-  }
-
   render() {
     const {
       accounts,

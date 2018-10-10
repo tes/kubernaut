@@ -1,7 +1,20 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { reset } from 'redux-form';
-
+import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
 import {
+  parseFiltersFromQS,
+  parseSearchFromQS,
+  stringifyFiltersForQS,
+  stringifySearchForQS,
+} from '../modules/lib/filter';
+import {
+  extractFromQuery,
+  alterQuery,
+  makeQueryString,
+  parseQueryString,
+ } from './lib/query';
+import {
+  fetchAccounts,
   fetchAccountsPagination,
   toggleSort,
   FETCH_ACCOUNTS_REQUEST,
@@ -9,28 +22,31 @@ import {
   FETCH_ACCOUNTS_ERROR,
   selectSortState,
   selectTableFilters,
+  selectSearchFilter,
+  selectPaginationState,
   addFilter,
   removeFilter,
   search,
   clearSearch,
+  setFilters,
+  setSearch,
+  setSort,
+  setPagination,
 } from '../modules/accounts';
 
 import { getAccounts } from '../lib/api';
 
-export function* fetchAccountsDataSaga({ payload = {} }) {
-  const {
-    page = 1,
-    limit = 50,
-    sort = 'name',
-    order = 'asc',
-    ...options
-  } = payload;
-  const offset = (page - 1) * limit;
+const pageUrl = '/accounts';
 
-  const filters = yield select(selectTableFilters);
+export function* fetchAccountsDataSaga({ payload = {} }) {
+  const options = payload;
+  const { page, limit } = yield select(selectPaginationState);
+  const offset = (page - 1) * limit;
+  const { column, order } = yield select(selectSortState);
+  const filters = yield select(selectTableFilters, true);
   yield put(FETCH_ACCOUNTS_REQUEST());
   try {
-    const data = yield call(getAccounts, { offset, limit, sort, order, filters });
+    const data = yield call(getAccounts, { offset, limit, sort: column, order, filters });
     yield put(FETCH_ACCOUNTS_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
@@ -38,33 +54,71 @@ export function* fetchAccountsDataSaga({ payload = {} }) {
   }
 }
 
-export function* sortSaga({ payload = {} }) {
-  const { column, order } = yield select(selectSortState);
-  yield put(fetchAccountsPagination({ sort: column, order }));
-}
-
 export function* addFilterSaga() {
-  const { column, order } = yield select(selectSortState);
   yield put(reset('accounts_table_filter'));
-  yield put(fetchAccountsPagination({ sort: column, order }));
+  const location = yield select(getLocation);
+  const filters = yield select(selectTableFilters);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
+    filters: stringifyFiltersForQS(filters),
+    pagination: null,
+    search: null,
+  })}`));
 }
 
 export function* removeFilterSaga() {
-  const { column, order } = yield select(selectSortState);
-  yield put(fetchAccountsPagination({ sort: column, order }));
+  const location = yield select(getLocation);
+  const filters = yield select(selectTableFilters);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
+    filters: stringifyFiltersForQS(filters),
+    pagination: null,
+  })}`));
 }
 
-export function* clearSearchSaga() {
-  const { column, order } = yield select(selectSortState);
-  yield put(reset('accounts_table_filter'));
-  yield put(fetchAccountsPagination({ sort: column, order }));
+export function* searchSaga() {
+  const location = yield select(getLocation);
+  const searchFilter = yield select(selectSearchFilter);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
+    search: stringifySearchForQS(searchFilter),
+    pagination: null,
+  })}`));
+}
+
+export function* sortSaga() {
+  const location = yield select(getLocation);
+  const sort = yield select(selectSortState);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
+    sort: makeQueryString({ ...sort }),
+    pagination: null,
+  })}`));
+}
+
+export function* paginationSaga() {
+  const location = yield select(getLocation);
+  const pagination = yield select(selectPaginationState);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
+}
+
+export function* locationChangeSaga({ payload = {} }) {
+  if (payload.location.pathname !== pageUrl) return;
+
+  const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
+  const search = parseSearchFromQS(extractFromQuery(payload.location.search, 'search') || '');
+  const sort = parseQueryString(extractFromQuery(payload.location.search, 'sort') || '');
+  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
+  yield put(setFilters(filters));
+  yield put(setSearch(search));
+  yield put(setSort(sort));
+  yield put(setPagination(pagination));
+  yield put(fetchAccounts());
 }
 
 export default [
-  takeEvery(fetchAccountsPagination, fetchAccountsDataSaga),
+  takeEvery(fetchAccounts, fetchAccountsDataSaga),
+  takeEvery(fetchAccountsPagination, paginationSaga),
   takeEvery(addFilter, addFilterSaga),
   takeEvery(removeFilter, removeFilterSaga),
   takeEvery(toggleSort, sortSaga),
-  takeEvery(search, fetchAccountsDataSaga),
-  takeEvery(clearSearch, clearSearchSaga),
+  takeEvery(search, searchSaga),
+  takeEvery(clearSearch, searchSaga),
+  takeEvery(LOCATION_CHANGE, locationChangeSaga),
 ];

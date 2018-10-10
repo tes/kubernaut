@@ -1,4 +1,4 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 import {
   createFilterActions,
   createFilterSelectors,
@@ -7,9 +7,11 @@ import {
 } from './lib/filter';
 const actionsPrefix = `KUBERNAUT/ACCOUNTS`;
 const filterActions = createFilterActions(actionsPrefix);
+export const fetchAccounts = createAction(`${actionsPrefix}/FETCH_ACCOUNTS`);
 export const fetchAccountsPagination = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_PAGINATION`);
 export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
-export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
+export const setSort = createAction(`${actionsPrefix}/SET_SORT`);
+export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const FETCH_ACCOUNTS_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_REQUEST`);
 export const FETCH_ACCOUNTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_SUCCESS`);
 export const FETCH_ACCOUNTS_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_ERROR`);
@@ -20,11 +22,15 @@ export const {
   clearSearch,
   showFilters,
   hideFilters,
+  setFilters,
+  setSearch,
 } = filterActions;
 
 export const selectSortState = (state) => (state.accounts.sort);
+export const selectPaginationState = (state) => (state.accounts.pagination);
 export const {
-  selectTableFilters
+  selectTableFilters,
+  selectSearchFilter,
 } = createFilterSelectors('accounts.filter');
 
 const defaultFilterState = createDefaultFilterState({
@@ -45,13 +51,14 @@ const defaultState = {
     column: 'name',
     order: 'asc',
   },
+  pagination: {
+    page: 1,
+    limit: 50,
+  },
   filter: defaultFilterState,
 };
 
 export default handleActions({
-  [initialise]: () => ({
-    ...defaultState,
-  }),
   [FETCH_ACCOUNTS_REQUEST]: (state) => ({
     ...state,
     data: {
@@ -80,6 +87,20 @@ export default handleActions({
     sort: {
       column: payload,
       order: state.sort.column === payload ? (state.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
+    },
+  }),
+  [setSort]: (state, { payload = {} }) => ({
+    ...state,
+    sort: {
+      column: payload.column || defaultState.sort.column,
+      order: payload.order || defaultState.sort.order,
+    },
+  }),
+  [combineActions(fetchAccountsPagination, setPagination)]: (state, { payload }) => ({
+    ...state,
+    pagination: {
+      page: payload.page || defaultState.pagination.page,
+      limit: payload.limit || defaultState.pagination.limit,
     },
   }),
   ...createFilterReducers(filterActions, defaultFilterState),
