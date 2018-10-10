@@ -9,13 +9,17 @@ class TableFilter extends Component {
 
   render() {
     if (!this.props.show) return (
-      <Row className="mb-2">
-        <Col className="d-flex justify-content-end">
-          <Button
-            outline
-            onClick={this.props.showFilters}
-          >Filter
-          </Button>
+      <Row className="mb-2 py-2">
+        <Col xs="12">
+          <Row className="mb-2">
+            <Col sm={{ size: 1, offset: 11 }}>
+              <Button
+                outline
+                onClick={this.props.showFilters}
+              >Filter
+              </Button>
+            </Col>
+          </Row>
         </Col>
       </Row>
     );
