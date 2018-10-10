@@ -8,7 +8,7 @@ import {
 const actionsPrefix = 'KUBERNAUT/DEPLOYMENTS';
 const filterActions = createFilterActions(actionsPrefix);
 export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);
-export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
 export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const FETCH_DEPLOYMENTS_REQUEST = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_REQUEST`);
 export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`);

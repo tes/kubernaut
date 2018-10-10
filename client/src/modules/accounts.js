@@ -8,7 +8,7 @@ import {
 const actionsPrefix = `KUBERNAUT/ACCOUNTS`;
 const filterActions = createFilterActions(actionsPrefix);
 export const fetchAccountsPagination = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_PAGINATION`);
-export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
 export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const FETCH_ACCOUNTS_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_REQUEST`);
 export const FETCH_ACCOUNTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNTS_SUCCESS`);

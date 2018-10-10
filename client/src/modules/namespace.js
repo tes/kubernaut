@@ -11,7 +11,7 @@ export const FETCH_DEPLOYMENTS_REQUEST = createAction(`${actionsPrefix}/FETCH_DE
 export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`);
 export const FETCH_DEPLOYMENTS_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`);
 
-export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SERVICES_SORT`);
+export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
 
 export const selectNamespace = (state) => (state.namespace.namespace.data);
 export const selectSortState = (state) => (state.namespace.deployments.sort);
