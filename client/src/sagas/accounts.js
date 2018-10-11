@@ -20,6 +20,7 @@ import {
   FETCH_ACCOUNTS_REQUEST,
   FETCH_ACCOUNTS_SUCCESS,
   FETCH_ACCOUNTS_ERROR,
+  selectUrlMatch,
   selectSortState,
   selectTableFilters,
   selectSearchFilter,
@@ -99,7 +100,8 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  if (payload.location.pathname !== pageUrl) return;
+  const urlMatch = yield select(selectUrlMatch);
+  if (!urlMatch) return;
 
   const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
   const search = parseSearchFromQS(extractFromQuery(payload.location.search, 'search') || '');

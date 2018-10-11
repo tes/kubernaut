@@ -1,6 +1,7 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { reset } from 'redux-form';
 import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
+import paths from '../paths';
 import {
   parseFiltersFromQS,
   parseSearchFromQS,
@@ -20,6 +21,7 @@ import {
   FETCH_SERVICES_REQUEST,
   FETCH_SERVICES_SUCCESS,
   FETCH_SERVICES_ERROR,
+  selectUrlMatch,
   selectSortState,
   selectTableFilters,
   selectSearchFilter,
@@ -36,7 +38,7 @@ import {
 
 import { getServices } from '../lib/api';
 
-const pageUrl = '/services';
+const pageUrl = paths.services;
 
 export function* fetchServicesDataSaga({ payload = {} }) {
   const options = payload;
@@ -99,7 +101,8 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  if (payload.location.pathname !== pageUrl) return;
+  const urlMatch = yield select(selectUrlMatch);
+  if (!urlMatch) return;
 
   const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
   const search = parseSearchFromQS(extractFromQuery(payload.location.search, 'search') || '');
