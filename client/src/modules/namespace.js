@@ -1,6 +1,10 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
+import { createMatchSelector } from 'connected-react-router';
+import paths from '../paths';
+
 const actionsPrefix = 'KUBERNAUT/NAMESPACE';
 export const fetchNamespacePageData = createAction(`${actionsPrefix}/FETCH_NAMESPACE_PAGE_DATA`);
+export const fetchDeployments = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS`);
 export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);
 
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
@@ -12,9 +16,13 @@ export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DE
 export const FETCH_DEPLOYMENTS_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`);
 
 export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
+export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
+export const setSort = createAction(`${actionsPrefix}/SET_SORT`);
 
 export const selectNamespace = (state) => (state.namespace.namespace.data);
 export const selectSortState = (state) => (state.namespace.deployments.sort);
+export const selectPaginationState = (state) => (state.namespace.deployments.pagination);
+export const selectUrlMatch = createMatchSelector(paths.namespace);
 
 const defaultState = {
   namespace: {
@@ -37,6 +45,10 @@ const defaultState = {
     sort: {
       column: 'created',
       order: 'desc',
+    },
+    pagination: {
+      page: 1,
+      limit: 20,
     },
   },
 };
@@ -112,5 +124,25 @@ export default handleActions({
         order: state.deployments.sort.column === payload ? (state.deployments.sort.order === 'asc' ? 'desc' : 'asc') : 'asc',
       },
     }
+  }),
+  [setSort]: (state, { payload = {} }) => ({
+    ...state,
+    deployments: {
+      ...state.deployments,
+      sort: {
+        column: payload.column || defaultState.deployments.sort.column,
+        order: payload.order || defaultState.deployments.sort.order,
+      },
+    }
+  }),
+  [combineActions(fetchDeploymentsPagination, setPagination)]: (state, { payload }) => ({
+    ...state,
+    deployments: {
+      ...state.deployments,
+      pagination: {
+        page: payload.page || defaultState.deployments.pagination.page,
+        limit: payload.limit || defaultState.deployments.pagination.limit,
+      },
+    },
   }),
 }, defaultState);

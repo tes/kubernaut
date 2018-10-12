@@ -1,6 +1,14 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { takeEvery, call, put, select, take } from 'redux-saga/effects';
+import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
 import {
+  extractFromQuery,
+  alterQuery,
+  makeQueryString,
+  parseQueryString,
+ } from './lib/query';
+ import {
   fetchNamespacePageData,
+  fetchDeployments,
   fetchDeploymentsPagination,
   toggleSort,
   FETCH_NAMESPACE_REQUEST,
@@ -11,6 +19,10 @@ import {
   FETCH_DEPLOYMENTS_ERROR,
   selectNamespace,
   selectSortState,
+  selectPaginationState,
+  selectUrlMatch,
+  setPagination,
+  setSort,
 } from '../modules/namespace';
 import { getNamespace, getDeployments } from '../lib/api';
 
@@ -26,19 +38,16 @@ export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
 }
 
 export function* fetchDeploymentsForNamespaceSaga({ payload }) {
-  const {
-    page = 1,
-    limit = 20,
-    sort = 'created',
-    order = 'desc',
-    ...options
-  } = payload;
+  const options = payload;
+  const { page, limit } = yield select(selectPaginationState);
   const offset = (page - 1) * limit;
+  const { column, order } = yield select(selectSortState);
 
   try {
     const { name, cluster } = yield select(selectNamespace);
+    if (!name || !cluster) return;
     yield put(FETCH_DEPLOYMENTS_REQUEST());
-    const data = yield call(getDeployments, { namespace: name, cluster: cluster.name, offset, limit, sort, order });
+    const data = yield call(getDeployments, { namespace: name, cluster: cluster.name, offset, limit, sort: column, order });
     yield put(FETCH_DEPLOYMENTS_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
@@ -47,13 +56,41 @@ export function* fetchDeploymentsForNamespaceSaga({ payload }) {
 }
 
 export function* sortDeploymentsSaga({ payload = {} }) {
-  const { column, order } = yield select(selectSortState);
-  yield put(fetchDeploymentsPagination({ sort: column, order }));
+  const location = yield select(getLocation);
+  const sort = yield select(selectSortState);
+  yield put(push(`${location.pathname}?${alterQuery(location.search, {
+    sort: makeQueryString({ ...sort }),
+    pagination: null,
+  })}`));
+}
+
+export function* paginationSaga() {
+  const location = yield select(getLocation);
+  const pagination = yield select(selectPaginationState);
+  yield put(push(`${location.pathname}?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
+}
+
+export function* locationChangeSaga({ payload = {} }) {
+  const urlMatch = yield select(selectUrlMatch);
+  if (!urlMatch) return;
+
+  const namespace = yield select(selectNamespace);
+  if (!namespace.id || namespace.id !== urlMatch.params.namespaceId) {
+    yield put(fetchNamespacePageData({ id: urlMatch.params.namespaceId }));
+    yield take(FETCH_NAMESPACE_SUCCESS);
+  }
+
+  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
+  const sort = parseQueryString(extractFromQuery(payload.location.search, 'sort') || '');
+  yield put(setPagination(pagination));
+  yield put(setSort(sort));
+  yield put(fetchDeployments());
 }
 
 export default [
   takeEvery(fetchNamespacePageData, fetchNamespaceInfoSaga),
-  takeEvery(FETCH_NAMESPACE_SUCCESS, fetchDeploymentsForNamespaceSaga),
-  takeEvery(fetchDeploymentsPagination, fetchDeploymentsForNamespaceSaga),
+  takeEvery(fetchDeployments, fetchDeploymentsForNamespaceSaga),
+  takeEvery(fetchDeploymentsPagination, paginationSaga),
   takeEvery(toggleSort, sortDeploymentsSaga),
+  takeEvery(LOCATION_CHANGE, locationChangeSaga),
 ];

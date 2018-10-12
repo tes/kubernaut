@@ -5,9 +5,6 @@ import DeploymentsTable from '../DeploymentsTable';
 import { EditNamespaceLink, ManageNamespaceLink } from '../Links';
 
 class NamespaceDetailsPage extends Component {
-  componentDidMount() {
-    this.props.fetchNamespacePageData({id: this.props.namespaceId });
-  }
 
   render() {
     const namespace = this.props.namespace.data;
