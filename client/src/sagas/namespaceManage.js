@@ -1,12 +1,23 @@
-import { takeEvery, call, put, all, select } from 'redux-saga/effects';
+import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
+import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
 
+import {
+  extractFromQuery,
+  alterQuery,
+  makeQueryString,
+  parseQueryString,
+ } from './lib/query';
 import {
   initialise,
   updateServiceStatusForNamespace,
   selectServices,
+  selectUrlMatch,
   updateServiceStatusSuccess,
+  fetchServices,
   fetchServicesPagination,
+  selectPaginationState,
+  setPagination,
   FETCH_NAMESPACE_REQUEST,
   FETCH_NAMESPACE_SUCCESS,
   FETCH_NAMESPACE_ERROR,
@@ -21,13 +32,6 @@ import {
   disableServiceForNamespace,
 } from '../lib/api';
 
-export function* initialiseSaga(action) {
-  yield all([
-    call(fetchNamespaceInfoSaga, action),
-    call(fetchServicesWithNamespaceStatusSaga, action),
-  ]);
-}
-
 export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
   yield put(FETCH_NAMESPACE_REQUEST());
   try {
@@ -40,7 +44,8 @@ export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
 }
 
 export function* fetchServicesWithNamespaceStatusSaga({ payload = { } }) {
-  const { id, page = 1, limit = 20, ...options } = payload;
+  const { id, ...options } = payload;
+  const { page, limit } = yield select(selectPaginationState);
   const offset = (page - 1) * limit;
 
   yield put(FETCH_SERVICES_NAMESPACE_STATUS_REQUEST());
@@ -75,8 +80,25 @@ export function* updateServiceStatusSaga({ payload = {} }) {
   }
 }
 
+export function* paginationSaga() {
+  const location = yield select(getLocation);
+  const pagination = yield select(selectPaginationState);
+  yield put(push(`${location.pathname}?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
+}
+
+export function* locationChangeSaga({ payload = {} }) {
+  const urlMatch = yield select(selectUrlMatch);
+  if (!urlMatch) return;
+
+  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
+  yield put(setPagination(pagination));
+  yield put(fetchServices({ id: urlMatch.params.namespaceId }));
+}
+
 export default [
-  takeEvery(initialise, initialiseSaga),
+  takeEvery(initialise, fetchNamespaceInfoSaga),
   takeEvery(updateServiceStatusForNamespace, updateServiceStatusSaga),
-  takeEvery(fetchServicesPagination, fetchServicesWithNamespaceStatusSaga),
+  takeEvery(fetchServices, fetchServicesWithNamespaceStatusSaga),
+  takeEvery(fetchServicesPagination, paginationSaga),
+  takeEvery(LOCATION_CHANGE, locationChangeSaga),
 ];

@@ -1,11 +1,14 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 import computeLoading from './lib/computeLoading';
-
+import { createMatchSelector } from 'connected-react-router';
+import paths from '../paths';
 const actionsPrefix = 'KUBERNAUT/NAMESPACE_MANAGE';
 export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const updateServiceStatusForNamespace = createAction(`${actionsPrefix}/UPDATE_SERVICE_STATUS`);
 export const updateServiceStatusSuccess = createAction(`${actionsPrefix}/UPDATE_SERVICE_STATUS_SUCCESS`);
+export const fetchServices = createAction(`${actionsPrefix}/FETCH_SERVICES`);
 export const fetchServicesPagination = createAction(`${actionsPrefix}/FETCH_SERVICES_PAGINATION`);
+export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
 export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACE_ERROR`);
@@ -14,6 +17,8 @@ export const FETCH_SERVICES_NAMESPACE_STATUS_SUCCESS = createAction(`${actionsPr
 export const FETCH_SERVICES_NAMESPACE_STATUS_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICES_NAMESPACE_STATUS_ERROR`);
 
 export const selectServices = (state) => (state.namespaceManage.services);
+export const selectUrlMatch = createMatchSelector(paths.namespaceManage);
+export const selectPaginationState = (state) => (state.namespaceManage.pagination);
 
 const defaultState = {
   id: '',
@@ -32,6 +37,10 @@ const defaultState = {
   services: {
     count: 0,
     items: [],
+  },
+  pagination: {
+    page: 1,
+    limit: 20,
   },
   initialValues: {},
 };
@@ -92,6 +101,13 @@ export default handleActions({
     services: payload.data,
     initialValues: {
       services: payload.data.items,
+    },
+  }),
+  [combineActions(fetchServicesPagination, setPagination)]: (state, { payload }) => ({
+    ...state,
+    pagination: {
+      page: payload.page || defaultState.pagination.page,
+      limit: payload.limit || defaultState.pagination.limit,
     },
   }),
 }, defaultState);
