@@ -2,11 +2,10 @@
 import React, { Component } from 'react';
 import { createBrowserHistory } from 'history';
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import formActionSaga from 'redux-form-saga';
 import { Provider } from 'react-redux';
-import { composeWithDevTools } from 'redux-devtools-extension';
 import 'bootstrap';
 
 import Header from './components/Header';
@@ -43,7 +42,7 @@ const sagaMiddleware = createSagaMiddleware();
 const store = createStore(
   connectRouter(history)(rootReducer),
   initialState,
-  composeWithDevTools(
+  (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : compose)(
     applyMiddleware(routerMiddleware(history), sagaMiddleware)
   )
 );
