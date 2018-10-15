@@ -1,8 +1,10 @@
-import reduce, {
+import filterTests from './lib/filterTests';
+import reduce, * as allExports  from '../deployments';
+const {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
-} from '../deployments';
+} = allExports;
 
 describe('Deployments Reducer', () => {
 
@@ -38,4 +40,6 @@ describe('Deployments Reducer', () => {
     expect(state.data).toMatchObject(initialState.data);
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
+
+  filterTests(allExports);
 });
