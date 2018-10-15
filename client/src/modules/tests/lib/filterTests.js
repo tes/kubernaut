@@ -14,18 +14,35 @@ export default (module, statePath = 'filter') => {
   describe('Filter tests', () => {
     it('should add a filter', () => {
       const initialState = reduce(undefined, { });
-      const columns = [{ value: 'abc', display: 'Abc' }];
       const filterDetails = {
         searchVal: 'abc',
-        column: 'abc',
+        column: '123',
         not: true,
         exact: true,
       };
-      const result = reduce(initialState, addFilter({ form: filterDetails, columns }));
+      const result = reduce(initialState, addFilter({ form: filterDetails }));
       expect(_get(result, statePath).filters.length).toBe(1);
       expect(_get(result, statePath).filters[0]).toMatchObject({
         key: filterDetails.column,
         value: filterDetails.searchVal,
+        exact: true,
+        not: true,
+      });
+    });
+
+    it('should add a filter not from the form prop', () => {
+      const initialState = reduce(undefined, { });
+      const filters = [{
+        value: 'abc',
+        key: '123',
+        not: true,
+        exact: true,
+      }];
+      const result = reduce(initialState, addFilter({ filters: filters }));
+      expect(_get(result, statePath).filters.length).toBe(1);
+      expect(_get(result, statePath).filters[0]).toMatchObject({
+        value: 'abc',
+        key: '123',
         exact: true,
         not: true,
       });

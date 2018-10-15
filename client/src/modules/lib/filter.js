@@ -105,26 +105,53 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
 
   return {
     [addFilter]: (state, { payload }) => {
-      const { form: {
+      const { form = {}, filters = [] } = payload;
+      const {
         searchVal,
         column,
-        not = false,
-        exact = false,
-      } } = payload;
+      } = form;
 
-      if (!searchVal || !column) return state;
+      const newFilters = [];
+      if (searchVal && column) {
+        const {
+          not = false,
+          exact = false,
+        } = form;
+        newFilters.push({
+          uuid: uuid.v4(),
+          key: column,
+          value: searchVal,
+          exact,
+          not,
+        });
+      }
+
+      if (filters.length) {
+        filters.forEach(newFilter => {
+          const {
+            value,
+            key,
+            not = false,
+            exact = false,
+          } = newFilter;
+
+          if (!value || !key) return;
+          newFilters.push({
+            uuid: uuid.v4(),
+            key,
+            value,
+            exact,
+            not,
+          });
+        });
+      }
+
       const newState = {
         ...state,
         [statePath]: {
           ..._get(state, statePath),
           search: defaultState.search,
-          filters: _get(state, statePath).filters.concat({
-            uuid: uuid.v4(),
-            key: column,
-            value: searchVal,
-            exact,
-            not,
-          }),
+          filters: _get(state, statePath).filters.concat(newFilters),
         }
       };
       return newState;
