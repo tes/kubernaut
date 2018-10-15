@@ -4,7 +4,7 @@ import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, CreateDeploymentLink } from '../Links';
-import TableFilter from '../TableFilter';
+import TableFilter, { CreateQuickFilters } from '../TableFilter';
 
 class ReleasesTable extends Component {
 
@@ -43,6 +43,8 @@ class ReleasesTable extends Component {
       </tbody>
     ;
 
+    const { QuickFilters } = CreateQuickFilters(filterActions.addFilter);
+
     const releasesTableBody = () =>
       <tbody>
       {
@@ -52,10 +54,22 @@ class ReleasesTable extends Component {
               <span className="mr-4"><Human date={release.createdOn} /></span>
               <span className="font-italic"><Ago date={release.createdOn} /></span>
             </td>
-            <td><ServiceLink service={release.service} /></td>
-            <td><ReleaseLink release={release} /></td>
-            <td><RegistryLink registry={release.service.registry} /></td>
-            <td><AccountLink account={release.createdBy} /></td>
+            <td className="cellFilterActionsParent">
+              <ServiceLink service={release.service} />
+              <QuickFilters value={release.service.name} column='service' />
+            </td>
+            <td className="cellFilterActionsParent">
+              <ReleaseLink release={release} />
+              <QuickFilters value={release.version} column='version' />
+            </td>
+            <td className="cellFilterActionsParent">
+              <RegistryLink registry={release.service.registry} />
+              <QuickFilters value={release.service.registry.name} column='registry' />
+            </td>
+            <td className="cellFilterActionsParent">
+              <AccountLink account={release.createdBy} />
+              <QuickFilters value={release.createdBy.displayName} column='createdBy' />
+            </td>
             <td>
               <CreateDeploymentLink
                 service={release.service}

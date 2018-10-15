@@ -4,7 +4,7 @@ import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink } from '../Links';
-import TableFilter from '../TableFilter';
+import TableFilter, { CreateQuickFilters } from '../TableFilter';
 
 class ServicesTable extends Component {
 
@@ -43,15 +43,26 @@ class ServicesTable extends Component {
       </tbody>
     ;
 
+    const { QuickFilters } = CreateQuickFilters(filterActions.addFilter);
+
     const servicesTableBody = () =>
       <tbody>
       {
         services.items.map(service => (
           <tr key={service.id}>
-            <td><ServiceLink service={service} /></td>
-            <td><RegistryLink registry={service.registry} /></td>
+            <td className="cellFilterActionsParent">
+              <ServiceLink service={service} />
+              <QuickFilters value={service.name} column='name' />
+            </td>
+            <td className="cellFilterActionsParent">
+              <RegistryLink registry={service.registry} />
+              <QuickFilters value={service.registry.name} column='registry' />
+            </td>
             <td><span><Human date={service.createdOn} /></span></td>
-            <td><AccountLink account={service.createdBy} /></td>
+            <td className="cellFilterActionsParent">
+              <AccountLink account={service.createdBy} />
+              <QuickFilters value={service.createdBy.displayName} column='createdBy' />
+            </td>
           </tr>
         ))
       }

@@ -5,7 +5,7 @@ import { isEqual, curry } from 'lodash';
 import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, ServiceLink, ReleaseLink, NamespaceLink, DeploymentLink } from '../Links';
-import TableFilter from '../TableFilter';
+import TableFilter, { CreateQuickFilters } from '../TableFilter';
 
 const columns = [
   { key: 'service', label: 'Service' },
@@ -57,6 +57,8 @@ class DeploymentsTable extends Component {
         </tr>
       </tbody>
     ;
+    const { QuickFilters, MultiQuickFilters } = !hideFilters ? CreateQuickFilters(filterActions.addFilter)
+      : { QuickFilters: () => null, MultiQuickFilters: () => null };
 
     const deploymentsTableBody = () => {
       const omitService = omitColumns.find(isEqualC('service'));
@@ -71,17 +73,31 @@ class DeploymentsTable extends Component {
         <tbody>
           {
             deployments.items.map(deployment => {
-              return <tr key={deployment.id} id={deployment.id} >
-                { omitService ? null : <td><ServiceLink service={deployment.release.service} /></td> }
-                { omitVersion ? null : <td><ReleaseLink release={deployment.release} /></td> }
+              return <tr key={deployment.id} id={deployment.id}>
+                { omitService ? null : <td className="cellFilterActionsParent">
+                  <ServiceLink service={deployment.release.service} />
+                  <QuickFilters value={deployment.release.service.name} column='service' />
+                </td> }
+                { omitVersion ? null : <td className="cellFilterActionsParent">
+                  <ReleaseLink release={deployment.release} />
+                  <QuickFilters value={deployment.release.version} column='version' />
+                </td> }
                 { omitCreated ? null : <td>
                   <span className="mr-4"><Human date={deployment.createdOn} /></span>
                   <span className="font-italic"><Ago date={deployment.createdOn} /></span>
                 </td> }
-                { omitWhere ? null : <td><NamespaceLink pill showCluster namespace={deployment.namespace} /></td> }
+                { omitWhere ? null : <td className="cellFilterActionsParent">
+                  <NamespaceLink pill showCluster namespace={deployment.namespace} />
+                  <MultiQuickFilters filters={[
+                    { value: deployment.namespace.name, column: 'namespace' },
+                    { value: deployment.namespace.cluster.name, column: 'cluster' }
+                    ]}
+                  />
+                </td> }
                 { omitStatus ? null : <td>{deployment.status}</td> }
-                { omitCreatedBy ? null : <td>
+                { omitCreatedBy ? null : <td className="cellFilterActionsParent">
                   <AccountLink account={deployment.createdBy} />
+                  <QuickFilters value={deployment.createdBy.displayName} column='createdBy' />
                 </td> }
                 { omitDeployLink ? null : <td><DeploymentLink deployment={deployment} icon='external-link' /></td> }
               </tr>;
@@ -108,6 +124,7 @@ class DeploymentsTable extends Component {
               { value: 'registry', display: 'Registry' },
               { value: 'cluster', display: 'Cluster' },
               { value: 'namespace', display: 'Namespace' },
+              { value: 'createdBy', display: 'Created By' },
             ]}
             {...filterActions}
             />
