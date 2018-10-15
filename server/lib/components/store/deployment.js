@@ -205,6 +205,11 @@ export default function(options) {
         if (criteria.filters.service) {
           db.applyFilter(criteria.filters.service, 's.name', findDeploymentsBuilder, countDeploymentsBuilder);
         }
+
+        if (criteria.filters.version) {
+          db.applyFilter(criteria.filters.version, 'r.version', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+
         if (criteria.filters.namespace) {
           db.applyFilter(criteria.filters.namespace, 'n.name', findDeploymentsBuilder, countDeploymentsBuilder);
         }
