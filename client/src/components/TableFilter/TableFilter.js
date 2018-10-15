@@ -107,7 +107,7 @@ class TableFilter extends Component {
               </div>
               {this.props.filters.map((filter) => {
                 const displayName = (this.props.columns.find(({ value }) => (value === filter.key)) || {}).display;
-                const filterValue = filter.exact ? `"${filter.value}"` : filter.value;
+                const filterValue = filter.exact ? [].concat(filter.value).map(f => `"${f}"`) : filter.value;
                 const closeEl = <i
                     onClick={() => this.props.removeFilter(filter.uuid)}
                     className='fa fa-times'
@@ -117,7 +117,7 @@ class TableFilter extends Component {
                 return (
                   <div key={filter.uuid}>
                     <Badge color={filter.not ? 'danger' : 'success'} className="mr-2">
-                      <span>{displayName} : {filterValue} {closeEl}</span>
+                      <span>{displayName} : {filterValue.toString()} {closeEl}</span>
                     </Badge>
                   </div>
                 );
@@ -137,7 +137,10 @@ TableFilter.propTypes = {
     uuid: PropTypes.string.isRequired,
     not: PropTypes.bool,
     exact: PropTypes.bool,
-    value: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.arrayOf(PropTypes.string)
+    ]).isRequired,
   })).isRequired,
 };
 
