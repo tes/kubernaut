@@ -101,7 +101,7 @@ class TableFilter extends Component {
             </Col>
           </Row>
           <Row>
-            <Col className="d-flex justify-content-start">
+            <Col className="d-flex justify-content-start flex-wrap">
               <div className="mr-2">
                 <h6>Filters:</h6>
               </div>
@@ -110,7 +110,7 @@ class TableFilter extends Component {
                 const filterValue = filter.exact ? [].concat(filter.value).map(f => `"${f}"`) : filter.value;
                 const closeEl = <i
                     onClick={() => this.props.removeFilter(filter.uuid)}
-                    className='fa fa-times'
+                    className='fa fa-times clickable'
                     aria-hidden='true'
                   ></i>;
 
