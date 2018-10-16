@@ -134,6 +134,7 @@ describe('Deploy sagas', () => {
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
     expect(gen.next({ registry }).value).toMatchObject(put(change('deploy', 'service', 'app-1')));
     expect(gen.next().value).toMatchObject(put(clearServiceSuggestions()));
+    expect(gen.next().value).toMatchObject(put(validateService()));
     expect(gen.next().value).toMatchObject(put(fetchLatestDeploymentsPerNamespace({ service: 'app-1', registry })));
     expect(gen.next().done).toBe(true);
   });

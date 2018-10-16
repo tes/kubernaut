@@ -97,6 +97,7 @@ export function* useServiceSuggestionsSaga({ payload }) {
   const { registry } = yield select(getDeployFormValues);
   yield put(change('deploy', 'service', payload));
   yield put(clearServiceSuggestions());
+  yield put(validateService());
   yield put(fetchLatestDeploymentsPerNamespace({ service: payload, registry }));
 }
 
