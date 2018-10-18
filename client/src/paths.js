@@ -1,4 +1,5 @@
-export default {
+import { matchPath } from "react-router";
+const paths = {
   account: '/accounts/:accountId',
   accountEdit: '/accounts/:accountId/edit',
   accounts: '/accounts',
@@ -14,4 +15,12 @@ export default {
   releases: '/releases',
   service: '/services/:registry/:name',
   services: '/services',
+};
+
+export default paths;
+
+export const doesLocationMatch = (location, pathName) => {
+  const path = paths[pathName];
+  if (!path) return;
+  return matchPath(location.pathname, { path, exact: true });
 };

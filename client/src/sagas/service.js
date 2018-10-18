@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   initServiceDetailPage,
@@ -84,8 +84,8 @@ export function* fetchLatestDeploymentsByNamespaceForServiceSaga({ payload = {} 
 }
 
 export default [
-  takeEvery(initServiceDetailPage, initServiceDetailPageSaga),
-  takeEvery(fetchReleasesPagination, fetchReleasesDataSaga),
-  takeEvery(fetchDeploymentsPagination, fetchDeploymentsDataSaga),
-  takeEvery(fetchReleasesPagination, fetchLatestDeploymentsByNamespaceForServiceSaga),
+  takeLatest(initServiceDetailPage, initServiceDetailPageSaga),
+  takeLatest(fetchReleasesPagination, fetchReleasesDataSaga),
+  takeLatest(fetchDeploymentsPagination, fetchDeploymentsDataSaga),
+  takeLatest(fetchReleasesPagination, fetchLatestDeploymentsByNamespaceForServiceSaga),
 ];

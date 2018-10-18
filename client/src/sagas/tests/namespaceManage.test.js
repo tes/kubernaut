@@ -17,7 +17,6 @@ import {
   fetchServices,
   fetchServicesPagination,
   selectPaginationState,
-  selectUrlMatch,
   setPagination,
   FETCH_NAMESPACE_REQUEST,
   FETCH_NAMESPACE_SUCCESS,
@@ -102,7 +101,6 @@ describe('NamespaceManageSagas', () => {
   describe('locationChangeSaga', () => {
     it('should only work for this page route', () => {
       const gen1 = locationChangeSaga({ payload: { location: { pathname: '/notnamespacemanage'} } });
-      expect(gen1.next().value).toMatchObject(select(selectUrlMatch));
       expect(gen1.next().done).toBe(true);
     });
 
@@ -111,10 +109,9 @@ describe('NamespaceManageSagas', () => {
         pathname: '/namespaces/bob/manage',
         search: '?a=b&pagination=page%3D1%26limit%3D20',
       };
-      const urlMatch = { params: { namespaceId: 'bob' } };
+
       const gen = locationChangeSaga({ payload: { location } });
-      expect(gen.next().value).toMatchObject(select(selectUrlMatch));
-      expect(gen.next(urlMatch).value).toMatchObject(put(setPagination({
+      expect(gen.next().value).toMatchObject(put(setPagination({
         page: '1',
         limit: '20',
       })));

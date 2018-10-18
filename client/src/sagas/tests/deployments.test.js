@@ -17,7 +17,6 @@ import {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
-  selectUrlMatch,
   selectSortState,
   selectTableFilters,
   selectSearchFilter,
@@ -158,7 +157,6 @@ describe('Deployments sagas', () => {
   describe('Location', () => {
     it('should only work for this page route', () => {
       const gen1 = locationChangeSaga({ payload: { location: { pathname: '/notservices'} } });
-      expect(gen1.next().value).toMatchObject(select(selectUrlMatch));
       expect(gen1.next().done).toBe(true);
     });
 
@@ -168,7 +166,6 @@ describe('Deployments sagas', () => {
         search: '?a=b&filters=abc%3Dvalue%253A123%26def%3Dvalue%253Aabc',
       };
       const gen = locationChangeSaga({ payload: { location } });
-      expect(gen.next().value).toMatchObject(select(selectUrlMatch));
       expect(gen.next(location).value).toMatchObject(put(setFilters([
         {
           key: 'abc',
@@ -196,8 +193,7 @@ describe('Deployments sagas', () => {
         search: '?a=b&search=key%3Dabc%26value%3Dbob%26not%3Dtrue&pagination=',
       };
       const gen = locationChangeSaga({ payload: { location } });
-      expect(gen.next().value).toMatchObject(select(selectUrlMatch));
-      expect(gen.next(location).value).toMatchObject(put(setFilters([])));
+      expect(gen.next().value).toMatchObject(put(setFilters([])));
       expect(gen.next().value).toMatchObject(put(setSearch({
         key: 'abc',
         value: 'bob',
@@ -216,8 +212,7 @@ describe('Deployments sagas', () => {
         search: '?a=b&pagination=page%3D1%26limit%3D50',
       };
       const gen = locationChangeSaga({ payload: { location } });
-      expect(gen.next().value).toMatchObject(select(selectUrlMatch));
-      expect(gen.next(location).value).toMatchObject(put(setFilters([])));
+      expect(gen.next().value).toMatchObject(put(setFilters([])));
       expect(gen.next().value).toMatchObject(put(setSearch({})));
       expect(gen.next().value).toMatchObject(put(setSort({})));
       expect(gen.next().value).toMatchObject(put(setPagination({
@@ -234,8 +229,7 @@ describe('Deployments sagas', () => {
         search: '?a=b&sort=column%3Dabc%26order%3Ddesc',
       };
       const gen = locationChangeSaga({ payload: { location } });
-      expect(gen.next().value).toMatchObject(select(selectUrlMatch));
-      expect(gen.next(location).value).toMatchObject(put(setFilters([])));
+      expect(gen.next().value).toMatchObject(put(setFilters([])));
       expect(gen.next().value).toMatchObject(put(setSearch({})));
       expect(gen.next().value).toMatchObject(put(setSort({
         column: 'abc',

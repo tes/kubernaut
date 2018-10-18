@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   fetchDeployment,
@@ -23,5 +23,5 @@ export function* fetchDeploymentSaga({ payload = {} }) {
 }
 
 export default [
-  takeEvery(fetchDeployment, fetchDeploymentSaga),
+  takeLatest(fetchDeployment, fetchDeploymentSaga),
 ];

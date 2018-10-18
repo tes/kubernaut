@@ -1,6 +1,4 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
-import { createMatchSelector } from 'connected-react-router';
-import paths from '../paths';
 
 const actionsPrefix = 'KUBERNAUT/NAMESPACE';
 export const fetchNamespacePageData = createAction(`${actionsPrefix}/FETCH_NAMESPACE_PAGE_DATA`);
@@ -22,7 +20,6 @@ export const setSort = createAction(`${actionsPrefix}/SET_SORT`);
 export const selectNamespace = (state) => (state.namespace.namespace.data);
 export const selectSortState = (state) => (state.namespace.deployments.sort);
 export const selectPaginationState = (state) => (state.namespace.deployments.pagination);
-export const selectUrlMatch = createMatchSelector(paths.namespace);
 
 const defaultState = {
   namespace: {

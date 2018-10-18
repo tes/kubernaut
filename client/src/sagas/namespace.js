@@ -1,5 +1,6 @@
 import { takeEvery, call, put, select, take } from 'redux-saga/effects';
 import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
+import { doesLocationMatch } from '../paths';
 import {
   extractFromQuery,
   alterQuery,
@@ -20,7 +21,6 @@ import {
   selectNamespace,
   selectSortState,
   selectPaginationState,
-  selectUrlMatch,
   setPagination,
   setSort,
 } from '../modules/namespace';
@@ -71,7 +71,7 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = yield select(selectUrlMatch);
+  const urlMatch = doesLocationMatch(payload.location, 'namespace');
   if (!urlMatch) return;
 
   const namespace = yield select(selectNamespace);

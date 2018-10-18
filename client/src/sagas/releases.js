@@ -1,6 +1,7 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { reset } from 'redux-form';
 import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
+import { doesLocationMatch } from '../paths';
 import {
   parseFiltersFromQS,
   parseSearchFromQS,
@@ -20,7 +21,6 @@ import {
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
-  selectUrlMatch,
   selectSortState,
   selectTableFilters,
   selectSearchFilter,
@@ -99,7 +99,7 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = yield select(selectUrlMatch);
+  const urlMatch = doesLocationMatch(payload.location, 'releases');
   if (!urlMatch) return;
 
   const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
@@ -114,12 +114,12 @@ export function* locationChangeSaga({ payload = {} }) {
 }
 
 export default [
-  takeEvery(fetchReleases, fetchReleasesDataSaga),
-  takeEvery(fetchReleasesPagination, paginationSaga),
-  takeEvery(addFilter, addFilterSaga),
-  takeEvery(removeFilter, removeFilterSaga),
-  takeEvery(toggleSort, sortSaga),
-  takeEvery(search, searchSaga),
-  takeEvery(clearSearch, searchSaga),
-  takeEvery(LOCATION_CHANGE, locationChangeSaga),
+  takeLatest(fetchReleases, fetchReleasesDataSaga),
+  takeLatest(fetchReleasesPagination, paginationSaga),
+  takeLatest(addFilter, addFilterSaga),
+  takeLatest(removeFilter, removeFilterSaga),
+  takeLatest(toggleSort, sortSaga),
+  takeLatest(search, searchSaga),
+  takeLatest(clearSearch, searchSaga),
+  takeLatest(LOCATION_CHANGE, locationChangeSaga),
 ];

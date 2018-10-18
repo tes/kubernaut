@@ -1,6 +1,4 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
-import { createMatchSelector } from 'connected-react-router';
-import paths from '../paths';
 import {
   createFilterActions,
   createFilterSelectors,
@@ -28,7 +26,6 @@ export const {
   setSearch,
 } = filterActions;
 
-export const selectUrlMatch = createMatchSelector(paths.releases);
 export const selectSortState = (state) => (state.releases.sort);
 export const selectPaginationState = (state) => (state.releases.pagination);
 export const {

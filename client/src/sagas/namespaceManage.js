@@ -1,7 +1,7 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
-
+import { doesLocationMatch } from '../paths';
 import {
   extractFromQuery,
   alterQuery,
@@ -12,7 +12,6 @@ import {
   initialise,
   updateServiceStatusForNamespace,
   selectServices,
-  selectUrlMatch,
   updateServiceStatusSuccess,
   fetchServices,
   fetchServicesPagination,
@@ -87,7 +86,7 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = yield select(selectUrlMatch);
+  const urlMatch = doesLocationMatch(payload.location, 'namespaceManage');
   if (!urlMatch) return;
 
   const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');

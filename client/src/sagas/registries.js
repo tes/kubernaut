@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   fetchRegistriesPagination,
@@ -24,5 +24,5 @@ export function* fetchRegistriesDataSaga({ payload = {} }) {
 }
 
 export default [
-  takeEvery(fetchRegistriesPagination, fetchRegistriesDataSaga),
+  takeLatest(fetchRegistriesPagination, fetchRegistriesDataSaga),
 ];

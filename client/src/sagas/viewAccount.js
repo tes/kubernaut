@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   fetchAccountInfo,
@@ -55,7 +55,7 @@ export function* fetchRegistriesSaga({ payload: options }) {
 }
 
 export default [
-  takeEvery(fetchAccountInfo, fetchAccountInfoSaga),
-  takeEvery(fetchAccountInfo, fetchNamespacesSaga),
-  takeEvery(fetchAccountInfo, fetchRegistriesSaga),
+  takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
+  takeLatest(fetchAccountInfo, fetchNamespacesSaga),
+  takeLatest(fetchAccountInfo, fetchRegistriesSaga),
 ];

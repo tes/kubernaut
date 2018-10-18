@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   fetchNamespacesPagination,
@@ -24,5 +24,5 @@ export function* fetchNamespacesDataSaga({ payload = {} }) {
 }
 
 export default [
-  takeEvery(fetchNamespacesPagination, fetchNamespacesDataSaga),
+  takeLatest(fetchNamespacesPagination, fetchNamespacesDataSaga),
 ];

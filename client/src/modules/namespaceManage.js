@@ -1,7 +1,5 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
 import computeLoading from './lib/computeLoading';
-import { createMatchSelector } from 'connected-react-router';
-import paths from '../paths';
 const actionsPrefix = 'KUBERNAUT/NAMESPACE_MANAGE';
 export const initialise = createAction(`${actionsPrefix}/INITIALISE`);
 export const updateServiceStatusForNamespace = createAction(`${actionsPrefix}/UPDATE_SERVICE_STATUS`);
@@ -17,7 +15,6 @@ export const FETCH_SERVICES_NAMESPACE_STATUS_SUCCESS = createAction(`${actionsPr
 export const FETCH_SERVICES_NAMESPACE_STATUS_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICES_NAMESPACE_STATUS_ERROR`);
 
 export const selectServices = (state) => (state.namespaceManage.services);
-export const selectUrlMatch = createMatchSelector(paths.namespaceManage);
 export const selectPaginationState = (state) => (state.namespaceManage.pagination);
 
 const defaultState = {
