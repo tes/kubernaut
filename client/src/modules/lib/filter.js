@@ -1,5 +1,11 @@
 import { createAction } from 'redux-actions';
-import { get as _get, pickBy as _pickBy, identity as _identity } from 'lodash';
+import {
+  get as _get,
+  pickBy as _pickBy,
+  omit as _omit,
+  identity as _identity,
+  filter as _filter,
+} from 'lodash';
 import uuid from 'uuid';
 import { parse, stringify as makeQueryString } from 'querystring';
 
@@ -146,12 +152,16 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
         });
       }
 
+      const toAdd = newFilters.filter(newFilter => (
+        _filter(_get(state, statePath).filters, _omit(newFilter, 'uuid')).length === 0
+      ));
+
       const newState = {
         ...state,
         [statePath]: {
           ..._get(state, statePath),
           search: defaultState.search,
-          filters: _get(state, statePath).filters.concat(newFilters),
+          filters: _get(state, statePath).filters.concat(toAdd),
         }
       };
       return newState;
