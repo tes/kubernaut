@@ -33,4 +33,15 @@ const mapDispatchToProps = {
   hideFilters,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(DeploymentsPage);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  null,
+  {
+    areStatesEqual: (next, prev) => (
+      next.deployments.data === prev.deployments.data &&
+      next.deployments.meta === prev.deployments.meta &&
+      next.deployments.sort === prev.deployments.sort
+    )
+  }
+)(DeploymentsPage);
