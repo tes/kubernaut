@@ -645,6 +645,33 @@ describe('Deployment Store', () => {
 
   });
 
+  describe('Deployment note', () => {
+    it('should add a note', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
+      const release = await saveRelease(makeRelease());
+      const data = makeDeployment({ release, namespace });
+      const saved = await saveDeployment(data);
+      expect(saved.note).toBe(undefined);
+      await store.setDeploymentNote(saved.id, 'testing123');
+      const withNote = await getDeployment(saved.id);
+      expect(withNote.note).toBe('testing123');
+    });
+
+    it('should update a note', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
+      const release = await saveRelease(makeRelease());
+      const data = makeDeployment({ release, namespace });
+      const saved = await saveDeployment(data);
+      const withNote = await store.setDeploymentNote(saved.id, 'testing123');
+      expect(withNote.note).toBe('testing123');
+      await store.setDeploymentNote(saved.id, 'testing456');
+      const withChangedNote = await getDeployment(saved.id);
+      expect(withChangedNote.note).toBe('testing456');
+    });
+  });
+
 
   function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
     return store.saveCluster(cluster, meta);

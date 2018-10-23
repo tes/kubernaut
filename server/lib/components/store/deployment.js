@@ -246,6 +246,16 @@ export default function(options) {
       ]);
     }
 
+    async function setDeploymentNote(id, note) {
+      const updateBuilder = sqb
+        .update('deployment d', { note })
+        .where(Op.eq('d.id', id));
+
+      await db.query(db.serialize(updateBuilder, {}).sql);
+      logger.debug(`set deployment note for ${id}`);
+      return await getDeployment(id);
+    }
+
     function toLatestDeployment(row) {
       return {
         namespace: new Namespace({
@@ -317,6 +327,7 @@ export default function(options) {
           id: row.created_by_id,
           displayName: row.created_by_display_name,
         }),
+        note: row.note,
       });
     }
 
@@ -329,6 +340,7 @@ export default function(options) {
       findLatestDeploymentsByNamespaceForService,
       findDeployments,
       deleteDeployment,
+      setDeploymentNote,
     });
   }
 

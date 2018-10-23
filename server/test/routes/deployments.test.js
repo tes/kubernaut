@@ -735,6 +735,47 @@ describe('Deployments API', () => {
 
   });
 
+  describe('POST /api/deployments/:id/note', () => {
+    it('should add a note to a deployment', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const saved = await saveDeployment({ namespace });
+
+      const response = await request({
+        url: `/api/deployments/${saved.id}/note`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          note: 'testing123',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const deployment = await store.getDeployment(saved.id);
+      expect(deployment.note).toBe('testing123');
+    });
+
+    it('should update a note on a deployment', async () => {
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const saved = await saveDeployment({ namespace });
+      await store.setDeploymentNote(saved.id, 'testing123');
+
+      const response = await request({
+        url: `/api/deployments/${saved.id}/note`,
+        method: 'POST',
+        resolveWithFullResponse: true,
+        json: {
+          note: 'testing456',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const deployment = await store.getDeployment(saved.id);
+      expect(deployment.note).toBe('testing456');
+    });
+  });
+
   describe('DELETE /api/deployments/:id', () => {
 
     it('should delete deployments', async () => {

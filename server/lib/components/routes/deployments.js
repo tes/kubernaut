@@ -152,6 +152,20 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/deployments/:id/note', bodyParser.json(), async (req, res, next) => {
+      try {
+        const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next(Boom.forbidden());
+        if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-write')) return next(Boom.forbidden());
+        if (!req.body.note) return next(Boom.badRequest('note is required'));
+        if (typeof req.body.note !== 'string') return next(Boom.badRequest('note must be a string'));
+        const result = await store.setDeploymentNote(deployment.id, req.body.note);
+        res.status(200).json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.delete('/api/deployments/:id', async (req, res, next) => {
       try {
         const deployment = await store.getDeployment(req.params.id);

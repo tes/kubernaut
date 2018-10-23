@@ -1,6 +1,6 @@
 export default class Deployment {
 
-  constructor({ id, release, namespace, manifest, attributes, applyExitCode, rolloutStatusExitCode, log, createdOn, createdBy, deletedOn, deletedBy }) {
+  constructor({ id, release, namespace, manifest, attributes, applyExitCode, rolloutStatusExitCode, log, createdOn, createdBy, deletedOn, deletedBy, note }) {
     this.id = id;
     this.namespace = namespace;
     this.release = release;
@@ -14,6 +14,7 @@ export default class Deployment {
     this.createdBy = createdBy;
     this.deletedOn = deletedOn;
     this.deletedBy = deletedBy;
+    this.note = note;
   }
 }
 
