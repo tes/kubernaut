@@ -49,7 +49,7 @@ export default function(options = {}) {
 
     app.get('/api/deployments/latest-by-namespace/:registry/:service', async (req, res, next) => {
       try {
-        const registry = await store.findRegistry({ registry: req.params.registry });
+        const registry = await store.findRegistry({ name: req.params.registry });
         const namespaces = req.user.listNamespaceIdsWithPermission('deployments-read');
 
         if(!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
