@@ -26,6 +26,7 @@ const key = crypto.randomBytes(32);
 const chance = new Chance();
 const sampleTemplatePath = path.join(__dirname, 'data', 'kubernetes.yaml');
 const sampleTemplate = fs.readFileSync(sampleTemplatePath, 'utf-8');
+const createPastDate = () => chance.date({ year: (new Date()).getFullYear(), month: chance.integer({ min: -1, max: (new Date()).getMonth() - 1 }) });
 
 const { deepClone } = pm.ruleSets;
 const { and, or, eq, ne, reference } = pm.commands;
@@ -169,7 +170,7 @@ function makeDeploymentLogEntry(overrides = {}) {
 
   return new DeploymentLogEntry(merge({
     writtenTo: chance.pickone(['stdin', 'stdout', 'stderr']),
-    writtenOn: chance.date(),
+    writtenOn: createPastDate(),
     content: chance.sentence(),
     deployment,
   }, overrides));
@@ -177,7 +178,7 @@ function makeDeploymentLogEntry(overrides = {}) {
 
 function makeMeta(overrides = {}) {
   return merge({
-    date: chance.date(),
+    date: createPastDate(),
     account: new Account({
       id: uuid(),
       displayName: chance.name(),
@@ -190,7 +191,7 @@ function makeRootMeta(overrides = {}) {
     id: '00000000-0000-0000-0000-000000000000',
     displayName: 'root',
   });
-  return merge({ date: chance.date() }, overrides, { account });
+  return merge({ date: createPastDate() }, overrides, { account });
 }
 
 function makeReleaseForm(overrides = {}) {
