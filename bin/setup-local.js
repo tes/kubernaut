@@ -8,6 +8,7 @@ import {
   makeRelease,
   makeService,
   makeDeployment,
+  makeRegistry,
 } from '../server/test/factories';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 try {
@@ -17,56 +18,68 @@ try {
       .remove('server');
     const { store } = await scriptSystem.start();
 
-    const cluster = await (async () => {
-      const existingCluster = await store.findCluster({ name: 'local' });
+    const ensureRegistry = async (name) => {
+      const existingRegistry = await store.findRegistry({ name });
+      if (existingRegistry) return existingRegistry;
+
+      return await store.saveRegistry(makeRegistry({
+        name,
+      }), makeRootMeta({ date: new Date() }));
+    };
+
+    const ensureCluster = async (name, color = 'saddlebrown') => {
+      const existingCluster = await store.findCluster({ name });
       if (existingCluster) return existingCluster;
 
       return await store.saveCluster(makeCluster({
-        name: 'local',
+        name,
         config: resolve(process.env.HOME, '.kube/config'),
-        color: 'saddlebrown',
+        color,
       }), makeRootMeta({ date: new Date() }));
-    })();
-
-    const defaultNS = await (async () => {
-      const existing = await store.findNamespace({ name: 'default', cluster: cluster.name });
+    };
+    const ensureNamespace = async (name, cluster) => {
+      const existing = await store.findNamespace({ name, cluster: cluster.name });
       if (existing) return existing;
 
       return await store.saveNamespace(makeNamespace({
-        name: 'default',
+        name,
         cluster: cluster,
         context: 'docker-for-desktop',
       }), makeRootMeta({ date: new Date() }));
-    })();
+    };
 
-    await (async () => {
-      const existing = await store.findNamespace({ name: 'another', cluster: cluster.name });
-      if (existing) return existing;
+    const registry = await ensureRegistry('default');
+    const secondRegistry = await ensureRegistry('second-registry');
 
-      return await store.saveNamespace(makeNamespace({
-        name: 'another',
-        cluster: cluster,
-        context: 'docker-for-desktop',
-      }), makeRootMeta({ date: new Date() }));
-    })();
+    const cluster = await ensureCluster('development');
+    const secondCluster = await ensureCluster('staging', 'blue');
+
+    const defaultNS = await ensureNamespace('default', cluster);
+    const anotherNS = await ensureNamespace('another', cluster);
+    const defaultNSOnSecondCluster = await ensureNamespace('default', secondCluster);
+    const anotherNSOnSecondCluster = await ensureNamespace('another', secondCluster);
+
+    const numberOfServices = 100;
 
     const services = await (async () => {
       const existing = await store.findServices();
       if (existing.count) return existing.items;
 
       const newServices = [];
-      while (newServices.length < 100) {
-        newServices.push(makeService());
+      while (newServices.length < numberOfServices) {
+        if (newServices.length >= 80)
+          newServices.push(makeService({ registry: secondRegistry }));
+        else newServices.push(makeService({ registry }));
       }
       return newServices;
     })();
 
     const releases = await (async () => {
-      const existing = await store.findReleases({}, 200, 0);
+      const releasesPerService = 20;
+      const existing = await store.findReleases({}, services.length * releasesPerService, 0, 'created', 'asc');
       if (existing.count) return existing.items;
 
       const newReleases = [];
-      const releasesPerService = 20;
       services.forEach(service => {
         for (let i = 0; i < releasesPerService; i++) {
           newReleases.push(makeRelease({ service }));
@@ -82,14 +95,21 @@ try {
     })();
 
     await (async () => {
-      const existing = await store.findDeployments({}, 200, 0);
+      const existing = await store.findDeployments({}, 10, 0);
       if (existing.count) return;
 
-      await Promise.map(releases, release =>
-        store.saveDeployment(makeDeployment({
-          namespace: defaultNS,
+      await Promise.map(releases, release => {
+        const ns = Math.random() > 0.5 ? [defaultNS, defaultNSOnSecondCluster] : [anotherNS, anotherNSOnSecondCluster];
+        return store.saveDeployment(makeDeployment({
+          namespace: ns[0],
           release,
-        }), makeRootMeta({ date: release.createdOn })).catch(() => {}),
+        }), makeRootMeta({ date: release.createdOn }))
+        .then(() => store.saveDeployment(makeDeployment({
+          namespace: ns[1],
+          release,
+        }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) })))
+        .catch(() => {});
+      },
         { concurrency: 1 }
       );
     })();
