@@ -63,15 +63,14 @@ export default function(options = {}) {
       return _applyfilter(filter, column, ...builders);
     }
 
-    function buildWhereClause(column, values, bindVariables, listBuilder, countBuilder) {
+    function buildWhereClause(column, values, bindVariables, ...builders) {
       const clauseVariables = [].concat(values).reduce((clauseVariables, value, index) => {
         return Object.assign(clauseVariables, { [uuid()]: value });
       }, {});
 
       const placeholders = Object.keys(clauseVariables).map(key => new RegExp(key));
 
-      listBuilder.where(Op.in(column, placeholders));
-      countBuilder.where(Op.in(column, placeholders));
+      builders.forEach((builder) => builder.where(Op.in(column, placeholders)));
 
       Object.assign(bindVariables, clauseVariables);
     }

@@ -14,6 +14,7 @@ export default connect((state, { registryName, serviceName }) => ({
   releasesList: state.service.releases,
   deploymentsList: state.service.deployments,
   latestDeployments: state.service.latestDeployments.data,
+  deploymentsWithNotes: state.service.deploymentsWithNotes.data,
 }),{
   initServiceDetailPage,
   fetchReleasesPagination,

@@ -1,6 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col, Table } from 'reactstrap';
+import ReactMarkdown from 'react-markdown';
+import {
+  Container,
+  Row,
+  Col,
+  Table,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from 'reactstrap';
+import { Field } from 'redux-form';
+import RenderTextArea from '../RenderTextArea';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
 
@@ -11,7 +24,7 @@ class DeploymentDetailsPage extends Component {
   }
 
   render() {
-    const { meta = {}, deployment } = this.props;
+    const { meta = {}, deployment, canEdit } = this.props;
 
     const errorDetails = () =>
       <div>Error loading deployments</div>
@@ -61,6 +74,35 @@ class DeploymentDetailsPage extends Component {
               </Col>
             </Row>
 
+            { deployment.note ? (
+              <Row className="mb-3">
+                <Col>
+                  <Row className="text-light bg-dark py-1 mb-1">
+                    <Col>
+                      <h4>Note:</h4>
+                      <ReactMarkdown source={deployment.note} />
+                    </Col>
+                  </Row>
+                  {
+                    canEdit ? (
+                      <Row>
+                        <Col>
+                          <Button onClick={() => this.props.openModal()} color="link">Edit note</Button>
+                        </Col>
+                      </Row>
+                    ) : null
+                  }
+                </Col>
+              </Row>
+            ) : canEdit ? (
+                <Row>
+                  <Col>
+                    <Button onClick={() => this.props.openModal()} color="link">Add note</Button>
+                  </Col>
+                </Row>
+              ) : null
+            }
+
             <Row>
               <Col sm="12">
                 <h4>Deployment Attributes</h4>
@@ -109,6 +151,36 @@ class DeploymentDetailsPage extends Component {
                 </pre>
               </Col>
             </Row>
+
+            <Modal
+              isOpen={this.props.modalOpen}
+              toggle={this.props.closeModal}
+              size="lg"
+            >
+              <form onSubmit={this.props.handleSubmit((values, dispatch) => {
+                  this.props.submitNoteForm({
+                    id: deployment.id,
+                    ...values
+                  }, dispatch);
+                })}>
+                <ModalHeader>
+                  Edit deployment note:
+                </ModalHeader>
+                <ModalBody>
+                  <Field
+                    name="note"
+                    component={RenderTextArea}
+                    className="form-control"
+                    rows="6"
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    type="submit"
+                  >Save</Button>
+                </ModalFooter>
+              </form>
+            </Modal>
         </div>
       );
     };

@@ -1,13 +1,18 @@
 import { createAction, handleActions } from 'redux-actions';
+import { createFormAction } from 'redux-form-saga';
 const actionsPrefix = 'KUBERNAUT/DEPLOYMENT';
 export const fetchDeployment = createAction(`${actionsPrefix}/FETCH_DEPLOYMENT`);
 export const FETCH_DEPLOYMENT_REQUEST = createAction(`${actionsPrefix}/FETCH_DEPLOYMENT_REQUEST`);
 export const FETCH_DEPLOYMENT_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENT_SUCCESS`);
 export const FETCH_DEPLOYMENT_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENT_ERROR`);
+export const submitNoteForm = createFormAction(`${actionsPrefix}/SUBMIT_NOTE_FORM`);
+export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
+export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 
 const defaultState = {
   data: null,
   meta: {},
+  modalOpen: false,
 };
 
 export default handleActions({
@@ -29,5 +34,13 @@ export default handleActions({
     meta: {
       error: payload.error,
     },
+  }),
+  [openModal]: (state) => ({
+    ...state,
+    modalOpen: true,
+  }),
+  [closeModal]: (state) => ({
+    ...state,
+    modalOpen: false,
   }),
 }, defaultState);

@@ -4,6 +4,7 @@ import {
   fetchReleasesDataSaga,
   fetchDeploymentsDataSaga,
   fetchLatestDeploymentsByNamespaceForServiceSaga,
+  fetchHasDeploymentNotesSaga,
 } from '../service';
 
 import {
@@ -19,6 +20,7 @@ import {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
+  FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS,
 } from '../../modules/service';
 
 import {
@@ -134,6 +136,41 @@ describe('Service sagas', () => {
     const gen = initServiceDetailPageSaga(initServiceDetailPage(payload));
     expect(gen.next().value).toMatchObject(put(fetchReleasesPagination(payload)));
     expect(gen.next().value).toMatchObject(put(fetchDeploymentsPagination(payload)));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('should fetch deployment notes', () => {
+    const releases = {
+      count: 2,
+      items: [
+        {
+          service: {
+            name: 'bob',
+            registry: {
+              name: 'default',
+            },
+          },
+          version: '123'
+        },
+        {
+          version: '456'
+        }
+      ],
+    };
+
+    const gen = fetchHasDeploymentNotesSaga(FETCH_RELEASES_SUCCESS({ data: releases }));
+    expect(gen.next().value).toMatchObject(call(getDeployments, {
+      sort: 'created',
+      order: 'desc',
+      hasNotes: true,
+      limit: 50,
+      filters: {
+        registry: [{ value: releases.items[0].service.registry.name, exact: true }],
+        service: [{ value: releases.items[0].service.name, exact: true }],
+        version: [{ value: releases.items.map(r => r.version), exact: true }],
+      }
+    }));
+    expect(gen.next({ a: 1 }).value).toMatchObject(put(FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS({ data: { a: 1 } })));
     expect(gen.next().done).toBe(true);
   });
 

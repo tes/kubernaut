@@ -13,6 +13,7 @@ import {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
+  FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS,
 } from '../modules/service';
 
 import {
@@ -80,7 +81,27 @@ export function* fetchLatestDeploymentsByNamespaceForServiceSaga({ payload = {} 
     if (!quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR({ error: error.message }));
   }
+}
 
+export function* fetchHasDeploymentNotesSaga({ payload = {} }) {
+  const { data: releases, ...options } = payload;
+  if (!releases.count || !releases.items) return;
+
+  try {
+    const service = releases.items[0].service.name;
+    const registry = releases.items[0].service.registry.name;
+    const versions = releases.items.map(r => r.version);
+    const exact = true;
+    const filters = {
+      registry: [{ value: registry, exact }],
+      service: [{ value: service, exact }],
+      version: [{ value: versions, exact }]
+    };
+    const data = yield call(getDeployments, { sort: 'created', order: 'desc', hasNotes: true, filters, limit: 50 });
+    yield put(FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
 }
 
 export default [
@@ -88,4 +109,5 @@ export default [
   takeLatest(fetchReleasesPagination, fetchReleasesDataSaga),
   takeLatest(fetchDeploymentsPagination, fetchDeploymentsDataSaga),
   takeLatest(fetchReleasesPagination, fetchLatestDeploymentsByNamespaceForServiceSaga),
+  takeLatest(FETCH_RELEASES_SUCCESS, fetchHasDeploymentNotesSaga),
 ];

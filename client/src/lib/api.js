@@ -59,7 +59,7 @@ export const getReleases = ({ limit = 20, offset = 0, service, registry, version
   return makeRequest(`/api/releases?${qs}`).then(computePagination);
 };
 
-export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {} }) => {
+export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {}, hasNotes = null }) => {
   const qs = makeQueryString({
     limit,
     offset,
@@ -69,6 +69,7 @@ export const getDeployments = ({ limit = 20, offset = 0, service, registry, name
     cluster,
     sort,
     order,
+    hasNotes,
     ...stringifyFilters(filters)
   });
 
@@ -201,4 +202,13 @@ export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit
   return makeRequest(url, {
     method: 'DELETE',
   }).then(computePagination);
+};
+
+export const updateDeploymentNote = (deploymentId, note) => {
+  return makeRequest(`/api/deployments/${deploymentId}/note`, {
+    method: 'POST',
+    body: JSON.stringify({
+      note: note || '',
+    }),
+  });
 };

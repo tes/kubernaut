@@ -17,6 +17,8 @@ export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST = createAction(`${act
 export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS`);
 export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR`);
 
+export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}/FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS`);
+
 const defaultState = {
   releases: {
     data: {
@@ -43,6 +45,9 @@ const defaultState = {
   latestDeployments: {
     data: [],
     meta: {},
+  },
+  deploymentsWithNotes: {
+    data: [],
   }
 };
 
@@ -135,6 +140,12 @@ export default handleActions({
         error: payload.error,
         loading: false,
       },
+    },
+  }),
+  [FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    deploymentsWithNotes: {
+      data: payload.data.items,
     },
   }),
 }, defaultState);
