@@ -39,9 +39,13 @@ class DeployPage extends Component {
     const validRegistryAndService = (registrySelected && serviceSelected);
     const validCluster = (validRegistryAndService && clusterSelected);
 
-    const { namespace: formNamespace, version: formVersion } = this.props.currentFormValues;
-    const chosenNamespace = this.props.namespacesRich.find(({ name }) => (formNamespace === name));
-    const previouslyDeployedToChosenNamespace = chosenNamespace && this.props.deployments.find((dep) => (dep.namespace.name === chosenNamespace.name));
+    const {
+      namespace: formNamespace,
+      version: formVersion,
+      cluster: formCluster,
+    } = this.props.currentFormValues;
+    const chosenNamespace = this.props.namespacesRich.find(({ name, cluster }) => (formNamespace === name) && formCluster === cluster.name);
+    const previouslyDeployedToChosenNamespace = chosenNamespace && this.props.deployments.find((dep) => (dep.namespace.name === chosenNamespace.name) && (dep.namespace.cluster.name === chosenNamespace.cluster.name));
 
     return (
       <Container>
@@ -152,7 +156,7 @@ class DeployPage extends Component {
                   <CardBody>
                     {
                       this.props.deployments.map((dep) => {
-                        const deployingToThisNamespace = chosenNamespace && (dep.namespace.name === chosenNamespace.name);
+                        const deployingToThisNamespace = chosenNamespace && (dep.namespace.name === chosenNamespace.name) && (dep.namespace.cluster.name === chosenNamespace.cluster.name);
                         return (
                           <Row key={dep.namespace.id}>
                             <Col xs="6">
