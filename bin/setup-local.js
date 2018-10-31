@@ -52,12 +52,15 @@ try {
     const secondRegistry = await ensureRegistry('second-registry');
 
     const cluster = await ensureCluster('development');
-    const secondCluster = await ensureCluster('staging', 'blue');
+    const stagingCluster = await ensureCluster('staging', 'blue');
+    const liveCluster = await ensureCluster('live', 'goldenrod');
 
     const defaultNS = await ensureNamespace('default', cluster);
-    const anotherNS = await ensureNamespace('another', cluster);
-    const defaultNSOnSecondCluster = await ensureNamespace('default', secondCluster);
-    const anotherNSOnSecondCluster = await ensureNamespace('another', secondCluster);
+    const privateNS = await ensureNamespace('private', cluster);
+    const defaultNSOnStagingCluster = await ensureNamespace('default', stagingCluster);
+    const privateNSOnStagingCluster = await ensureNamespace('private', stagingCluster);
+    const defaultNSOnliveCluster = await ensureNamespace('default', liveCluster);
+    const privateNSOnliveCluster = await ensureNamespace('private', liveCluster);
 
     const numberOfServices = 100;
 
@@ -74,15 +77,16 @@ try {
       return newServices;
     })();
 
-    const releases = await (async () => {
-      const releasesPerService = 20;
-      const existing = await store.findReleases({}, services.length * releasesPerService, 0, 'created', 'asc');
-      if (existing.count) return existing.items;
+    const releasesPerService = 20;
+    await (async () => {
+      const existing = await store.findReleases({}, 20, 0, 'created', 'asc');
+      if (existing.count) return;
 
       const newReleases = [];
       services.forEach(service => {
+        const base = Math.floor(Math.random() * 100);
         for (let i = 0; i < releasesPerService; i++) {
-          newReleases.push(makeRelease({ service }));
+          newReleases.push(makeRelease({ service, version: base + i }));
         }
       });
 
@@ -90,25 +94,32 @@ try {
         store.saveRelease(release, makeRootMeta()).catch(() => {}),
         { concurrency: 1 }
       );
-
-      return (await store.findReleases({}, services.length * releasesPerService, 0, 'created', 'asc')).items;
     })();
 
     await (async () => {
       const existing = await store.findDeployments({}, 10, 0);
       if (existing.count) return;
 
-      await Promise.map(releases, release => {
-        const ns = Math.random() > 0.5 ? [defaultNS, defaultNSOnSecondCluster] : [anotherNS, anotherNSOnSecondCluster];
-        return store.saveDeployment(makeDeployment({
-          namespace: ns[0],
-          release,
-        }), makeRootMeta({ date: release.createdOn }))
-        .then(() => store.saveDeployment(makeDeployment({
-          namespace: ns[1],
-          release,
-        }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) })))
-        .catch(() => {});
+      await Promise.map(services, async service => {
+        const ns = Math.random() > 0.5 ? [defaultNS, defaultNSOnStagingCluster, defaultNSOnliveCluster] : [privateNS, privateNSOnStagingCluster, privateNSOnliveCluster];
+        const releases = await store.findReleases({ service: service.name, registries: [service.registry.id]}, releasesPerService, 0, 'created', 'asc');
+        return await Promise.map(releases.items, (release, index, length) => {
+          return store.saveDeployment(makeDeployment({
+            namespace: ns[0],
+            release,
+          }), makeRootMeta({ date: release.createdOn }))
+          .then(() => store.saveDeployment(makeDeployment({
+            namespace: ns[1],
+            release,
+          }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) })))
+          .then(() => {
+            if (index === length - 2) return store.saveDeployment(makeDeployment({
+              namespace: ns[2],
+              release,
+            }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) }));
+          })
+          .catch(() => {});
+        }, { concurrency: 1});
       },
         { concurrency: 1 }
       );
