@@ -204,7 +204,8 @@ export default function(options) {
       if(criteria.hasOwnProperty('hasNotes')) {
         const stringOp = criteria.hasNotes ? Op.ne : Op.eq;
         const nullOp = criteria.hasNotes ? Op.not : Op.is;
-        const op = Op.or(nullOp('d.note', null), stringOp('d.note', ''));
+        const groupOp = criteria.hasNotes ? Op.and : Op.or;
+        const op = groupOp(nullOp('d.note', null), stringOp('d.note', ''), stringOp('d.note', '""'));
         [findDeploymentsBuilder, countDeploymentsBuilder].forEach(b => b.where(op));
       }
 
