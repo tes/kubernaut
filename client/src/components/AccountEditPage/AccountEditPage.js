@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { Container, Row, Col, Progress } from 'reactstrap';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
@@ -29,6 +30,7 @@ class AccountEditPage extends Component {
 
     return (
       <Container>
+        <Helmet><title>{`Edit account - ${account.displayName}`}</title></Helmet>
         <Row className="mt-3">
             <h4>Editing: {account.displayName}</h4>
         </Row>

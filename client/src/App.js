@@ -59,7 +59,7 @@ class App extends Component {
           <div>
             <Header />
             <div className='container mt-1'>
-              <Routes />
+              <Routes dispatch={store.dispatch} />
             </div>
           </div>
         </ConnectedRouter>
