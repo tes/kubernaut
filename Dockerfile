@@ -1,4 +1,4 @@
-from node:8-alpine
+from node:10-alpine
 
 ENV HOME=/config
 ENV NODE_ENV=production
