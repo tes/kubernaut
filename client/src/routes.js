@@ -4,6 +4,7 @@ import { parse as parseQuery } from 'query-string';
 
 // Components
 import Title from './components/Title';
+//   Pages
 import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
@@ -23,6 +24,9 @@ import ServiceDetailsPage from './components/ServiceDetailsPage';
 import paths from './paths';
 
 import { fetchDeployment } from './modules/deployment';
+import { fetchRegistriesPagination } from './modules/registries';
+import { fetchNamespacesPagination } from './modules/namespaces';
+
 
 const Wrapper = ({ title, children }) => (
   <div>
@@ -35,12 +39,22 @@ export default ({ dispatch }) => <Switch>
   <Route
     exact
     path={paths.registries}
-    render={() => <Wrapper title="Registries"><RegistriesPage /></Wrapper> }
+    render={() => {
+      dispatch(fetchRegistriesPagination());
+      return (
+        <Wrapper title="Registries"><RegistriesPage /></Wrapper>
+      );
+    }}
   />
   <Route
     exact
     path={paths.namespaces}
-    render={() => <Wrapper title="Namespaces"><NamespacesPage /></Wrapper> }
+    render={() => {
+      dispatch(fetchNamespacesPagination());
+      return (
+        <Wrapper title="Namespaces"><NamespacesPage /></Wrapper>
+      );
+    }}
   />
   <Route
     exact

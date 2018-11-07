@@ -1,6 +1,4 @@
 import { connect } from 'react-redux';
-import { fetchNamespacesPagination } from '../../modules/namespaces';
-
 import NamespacesPage from './NamespacesPage';
 
 function mapStateToProps(state, props) {
@@ -12,8 +10,4 @@ function mapStateToProps(state, props) {
   };
 }
 
-const mapDispatchToProps = {
-  fetchNamespacesPagination,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(NamespacesPage);
+export default connect(mapStateToProps)(NamespacesPage);

@@ -5,10 +5,6 @@ import NamespacesTable from '../NamespacesTable';
 
 class NamespacesPage extends Component {
 
-  componentDidMount() {
-    this.props.fetchNamespacesPagination();
-  }
-
   render() {
     const { namespaces, fetchNamespacesPagination } = this.props;
 

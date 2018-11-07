@@ -1,6 +1,4 @@
 import { connect } from 'react-redux';
-import { fetchRegistriesPagination } from '../../modules/registries';
-
 import RegistriesPage from './RegistriesPage';
 
 function mapStateToProps(state, props) {
@@ -12,8 +10,4 @@ function mapStateToProps(state, props) {
   };
 }
 
-const mapDispatchToProps = {
-  fetchRegistriesPagination,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(RegistriesPage);
+export default connect(mapStateToProps)(RegistriesPage);

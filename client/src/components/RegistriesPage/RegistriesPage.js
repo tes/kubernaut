@@ -5,10 +5,6 @@ import RegistriesTable from '../RegistriesTable';
 
 class RegistriesPage extends Component {
 
-  componentDidMount() {
-    this.props.fetchRegistriesPagination();
-  }
-
   render() {
     const { registries, fetchRegistriesPagination } = this.props;
 
