@@ -5,6 +5,7 @@ import { put } from 'redux-saga/effects';
 import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
+import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseNamespacePage } from './modules/namespace';
 import { fetchNamespacesPagination } from './modules/namespaces';
@@ -24,7 +25,8 @@ const paths = {
     action: initialiseAccountsPage,
   },
   deploy: {
-    route: '/deploy'
+    route: '/deploy',
+    action: initialiseDeploy,
   },
   deployment: {
     route: '/deployments/:deploymentId',

@@ -19,9 +19,6 @@ import { NamespaceLink } from '../Links';
 
 
 class DeployPage extends Component {
-  componentDidMount() {
-    this.props.INITIALISE();
-  }
 
   render() {
     const {
