@@ -7,6 +7,7 @@ import {
 } from './lib/filter';
 const actionsPrefix = 'KUBERNAUT/DEPLOYMENTS';
 const filterActions = createFilterActions(actionsPrefix);
+export const initialiseDeploymentsPage = createAction(`${actionsPrefix}/INITIALISE`);
 export const fetchDeployments = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS`);
 export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);
 export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);

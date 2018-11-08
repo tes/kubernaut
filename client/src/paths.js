@@ -7,6 +7,7 @@ import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount'
 import { initialiseAccountsPage } from './modules/accounts';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
+import { initialiseDeploymentsPage } from './modules/deployments';
 import { initialiseNamespacePage } from './modules/namespace';
 import { initForm as initNamespaceEdit } from './modules/namespaceEdit';
 import { fetchNamespacesPagination } from './modules/namespaces';
@@ -34,7 +35,8 @@ const paths = {
     action: fetchDeployment,
   },
   deployments: {
-    route: '/deployments'
+    route: '/deployments',
+    action: initialiseDeploymentsPage,
   },
   home: {
     route: '/'
