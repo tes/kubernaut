@@ -5,9 +5,6 @@ import { EditAccountLink } from '../Links';
 import Account from '../../lib/domain/Account';
 
 class AccountPage extends Component {
-  componentDidMount() {
-    this.props.fetchAccountInfo({ accountId: this.props.accountId });
-  }
 
   render() {
     const { meta, account: accountData } = this.props;

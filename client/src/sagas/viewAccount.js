@@ -20,7 +20,9 @@ import {
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
-  const { accountId, ...options } = payload;
+  const { match, ...options } = payload;
+  if (!match) return;
+  const { accountId } = match.params;
 
   yield put(FETCH_ACCOUNT_REQUEST());
   try {
