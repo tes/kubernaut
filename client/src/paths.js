@@ -2,6 +2,7 @@ import { matchPath } from "react-router";
 import { find as _find } from 'lodash';
 import { put } from 'redux-saga/effects';
 
+import { initialiseAccountsPage } from './modules/accounts';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseNamespacePage } from './modules/namespace';
 import { fetchNamespacesPagination } from './modules/namespaces';
@@ -15,7 +16,8 @@ const paths = {
     route: '/accounts/:accountId/edit'
   },
   accounts: {
-    route: '/accounts'
+    route: '/accounts',
+    action: initialiseAccountsPage,
   },
   deploy: {
     route: '/deploy'

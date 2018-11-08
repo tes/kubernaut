@@ -72,7 +72,7 @@ export function* paginationSaga() {
 
 export function* locationChangeSaga({ payload = {} }) {
   const { match, location } = payload;
-  if (!match) return;
+  if (!match || !location) return;
 
   const namespace = yield select(selectNamespace);
   if (!namespace.id || namespace.id !== match.params.namespaceId) {
