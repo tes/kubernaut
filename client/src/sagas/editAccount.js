@@ -1,4 +1,4 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit, formValueSelector } from 'redux-form';
 
 import {
@@ -34,7 +34,10 @@ import {
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
-  const { accountId, ...options } = payload;
+  const { match, ...options } = payload;
+  if (!match) return;
+  const { accountId } = match.params;
+  if (!accountId) return;
 
   yield put(FETCH_ACCOUNT_REQUEST());
   try {
@@ -159,9 +162,9 @@ export function* deleteRolesForRegistrySaga({ payload }) {
 }
 
 export default [
-  takeEvery(fetchAccountInfo, fetchAccountInfoSaga),
-  takeEvery(fetchAccountInfo, fetchNamespacesSaga),
-  takeEvery(fetchAccountInfo, fetchRegistriesSaga),
+  takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
+  takeLatest(fetchAccountInfo, fetchNamespacesSaga),
+  takeLatest(fetchAccountInfo, fetchRegistriesSaga),
   takeEvery(updateRolesForNamespace, updateRolesForNamespaceSaga),
   takeEvery(addNewNamespace, addNewNamespaceSaga),
   takeEvery(deleteRolesForNamespace, deleteRolesForNamespaceSaga),

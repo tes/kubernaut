@@ -52,7 +52,8 @@ describe('editAccount sagas', () => {
     it('should fetch and succeed at getting account data', () => {
       const data = { a: 1 };
       const accountId = '123';
-      const gen = fetchAccountInfoSaga(fetchAccountInfo({ accountId }));
+      const match = { params: { accountId } };
+      const gen = fetchAccountInfoSaga(fetchAccountInfo({ match }));
       expect(gen.next().value).toMatchObject(put(FETCH_ACCOUNT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getAccountById, accountId));
       expect(gen.next(data).value).toMatchObject(put(FETCH_ACCOUNT_SUCCESS({ data })));
@@ -61,8 +62,9 @@ describe('editAccount sagas', () => {
 
     it('should handle errors', () => {
       const accountId = '123';
+      const match = { params: { accountId } };
       const error = new Error('ouch');
-      const gen = fetchAccountInfoSaga(fetchAccountInfo({ ...quietOptions, accountId }));
+      const gen = fetchAccountInfoSaga(fetchAccountInfo({ ...quietOptions, match }));
       expect(gen.next().value).toMatchObject(put(FETCH_ACCOUNT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getAccountById, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_ACCOUNT_ERROR({ error: error.message })));

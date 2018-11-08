@@ -3,6 +3,7 @@ import { find as _find } from 'lodash';
 import { put } from 'redux-saga/effects';
 
 import { fetchAccountInfo } from './modules/viewAccount';
+import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseNamespacePage } from './modules/namespace';
@@ -15,7 +16,8 @@ const paths = {
     action: fetchAccountInfo,
   },
   accountEdit: {
-    route: '/accounts/:accountId/edit'
+    route: '/accounts/:accountId/edit',
+    action: fetchEditAccountInfo,
   },
   accounts: {
     route: '/accounts',

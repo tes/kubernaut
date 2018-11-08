@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
 import { Container, Row, Col, Progress } from 'reactstrap';
+import Title from '../Title';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
 import Account from '../../lib/domain/Account';
 
 class AccountEditPage extends Component {
-  componentDidMount() {
-    this.props.fetchAccountInfo({ accountId: this.props.accountId });
-  }
 
   render() {
     const {
@@ -30,7 +27,7 @@ class AccountEditPage extends Component {
 
     return (
       <Container>
-        <Helmet><title>{`Edit account - ${account.displayName}`}</title></Helmet>
+        <Title title={`Edit account: ${account.displayName}`} />
         <Row className="mt-3">
             <h4>Editing: {account.displayName}</h4>
         </Row>
