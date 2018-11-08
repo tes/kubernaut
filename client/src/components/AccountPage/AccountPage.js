@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Container, Row, Col, Progress, Button } from 'reactstrap';
 import { EditAccountLink } from '../Links';
+import Title from '../Title';
 import Account from '../../lib/domain/Account';
 
 class AccountPage extends Component {
@@ -59,6 +60,7 @@ class AccountPage extends Component {
 
     return (
       <Container>
+        <Title title={`Account: ${account.displayName}`} />
         <Row className="mt-3">
             <h4>{account.displayName}</h4>
             { this.props.canEdit ?
