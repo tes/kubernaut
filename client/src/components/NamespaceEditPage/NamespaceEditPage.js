@@ -14,9 +14,6 @@ import RenderSelect from '../RenderSelect';
 import RenderInput from '../RenderInput';
 
 class NamespaceEditPage extends Component {
-  componentDidMount() {
-    this.props.initForm({ id: this.props.namespaceId });
-  }
 
   render() {
     if (!this.props.canEdit) {

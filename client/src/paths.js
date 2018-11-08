@@ -8,6 +8,7 @@ import { initialiseAccountsPage } from './modules/accounts';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseNamespacePage } from './modules/namespace';
+import { initForm as initNamespaceEdit } from './modules/namespaceEdit';
 import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
 
@@ -43,7 +44,8 @@ const paths = {
     action: initialiseNamespacePage,
   },
   namespaceEdit: {
-    route: '/namespaces/:namespaceId/edit'
+    route: '/namespaces/:namespaceId/edit',
+    action: initNamespaceEdit,
   },
   namespaceManage: {
     route: '/namespaces/:namespaceId/manage'

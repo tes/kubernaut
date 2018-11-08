@@ -26,7 +26,7 @@ import {
 
 describe('NamespaceEdit sagas', () => {
   it('should initialise the form', () => {
-    const initAction = initForm({ a: 1 });
+    const initAction = initForm({ match: {} });
     const gen = initFormSaga(initForm(initAction));
     expect(gen.next().value).toMatchObject(all([
       call(fetchNamespaceInfoSaga, initForm(initAction)),
@@ -35,7 +35,7 @@ describe('NamespaceEdit sagas', () => {
   });
 
   const namespaceId = 'abc';
-  const initPayload = { id: namespaceId, quiet: true };
+  const initPayload = { match: { params: { namespaceId } }, quiet: true };
 
   it('should fetch namespace info', () => {
     const namespaceData = { name: 'bob', id: namespaceId, attributes: {} };

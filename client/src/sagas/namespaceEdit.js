@@ -33,10 +33,12 @@ export function* fetchClustersSaga({ payload }) {
   }
 }
 
-export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
+export function* fetchNamespaceInfoSaga({ payload: { match, ...options } }) {
+  if (!match) return;
+  const { namespaceId } = match.params;
   yield put(FETCH_NAMESPACE_REQUEST());
   try {
-    const data = yield call(getNamespace, id);
+    const data = yield call(getNamespace, namespaceId);
     yield put(FETCH_NAMESPACE_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
