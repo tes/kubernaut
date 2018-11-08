@@ -23,11 +23,6 @@ import ServiceDetailsPage from './components/ServiceDetailsPage';
 
 import paths from './paths';
 
-import { fetchDeployment } from './modules/deployment';
-import { fetchRegistriesPagination } from './modules/registries';
-import { fetchNamespacesPagination } from './modules/namespaces';
-
-
 const Wrapper = ({ title, children }) => (
   <div>
     <Title title={title} />
@@ -35,41 +30,29 @@ const Wrapper = ({ title, children }) => (
   </div>
 );
 
-export default ({ dispatch }) => <Switch>
+export default () => <Switch>
   <Route
     exact
-    path={paths.registries}
-    render={() => {
-      dispatch(fetchRegistriesPagination());
-      return (
-        <Wrapper title="Registries"><RegistriesPage /></Wrapper>
-      );
-    }}
+    path={paths.registries.route}
+    render={() => <Wrapper title="Registries"><RegistriesPage /></Wrapper>}
   />
   <Route
     exact
-    path={paths.namespaces}
-    render={() => {
-      dispatch(fetchNamespacesPagination());
-      return (
-        <Wrapper title="Namespaces"><NamespacesPage /></Wrapper>
-      );
-    }}
+    path={paths.namespaces.route}
+    render={() => <Wrapper title="Namespaces"><NamespacesPage /></Wrapper>}
   />
   <Route
     exact
-    path={paths.namespace}
-    render={({ match }) =>
-      <Wrapper title="Namespace">
-        <NamespaceDetailsPage
-          namespaceId={match.params.namespaceId}
-        />
-      </Wrapper>
-    }
+    path={paths.namespace.route}
+    render={(props) => <Wrapper title="Namespace">
+          <NamespaceDetailsPage
+            namespaceId={props.match.params.namespaceId}
+            />
+        </Wrapper>}
   />
   <Route
     exact
-    path={paths.namespaceEdit}
+    path={paths.namespaceEdit.route}
     render={({ match }) =>
       <Wrapper title="Edit namespace">
         <NamespaceEditPage
@@ -80,7 +63,7 @@ export default ({ dispatch }) => <Switch>
   />
   <Route
     exact
-    path={paths.namespaceManage}
+    path={paths.namespaceManage.route}
     render={({ match }) =>
       <Wrapper title="Manage namespace">
         <NamespaceManagePage
@@ -91,12 +74,12 @@ export default ({ dispatch }) => <Switch>
   />
   <Route
     exact
-    path={paths.accounts}
+    path={paths.accounts.route}
     render={() => <Wrapper title="Accounts"><AccountsPage /></Wrapper> }
   />
   <Route
     exact
-    path={paths.account}
+    path={paths.account.route}
     render={({ match }) =>
       <Wrapper title="Account">
         <AccountPage
@@ -107,7 +90,7 @@ export default ({ dispatch }) => <Switch>
   />
   <Route
     exact
-    path={paths.accountEdit}
+    path={paths.accountEdit.route}
     render={({ match }) =>
       <Wrapper title="Edit account">
         <AccountEditPage
@@ -118,34 +101,29 @@ export default ({ dispatch }) => <Switch>
   />
   <Route
     exact
-    path={paths.releases}
+    path={paths.releases.route}
     render={() => <Wrapper title="Releases"><ReleasesPage /></Wrapper> }
   />
   <Route
     exact
-    path={paths.deployments}
+    path={paths.deployments.route}
     render={() => <Wrapper title="Deployments"><DeploymentsPage /></Wrapper> }
   />
   <Route
     exact
-    path={paths.deployment}
-    render={({ match }) => {
-      dispatch(fetchDeployment({ id: match.params.deploymentId }));
-      return (
-        <Wrapper>
+    path={paths.deployment.route}
+    render={({ match }) => <Wrapper>
           <DeploymentDetailsPage />
-        </Wrapper>
-      );
-    }}
+        </Wrapper>}
   />
   <Route
     exact
-    path={paths.services}
+    path={paths.services.route}
     render={() => <Wrapper title="Services"><ServicesPage /></Wrapper> }
   />
   <Route
     exact
-    path={paths.service}
+    path={paths.service.route}
     render={({ match }) =>
       <Wrapper title="Service">
         <ServiceDetailsPage
@@ -157,14 +135,14 @@ export default ({ dispatch }) => <Switch>
   />
   <Route
     exact
-    path={paths.deploy}
+    path={paths.deploy.route}
     render={({ location }) => {
       const parsedQueryString = parseQuery(location.search);
       return <Wrapper title="Deploy"><DeployPage parsedLocation={parsedQueryString} /></Wrapper>;
     }}
   />
   <Route
-    path={paths.home}
+    path={paths.home.route}
     render={() => <Wrapper><HomePage /></Wrapper> }
   />
 </Switch>;

@@ -37,7 +37,7 @@ import {
 
 import { getServices } from '../lib/api';
 
-const pageUrl = paths.services;
+const pageUrl = paths.services.route;
 
 export function* fetchServicesDataSaga({ payload = {} }) {
   const options = payload;

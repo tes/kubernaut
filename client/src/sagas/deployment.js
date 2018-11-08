@@ -12,7 +12,10 @@ import {
 import { getDeployment, updateDeploymentNote } from '../lib/api';
 
 export function* fetchDeploymentSaga({ payload = {} }) {
-  const { id, ...options } = payload;
+  const { match, ...options } = payload;
+  if (!match) return;
+  const id = match.params.deploymentId;
+  if(!id) return;
 
   yield put(FETCH_DEPLOYMENT_REQUEST());
   try {

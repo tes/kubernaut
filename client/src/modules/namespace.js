@@ -1,6 +1,7 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
 
 const actionsPrefix = 'KUBERNAUT/NAMESPACE';
+export const initialiseNamespacePage = createAction(`${actionsPrefix}/INITIALISE`);
 export const fetchNamespacePageData = createAction(`${actionsPrefix}/FETCH_NAMESPACE_PAGE_DATA`);
 export const fetchDeployments = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS`);
 export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);

@@ -20,10 +20,13 @@ import {
 
 describe('Deployment sagas', () => {
   describe('fetch', () => {
+    const payload = { match: { params: {
+      deploymentId: 1,
+    }}};
     it('should fetch deployment data', () => {
       const deploymentData = { a: 1 };
 
-      const gen = fetchDeploymentSaga(fetchDeployment({ id: 1 }));
+      const gen = fetchDeploymentSaga(fetchDeployment(payload));
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getDeployment, 1));
       expect(gen.next(deploymentData).value).toMatchObject(put(FETCH_DEPLOYMENT_SUCCESS({ data: deploymentData } )));
@@ -32,7 +35,7 @@ describe('Deployment sagas', () => {
 
     it('should tolerate errors fetching deployment info', () => {
       const error = new Error('ouch');
-      const gen = fetchDeploymentSaga(fetchDeployment({ id: 1, quiet: true }));
+      const gen = fetchDeploymentSaga(fetchDeployment({ ...payload, quiet: true }));
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getDeployment, 1));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENT_ERROR({ error: error.message })));
