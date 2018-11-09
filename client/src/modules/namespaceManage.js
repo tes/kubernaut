@@ -33,6 +33,9 @@ const defaultState = {
   },
   services: {
     count: 0,
+    limit: 0,
+    pages: 0,
+    page: 0,
     items: [],
   },
   pagination: {
