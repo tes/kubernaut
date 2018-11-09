@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { sortBy as _sortBy } from 'lodash';
 import { Field, FormSection } from 'redux-form';
 import {
   Row,
@@ -93,6 +94,10 @@ class AccountNamespacesRolesForm extends Component {
       };
     });
 
+    const namespacesForFields = _sortBy(namespaceData.items
+      .filter(({ id }) => fieldNamespaceIds.indexOf(id) > -1),
+      ['cluster.name', 'name']);
+
     return (
       <div>
         <form>
@@ -111,11 +116,11 @@ class AccountNamespacesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      fieldNamespaceIds.map((namespaceId) => (
-                        <FormSection name={namespaceId} key={namespaceId}>
+                      namespacesForFields.map((namespace) => (
+                        <FormSection name={namespace.id} key={namespace.id}>
                           <Roles
-                            namespace={namespaceData.items.find(({ id }) => (id === namespaceId))}
-                            currentValues={currentValues[namespaceId]}
+                            namespace={namespace}
+                            currentValues={currentValues[namespace.id]}
                             updateRolesForNamespace={updateRolesForNamespace}
                             deleteRolesForNamespace={deleteRolesForNamespace}
                             submitting={submitting}

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FormSection } from 'redux-form';
+import { sortBy as _sortBy } from 'lodash';
 import {
   Row,
   Col,
@@ -93,6 +94,10 @@ class AccountRegistriesRolesForm extends Component {
       };
     });
 
+    const registriesForFields = _sortBy(registryData.items
+      .filter(({ id }) => fieldRegistryIds.indexOf(id) > -1),
+      ['name']);
+
     return (
       <div>
         <form>
@@ -111,11 +116,11 @@ class AccountRegistriesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      fieldRegistryIds.map((registryId) => (
-                        <FormSection name={registryId} key={registryId}>
+                      registriesForFields.map((registry) => (
+                        <FormSection name={registry.id} key={registry.id}>
                           <Roles
-                            registry={registryData.items.find(({ id }) => (id === registryId))}
-                            currentValues={currentValues[registryId]}
+                            registry={registry}
+                            currentValues={currentValues[registry.id]}
                             updateRolesForRegistry={updateRolesForRegistry}
                             deleteRolesForRegistry={deleteRolesForRegistry}
                             submitting={submitting}
