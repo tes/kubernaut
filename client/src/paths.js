@@ -15,6 +15,7 @@ import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
 import { initialiseReleasesPage } from './modules/releases';
 import { initServiceDetailPage } from './modules/service';
+import { initServicesPage } from './modules/services';
 
 const paths = {
   account: {
@@ -73,7 +74,8 @@ const paths = {
     action: initServiceDetailPage,
   },
   services: {
-    route: '/services'
+    route: '/services',
+    action: initServicesPage,
   },
 };
 
