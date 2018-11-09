@@ -15,7 +15,7 @@ class TableFilter extends Component {
             <Col sm={{ size: 1, offset: 11 }}>
               <Button
                 outline
-                onClick={this.props.showFilters}
+                onClick={() => this.props.showFilters()}
               >Filter
               </Button>
             </Col>
