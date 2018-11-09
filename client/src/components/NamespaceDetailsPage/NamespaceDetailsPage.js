@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Badge, Button, Container, Row } from 'reactstrap';
+import Title from '../Title';
 import DeploymentsTable from '../DeploymentsTable';
 import { EditNamespaceLink, ManageNamespaceLink } from '../Links';
 
@@ -23,6 +24,7 @@ class NamespaceDetailsPage extends Component {
 
     return (
       <Container>
+        <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
         <Row>
           <h4>{headingBadge}</h4>
           { this.props.canEdit ?

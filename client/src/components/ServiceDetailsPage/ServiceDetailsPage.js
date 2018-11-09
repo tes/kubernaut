@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Title from '../Title';
 import ServiceReleaseHistory from '../ServiceReleaseHistory';
 import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
@@ -8,6 +9,7 @@ class ServiceDetailsPage extends Component {
   render() {
     return (
       <div className="container">
+        <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
         <div className="row">
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>
         </div>

@@ -10,6 +10,7 @@ import {
   Label,
   Button,
 } from 'reactstrap';
+import Title from '../Title';
 import RenderSelect from '../RenderSelect';
 import RenderInput from '../RenderInput';
 
@@ -87,6 +88,7 @@ class NamespaceEditPage extends Component {
     };
     return (
       <Container>
+        <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
         <Row>
           <h4>{headingBadge}</h4>
         </Row>
