@@ -81,12 +81,6 @@ const paths = {
 
 export default paths;
 
-export const doesLocationMatch = (location, pathName) => {
-  const path = paths[pathName].route;
-  if (!path) return;
-  return matchPath(location.pathname, { path, exact: true });
-};
-
 export function* routesSaga ({ payload }) {
   let match;
   const path = _find(paths, ({ route }) => {
