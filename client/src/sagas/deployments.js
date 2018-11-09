@@ -1,7 +1,6 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { reset } from 'redux-form';
-import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
-import { doesLocationMatch } from '../paths';
+import { push, getLocation } from 'connected-react-router';
 import {
   parseFiltersFromQS,
   parseSearchFromQS,
@@ -15,6 +14,7 @@ import {
   parseQueryString,
  } from './lib/query';
 import {
+  initialiseDeploymentsPage,
   fetchDeployments,
   fetchDeploymentsPagination,
   toggleSort,
@@ -101,13 +101,13 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = doesLocationMatch(payload.location, 'deployments');
-  if (!urlMatch) return;
+  const { location } = payload;
+  if (!location) return;
 
-  const filters = parseFiltersFromQS(extractFromQuery(payload.location.search, 'filters') || '');
-  const search = parseSearchFromQS(extractFromQuery(payload.location.search, 'search') || '');
-  const sort = parseQueryString(extractFromQuery(payload.location.search, 'sort') || '');
-  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
+  const filters = parseFiltersFromQS(extractFromQuery(location.search, 'filters') || '');
+  const search = parseSearchFromQS(extractFromQuery(location.search, 'search') || '');
+  const sort = parseQueryString(extractFromQuery(location.search, 'sort') || '');
+  const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
   yield put(setFilters(filters));
   yield put(setSearch(search));
   yield put(setSort(sort));
@@ -123,5 +123,5 @@ export default [
   takeLatest(removeFilter, removeFilterSaga),
   takeLatest(search, searchSaga),
   takeLatest(clearSearch, searchSaga),
-  takeLatest(LOCATION_CHANGE, locationChangeSaga),
+  takeLatest(initialiseDeploymentsPage, locationChangeSaga),
 ];

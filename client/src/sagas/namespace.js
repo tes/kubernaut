@@ -1,6 +1,5 @@
 import { takeEvery, call, put, select, take } from 'redux-saga/effects';
-import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
-import { doesLocationMatch } from '../paths';
+import { push, getLocation } from 'connected-react-router';
 import {
   extractFromQuery,
   alterQuery,
@@ -8,6 +7,7 @@ import {
   parseQueryString,
  } from './lib/query';
  import {
+  initialiseNamespacePage,
   fetchNamespacePageData,
   fetchDeployments,
   fetchDeploymentsPagination,
@@ -71,17 +71,17 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = doesLocationMatch(payload.location, 'namespace');
-  if (!urlMatch) return;
+  const { match, location } = payload;
+  if (!match || !location) return;
 
   const namespace = yield select(selectNamespace);
-  if (!namespace.id || namespace.id !== urlMatch.params.namespaceId) {
-    yield put(fetchNamespacePageData({ id: urlMatch.params.namespaceId }));
+  if (!namespace.id || namespace.id !== match.params.namespaceId) {
+    yield put(fetchNamespacePageData({ id: match.params.namespaceId }));
     yield take(FETCH_NAMESPACE_SUCCESS);
   }
 
-  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
-  const sort = parseQueryString(extractFromQuery(payload.location.search, 'sort') || '');
+  const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
+  const sort = parseQueryString(extractFromQuery(location.search, 'sort') || '');
   yield put(setPagination(pagination));
   yield put(setSort(sort));
   yield put(fetchDeployments());
@@ -92,5 +92,5 @@ export default [
   takeEvery(fetchDeployments, fetchDeploymentsForNamespaceSaga),
   takeEvery(fetchDeploymentsPagination, paginationSaga),
   takeEvery(toggleSort, sortDeploymentsSaga),
-  takeEvery(LOCATION_CHANGE, locationChangeSaga),
+  takeEvery(initialiseNamespacePage, locationChangeSaga),
 ];

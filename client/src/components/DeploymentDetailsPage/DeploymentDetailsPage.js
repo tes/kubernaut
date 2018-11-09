@@ -13,15 +13,12 @@ import {
   ModalFooter,
 } from 'reactstrap';
 import { Field } from 'redux-form';
+import Title from '../Title';
 import RenderTextArea from '../RenderTextArea';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
 
 class DeploymentDetailsPage extends Component {
-
-  componentDidMount() {
-    this.props.fetchDeployment({ id: this.props.deploymentId });
-  }
 
   render() {
     const { meta = {}, deployment, canEdit } = this.props;
@@ -44,6 +41,7 @@ class DeploymentDetailsPage extends Component {
 
       return (
         <div>
+          <Title title={`Deployment: ${deployment.release.service.name}@${deployment.release.version} -> ${deployment.namespace.cluster.name}/${deployment.namespace.name}`} />
           <Row>
             <Col sm="12">
               <dl className="row">

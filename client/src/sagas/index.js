@@ -1,4 +1,5 @@
-import { all } from 'redux-saga/effects';
+import { all, takeLatest } from 'redux-saga/effects';
+import { LOCATION_CHANGE } from 'connected-react-router';
 
 import accountSagas from './account';
 import accountsSagas from './accounts';
@@ -15,6 +16,7 @@ import releasesSagas from './releases';
 import serviceSagas from './service';
 import servicesSagas from './services';
 import viewAccountSagas from './viewAccount';
+import { routesSaga } from '../paths';
 
 export default function* rootSaga() {
   yield all([
@@ -33,5 +35,6 @@ export default function* rootSaga() {
     ...serviceSagas,
     ...servicesSagas,
     ...viewAccountSagas,
+    takeLatest(LOCATION_CHANGE, routesSaga),
   ]);
 }

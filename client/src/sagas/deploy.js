@@ -1,10 +1,11 @@
-import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, take, call, put, select } from 'redux-saga/effects';
 import {
   SubmissionError,
   change,
   clearFields,
   stopAsyncValidation,
-  startAsyncValidation
+  startAsyncValidation,
+  actionTypes,
 } from 'redux-form';
 import { push } from 'connected-react-router';
 
@@ -37,6 +38,7 @@ import {
   getReleases,
   getLatestDeploymentsByNamespaceForService,
 } from '../lib/api';
+const { INITIALIZE: reduxFormInitialise } = actionTypes;
 
 export function* fetchRegistriesSaga({ payload = {} }) {
   yield put(SET_LOADING());
@@ -116,7 +118,12 @@ export function* clearFormFieldsSaga({ payload }) {
 }
 
 export function* validateServiceSaga({ payload: options = {} }) {
-  const { service, registry } = yield select(getDeployFormValues);
+  let formValues = yield select(getDeployFormValues);
+  if (!formValues) {
+    yield take(reduxFormInitialise);
+    formValues = yield select(getDeployFormValues);
+  }
+  const { service, registry } = formValues;
   if (!service) return;
   try {
     yield put(startAsyncValidation('deploy', 'service'));

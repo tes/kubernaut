@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Title from '../Title';
 import ServiceReleaseHistory from '../ServiceReleaseHistory';
 import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
 class ServiceDetailsPage extends Component {
-  componentDidMount() {
-    this.props.initServiceDetailPage({
-        registry: this.props.registryName,
-        service: this.props.serviceName,
-    });
-  }
 
   render() {
     return (
       <div className="container">
+        <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
         <div className="row">
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>
         </div>

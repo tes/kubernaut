@@ -23,12 +23,14 @@ import {
 } from '../lib/api';
 
 export function* initServiceDetailPageSaga({ payload = {} }) {
-  const { registry, service } = payload;
+  const { match } = payload;
+  if (!match) return;
+  const { registry, name: service } = match.params;
   if (!registry) throw new Error('provide a registry');
   if (!service) throw new Error('provide a service');
 
-  yield put(fetchReleasesPagination(payload));
-  yield put(fetchDeploymentsPagination(payload));
+  yield put(fetchReleasesPagination({ registry, service }));
+  yield put(fetchDeploymentsPagination({ registry, service }));
 }
 
 export function* fetchReleasesDataSaga({ payload = {} }) {

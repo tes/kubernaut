@@ -156,11 +156,6 @@ describe('Services sagas', () => {
   });
 
   describe('Location', () => {
-    it('should only work for this page route', () => {
-      const gen1 = locationChangeSaga({ payload: { location: { pathname: '/notservices'} } });
-      expect(gen1.next().done).toBe(true);
-    });
-
     it('should set filters from qs', () => {
       const location = {
         pathname: '/services',

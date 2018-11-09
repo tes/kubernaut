@@ -10,6 +10,7 @@ import {
 } from '../namespace';
 
 import {
+  initialiseNamespacePage,
   fetchNamespacePageData,
   fetchDeploymentsPagination,
   selectNamespace,
@@ -116,18 +117,16 @@ describe('Namespace sagas', () => {
   });
 
   describe('locationChangeSaga', () => {
-    it('should only work for this page route', () => {
-      const gen1 = locationChangeSaga({ payload: { location: { pathname: '/notnamespace'} } });
-      expect(gen1.next().done).toBe(true);
-    });
-
     it('should fetch namespace info and wait for success if missing (page load)', () => {
       const location = {
         pathname: '/namespaces/bob',
         search: '',
       };
+      const match = {
+        params: { namespaceId: 'bob' },
+      };
 
-      const gen = locationChangeSaga({ payload: { location } });
+      const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
       expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({}).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
       expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
@@ -143,7 +142,11 @@ describe('Namespace sagas', () => {
         search: '',
       };
 
-      const gen = locationChangeSaga({ payload: { location } });
+      const match = {
+        params: { namespaceId: 'bob' },
+      };
+
+      const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
       expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({ id: 'abc' }).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
       expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
@@ -158,8 +161,11 @@ describe('Namespace sagas', () => {
         pathname: '/namespaces/bob',
         search: '?a=b&pagination=page%3D1%26limit%3D20',
       };
+      const match = {
+        params: { namespaceId: 'bob' },
+      };
 
-      const gen = locationChangeSaga({ payload: { location } });
+      const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
       expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({ id: 'bob' }).value).toMatchObject(put(setPagination({
         page: '1',
@@ -175,8 +181,11 @@ describe('Namespace sagas', () => {
         pathname: '/namespaces/bob',
         search: '?a=b&sort=column%3Dname%26order%3Dasc&pagination=',
       };
+      const match = {
+        params: { namespaceId: 'bob' },
+      };
 
-      const gen = locationChangeSaga({ payload: { location } });
+      const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
       expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({ id: 'bob' }).value).toMatchObject(put(setPagination({})));
       expect(gen.next().value).toMatchObject(put(setSort({

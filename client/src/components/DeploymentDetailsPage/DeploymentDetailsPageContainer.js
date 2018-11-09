@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
 import {
-  fetchDeployment,
   submitNoteForm,
   openModal,
   closeModal,
@@ -10,10 +9,9 @@ import { reduxForm } from 'redux-form';
 
 import DeploymentDetailsPage from './DeploymentDetailsPage';
 
-function mapStateToProps(state, props) {
+function mapStateToProps(state) {
   const deployment = state.deployment.data;
   return {
-    deploymentId: props.deploymentId,
     deployment,
     meta: state.deployment.meta,
     canEdit: deployment && new Account(state.account.data).hasPermissionOnNamespace(deployment.namespace.id, 'namespaces-write'),
@@ -26,7 +24,6 @@ function mapStateToProps(state, props) {
 }
 
 export default connect(mapStateToProps, {
-  fetchDeployment,
   openModal,
   closeModal,
 })(reduxForm({

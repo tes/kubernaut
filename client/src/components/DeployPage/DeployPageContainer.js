@@ -7,7 +7,6 @@ import {
 import _uniq from 'lodash/uniq';
 
 import {
-  INITIALISE,
   submitForm,
   fetchServiceSuggestions,
   useServiceSuggestion,
@@ -55,7 +54,6 @@ const mapStateToProps = (state, props) => {
 };
 
 export default connect(mapStateToProps, {
-  INITIALISE,
   fetchServiceSuggestions,
   useServiceSuggestion,
   clearFormFields,

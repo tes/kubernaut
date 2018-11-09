@@ -9,6 +9,7 @@ import {
   Table,
   Progress,
 } from 'reactstrap';
+import Title from '../Title';
 import TablePagination from '../TablePagination';
 
 const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => fields.map((member, index) => {
@@ -41,9 +42,6 @@ const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => 
 });
 
 class NamespaceManagePage extends Component {
-  componentDidMount() {
-    this.props.initialise({ id: this.props.namespaceId });
-  }
 
   render() {
     if (!this.props.canManage) {
@@ -81,6 +79,7 @@ class NamespaceManagePage extends Component {
 
     return (
       <Container>
+        <Title title={`Manage namespace: ${namespace.clusterName}/${namespace.name}`} />
         <Row>
           <h4>{headingBadge}</h4>
         </Row>
