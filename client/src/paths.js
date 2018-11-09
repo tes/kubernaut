@@ -13,6 +13,7 @@ import { initForm as initNamespaceEdit } from './modules/namespaceEdit';
 import { initialise as initNamespaceManage } from './modules/namespaceManage';
 import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
+import { initialiseReleasesPage } from './modules/releases';
 
 const paths = {
   account: {
@@ -63,7 +64,8 @@ const paths = {
     action: fetchRegistriesPagination,
   },
   releases: {
-    route: '/releases'
+    route: '/releases',
+    action: initialiseReleasesPage,
   },
   service: {
     route: '/services/:registry/:name'
