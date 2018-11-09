@@ -132,8 +132,9 @@ describe('Service sagas', () => {
   });
 
   it('should kick off all requests on page open', () => {
-    const payload = { registry: 'a', service: 'a' };
-    const gen = initServiceDetailPageSaga(initServiceDetailPage(payload));
+    const initPayload = { match: { params: { registry: 'a', name: 'b' } } };
+    const payload = { registry: 'a', service: 'b' };
+    const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
     expect(gen.next().value).toMatchObject(put(fetchReleasesPagination(payload)));
     expect(gen.next().value).toMatchObject(put(fetchDeploymentsPagination(payload)));
     expect(gen.next().done).toBe(true);

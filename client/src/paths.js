@@ -14,6 +14,7 @@ import { initialise as initNamespaceManage } from './modules/namespaceManage';
 import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
 import { initialiseReleasesPage } from './modules/releases';
+import { initServiceDetailPage } from './modules/service';
 
 const paths = {
   account: {
@@ -68,7 +69,8 @@ const paths = {
     action: initialiseReleasesPage,
   },
   service: {
-    route: '/services/:registry/:name'
+    route: '/services/:registry/:name',
+    action: initServiceDetailPage,
   },
   services: {
     route: '/services'

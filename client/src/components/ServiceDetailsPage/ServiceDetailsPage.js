@@ -4,12 +4,6 @@ import ServiceReleaseHistory from '../ServiceReleaseHistory';
 import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
 
 class ServiceDetailsPage extends Component {
-  componentDidMount() {
-    this.props.initServiceDetailPage({
-        registry: this.props.registryName,
-        service: this.props.serviceName,
-    });
-  }
 
   render() {
     return (
