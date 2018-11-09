@@ -10,6 +10,7 @@ import { fetchDeployment } from './modules/deployment';
 import { initialiseDeploymentsPage } from './modules/deployments';
 import { initialiseNamespacePage } from './modules/namespace';
 import { initForm as initNamespaceEdit } from './modules/namespaceEdit';
+import { initialise as initNamespaceManage } from './modules/namespaceManage';
 import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
 
@@ -50,7 +51,8 @@ const paths = {
     action: initNamespaceEdit,
   },
   namespaceManage: {
-    route: '/namespaces/:namespaceId/manage'
+    route: '/namespaces/:namespaceId/manage',
+    action: initNamespaceManage,
   },
   namespaces: {
     route: '/namespaces',

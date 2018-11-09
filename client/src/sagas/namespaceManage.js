@@ -1,7 +1,6 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
-import { push, getLocation, LOCATION_CHANGE } from 'connected-react-router';
-import { doesLocationMatch } from '../paths';
+import { push, getLocation } from 'connected-react-router';
 import {
   extractFromQuery,
   alterQuery,
@@ -31,10 +30,13 @@ import {
   disableServiceForNamespace,
 } from '../lib/api';
 
-export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
+export function* fetchNamespaceInfoSaga({ payload: { match, ...options } }) {
+  if (!match) return;
+  const { namespaceId } = match.params;
+  if (!namespaceId) return;
   yield put(FETCH_NAMESPACE_REQUEST());
   try {
-    const data = yield call(getNamespace, id);
+    const data = yield call(getNamespace, namespaceId);
     yield put(FETCH_NAMESPACE_SUCCESS({ data }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
@@ -86,12 +88,11 @@ export function* paginationSaga() {
 }
 
 export function* locationChangeSaga({ payload = {} }) {
-  const urlMatch = doesLocationMatch(payload.location, 'namespaceManage');
-  if (!urlMatch) return;
-
-  const pagination = parseQueryString(extractFromQuery(payload.location.search, 'pagination') || '');
+  const { match, location} = payload;
+  if(!match || !location) return;
+  const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
   yield put(setPagination(pagination));
-  yield put(fetchServices({ id: urlMatch.params.namespaceId }));
+  yield put(fetchServices({ id: match.params.namespaceId }));
 }
 
 export default [
@@ -99,5 +100,5 @@ export default [
   takeEvery(updateServiceStatusForNamespace, updateServiceStatusSaga),
   takeEvery(fetchServices, fetchServicesWithNamespaceStatusSaga),
   takeEvery(fetchServicesPagination, paginationSaga),
-  takeEvery(LOCATION_CHANGE, locationChangeSaga),
+  takeEvery(initialise, locationChangeSaga),
 ];

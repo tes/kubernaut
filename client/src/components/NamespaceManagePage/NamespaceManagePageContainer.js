@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
 
-import { initialise, updateServiceStatusForNamespace, fetchServicesPagination } from '../../modules/namespaceManage';
+import { updateServiceStatusForNamespace, fetchServicesPagination } from '../../modules/namespaceManage';
 import NamespaceManagePage from './NamespaceManagePage';
 import Account from '../../lib/domain/Account';
 
@@ -18,7 +18,6 @@ export default connect(({ namespaceManage, account }, { namespaceId }) => ({
   initialValues: namespaceManage.initialValues,
   services: namespaceManage.services,
 }),{
-  initialise,
   updateServiceStatusForNamespace,
   fetchServicesPagination,
 })(reduxForm({

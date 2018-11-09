@@ -41,9 +41,6 @@ const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => 
 });
 
 class NamespaceManagePage extends Component {
-  componentDidMount() {
-    this.props.initialise({ id: this.props.namespaceId });
-  }
 
   render() {
     if (!this.props.canManage) {
