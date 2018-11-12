@@ -9,16 +9,25 @@ const TablePagination = ({ pages, page, limit, fetchContent, sort, order }) => {
     fetchContent({ page, limit, sort, order });
   };
 
-  const maxPagesShown = 10;
+  const maxPagesShown = 10; // Total pages to show
+  const leftNeighbour = 2; // How many localised pages left of the current page to show: 1 _4_ [5] 6 ...
+  const fixedStart = 2; // How many forced starting pages to show: _1 2_ 6 [7] 8 9 ...
+  const fixedEnd = 2; // How many forced end pages to show: ... [7] 8 9 10 _30_
 
   let pageNosToShow;
   if (pages <= maxPagesShown) pageNosToShow = _range(pages);
   else {
-    pageNosToShow = [0];
-    const minOffset = page > pages - (maxPagesShown - 2) ? pages - maxPagesShown + 1 : Math.max(1, page - 2);
-    const maxOffset = page < 4 ? maxPagesShown - 1 : Math.min(pages - 1, page + maxPagesShown - 4);
+    pageNosToShow = [..._range(fixedStart)]; // Seed the fixed starters
+
+    const minOffset = page > pages - (maxPagesShown - (fixedStart + leftNeighbour)) ?
+        pages - (maxPagesShown - fixedStart) // Page plus right neighbours include final page
+      : Math.max(fixedStart, page - leftNeighbour - 1);
+    const maxOffset = page < (fixedStart + leftNeighbour + 1) ?
+        maxPagesShown - fixedEnd // Page and left neightbours are sequential
+      : Math.min(pages - fixedEnd, page + maxPagesShown - (fixedStart + leftNeighbour + fixedEnd + 1));
     pageNosToShow.push(..._range(minOffset, maxOffset));
-    pageNosToShow.push(pages - 1);
+
+    pageNosToShow.push(..._range(pages - fixedEnd, pages)); // Add final page(s) always
   }
 
   const items = pageNosToShow.map((pageNo) =>
