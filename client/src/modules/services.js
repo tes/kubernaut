@@ -59,6 +59,7 @@ const defaultState = {
 };
 
 export default handleActions({
+  [initServicesPage]: () => (defaultState),
   [FETCH_SERVICES_REQUEST]: (state) => ({
     ...state,
     data: {

@@ -60,6 +60,7 @@ const defaultState = {
 };
 
 export default handleActions({
+  [initialiseAccountsPage]: () => (defaultState),
   [FETCH_ACCOUNTS_REQUEST]: (state) => ({
     ...state,
     data: {

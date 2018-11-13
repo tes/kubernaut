@@ -59,6 +59,7 @@ const defaultState = {
 };
 
 export default handleActions({
+  [initialiseDeploymentsPage]: () => (defaultState),
   [FETCH_DEPLOYMENTS_REQUEST]: (state) => ({
     ...state,
     data: {

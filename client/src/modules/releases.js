@@ -59,6 +59,7 @@ const defaultState = {
 };
 
 export default handleActions({
+  [initialiseReleasesPage]: () => (defaultState),
   [FETCH_RELEASES_REQUEST]: (state) => ({
     ...state,
     data: {
