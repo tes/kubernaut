@@ -1,14 +1,18 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 
 const actionsPrefix = 'KUBERNAUT/SERVICE';
 export const initServiceDetailPage = createAction(`${actionsPrefix}/INIT_SERVICE_DETAIL_PAGE`);
 
+export const fetchReleases = createAction(`${actionsPrefix}/FETCH_RELEASES`);
 export const fetchReleasesPagination = createAction(`${actionsPrefix}/FETCH_RELEASES_PAGINATION`);
+export const setReleasesPagination = createAction(`${actionsPrefix}/SET_RELEASES_PAGINATION`);
 export const FETCH_RELEASES_REQUEST = createAction(`${actionsPrefix}/FETCH_RELEASES_REQUEST`);
 export const FETCH_RELEASES_SUCCESS = createAction(`${actionsPrefix}/FETCH_RELEASES_SUCCESS`);
 export const FETCH_RELEASES_ERROR = createAction(`${actionsPrefix}/FETCH_RELEASES_ERROR`);
 
+export const fetchDeployments = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS`);
 export const fetchDeploymentsPagination = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PAGINATION`);
+export const setDeploymentsPagination = createAction(`${actionsPrefix}/SET_DEPLOYMENTS_PAGINATION`);
 export const FETCH_DEPLOYMENTS_REQUEST = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_REQUEST`);
 export const FETCH_DEPLOYMENTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_SUCCESS`);
 export const FETCH_DEPLOYMENTS_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_ERROR`);
@@ -18,6 +22,16 @@ export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS = createAction(`${act
 export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR`);
 
 export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}/FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS`);
+
+export const selectReleasesPaginationState = (state) => (state.service.releases.pagination);
+export const selectDeploymentsPaginationState = (state) => (state.service.deployments.pagination);
+
+const defaultPaginationState = {
+  page: 1,
+  limit: 10,
+};
+export const releasesDefaultPagination = defaultPaginationState;
+export const deploymentsDefaultPagination = defaultPaginationState;
 
 const defaultState = {
   releases: {
@@ -29,7 +43,8 @@ const defaultState = {
       page: 0,
       items: [],
     },
-    meta: {}
+    meta: {},
+    pagination: releasesDefaultPagination,
   },
   deployments: {
     data: {
@@ -40,7 +55,8 @@ const defaultState = {
       page: 0,
       items: [],
     },
-    meta: {}
+    meta: {},
+    pagination: deploymentsDefaultPagination,
   },
   latestDeployments: {
     data: [],
@@ -82,6 +98,16 @@ export default handleActions({
       },
     },
   }),
+  [combineActions(fetchReleasesPagination, setReleasesPagination)]: (state, { payload }) => ({
+    ...state,
+    releases: {
+      ...state.releases,
+      pagination: {
+        page: payload.page || defaultState.releases.pagination.page,
+        limit: payload.limit || defaultState.releases.pagination.limit,
+      },
+    },
+  }),
   [FETCH_DEPLOYMENTS_REQUEST]: (state) => ({
     ...state,
     deployments: {
@@ -109,6 +135,16 @@ export default handleActions({
       meta: {
         error: payload.error,
         loading: false,
+      },
+    },
+  }),
+  [combineActions(fetchDeploymentsPagination, setDeploymentsPagination)]: (state, { payload }) => ({
+    ...state,
+    deployments: {
+      ...state.deployments,
+      pagination: {
+        page: payload.page || defaultState.deployments.pagination.page,
+        limit: payload.limit || defaultState.deployments.pagination.limit,
       },
     },
   }),

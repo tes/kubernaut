@@ -1,9 +1,20 @@
-import { takeLatest, call, put } from 'redux-saga/effects';
-
+import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { push, replace, getLocation } from 'connected-react-router';
+import { isEqual as _isEqual } from 'lodash';
+import {
+  extractFromQuery,
+  alterQuery,
+  makeQueryString,
+  parseQueryString,
+ } from './lib/query';
 import {
   initServiceDetailPage,
+  fetchDeployments,
   fetchDeploymentsPagination,
+  setDeploymentsPagination,
+  fetchReleases,
   fetchReleasesPagination,
+  setReleasesPagination,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
@@ -14,6 +25,10 @@ import {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
   FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS,
+  selectReleasesPaginationState,
+  selectDeploymentsPaginationState,
+  releasesDefaultPagination,
+  deploymentsDefaultPagination,
 } from '../modules/service';
 
 import {
@@ -23,20 +38,48 @@ import {
 } from '../lib/api';
 
 export function* initServiceDetailPageSaga({ payload = {} }) {
-  const { match } = payload;
-  if (!match) return;
+  const { match, location } = payload;
+  if (!match || !location) return;
   const { registry, name: service } = match.params;
   if (!registry) throw new Error('provide a registry');
   if (!service) throw new Error('provide a service');
 
-  yield put(fetchReleasesPagination({ registry, service }));
-  yield put(fetchDeploymentsPagination({ registry, service }));
+  const parsedReleasesPagination = parseQueryString(extractFromQuery(location.search, 'r-pagination') || '');
+  const parsedDeploymentsPagination = parseQueryString(extractFromQuery(location.search, 'd-pagination') || '');
+
+  if (_isEqual({}, parsedReleasesPagination)) {
+    yield put(replace(`${location.pathname}?${alterQuery(location.search, {
+      'r-pagination': makeQueryString({ ...releasesDefaultPagination }),
+    })}`));
+    return;
+  }
+
+  if (_isEqual({}, parsedDeploymentsPagination)) {
+    yield put(replace(`${location.pathname}?${alterQuery(location.search, {
+      'd-pagination': makeQueryString({ ...deploymentsDefaultPagination }),
+    })}`));
+    return;
+  }
+
+  const releasesPagination = yield select(selectReleasesPaginationState);
+  if (!_isEqual(releasesPagination, parsedReleasesPagination)) {
+    yield put(setReleasesPagination(parsedReleasesPagination));
+    yield put(fetchReleases({ registry, service }));
+  }
+
+  const deploymentsPagination = yield select(selectDeploymentsPaginationState);
+  if (!_isEqual(deploymentsPagination, parsedDeploymentsPagination)) {
+    yield put(setDeploymentsPagination(parsedDeploymentsPagination));
+    yield put(fetchDeployments({ registry, service }));
+  }
 }
 
 export function* fetchReleasesDataSaga({ payload = {} }) {
-  const { page = 1, limit = 10, registry, service, ...options } = payload;
+  const { registry, service, ...options } = payload;
   if (!registry) throw new Error('provide a registry');
   if (!service) throw new Error('provide a service');
+
+  const { page, limit } = yield select(selectReleasesPaginationState);
   const offset = (page - 1) * limit;
 
   yield put(FETCH_RELEASES_REQUEST());
@@ -50,9 +93,11 @@ export function* fetchReleasesDataSaga({ payload = {} }) {
 }
 
 export function* fetchDeploymentsDataSaga({ payload = {} }) {
-  const { page = 1, limit = 10, registry, service, ...options } = payload;
+  const { registry, service, ...options } = payload;
   if (!registry) throw new Error('provide a registry');
   if (!service) throw new Error('provide a service');
+
+  const { page, limit } = yield select(selectDeploymentsPaginationState);
   const offset = (page - 1) * limit;
 
   yield put(FETCH_DEPLOYMENTS_REQUEST());
@@ -106,10 +151,22 @@ export function* fetchHasDeploymentNotesSaga({ payload = {} }) {
   }
 }
 
+export function* paginationSaga() {
+  const location = yield select(getLocation);
+  const releasesPagination = yield select(selectReleasesPaginationState);
+  const deploymentsPagination = yield select(selectDeploymentsPaginationState);
+  yield put(push(`${location.pathname}?${alterQuery(location.search, {
+    'r-pagination': makeQueryString({ ...releasesPagination }),
+    'd-pagination': makeQueryString({ ...deploymentsPagination })
+  })}`));
+}
+
 export default [
   takeLatest(initServiceDetailPage, initServiceDetailPageSaga),
-  takeLatest(fetchReleasesPagination, fetchReleasesDataSaga),
-  takeLatest(fetchDeploymentsPagination, fetchDeploymentsDataSaga),
-  takeLatest(fetchReleasesPagination, fetchLatestDeploymentsByNamespaceForServiceSaga),
+  takeLatest(fetchReleasesPagination, paginationSaga),
+  takeLatest(fetchReleases, fetchReleasesDataSaga),
+  takeLatest(fetchDeploymentsPagination, paginationSaga),
+  takeLatest(fetchDeployments, fetchDeploymentsDataSaga),
+  takeLatest(fetchReleases, fetchLatestDeploymentsByNamespaceForServiceSaga),
   takeLatest(FETCH_RELEASES_SUCCESS, fetchHasDeploymentNotesSaga),
 ];
