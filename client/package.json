@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.1.1",
-    "connected-react-router": "^4.5.0",
+    "connected-react-router": "^5.0.1",
     "enzyme-adapter-react-16": "^1.0.2",
     "font-awesome": "^4.7.0",
     "history": "^4.7.2",

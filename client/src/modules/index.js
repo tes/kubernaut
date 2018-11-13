@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
+import { connectRouter } from 'connected-react-router';
 
 import account from './account';
 import accounts from './accounts';
@@ -17,8 +18,9 @@ import service from './service';
 import services from './services';
 import viewAccount from './viewAccount';
 
-export default combineReducers({
+export default (history) => combineReducers({
   form: formReducer,
+  router: connectRouter(history),
   account,
   accounts,
   deploy,

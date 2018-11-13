@@ -1,7 +1,7 @@
 // Framework
 import React, { Component } from 'react';
 import { createBrowserHistory } from 'history';
-import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router';
+import { routerMiddleware, ConnectedRouter } from 'connected-react-router';
 import { createStore, applyMiddleware, compose } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import formActionSaga from 'redux-form-saga';
@@ -40,7 +40,7 @@ const initialState = {};
 const sagaMiddleware = createSagaMiddleware();
 
 const store = createStore(
-  connectRouter(history)(rootReducer),
+  rootReducer(history),
   initialState,
   (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : compose)(
     applyMiddleware(routerMiddleware(history), sagaMiddleware)
