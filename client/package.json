@@ -34,7 +34,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "CI=true react-scripts test --env=jsdom --verbose",
+    "test": "CI=true TZ=UTC react-scripts test --env=jsdom --verbose",
     "test-w": "react-scripts test --env=jsdom --verbose",
     "postbuild": "postcss --use postcss-custom-properties --replace build/**/*.css",
     "eject": "react-scripts eject"

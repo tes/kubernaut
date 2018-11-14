@@ -37,4 +37,3 @@ function getText(d, transform) {
   const date = d ? new Date(d) : new Date(NaN);
   return isNaN(date.getTime()) ? '' : transform(date);
 }
-

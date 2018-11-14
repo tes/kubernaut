@@ -1,5 +1,9 @@
 from node:10-alpine
 
+ENV TZ=UTC
+RUN apk --update add tzdata \
+ && cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 ENV HOME=/config
 ENV NODE_ENV=production
 

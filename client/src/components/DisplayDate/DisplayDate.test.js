@@ -15,7 +15,7 @@ describe('DisplayDate', () => {
       );
 
       expect(wrapper.is('.display-date--human')).toBe(true);
-      expect(wrapper.text()).toBe('Sat, Jul 1, 2017, 5:15:14 PM');
+      expect(wrapper.text()).toBe('Sat, Jul 1, 2017, 4:15:14 PM');
     });
 
     it('should tolerate string dates', () => {
@@ -26,7 +26,7 @@ describe('DisplayDate', () => {
         <Human date={date} />
       );
 
-      expect(wrapper.text()).toBe('Sat, Jul 1, 2017, 5:15:14 PM');
+      expect(wrapper.text()).toBe('Sat, Jul 1, 2017, 4:15:14 PM');
     });
 
     it('should tolerate undefined dates', () => {
