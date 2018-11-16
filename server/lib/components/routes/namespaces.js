@@ -118,7 +118,7 @@ export default function(options = {}) {
       try {
         const service = await store.getService(req.params.serviceId);
         if (!service) return next(Boom.notFound());
-        const registryOk = req.user.hasPermissionOnRegistry(service.registry.id, 'registries-read');
+        const registryOk = await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read');
         if (!registryOk) return next(Boom.forbidden());
 
         const userNamespaces = req.user.listNamespaceIdsWithPermission('namespaces-read');

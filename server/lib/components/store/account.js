@@ -284,6 +284,31 @@ export default function(options = {}) {
       return answer;
     }
 
+    async function hasPermissionOnRegistry(user, registryId, permission) {
+      logger.debug(`Checking if user ${user.id} has permission ${permission} on registry ${registryId}`);
+
+      const builder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('account_role_registry acr')
+        .where(Op.eq('acr.account', user.id))
+        .where(Op.or(
+          Op.eq('acr.subject', registryId),
+          Op.is('acr.subject', null),
+        ))
+        .where(Op.in('acr.role', sqb
+          .select('r.id')
+          .from('role_permission rp')
+          .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
+          .join(sqb.join('role r').on(Op.eq('r.id', raw('rp.role'))))
+          .where(Op.eq('p.name', permission))
+        ));
+
+      const result = await db.query(db.serialize(builder, {}).sql);
+      const { answer } = result.rows[0];
+      logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${registryId}`);
+      return answer;
+    }
+
     function toAccount(row, roles) {
       return new Account({
         id: row.id,
@@ -333,6 +358,7 @@ export default function(options = {}) {
       grantRoleOnNamespace,
       revokeRoleOnNamespace,
       hasPermissionOnNamespace,
+      hasPermissionOnRegistry,
     });
   }
 

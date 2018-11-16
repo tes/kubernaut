@@ -94,7 +94,7 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
 
-        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
@@ -110,7 +110,7 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
 
-        if (!req.user.hasPermissionOnRegistry(req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.revokeRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);

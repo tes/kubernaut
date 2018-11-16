@@ -21,7 +21,7 @@ export default function(options = {}) {
 
     app.get('/api/registries/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnRegistry(req.params.id, 'registries-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, req.params.id, 'registries-read')) return next(Boom.forbidden());
 
         const registry = await store.getRegistry(req.params.id);
         if (!registry) return next(Boom.notFound());
@@ -36,7 +36,7 @@ export default function(options = {}) {
         const registry = await store.findRegistry({ name: req.params.registry });
         if (!registry) return next(Boom.notFound());
 
-        if (!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
 
         const results = await store.searchByServiceName(req.params.serviceName, registry);
         return res.json(results);

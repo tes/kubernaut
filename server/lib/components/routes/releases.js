@@ -36,7 +36,7 @@ export default function(options = {}) {
       try {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnRegistry(release.service.registry.id, 'releases-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, release.service.registry.id, 'releases-read')) return next(Boom.forbidden());
         res.json(release);
       } catch (err) {
         next(err);
@@ -51,7 +51,7 @@ export default function(options = {}) {
 
         const registry = await store.findRegistry({ name: req.body.registry });
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
-        if (!req.user.hasPermissionOnRegistry(registry.id, 'releases-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'releases-write')) return next(Boom.forbidden());
 
         const data = {
           service: {
@@ -76,7 +76,7 @@ export default function(options = {}) {
       try {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(204).send();
-        if (!req.user.hasPermissionOnRegistry(release.service.registry.id, 'releases-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, release.service.registry.id, 'releases-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteRelease(req.params.id, meta);

@@ -113,18 +113,18 @@ describe('Registries API', () => {
       expect(registry.id).toBe(saved.id);
     });
 
-    it('should return 403 for missing registries', async () => {
+    it('should return 404 for missing registries', async () => {
 
       loggerOptions.suppress = true;
 
       await request({
-        url: `/api/registries/does-not-exist`,
+        url: `/api/registries/11111111-1111-1111-1111-111111111111`, // non-existent uuid
         method: 'GET',
         resolveWithFullResponse: true,
       }).then(() => {
-        throw new Error('Should have failed with 403');
+        throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(403);
+        expect(reason.response.statusCode).toBe(404);
       });
     });
   });

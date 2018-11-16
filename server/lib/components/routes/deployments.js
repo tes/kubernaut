@@ -52,7 +52,7 @@ export default function(options = {}) {
         const registry = await store.findRegistry({ name: req.params.registry });
         const namespaces = req.user.listNamespaceIdsWithPermission('deployments-read');
 
-        if(!req.user.hasPermissionOnRegistry(registry.id, 'registries-read')) return next(Boom.forbidden());
+        if(! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
 
         const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, namespaces);
         res.json(deployments);
@@ -82,7 +82,7 @@ export default function(options = {}) {
 
         const registry = await store.findRegistry({ name: req.body.registry });
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
-        if (!req.user.hasPermissionOnRegistry(registry.id, 'releases-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'releases-read')) return next(Boom.forbidden());
 
         const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.context, res.locals.logger);
         if (!contextOk) return next(Boom.badRequest(`context ${namespace.context} was not found`));
