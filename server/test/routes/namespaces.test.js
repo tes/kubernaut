@@ -119,18 +119,18 @@ describe('Namespaces API', () => {
       expect(namespace.id).toBe(saved.id);
     });
 
-    it('should return 403 for missing namespaces', async () => {
+    it('should return 404 for missing namespaces', async () => {
 
       loggerOptions.suppress = true;
 
       await request({
-        url: `/api/namespaces/does-not-exist`,
+        url: `/api/namespaces/00000000-0000-0000-0000-000000000000`, // non-existent uuid
         method: 'GET',
         resolveWithFullResponse: true,
       }).then(() => {
-        throw new Error('Should have failed with 403');
+        throw new Error('Should have failed with 404');
       }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(403);
+        expect(reason.response.statusCode).toBe(404);
       });
     });
   });

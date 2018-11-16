@@ -30,7 +30,7 @@ export default function(options = {}) {
     app.get('/api/services-with-status-for-namespace/:namespaceId', async (req, res, next) => {
       try {
         const { namespaceId } = req.params;
-        if (!req.user.hasPermissionOnNamespace(namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
         if (req.user.listRegistryIdsWithPermission('registries-read').length === 0) return next(Boom.forbidden());
 
         const criteria = {
@@ -52,7 +52,7 @@ export default function(options = {}) {
         const { namespaceId, serviceId } = req.params;
         const namespace = await store.getNamespace(namespaceId);
         if (!namespace) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnNamespace(namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound());
         const registryId = service.registry.id;
@@ -80,7 +80,7 @@ export default function(options = {}) {
         const { namespaceId, serviceId } = req.params;
         const namespace = await store.getNamespace(namespaceId);
         if (!namespace) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnNamespace(namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound());
         const registryId = service.registry.id;

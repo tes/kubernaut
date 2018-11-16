@@ -259,6 +259,31 @@ export default function(options = {}) {
       return counts;
     }
 
+    async function hasPermissionOnNamespace(user, namespaceId, permission) {
+      logger.debug(`Checking if user ${user.id} has permission ${permission} on namespace ${namespaceId}`);
+
+      const builder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('account_role_namespace acn')
+        .where(Op.eq('acn.account', user.id))
+        .where(Op.or(
+          Op.eq('acn.subject', namespaceId),
+          Op.is('acn.subject', null),
+        ))
+        .where(Op.in('acn.role', sqb
+          .select('r.id')
+          .from('role_permission rp')
+          .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
+          .join(sqb.join('role r').on(Op.eq('r.id', raw('rp.role'))))
+          .where(Op.eq('p.name', permission))
+        ));
+
+      const result = await db.query(db.serialize(builder, {}).sql);
+      const { answer } = result.rows[0];
+      logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on namespace ${namespaceId}`);
+      return answer;
+    }
+
     function toAccount(row, roles) {
       return new Account({
         id: row.id,
@@ -307,6 +332,7 @@ export default function(options = {}) {
       revokeRoleOnRegistry,
       grantRoleOnNamespace,
       revokeRoleOnNamespace,
+      hasPermissionOnNamespace,
     });
   }
 

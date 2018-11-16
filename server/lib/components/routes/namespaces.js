@@ -23,7 +23,9 @@ export default function(options = {}) {
 
     app.get('/api/namespaces/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-read')) return next(Boom.forbidden());
+        const namespaceOk = await store.getNamespace(req.params.id);
+        if (!namespaceOk) return next(Boom.notFound(`namespace ${req.params.id} was not found`));
+        if (! await store.hasPermissionOnNamespace(req.user, req.params.id, 'namespaces-read')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(req.params.id);
         if (!namespace) return next(Boom.notFound());
@@ -68,7 +70,7 @@ export default function(options = {}) {
         const namespaceOk = await store.getNamespace(req.params.id);
         if (!namespaceOk) return next(Boom.notFound(`namespace ${req.params.id} was not found`));
 
-        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());
+        if (!await store.hasPermissionOnNamespace(req.user, req.params.id, 'namespaces-write')) return next(Boom.forbidden());
 
         const values = ['attributes', 'cluster', 'color', 'context'].reduce((acc, prop) => {
           if (!({}).hasOwnProperty.call(req.body, prop)) return acc;
@@ -102,7 +104,7 @@ export default function(options = {}) {
 
     app.delete('/api/namespaces/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnNamespace(req.params.id, 'namespaces-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, req.params.id, 'namespaces-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteNamespace(req.params.id, meta);

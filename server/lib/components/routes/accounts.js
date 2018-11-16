@@ -126,7 +126,7 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
 
-        if (!req.user.hasPermissionOnNamespace(req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
@@ -142,7 +142,7 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
 
-        if (!req.user.hasPermissionOnNamespace(req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.revokeRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);

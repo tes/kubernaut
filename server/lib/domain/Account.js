@@ -1,7 +1,7 @@
 // Some of this file is copied to the client dir
 // Thanks create-react-app for blocking me symlinking it or otherwise.
 
-import has from 'lodash.has';
+import { deprecate } from 'util';
 
 export default class Account {
 
@@ -12,14 +12,13 @@ export default class Account {
     this.createdOn = createdOn;
     this.createdBy = createdBy;
     this.roles = roles;
-  }
 
-  isNamespaceAdmin() {
-    return has(this, 'roles.admin.namespaces');
-  }
-
-  isRegistryAdmin() {
-    return has(this, 'roles.admin.registries');
+    this.hasPermission = deprecate(this.hasPermission, 'Account.hasPermission, use store method instead.');
+    this.hasPermissionOnAccount = deprecate(this.hasPermissionOnAccount, 'Account.hasPermissionOnAccount, use store method instead.');
+    this.hasPermissionOnNamespace = deprecate(this.hasPermissionOnNamespace, 'Account.hasPermissionOnNamespace, use store method instead.');
+    this.hasPermissionOnRegistry = deprecate(this.hasPermissionOnRegistry, 'Account.hasPermissionOnRegistry, use store method instead.');
+    this.listRegistryIdsWithPermission = deprecate(this.listRegistryIdsWithPermission, 'Account.listRegistryIdsWithPermission, use store method instead.');
+    this.listNamespaceIdsWithPermission = deprecate(this.listNamespaceIdsWithPermission, 'Account.listNamespaceIdsWithPermission, use store method instead.');
   }
 
   hasPermission(permission) {

@@ -40,7 +40,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.notFound());
-        if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
         res.json(deployment);
       } catch (err) {
         next(err);
@@ -78,7 +78,7 @@ export default function(options = {}) {
         const namespace = await store.findNamespace({ name: deploymentNamespace, cluster: req.body.cluster })
           .then((namespace) => namespace ? store.getNamespace(namespace.id) : namespace);
         if (!namespace) return next(Boom.badRequest(`namespace ${deploymentNamespace} was not found`));
-        if (!req.user.hasPermissionOnNamespace(namespace.id, 'deployments-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'deployments-write')) return next(Boom.forbidden());
 
         const registry = await store.findRegistry({ name: req.body.registry });
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
@@ -160,7 +160,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
-        if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-write')) return next(Boom.forbidden());
         if (req.body.note === undefined) return next(Boom.badRequest('note is required'));
         if (typeof req.body.note !== 'string') return next(Boom.badRequest('note must be a string'));
         const result = await store.setDeploymentNote(deployment.id, req.body.note);
@@ -174,7 +174,7 @@ export default function(options = {}) {
       try {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.forbidden());
-        if (!req.user.hasPermissionOnNamespace(deployment.namespace.id, 'deployments-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteDeployment(req.params.id, meta);
