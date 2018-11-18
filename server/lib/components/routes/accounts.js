@@ -22,7 +22,7 @@ export default function(options = {}) {
 
     app.get('/api/accounts', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('accounts-read')) return next(Boom.forbidden());
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
         const filters = parseFilters(req.query, ['name', 'createdBy']);
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;

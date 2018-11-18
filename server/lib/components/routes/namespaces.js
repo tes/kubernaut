@@ -37,7 +37,7 @@ export default function(options = {}) {
 
     app.post('/api/namespaces', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('namespaces-write')) return next(Boom.forbidden());
+        if (! await store.hasPermission(req.user, 'namespaces-write')) return next(Boom.forbidden());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.cluster) return next(Boom.badRequest('cluster is required'));

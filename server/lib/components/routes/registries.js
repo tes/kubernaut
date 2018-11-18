@@ -47,7 +47,7 @@ export default function(options = {}) {
 
     app.post('/api/registries', bodyParser.json(), async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
+        if (! await store.hasPermission(req.user, 'registries-write')) return next(Boom.forbidden());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         const data = { name: req.body.name };
@@ -61,7 +61,7 @@ export default function(options = {}) {
 
     app.delete('/api/registries/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermission('registries-write')) return next(Boom.forbidden());
+        if (! await store.hasPermission(req.user, 'registries-write')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteRegistry(req.params.id, meta);

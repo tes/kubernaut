@@ -15,8 +15,6 @@ export default class Account {
 
     this.hasPermission = deprecate(this.hasPermission, 'Account.hasPermission, use store method instead.');
     this.hasPermissionOnAccount = deprecate(this.hasPermissionOnAccount, 'Account.hasPermissionOnAccount, use store method instead.');
-    this.hasPermissionOnNamespace = deprecate(this.hasPermissionOnNamespace, 'Account.hasPermissionOnNamespace, use store method instead.');
-    this.hasPermissionOnRegistry = deprecate(this.hasPermissionOnRegistry, 'Account.hasPermissionOnRegistry, use store method instead.');
     this.listRegistryIdsWithPermission = deprecate(this.listRegistryIdsWithPermission, 'Account.listRegistryIdsWithPermission, use store method instead.');
     this.listNamespaceIdsWithPermission = deprecate(this.listNamespaceIdsWithPermission, 'Account.listNamespaceIdsWithPermission, use store method instead.');
   }
@@ -29,20 +27,6 @@ export default class Account {
 
   hasPermissionOnAccount(accountId, permission) {
     return this.hasPermission(permission) || accountId === this.id;
-  }
-
-  hasPermissionOnNamespace(namespace, permission) {
-    return Object.keys(this.roles).reduce((permissions, name) => {
-      if (!this.roles[name].namespaces.includes(namespace)) return permissions;
-      return permissions.concat(this.roles[name].permissions);
-    }, []).includes(permission);
-  }
-
-  hasPermissionOnRegistry(registry, permission) {
-    return Object.keys(this.roles).reduce((permissions, name) => {
-      if (!this.roles[name].registries.includes(registry)) return permissions;
-      return permissions.concat(this.roles[name].permissions);
-    }, []).includes(permission);
   }
 
   listRegistryIdsWithPermission(permission) {
