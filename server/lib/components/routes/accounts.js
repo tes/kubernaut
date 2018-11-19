@@ -37,7 +37,7 @@ export default function(options = {}) {
 
     app.get('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnAccount(req.params.id, 'accounts-read')) return next(Boom.forbidden());
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
 
         const account = await store.getAccount(req.params.id);
         return account ? res.json(account) : next();
@@ -60,7 +60,7 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (!req.user.hasPermissionOnAccount(req.params.id, 'accounts-write')) return next(Boom.forbidden());
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteAccount(req.params.id, meta);
@@ -77,7 +77,7 @@ export default function(options = {}) {
         if (!req.body.provider) return next(Boom.badRequest('provider is required'));
         if (!req.body.type) return next(Boom.badRequest('type is required'));
 
-        if (!req.user.hasPermissionOnAccount(req.body.account, 'accounts-write')) return next(Boom.forbidden());
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
 
         const data = { name: req.body.name, provider: req.body.provider, type: req.body.type };
         const meta = { date: new Date(), account: { id: req.user.id } };

@@ -13,20 +13,12 @@ export default class Account {
     this.createdBy = createdBy;
     this.roles = roles;
 
-    this.hasPermission = deprecate(this.hasPermission, 'Account.hasPermission, use store method instead.');
-    this.hasPermissionOnAccount = deprecate(this.hasPermissionOnAccount, 'Account.hasPermissionOnAccount, use store method instead.');
     this.listRegistryIdsWithPermission = deprecate(this.listRegistryIdsWithPermission, 'Account.listRegistryIdsWithPermission, use store method instead.');
     this.listNamespaceIdsWithPermission = deprecate(this.listNamespaceIdsWithPermission, 'Account.listNamespaceIdsWithPermission, use store method instead.');
   }
 
-  hasPermission(permission) {
-    return Object.keys(this.roles).reduce((hasPermission, roleName) => {
-      return hasPermission || this.roles[roleName].permissions.includes(permission);
-    }, false);
-  }
-
-  hasPermissionOnAccount(accountId, permission) {
-    return this.hasPermission(permission) || accountId === this.id;
+  hasPermissionOnAccount(accountId) {
+    return accountId === this.id;
   }
 
   listRegistryIdsWithPermission(permission) {
