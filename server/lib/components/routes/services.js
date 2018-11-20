@@ -12,7 +12,7 @@ export default function(options = {}) {
       try {
         const filters = parseFilters(req.query, ['name', 'createdBy', 'registry']);
         const criteria = {
-          registries: req.user.listRegistryIdsWithPermission('registries-read'),
+          user: { id: req.user.id, permission: 'registries-read' },
           filters,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -31,10 +31,9 @@ export default function(options = {}) {
       try {
         const { namespaceId } = req.params;
         if (! await store.hasPermissionOnNamespace(req.user, namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
-        if (req.user.listRegistryIdsWithPermission('registries-read').length === 0) return next(Boom.forbidden());
 
         const criteria = {
-          registries: req.user.listRegistryIdsWithPermission('registries-read'),
+          user: { id: req.user.id, permission: 'registries-read' },
           namespace: namespaceId,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -56,7 +55,7 @@ export default function(options = {}) {
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound());
         const registryId = service.registry.id;
-        if (req.user.listRegistryIdsWithPermission('registries-read').indexOf(registryId) === -1) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, registryId, 'registries-read')) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -64,7 +63,7 @@ export default function(options = {}) {
         await store.enableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
 
         const criteria = {
-          registries: req.user.listRegistryIdsWithPermission('registries-read'),
+          user: { id: req.user.id, permission: 'registries-read' },
           namespace: namespaceId,
         };
 
@@ -84,7 +83,7 @@ export default function(options = {}) {
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound());
         const registryId = service.registry.id;
-        if (req.user.listRegistryIdsWithPermission('registries-read').indexOf(registryId) === -1) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, registryId, 'registries-read')) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -92,7 +91,7 @@ export default function(options = {}) {
         await store.disableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
 
         const criteria = {
-          registries: req.user.listRegistryIdsWithPermission('registries-read'),
+          user: { id: req.user.id, permission: 'registries-read' },
           namespace: namespaceId,
         };
 

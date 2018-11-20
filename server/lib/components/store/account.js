@@ -307,7 +307,7 @@ export default function(options = {}) {
         .where(Op.eq('acn.account', user.id))
         .where(Op.or(
           Op.eq('acn.subject', namespaceId),
-          Op.is('acn.subject', null),
+          Op.is('acn.subject', null), // Preserve the bug/feature of null subject => apply to all
         ))
         .where(Op.in('acn.role', sqb
           .select('r.id')
@@ -332,7 +332,7 @@ export default function(options = {}) {
         .where(Op.eq('acr.account', user.id))
         .where(Op.or(
           Op.eq('acr.subject', registryId),
-          Op.is('acr.subject', null),
+          Op.is('acr.subject', null), // Preserve the bug/feature of null subject => apply to all
         ))
         .where(Op.in('acr.role', sqb
           .select('r.id')

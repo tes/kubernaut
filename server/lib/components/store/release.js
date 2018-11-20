@@ -8,7 +8,7 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
     const { Op, raw } = sqb;
 
@@ -180,10 +180,15 @@ export default function(options) {
         }
       }
 
-      const findReleasesStatement = db.serialize(findReleasesBuilder, bindVariables);
-      const countReleasesStatement = db.serialize(countReleasesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user) {
+          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [findReleasesBuilder, countReleasesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+        }
+
+        const findReleasesStatement = db.serialize(findReleasesBuilder, bindVariables);
+        const countReleasesStatement = db.serialize(countReleasesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findReleasesStatement.sql, findReleasesStatement.values),
           connection.query(countReleasesStatement.sql, countReleasesStatement.values),

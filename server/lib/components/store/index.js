@@ -9,19 +9,23 @@ import account from './account';
 import release from './release';
 import deployment from './deployment';
 import service from './service';
+import authz from './authz';
 import store from './store';
+
+const authzDep = { component: 'store.authz', destination: 'authz' };
 
 export default () => systemic({ name: 'stores/postgres' })
   .add('migrator', migrator()).dependsOn({ component: 'config', source: 'postgres', destination: 'config' }, )
   .add('postgres', postgres()).dependsOn('config', 'logger', 'migrator')
   .add('db', db()).dependsOn('config', 'logger', 'postgres')
-  .add('store.registry', registry()).dependsOn('config', 'logger', 'db')
-  .add('store.cluster', cluster()).dependsOn('config', 'logger', 'db')
-  .add('store.namespace', namespace()).dependsOn('config', 'logger', 'db')
-  .add('store.account', account()).dependsOn('config', 'logger', 'db')
-  .add('store.release', release()).dependsOn('config', 'logger', 'db')
-  .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db')
-  .add('store.service', service()).dependsOn('config', 'logger', 'db')
+  .add('store.authz', authz).dependsOn('config', 'logger', 'db')
+  .add('store.registry', registry()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.cluster', cluster()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.namespace', namespace()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.account', account()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.release', release()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.service', service()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store', store()).dependsOn(
     'config', 'logger', 'db',
     { component: 'store.registry', destination: 'registry' },

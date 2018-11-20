@@ -17,7 +17,7 @@ export default function(options = {}) {
       try {
         const filters = parseFilters(req.query, ['service', 'version', 'registry', 'createdBy']);
         const criteria = {
-          registries: req.user.listRegistryIdsWithPermission('releases-read'),
+          user: { id: req.user.id, permission: 'releases-read' },
           filters,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;

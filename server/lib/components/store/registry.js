@@ -7,7 +7,7 @@ export default function(options) {
 
   const { Op, raw } = sqb;
 
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
     async function saveRegistry(data, meta) {
       logger.debug(`Saving registry: ${data.name}`);
@@ -64,10 +64,15 @@ export default function(options) {
         db.buildWhereClause('r.name', criteria.name, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
       }
 
-      const findRegistriesStatement = db.serialize(findRegistriesBuilder, bindVariables);
-      const countRegistriesStatement = db.serialize(countRegistriesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+
+        if (criteria.user) {
+          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [findRegistriesBuilder, countRegistriesBuilder].forEach(builder => builder.where(Op.in('r.id', idsQuery)));
+        }
+        const findRegistriesStatement = db.serialize(findRegistriesBuilder, bindVariables);
+        const countRegistriesStatement = db.serialize(countRegistriesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findRegistriesStatement.sql, findRegistriesStatement.values),
           connection.query(countRegistriesStatement.sql, countRegistriesStatement.values),

@@ -8,7 +8,7 @@ const { Op, raw, innerJoin } = sqb;
 export default function(options) {
 
 
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
     async function getService(id) {
       logger.debug(`Getting service by id ${id}`);
@@ -90,10 +90,15 @@ export default function(options) {
         }
       }
 
-      const findStatement = db.serialize(findServicesBuilder, bindVariables);
-      const countStatement = db.serialize(countServicesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user) {
+          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+        }
+
+        const findStatement = db.serialize(findServicesBuilder, bindVariables);
+        const countStatement = db.serialize(countServicesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findStatement.sql, findStatement.values),
           connection.query(countStatement.sql, countStatement.values),
@@ -169,10 +174,15 @@ export default function(options) {
         db.buildWhereClause('sr.id', criteria.registries, bindVariables, findServicesBuilder, countServicesBuilder);
       }
 
-      const findStatement = db.serialize(findServicesBuilder, bindVariables);
-      const countStatement = db.serialize(countServicesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user) {
+          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+        }
+
+        const findStatement = db.serialize(findServicesBuilder, bindVariables);
+        const countStatement = db.serialize(countServicesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findStatement.sql, findStatement.values),
           connection.query(countStatement.sql, countStatement.values),
