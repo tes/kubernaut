@@ -49,9 +49,44 @@ export default {
       return registryIdsWithPermissionBuilder;
     }
 
+    async function queryNamespaceIdsWithPermission(connection, userId, permission) {
+      const hasNullSubjectEntry = sqb // Preserve the bug/feature of null subject => apply to all
+        .select(raw('count(1) > 0 answer'))
+        .from('account_role_namespace acn')
+        .where(Op.is('acn.deleted_on', null))
+        .where(Op.eq('acn.account', userId))
+        .where(Op.in('acn.role', roleIdsWithPermissionBuilder(permission)))
+        .where(Op.is('acn.subject', null));
+
+      const nullSubjectResult = await connection.query(db.serialize(hasNullSubjectEntry, {}).sql);
+
+      if (nullSubjectResult.rows[0].answer) {
+        const allNamespaceIdsBuilder = sqb
+          .select('r.id')
+          .from('active_namespace__vw r');
+
+        return allNamespaceIdsBuilder;
+      }
+
+      const namespaceIdsWithPermissionBuilder = sqb
+        .select('r.id')
+        .from('active_namespace__vw r')
+        .where(Op.in('r.id', sqb
+          .select('acn.subject')
+          .from('account_role_namespace acn')
+          .where(Op.is('acn.deleted_on', null))
+          .where(Op.eq('acn.account', userId))
+          .where(Op.in('acn.role', roleIdsWithPermissionBuilder(permission)))
+          .where(Op.not('subject', null))
+        ));
+
+      return namespaceIdsWithPermissionBuilder;
+    }
+
 
     return {
       queryRegistryIdsWithPermission,
+      queryNamespaceIdsWithPermission,
     };
   }
 };

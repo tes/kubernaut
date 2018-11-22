@@ -8,7 +8,7 @@ export default function(options) {
 
   const { Op, raw } = sqb;
 
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
     async function getNamespace(id) {
       logger.debug(`Getting namespace by id: ${id}`);
@@ -148,10 +148,15 @@ export default function(options) {
         db.buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
-      const findNamespacesStatement = db.serialize(findNamespacesBuilder, bindVariables);
-      const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user) {
+          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [findNamespacesBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+        }
+
+        const findNamespacesStatement = db.serialize(findNamespacesBuilder, bindVariables);
+        const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findNamespacesStatement.sql, findNamespacesStatement.values),
           connection.query(countNamespacesStatement.sql, countNamespacesStatement.values),
@@ -252,10 +257,15 @@ export default function(options) {
         db.buildWhereClause('n.id', namespaces, bindVariables, selectBuilder, countNamespacesBuilder);
       }
 
-      const findNamespacesStatement = db.serialize(selectBuilder, bindVariables);
-      const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user) {
+          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
+          [selectBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+        }
+
+        const findNamespacesStatement = db.serialize(selectBuilder, bindVariables);
+        const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findNamespacesStatement.sql, findNamespacesStatement.values),
           connection.query(countNamespacesStatement.sql, countNamespacesStatement.values),

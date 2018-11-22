@@ -12,7 +12,7 @@ import sqb from 'sqb';
 
 export default function(options) {
 
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
     const { Op, raw, join } = sqb;
 
@@ -112,8 +112,8 @@ export default function(options) {
       });
     }
 
-    async function findLatestDeploymentsByNamespaceForService(registryId, service, namespaces) {
-      logger.debug(`Getting latest deployment per namespace for service: ${service} ${namespaces}`);
+    async function findLatestDeploymentsByNamespaceForService(registryId, service, user) {
+      logger.debug(`Getting latest deployment per namespace for service: ${service} for user ${user.id}`);
 
       const builder = sqb
         .select(raw(`
@@ -133,12 +133,13 @@ export default function(options) {
         .join(join('namespace n').on(Op.eq('n.id', raw('d.namespace'))))
         .join(join('cluster c').on(Op.eq('c.id', raw('n.cluster'))))
         .where(Op.eq('sr.id', registryId))
-        .where(Op.eq('s.name', service))
-        .where(Op.or(...(namespaces.map((id) => (Op.eq('d.namespace', id))))));
+        .where(Op.eq('s.name', service));
 
-      return await db.withTransaction(async connection =>
-        connection.query(db.serialize(builder, {}).sql)
-      ).then((result) => {
+      return await db.withTransaction(async connection => {
+        builder.where(Op.in('d.namespace', await authz.queryNamespaceIdsWithPermission(connection, user.id, 'deployments-read')));
+
+        return await connection.query(db.serialize(builder, {}).sql);
+      }).then((result) => {
         logger.debug(`Found ${result.rowCount} namespaces with deployments for ${service}`);
         return result.rows.map(toLatestDeployment);
       });
@@ -231,10 +232,19 @@ export default function(options) {
         }
       }
 
-      const findDeploymentsStatement = db.serialize(findDeploymentsBuilder, bindVariables);
-      const countDeploymentsStatement = db.serialize(countDeploymentsBuilder, bindVariables);
-
       return db.withTransaction(async connection => {
+        if (criteria.user && criteria.user.namespace) {
+          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.namespace.permission);
+          [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+        }
+
+        if (criteria.user && criteria.user.registry) {
+          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.registry.permission);
+          [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+        }
+        const findDeploymentsStatement = db.serialize(findDeploymentsBuilder, bindVariables);
+        const countDeploymentsStatement = db.serialize(countDeploymentsBuilder, bindVariables);
+
         return Promise.all([
           connection.query(findDeploymentsStatement.sql, findDeploymentsStatement.values),
           connection.query(countDeploymentsStatement.sql, countDeploymentsStatement.values),

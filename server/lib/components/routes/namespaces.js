@@ -11,10 +11,11 @@ export default function(options = {}) {
 
     app.get('/api/namespaces', async (req, res, next) => {
       try {
-        const namespaces = req.user.listNamespaceIdsWithPermission('namespaces-read');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findNamespaces({ namespaces }, limit, offset);
+        const result = await store.findNamespaces({
+          user: { id: req.user.id, permission: 'namespaces-read' },
+        }, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -121,9 +122,8 @@ export default function(options = {}) {
         const registryOk = await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read');
         if (!registryOk) return next(Boom.forbidden());
 
-        const userNamespaces = req.user.listNamespaceIdsWithPermission('namespaces-read');
         const namespaces = await store.namespacesForService({
-          namespaces: userNamespaces,
+          user: { id: req.user.id, permission: 'namespaces-read' },
           service,
         });
         res.json(namespaces);

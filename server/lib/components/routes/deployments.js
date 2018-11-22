@@ -13,12 +13,15 @@ export default function(options = {}) {
     app.use('/api/deployments', auth('api'));
 
     app.get('/api/deployments', async (req, res, next) => {
-      const namespaceIds = req.user.listNamespaceIdsWithPermission('deployments-read');
       try {
         const filters = parseFilters(req.query, ['registry', 'service', 'version', 'namespace', 'cluster']);
         const criteria = {
           filters,
-          namespaces: namespaceIds,
+          user: {
+            id: req.user.id,
+            namespace: { permission: 'deployments-read' },
+            registry: { permission: 'releases-read' },
+          }
         };
 
         if (req.query.hasOwnProperty('hasNotes') && req.query.hasNotes !== '') {
@@ -50,11 +53,10 @@ export default function(options = {}) {
     app.get('/api/deployments/latest-by-namespace/:registry/:service', async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });
-        const namespaces = req.user.listNamespaceIdsWithPermission('deployments-read');
 
         if(! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
 
-        const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, namespaces);
+        const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user);
         res.json(deployments);
       } catch(err) {
         next(err);

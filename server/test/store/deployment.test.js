@@ -1,7 +1,7 @@
 import expect from 'expect';
 import { v4 as uuid } from 'uuid';
 import createSystem from '../test-system';
-import { makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeRelease, makeRootMeta } from '../factories';
+import { makeCluster, makeNamespace, makeDeployment, makeDeploymentLogEntry, makeRelease, makeRootMeta, makeIdentity, makeAccount } from '../factories';
 
 describe('Deployment Store', () => {
 
@@ -420,6 +420,8 @@ describe('Deployment Store', () => {
       const cluster2 = await saveCluster();
       const namespace1 = await saveNamespace({ name: 'ns1', cluster, context: 'test' });
       const namespace2 = await saveNamespace({ name: 'ns2', cluster: cluster2, context: 'test' });
+      const account = makeAccount();
+      const savedAccount = await store.ensureAccount(account, makeIdentity(), makeRootMeta());
       const release1 = await saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 1 }));
       const release2 = await saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 2 }));
       const registryId = release1.service.registry.id;
@@ -459,9 +461,8 @@ describe('Deployment Store', () => {
 
       const { release: { id: latestFromNs1 } } = savedNs1.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0];
       const { release: { id: latestFromNs2 } } = savedNs2.sort((({ createdOn: a }, { createdOn: b }) => (b - a)))[0];
-      const namespaceIds = [namespace1.id, namespace2.id];
 
-      const results = await findLatestDeploymentsByNamespaceForService(registryId, 'hello-world', namespaceIds);
+      const results = await findLatestDeploymentsByNamespaceForService(registryId, 'hello-world', savedAccount);
       expect(results.find(({ namespace }) => (namespace.id === namespace1.id)).release.id).toBe(latestFromNs1);
       expect(results.find(({ namespace }) => (namespace.id === namespace2.id)).release.id).toBe(latestFromNs2);
     });
