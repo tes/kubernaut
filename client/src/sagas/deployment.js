@@ -7,9 +7,21 @@ import {
   FETCH_DEPLOYMENT_ERROR,
   submitNoteForm,
   closeModal,
+  setCanEdit,
 } from '../modules/deployment';
 
-import { getDeployment, updateDeploymentNote } from '../lib/api';
+import { getDeployment, updateDeploymentNote, hasPermissionOn } from '../lib/api';
+
+export function* checkPermissionSaga({ payload = { } }) {
+  const { namespace } = payload.data;
+  if (!namespace) return;
+  try {
+    const hasPermission = yield call(hasPermissionOn, 'deployments-write', 'namespace', namespace.id);
+    yield put(setCanEdit(hasPermission.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
 
 export function* fetchDeploymentSaga({ payload = {} }) {
   const { match, ...options } = payload;
@@ -42,5 +54,6 @@ export function* submitDeploymentNoteSaga({ payload = {} }) {
 
 export default [
   takeLatest(fetchDeployment, fetchDeploymentSaga),
+  takeLatest(FETCH_DEPLOYMENT_SUCCESS, checkPermissionSaga),
   takeLatest(submitNoteForm.REQUEST, submitDeploymentNoteSaga),
 ];

@@ -4,7 +4,6 @@ import {
   openModal,
   closeModal,
 } from '../../modules/deployment';
-import Account from '../../lib/domain/Account';
 import { reduxForm } from 'redux-form';
 
 import DeploymentDetailsPage from './DeploymentDetailsPage';
@@ -14,7 +13,7 @@ function mapStateToProps(state) {
   return {
     deployment,
     meta: state.deployment.meta,
-    canEdit: deployment && new Account(state.account.data).hasPermissionOnNamespace(deployment.namespace.id, 'namespaces-write'),
+    canEdit: state.deployment.canEdit,
     submitNoteForm,
     modalOpen: state.deployment.modalOpen,
     initialValues: {

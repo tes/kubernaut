@@ -8,11 +8,13 @@ export const FETCH_DEPLOYMENT_ERROR = createAction(`${actionsPrefix}/FETCH_DEPLO
 export const submitNoteForm = createFormAction(`${actionsPrefix}/SUBMIT_NOTE_FORM`);
 export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 const defaultState = {
   data: null,
   meta: {},
   modalOpen: false,
+  canEdit: false,
 };
 
 export default handleActions({
@@ -43,4 +45,8 @@ export default handleActions({
     ...state,
     modalOpen: false,
   }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+  })
 }, defaultState);

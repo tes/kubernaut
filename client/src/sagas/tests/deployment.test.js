@@ -2,6 +2,7 @@ import { put, call } from 'redux-saga/effects';
 import {
   fetchDeploymentSaga,
   submitDeploymentNoteSaga,
+  checkPermissionSaga,
 } from '../deployment';
 
 import {
@@ -11,11 +12,13 @@ import {
   FETCH_DEPLOYMENT_ERROR,
   submitNoteForm,
   closeModal,
+  setCanEdit,
 } from '../../modules/deployment';
 
 import {
   getDeployment,
   updateDeploymentNote,
+  hasPermissionOn,
 } from '../../lib/api';
 
 describe('Deployment sagas', () => {
@@ -39,6 +42,17 @@ describe('Deployment sagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getDeployment, 1));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENT_ERROR({ error: error.message })));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('check permission', () => {
+    const initPayload = { data: { namespace: { id: 'bob' } } };
+
+    it('fetches and sets permission information', () => {
+      const gen = checkPermissionSaga(FETCH_DEPLOYMENT_SUCCESS(initPayload));
+      expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'deployments-write', 'namespace', 'bob'));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
       expect(gen.next().done).toBe(true);
     });
   });

@@ -4,6 +4,7 @@ import reduce, {
   FETCH_DEPLOYMENT_ERROR,
   openModal,
   closeModal,
+  setCanEdit,
 } from '../deployment';
 
 describe('Deployment Reducer', () => {
@@ -37,6 +38,11 @@ describe('Deployment Reducer', () => {
       expect(state.data).toMatchObject(initialState.data);
       expect(state.meta).toMatchObject({ error: 'Oh Noes' });
     });
+  });
+
+  it('sets canEdit', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
   });
 
   describe('modal', () => {
