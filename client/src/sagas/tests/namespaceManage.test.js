@@ -7,6 +7,7 @@ import {
   updateServiceStatusSaga,
   paginationSaga,
   locationChangeSaga,
+  checkPermissionSaga,
 } from '../namespaceManage';
 
 import {
@@ -24,6 +25,8 @@ import {
   FETCH_SERVICES_NAMESPACE_STATUS_REQUEST,
   FETCH_SERVICES_NAMESPACE_STATUS_SUCCESS,
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
+  canManageRequest,
+  setCanManage,
 } from '../../modules/namespaceManage';
 
 import {
@@ -31,6 +34,7 @@ import {
   getServicesWithStatusForNamespace,
   enableServiceForNamespace,
   disableServiceForNamespace,
+  hasPermissionOn,
 } from '../../lib/api';
 
 describe('NamespaceManageSagas', () => {
@@ -57,6 +61,18 @@ describe('NamespaceManageSagas', () => {
         expect(gen.next().value).toMatchObject(put(FETCH_NAMESPACE_REQUEST()));
         expect(gen.next().value).toMatchObject(call(getNamespace, namespaceId));
         expect(gen.throw(error).value).toMatchObject(put(FETCH_NAMESPACE_ERROR({ error: error.message })));
+        expect(gen.next().done).toBe(true);
+      });
+    });
+
+    describe('check permission', () => {
+      const initPayload = { match, quiet: true };
+
+      it('fetches and sets permission information', () => {
+        const gen = checkPermissionSaga(initialise(initPayload));
+        expect(gen.next().value).toMatchObject(put(canManageRequest()));
+        expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId));
+        expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
         expect(gen.next().done).toBe(true);
       });
     });

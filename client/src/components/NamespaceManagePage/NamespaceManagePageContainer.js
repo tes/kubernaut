@@ -3,11 +3,10 @@ import { reduxForm } from 'redux-form';
 
 import { updateServiceStatusForNamespace, fetchServicesPagination } from '../../modules/namespaceManage';
 import NamespaceManagePage from './NamespaceManagePage';
-import Account from '../../lib/domain/Account';
 
 export default connect(({ namespaceManage, account }, { namespaceId }) => ({
   namespaceId,
-  canManage: new Account(account.data).hasPermissionOnNamespace(namespaceId, 'namespaces-manage'),
+  canManage: namespaceManage.canManage,
   namespace: {
     id: namespaceManage.id,
     name: namespaceManage.name,

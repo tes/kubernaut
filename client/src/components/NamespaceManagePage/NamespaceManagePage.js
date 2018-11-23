@@ -44,6 +44,17 @@ const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => 
 class NamespaceManagePage extends Component {
 
   render() {
+    const { meta } = this.props;
+    if (meta.loading.loadingPercent !== 100) return (
+      <Container>
+        <Row className="d-flex justify-content-center">
+          <Col sm="12" className="mt-5">
+            <Progress animated color="info" value={meta.loading.loadingPercent} />
+          </Col>
+        </Row>
+      </Container>
+    );
+
     if (!this.props.canManage) {
       return (
         <Container>
@@ -55,17 +66,6 @@ class NamespaceManagePage extends Component {
         </Container>
       );
     }
-
-    const { meta } = this.props;
-    if (meta.loading.loadingPercent !== 100) return (
-      <Container>
-        <Row className="d-flex justify-content-center">
-          <Col sm="12" className="mt-5">
-            <Progress animated color="info" value={meta.loading.loadingPercent} />
-          </Col>
-        </Row>
-      </Container>
-    );
 
     const error = this.props.error;
     const namespace = this.props.namespace;

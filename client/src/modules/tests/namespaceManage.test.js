@@ -7,6 +7,8 @@ import reduce, {
   FETCH_SERVICES_NAMESPACE_STATUS_REQUEST,
   FETCH_SERVICES_NAMESPACE_STATUS_SUCCESS,
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
+  canManageRequest,
+  setCanManage,
 } from '../namespaceManage';
 
 describe('NamespaceManage reducer', () => {
@@ -100,5 +102,15 @@ describe('NamespaceManage reducer', () => {
     expect(state.meta.loading).toMatchObject({
       sections: { services: false },
     });
+  });
+
+  it('should indicate when authorisation is loading', () => {
+    const state = reduce(undefined, canManageRequest());
+    expect(state.meta).toMatchObject({ loading: { sections: { canManage: true } } });
+  });
+
+  it('should set canManage in state', () => {
+    const state = reduce(undefined, setCanManage(true));
+    expect(state.canManage).toBe(true);
   });
 });

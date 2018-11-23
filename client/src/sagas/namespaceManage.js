@@ -22,13 +22,29 @@ import {
   FETCH_SERVICES_NAMESPACE_STATUS_REQUEST,
   FETCH_SERVICES_NAMESPACE_STATUS_SUCCESS,
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
+  canManageRequest,
+  setCanManage,
 } from '../modules/namespaceManage';
 import {
   getNamespace,
   getServicesWithStatusForNamespace,
   enableServiceForNamespace,
   disableServiceForNamespace,
+  hasPermissionOn,
 } from '../lib/api';
+
+export function* checkPermissionSaga({ payload: { match, ...options }}) {
+  if (!match) return;
+  const { namespaceId } = match.params;
+  if (!namespaceId) return;
+  try {
+    yield put(canManageRequest());
+    const hasPermission = yield call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId);
+    yield put(setCanManage(hasPermission.answer));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
 
 export function* fetchNamespaceInfoSaga({ payload: { match, ...options } }) {
   if (!match) return;
@@ -96,6 +112,7 @@ export function* locationChangeSaga({ payload = {} }) {
 }
 
 export default [
+  takeEvery(initialise, checkPermissionSaga),
   takeEvery(initialise, fetchNamespaceInfoSaga),
   takeEvery(updateServiceStatusForNamespace, updateServiceStatusSaga),
   takeEvery(fetchServices, fetchServicesWithNamespaceStatusSaga),

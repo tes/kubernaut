@@ -212,3 +212,8 @@ export const updateDeploymentNote = (deploymentId, note) => {
     }),
   });
 };
+
+export const hasPermissionOn = (permission, type, id) => {
+  const url = `/api/account/hasPermission/${permission}/on/${type}/${id}`;
+  return makeRequest(url);
+};

@@ -7,6 +7,8 @@ export const updateServiceStatusSuccess = createAction(`${actionsPrefix}/UPDATE_
 export const fetchServices = createAction(`${actionsPrefix}/FETCH_SERVICES`);
 export const fetchServicesPagination = createAction(`${actionsPrefix}/FETCH_SERVICES_PAGINATION`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
+export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
 export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACE_ERROR`);
@@ -27,6 +29,7 @@ const defaultState = {
       sections: {
         namespace: false,
         services: false,
+        canManage: false,
       },
       loadingPercent: 100,
     },
@@ -42,6 +45,7 @@ const defaultState = {
     page: 1,
     limit: 20,
   },
+  canManage: false,
   initialValues: {},
 };
 
@@ -52,12 +56,14 @@ export default handleActions({
   [FETCH_NAMESPACE_REQUEST]: (state) => ({
     ...state,
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'namespace', true),
     },
   }),
   [FETCH_NAMESPACE_SUCCESS]: (state, { payload: { data } }) => ({
     ...state,
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'namespace', false),
     },
     id: data.id,
@@ -68,6 +74,7 @@ export default handleActions({
   [FETCH_NAMESPACE_ERROR]: (state, { payload }) => ({
     ...state,
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'namespace', false),
       error: payload.error,
     },
@@ -76,6 +83,7 @@ export default handleActions({
     ...state,
     services: defaultState.services,
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'services', true),
     },
   }),
@@ -86,12 +94,14 @@ export default handleActions({
       services: payload.data.items,
     },
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'services', false),
     },
   }),
   [FETCH_SERVICES_NAMESPACE_STATUS_ERROR]: (state, { payload }) => ({
     ...state,
     meta: {
+      ...state.meta,
       loading: computeLoading(state.meta.loading, 'services', false),
       error: payload.error,
     },
@@ -110,4 +120,19 @@ export default handleActions({
       limit: payload.limit || defaultState.pagination.limit,
     },
   }),
+  [canManageRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', true),
+    }
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', false),
+    },
+  })
 }, defaultState);
