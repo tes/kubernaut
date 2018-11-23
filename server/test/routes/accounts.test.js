@@ -229,6 +229,29 @@ describe('Accounts API', () => {
     });
   });
 
+  describe('GET /api/account/hasPermission/:permission/on/:type/:id', () => {
+    it('should return results for registry', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
+
+      const result = await request({
+        url: `/api/account/hasPermission/namespaces-read/on/namespace/${namespace.id}`,
+        method: 'GET'
+      });
+
+      expect(result.answer).toBe(true);
+    });
+
+    it('should return results for registry', async () => {
+      const result = await request({
+        url: `/api/account/hasPermission/registries-read/on/registry/00000000-0000-0000-0000-000000000000`,
+        method: 'GET'
+      });
+
+      expect(result.answer).toBe(true);
+    });
+  });
+
   describe('POST /api/accounts', () => {
 
     it('should save an account', async () => {

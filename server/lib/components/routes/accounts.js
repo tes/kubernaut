@@ -35,6 +35,19 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/account/hasPermission/:permission/on/:type/:id', async (req, res, next) => {
+      try {
+          const { permission, type, id } = req.params;
+          if (!['namespace', 'registry'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
+          const func = (type === 'namespace' ? store.hasPermissionOnNamespace : store.hasPermissionOnRegistry);
+
+          const answer = await func(req.user, id, permission);
+          return res.json({ answer });
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/accounts/:id', async (req, res, next) => {
       try {
         if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
