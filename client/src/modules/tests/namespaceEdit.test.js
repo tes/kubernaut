@@ -6,6 +6,8 @@ import reduce, {
   FETCH_CLUSTERS_REQUEST,
   FETCH_CLUSTERS_SUCCESS,
   FETCH_CLUSTERS_ERROR,
+  canEditRequest,
+  setCanEdit,
 } from '../namespaceEdit';
 
 describe('NamespaceEdit reducer', () => {
@@ -17,7 +19,7 @@ describe('NamespaceEdit reducer', () => {
 
   it('should indicate when namespace is loading', () => {
     const state = reduce(undefined, FETCH_NAMESPACE_REQUEST());
-    expect(state.meta).toMatchObject({ loading: true });
+    expect(state.meta).toMatchObject({ loading: { sections: { namespace: true } } });
   });
 
   it('should update state when namespace has loaded', () => {
@@ -62,7 +64,7 @@ describe('NamespaceEdit reducer', () => {
 
   it('should reset clusters data when loading', () => {
     const defaultState = reduce(undefined, {});
-    const state = reduce({ clusters: { data: { a: 1 } } }, FETCH_CLUSTERS_REQUEST());
+    const state = reduce({ meta: defaultState.meta, clusters: { data: { a: 1 } } }, FETCH_CLUSTERS_REQUEST());
     expect(state.clusters.data).toMatchObject(defaultState.clusters.data);
   });
 
@@ -75,6 +77,16 @@ describe('NamespaceEdit reducer', () => {
   it('should update state when clusters have errored', () => {
     const state = reduce(undefined, FETCH_CLUSTERS_ERROR({ error: 'Oh Noes' }));
     expect(state.clusters.error).toBe('Oh Noes');
+  });
+
+  it('should indicate when authorisation is loading', () => {
+    const state = reduce(undefined, canEditRequest());
+    expect(state.meta).toMatchObject({ loading: { sections: { canEdit: true } } });
+  });
+
+  it('should set canEdit in state', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
   });
 
 });

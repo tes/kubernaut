@@ -6,6 +6,7 @@ import {
   fetchClustersSaga,
   fetchNamespaceInfoSaga,
   editNamespaceSaga,
+  checkPermissionSaga,
 } from '../namespaceEdit';
 
 import {
@@ -18,10 +19,12 @@ import {
   FETCH_CLUSTERS_REQUEST,
   FETCH_CLUSTERS_SUCCESS,
   FETCH_CLUSTERS_ERROR,
+  canEditRequest,
+  setCanEdit,
 } from '../../modules/namespaceEdit';
 
 import {
-  getNamespace, getClusters, editNamespace
+  getNamespace, getClusters, editNamespace, hasPermissionOn,
 } from '../../lib/api';
 
 describe('NamespaceEdit sagas', () => {
@@ -29,6 +32,7 @@ describe('NamespaceEdit sagas', () => {
     const initAction = initForm({ match: {} });
     const gen = initFormSaga(initForm(initAction));
     expect(gen.next().value).toMatchObject(all([
+      call(checkPermissionSaga, initForm(initAction)),
       call(fetchNamespaceInfoSaga, initForm(initAction)),
       call(fetchClustersSaga, initForm(initAction)),
     ]));
@@ -95,5 +99,17 @@ describe('NamespaceEdit sagas', () => {
     expect(gen.next('uuid').value).toMatchObject(call(editNamespace, 'uuid', {}, options));
     expect(gen.throw(error).value).toMatchObject(put(submitForm.failure(formError)));
     expect(gen.next().done).toBe(true);
+  });
+
+  describe('check permission', () => {
+    const initPayload = { match: { params: { namespaceId } }, quiet: true };
+
+    it('fetches and sets permission information', () => {
+      const gen = checkPermissionSaga(initForm(initPayload));
+      expect(gen.next().value).toMatchObject(put(canEditRequest()));
+      expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+      expect(gen.next().done).toBe(true);
+    });
   });
 });

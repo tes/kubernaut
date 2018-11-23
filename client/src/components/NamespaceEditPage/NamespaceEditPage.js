@@ -9,6 +9,7 @@ import {
   FormGroup,
   Label,
   Button,
+  Progress,
 } from 'reactstrap';
 import Title from '../Title';
 import RenderSelect from '../RenderSelect';
@@ -17,6 +18,17 @@ import RenderInput from '../RenderInput';
 class NamespaceEditPage extends Component {
 
   render() {
+    const { meta } = this.props;
+    if (meta.loading.loadingPercent !== 100) return (
+      <Container>
+        <Row className="d-flex justify-content-center">
+          <Col sm="12" className="mt-5">
+            <Progress animated color="info" value={meta.loading.loadingPercent} />
+          </Col>
+        </Row>
+      </Container>
+    );
+
     if (!this.props.canEdit) {
       return (
         <Container>

@@ -1,5 +1,6 @@
 import { createAction, handleActions } from 'redux-actions';
 import { createFormAction } from 'redux-form-saga';
+import computeLoading from './lib/computeLoading';
 
 const actionsPrefix = 'KUBERNAUT/NAMESPACE_EDIT';
 export const initForm = createAction(`${actionsPrefix}/INIT_FORM`);
@@ -13,6 +14,9 @@ export const FETCH_CLUSTERS_SUCCESS = createAction(`${actionsPrefix}/FETCH_CLUST
 export const FETCH_CLUSTERS_ERROR = createAction(`${actionsPrefix}/FETCH_CLUSTERS_ERROR`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 
+export const canEditRequest = createAction(`${actionsPrefix}/CAN_EDIT_REQUEST`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+
 export const selectNamespaceId = (state) => (state.namespaceEdit.id);
 
 const defaultState = {
@@ -20,7 +24,17 @@ const defaultState = {
   name: '',
   color: '',
   cluster: '',
-  meta: {},
+  canEdit: false,
+  meta: {
+    loading: {
+      sections: {
+        clusters: false,
+        namespace: false,
+        canEdit: false,
+      },
+      loadingPercent: 100,
+    }
+  },
   initialValues: {},
   clusters: {
     data: {
@@ -36,29 +50,43 @@ export default handleActions({
   [FETCH_CLUSTERS_REQUEST]: (state) => ({
     ...state,
     clusters: defaultState.clusters,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'clusters', true),
+    }
   }),
   [FETCH_CLUSTERS_SUCCESS]: (state, { payload }) => ({
     ...state,
     clusters: {
       data: payload.data,
     },
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'clusters', false),
+    }
   }),
   [FETCH_CLUSTERS_ERROR]: (state, { payload }) => ({
     ...state,
     clusters: {
       error: payload.error,
-    }
+    },
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'clusters', false),
+    },
   }),
   [FETCH_NAMESPACE_REQUEST]: (state) => ({
     ...state,
     meta: {
-      loading: true
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'namespace', true),
     },
   }),
   [FETCH_NAMESPACE_SUCCESS]: (state, { payload: { data } }) => ({
     ...state,
     meta: {
-      loading: false,
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'namespace', false),
     },
     id: data.id,
     name: data.name,
@@ -76,8 +104,23 @@ export default handleActions({
   [FETCH_NAMESPACE_ERROR]: (state, { payload }) => ({
     ...state,
     meta: {
-      loading: false,
+      loading: computeLoading(state.meta.loading, 'namespace', false),
       error: payload.error,
     },
   }),
+  [canEditRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canEdit', true),
+    }
+  }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canEdit', false),
+    },
+  })
 }, defaultState);

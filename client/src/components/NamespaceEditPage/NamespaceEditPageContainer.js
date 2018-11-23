@@ -3,11 +3,11 @@ import { reduxForm } from 'redux-form';
 
 import { submitForm } from '../../modules/namespaceEdit';
 import NamespaceEditPage from './NamespaceEditPage';
-import Account from '../../lib/domain/Account';
 
-export default connect(({ namespaceEdit, account }, { namespaceId }) => ({
+export default connect(({ namespaceEdit }, { namespaceId }) => ({
   namespaceId,
-  canEdit: new Account(account.data).hasPermissionOnNamespace(namespaceId, 'namespaces-write'),
+  canEdit: namespaceEdit.canEdit,
+  meta: namespaceEdit.meta,
   namespace: {
     name: namespaceEdit.name,
     clusterName: namespaceEdit.cluster,

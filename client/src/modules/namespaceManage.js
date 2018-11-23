@@ -134,5 +134,5 @@ export default handleActions({
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'canManage', false),
     },
-  })
+  }),
 }, defaultState);

@@ -12,14 +12,30 @@ import {
   FETCH_CLUSTERS_REQUEST,
   FETCH_CLUSTERS_SUCCESS,
   FETCH_CLUSTERS_ERROR,
+  canEditRequest,
+  setCanEdit,
 } from '../modules/namespaceEdit';
-import { getNamespace, getClusters, editNamespace } from '../lib/api';
+import { getNamespace, getClusters, editNamespace, hasPermissionOn } from '../lib/api';
 
 export function* initFormSaga(action) {
   yield all([
+    call(checkPermissionSaga, action),
     call(fetchNamespaceInfoSaga, action),
     call(fetchClustersSaga, action),
   ]);
+}
+
+export function* checkPermissionSaga({ payload: { match, ...options } }) {
+  if (!match) return;
+  const { namespaceId } = match.params;
+  if (!namespaceId) return;
+  try {
+    yield put(canEditRequest());
+    const hasPermission = yield call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId);
+    yield put(setCanEdit(hasPermission.answer));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
 }
 
 export function* fetchClustersSaga({ payload }) {
