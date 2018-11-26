@@ -18,6 +18,9 @@ export const toggleSort = createAction(`${actionsPrefix}/TOGGLE_SORT`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const setSort = createAction(`${actionsPrefix}/SET_SORT`);
 
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+
 export const selectNamespace = (state) => (state.namespace.namespace.data);
 export const selectSortState = (state) => (state.namespace.deployments.sort);
 export const selectPaginationState = (state) => (state.namespace.deployments.pagination);
@@ -49,6 +52,8 @@ const defaultState = {
       limit: 20,
     },
   },
+  canManage: false,
+  canEdit: false,
 };
 
 export default handleActions({
@@ -142,5 +147,13 @@ export default handleActions({
         limit: payload.limit || defaultState.deployments.pagination.limit,
       },
     },
+  }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
   }),
 }, defaultState);

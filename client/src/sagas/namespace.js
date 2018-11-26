@@ -23,8 +23,10 @@ import {
   selectPaginationState,
   setPagination,
   setSort,
+  setCanEdit,
+  setCanManage
 } from '../modules/namespace';
-import { getNamespace, getDeployments } from '../lib/api';
+import { getNamespace, getDeployments, hasPermissionOn } from '../lib/api';
 
 export function* fetchNamespaceInfoSaga({ payload: { id, ...options } }) {
   yield put(FETCH_NAMESPACE_REQUEST());
@@ -70,6 +72,17 @@ export function* paginationSaga() {
   yield put(push(`${location.pathname}?${alterQuery(location.search, { pagination: makeQueryString({ ...pagination }) })}`));
 }
 
+export function* checkPermissionSaga({ payload: { id, ...options } }) {
+  try {
+    const canEdit = yield call(hasPermissionOn, 'namespaces-write', 'namespace', id);
+    const canManage = yield call(hasPermissionOn, 'namespaces-manage', 'namespace', id);
+    yield put(setCanEdit(canEdit.answer));
+    yield put(setCanManage(canManage.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export function* locationChangeSaga({ payload = {} }) {
   const { match, location } = payload;
   if (!match || !location) return;
@@ -89,6 +102,7 @@ export function* locationChangeSaga({ payload = {} }) {
 
 export default [
   takeEvery(fetchNamespacePageData, fetchNamespaceInfoSaga),
+  takeEvery(fetchNamespacePageData, checkPermissionSaga),
   takeEvery(fetchDeployments, fetchDeploymentsForNamespaceSaga),
   takeEvery(fetchDeploymentsPagination, paginationSaga),
   takeEvery(toggleSort, sortDeploymentsSaga),

@@ -6,6 +6,8 @@ import reduce, {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
+  setCanEdit,
+  setCanManage,
 } from '../namespace';
 
 describe('Namespace Reducer', () => {
@@ -49,5 +51,15 @@ describe('Namespace Reducer', () => {
     const state = reduce(initialState, FETCH_DEPLOYMENTS_ERROR({ error: 'Oh Noes' }));
     expect(state.deployments.data).toBe(initialState.deployments.data);
     expect(state.deployments.meta).toMatchObject({ error: 'Oh Noes' });
+  });
+
+  it('should update canEdit', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
+  });
+
+  it('should update canManage', () => {
+    const state = reduce(undefined, setCanManage(true));
+    expect(state.canManage).toBe(true);
   });
 });

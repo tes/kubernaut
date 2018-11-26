@@ -7,6 +7,7 @@ import {
   paginationSaga,
   sortDeploymentsSaga,
   locationChangeSaga,
+  checkPermissionSaga,
 } from '../namespace';
 
 import {
@@ -26,11 +27,14 @@ import {
   FETCH_DEPLOYMENTS_REQUEST,
   FETCH_DEPLOYMENTS_SUCCESS,
   FETCH_DEPLOYMENTS_ERROR,
+  setCanEdit,
+  setCanManage,
 } from '../../modules/namespace';
 
 import {
   getNamespace,
-  getDeployments
+  getDeployments,
+  hasPermissionOn,
 } from '../../lib/api';
 
 describe('Namespace sagas', () => {
@@ -114,6 +118,15 @@ describe('Namespace sagas', () => {
     expect(gen.next().value).toMatchObject(select(getLocation));
     expect(gen.next({ pathname: '/namespaces/bob', search: '' }).value).toMatchObject(select(selectSortState));
     expect(gen.next(sortState).value).toMatchObject(put(push('/namespaces/bob?sort=column%3Dname%26order%3Dasc&pagination=')));
+  });
+
+  it('should check permissions', () => {
+    const gen = checkPermissionSaga(fetchNamespacePageData(initPayload));
+    expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId));
+    expect(gen.next({ answer: true }).value).toMatchObject(call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().value).toMatchObject(put(setCanManage(true)));
+    expect(gen.next().done).toBe(true);
   });
 
   describe('locationChangeSaga', () => {
