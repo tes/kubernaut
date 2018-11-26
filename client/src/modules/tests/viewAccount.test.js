@@ -8,6 +8,7 @@ import reduce, {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  setCanEdit,
 } from '../viewAccount';
 
 describe('viewAccount Reducer', () => {
@@ -89,5 +90,10 @@ describe('viewAccount Reducer', () => {
     expect(state.meta).toMatchObject({ loading: { }, error: 'Oh Noes' });
     expect(state.meta.loading).toMatchObject({ sections: { account: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
+  });
+
+  it('should set canEdit state', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
   });
 });

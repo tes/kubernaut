@@ -11,12 +11,14 @@ import {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  setCanEdit,
 } from '../modules/viewAccount';
 
 import {
   getAccountById,
   getNamespaces,
   getRegistries,
+  hasPermission,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -31,6 +33,15 @@ export function* fetchAccountInfoSaga({ payload = {} }) {
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_ACCOUNT_ERROR({ error: error.message }));
+  }
+}
+
+export function* checkPermissionSaga({ payload = {}}) {
+  try {
+    const result = yield call(hasPermission, 'accounts-write');
+    yield put(setCanEdit(result.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
   }
 }
 
@@ -58,6 +69,7 @@ export function* fetchRegistriesSaga({ payload: options }) {
 
 export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
+  takeLatest(fetchAccountInfo, checkPermissionSaga),
   takeLatest(fetchAccountInfo, fetchNamespacesSaga),
   takeLatest(fetchAccountInfo, fetchRegistriesSaga),
 ];

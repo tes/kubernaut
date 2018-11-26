@@ -1,10 +1,8 @@
 import { connect } from 'react-redux';
 import AccountPage from './AccountPage';
 
-import Account from '../../lib/domain/Account';
-
 export default connect((state, props) => ({
-  canEdit: new Account(state.account.data).hasPermission('accounts-write'),
+  canEdit: state.viewAccount.canEdit,
   accountId: props.accountId,
   account: state.viewAccount.account,
   namespaces: state.viewAccount.namespaces,

@@ -213,6 +213,11 @@ export const updateDeploymentNote = (deploymentId, note) => {
   });
 };
 
+export const hasPermission = (permission) => {
+  const url = `/api/account/hasPermission/${permission}`;
+  return makeRequest(url);
+};
+
 export const hasPermissionOn = (permission, type, id) => {
   const url = `/api/account/hasPermission/${permission}/on/${type}/${id}`;
   return makeRequest(url);

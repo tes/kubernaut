@@ -12,9 +12,11 @@ export const FETCH_NAMESPACES_ERROR = createAction(`${actionsPrefix}/FETCH_NAMES
 export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REGISTRIES_REQUEST`);
 export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 const defaultState = {
   account: {},
+  canEdit: false,
   meta: {
     loading: {
       sections: {
@@ -99,4 +101,8 @@ export default handleActions({
       error: payload.error,
     },
   }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+  })
 }, defaultState);

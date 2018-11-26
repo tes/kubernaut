@@ -4,6 +4,7 @@ import {
   fetchAccountInfoSaga,
   fetchNamespacesSaga,
   fetchRegistriesSaga,
+  checkPermissionSaga,
 } from '../viewAccount';
 
 import {
@@ -17,12 +18,14 @@ import {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  setCanEdit,
 } from '../../modules/viewAccount';
 
 import {
   getAccountById,
   getNamespaces,
   getRegistries,
+  hasPermission,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -92,5 +95,12 @@ describe('viewAccount sagas', () => {
       expect(gen.throw(error).value).toMatchObject(put(FETCH_REGISTRIES_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });
+  });
+
+  it('should check permission', () => {
+    const gen = checkPermissionSaga(fetchAccountInfo());
+    expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-write'));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().done).toBe(true);
   });
 });
