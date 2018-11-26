@@ -10,6 +10,7 @@ import {
   updateRolesForRegistry,
   addNewRegistry,
   selectAccount,
+  setCanEdit,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
@@ -31,6 +32,7 @@ import {
   removeRoleForNamespace,
   addRoleForRegistry,
   removeRoleForRegistry,
+  hasPermission,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -161,10 +163,20 @@ export function* deleteRolesForRegistrySaga({ payload }) {
   }
 }
 
+export function* checkPermissionSaga({ payload = {}}) {
+  try {
+    const result = yield call(hasPermission, 'accounts-write');
+    yield put(setCanEdit(result.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
   takeLatest(fetchAccountInfo, fetchNamespacesSaga),
   takeLatest(fetchAccountInfo, fetchRegistriesSaga),
+  takeLatest(fetchAccountInfo, checkPermissionSaga),
   takeEvery(updateRolesForNamespace, updateRolesForNamespaceSaga),
   takeEvery(addNewNamespace, addNewNamespaceSaga),
   takeEvery(deleteRolesForNamespace, deleteRolesForNamespaceSaga),

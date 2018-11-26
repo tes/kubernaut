@@ -20,11 +20,13 @@ export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REG
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
 export const UPDATE_ROLE_FOR_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_NAMESPACE_SUCCESS`);
 export const UPDATE_ROLE_FOR_REGISTRY_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_REGISTRY_SUCCESS`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 export const selectAccount = (state) => (state.editAccount.account);
 
 const defaultState = {
   account: {},
+  canEdit: false,
   meta: {
     loading: {
       sections: {
@@ -116,5 +118,9 @@ export default handleActions({
   [UPDATE_ROLE_FOR_REGISTRY_SUCCESS]: (state, { payload }) => ({
     ...state,
     account: payload.data,
+  }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
   }),
 }, defaultState);

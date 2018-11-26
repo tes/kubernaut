@@ -23,6 +23,18 @@ class AccountEditPage extends Component {
       </Container>
     );
 
+    if (!this.props.canEdit) {
+      return (
+        <Container>
+          <Row>
+            <Col xs="12">
+              <p>You are not authorised to view this page.</p>
+            </Col>
+          </Row>
+        </Container>
+      );
+    }
+
     const account = new Account(accountData);
 
     return (

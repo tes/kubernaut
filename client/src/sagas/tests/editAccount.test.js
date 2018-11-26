@@ -11,6 +11,7 @@ import {
   updateRolesForRegistrySaga,
   addNewRegistrySaga,
   deleteRolesForRegistrySaga,
+  checkPermissionSaga,
 } from '../editAccount';
 
 import {
@@ -33,6 +34,7 @@ import {
   FETCH_REGISTRIES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
+  setCanEdit,
 } from '../../modules/editAccount';
 
 import {
@@ -43,6 +45,7 @@ import {
   removeRoleForNamespace,
   addRoleForRegistry,
   removeRoleForRegistry,
+  hasPermission,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -326,5 +329,12 @@ describe('editAccount sagas', () => {
       } }));
       expect(gen.next().done).toBe(true);
     });
+  });
+
+  it('should check permission', () => {
+    const gen = checkPermissionSaga(fetchAccountInfo());
+    expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-write'));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().done).toBe(true);
   });
 });

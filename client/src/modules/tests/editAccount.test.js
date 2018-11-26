@@ -10,6 +10,7 @@ import reduce, {
   FETCH_REGISTRIES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
+  setCanEdit,
 } from '../editAccount';
 
 describe('editAccount Reducer', () => {
@@ -105,5 +106,10 @@ describe('editAccount Reducer', () => {
     const newAccountData = { b: 1 };
     const state = reduce(initialState, UPDATE_ROLE_FOR_REGISTRY_SUCCESS({ data: newAccountData }));
     expect(state.account).toMatchObject(newAccountData);
+  });
+
+  it('should set canEdit state', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
   });
 });
