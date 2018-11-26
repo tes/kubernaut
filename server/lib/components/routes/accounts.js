@@ -35,6 +35,16 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/account/hasPermission/:permission', async (req, res, next) => {
+      try {
+          const { permission } = req.params;
+          const answer = await store.hasPermission(req.user, permission);
+          return res.json({ answer });
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/account/hasPermission/:permission/on/:type/:id', async (req, res, next) => {
       try {
           const { permission, type, id } = req.params;

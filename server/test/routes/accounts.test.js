@@ -229,8 +229,19 @@ describe('Accounts API', () => {
     });
   });
 
+  describe('GET /api/account/hasPermission/:permission', () => {
+    it('should return results for a global permission', async () => {
+      const result = await request({
+        url: `/api/account/hasPermission/accounts-write`,
+        method: 'GET'
+      });
+
+      expect(result.answer).toBe(true);
+    });
+  });
+
   describe('GET /api/account/hasPermission/:permission/on/:type/:id', () => {
-    it('should return results for registry', async () => {
+    it('should return results for namespacesOfUserCurrentUserCanSee', async () => {
       const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
       const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
 
