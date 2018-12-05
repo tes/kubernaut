@@ -7,7 +7,7 @@ const {
 
 export default {
   async start({ logger, db }) {
-    function roleIdsWithPermissionBuilder(permission) {
+    function queryRoleIdsWithPermission(permission) {
       return sqb
         .select('r.id')
         .from('role_permission rp')
@@ -19,11 +19,11 @@ export default {
     async function queryRegistryIdsWithPermission(connection, userId, permission) {
       const hasNullSubjectEntry = sqb // Preserve the bug/feature of null subject => apply to all
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_registry acr')
-        .where(Op.is('acr.deleted_on', null))
-        .where(Op.eq('acr.account', userId))
-        .where(Op.in('acr.role', roleIdsWithPermissionBuilder(permission)))
-        .where(Op.is('acr.subject', null));
+        .from('account_role_registry arr')
+        .where(Op.is('arr.deleted_on', null))
+        .where(Op.eq('arr.account', userId))
+        .where(Op.in('arr.role', queryRoleIdsWithPermission(permission)))
+        .where(Op.is('arr.subject', null));
 
       const nullSubjectResult = await connection.query(db.serialize(hasNullSubjectEntry, {}).sql);
       if (nullSubjectResult.rows[0].answer) {
@@ -38,11 +38,11 @@ export default {
         .select('r.id')
         .from('active_registry__vw r')
         .where(Op.in('r.id', sqb
-          .select('acr.subject')
-          .from('account_role_registry acr')
-          .where(Op.is('acr.deleted_on', null))
-          .where(Op.eq('acr.account', userId))
-          .where(Op.in('acr.role', roleIdsWithPermissionBuilder(permission)))
+          .select('arr.subject')
+          .from('account_role_registry arr')
+          .where(Op.is('arr.deleted_on', null))
+          .where(Op.eq('arr.account', userId))
+          .where(Op.in('arr.role', queryRoleIdsWithPermission(permission)))
           .where(Op.not('subject', null))
         ));
 
@@ -52,11 +52,11 @@ export default {
     async function queryNamespaceIdsWithPermission(connection, userId, permission) {
       const hasNullSubjectEntry = sqb // Preserve the bug/feature of null subject => apply to all
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_namespace acn')
-        .where(Op.is('acn.deleted_on', null))
-        .where(Op.eq('acn.account', userId))
-        .where(Op.in('acn.role', roleIdsWithPermissionBuilder(permission)))
-        .where(Op.is('acn.subject', null));
+        .from('account_role_namespace arn')
+        .where(Op.is('arn.deleted_on', null))
+        .where(Op.eq('arn.account', userId))
+        .where(Op.in('arn.role', queryRoleIdsWithPermission(permission)))
+        .where(Op.is('arn.subject', null));
 
       const nullSubjectResult = await connection.query(db.serialize(hasNullSubjectEntry, {}).sql);
 
@@ -72,11 +72,11 @@ export default {
         .select('r.id')
         .from('active_namespace__vw r')
         .where(Op.in('r.id', sqb
-          .select('acn.subject')
-          .from('account_role_namespace acn')
-          .where(Op.is('acn.deleted_on', null))
-          .where(Op.eq('acn.account', userId))
-          .where(Op.in('acn.role', roleIdsWithPermissionBuilder(permission)))
+          .select('arn.subject')
+          .from('account_role_namespace arn')
+          .where(Op.is('arn.deleted_on', null))
+          .where(Op.eq('arn.account', userId))
+          .where(Op.in('arn.role', queryRoleIdsWithPermission(permission)))
           .where(Op.not('subject', null))
         ));
 
@@ -87,6 +87,7 @@ export default {
     return {
       queryRegistryIdsWithPermission,
       queryNamespaceIdsWithPermission,
+      queryRoleIdsWithPermission,
     };
   }
 };
