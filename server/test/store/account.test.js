@@ -570,6 +570,144 @@ describe('Account Store', () => {
   });
 
 
+  describe('Namespace roles for a user', () => {
+    it('collects role data as seen by global admin', async () => {
+      const adminAccount = await saveAccount();
+      await grantRoleOnNamespace(adminAccount.id, 'admin', null);
+      const genericAccount = await saveAccount();
+      const namespace = await saveNamespace();
+      const namespace2 = await saveNamespace();
+
+      await grantRoleOnNamespace(genericAccount.id, 'developer', namespace.id);
+      await grantRoleOnNamespace(genericAccount.id, 'observer', namespace2.id);
+
+      const result = await store.rolesForNamespaces(genericAccount.id, adminAccount);
+      const { currentRoles, namespacesWithoutRoles, rolesGrantable } = result;
+
+      expect(namespacesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(2);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace.id).roles).toMatchObject(['developer']);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace2.id).roles).toMatchObject(['observer']);
+
+      expect(rolesGrantable.length).toBe(2);
+      const namespaceGrantable = rolesGrantable.find(({ id }) => id === namespace.id);
+      expect(namespaceGrantable).toBeDefined();
+      expect(namespaceGrantable.roles.length).toBe(4);
+      expect(namespaceGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const namespace2Grantable = rolesGrantable.find(({ id }) => id === namespace2.id);
+      expect(namespace2Grantable).toBeDefined();
+      expect(namespace2Grantable.roles.length).toBe(4);
+      expect(namespace2Grantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('collects role data as seen by an admin of namespaces', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const namespace = await saveNamespace();
+      const namespace2 = await saveNamespace();
+
+      await grantRoleOnNamespace(adminAccount.id, 'admin', namespace.id);
+      await grantRoleOnNamespace(adminAccount.id, 'admin', namespace2.id);
+      await grantRoleOnNamespace(genericAccount.id, 'developer', namespace.id);
+      await grantRoleOnNamespace(genericAccount.id, 'observer', namespace2.id);
+
+      const result = await store.rolesForNamespaces(genericAccount.id, adminAccount);
+      const { currentRoles, namespacesWithoutRoles, rolesGrantable } = result;
+
+      expect(namespacesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(2);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace.id).roles).toMatchObject(['developer']);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace2.id).roles).toMatchObject(['observer']);
+
+      expect(rolesGrantable.length).toBe(2);
+      const namespaceGrantable = rolesGrantable.find(({ id }) => id === namespace.id);
+      expect(namespaceGrantable).toBeDefined();
+      expect(namespaceGrantable.roles.length).toBe(4);
+      expect(namespaceGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const namespace2Grantable = rolesGrantable.find(({ id }) => id === namespace2.id);
+      expect(namespace2Grantable).toBeDefined();
+      expect(namespace2Grantable.roles.length).toBe(4);
+      expect(namespace2Grantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('collects role data for only what a user can see', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const namespace = await saveNamespace();
+      const namespace2 = await saveNamespace();
+
+      await grantRoleOnNamespace(adminAccount.id, 'admin', namespace.id);
+      await grantRoleOnNamespace(genericAccount.id, 'developer', namespace.id);
+      await grantRoleOnNamespace(genericAccount.id, 'observer', namespace2.id);
+
+      const result = await store.rolesForNamespaces(genericAccount.id, adminAccount);
+      const { currentRoles, namespacesWithoutRoles, rolesGrantable } = result;
+
+      expect(namespacesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(1);
+      const namespaceGrantable = rolesGrantable.find(({ id }) => id === namespace.id);
+      expect(namespaceGrantable).toBeDefined();
+      expect(namespaceGrantable.roles.length).toBe(4);
+      expect(namespaceGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('provides role data for namespaces visible to user, not granted to subject user', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const namespace = await saveNamespace();
+      const namespace2 = await saveNamespace();
+
+      await grantRoleOnNamespace(adminAccount.id, 'admin', namespace.id);
+      await grantRoleOnNamespace(adminAccount.id, 'maintainer', namespace2.id);
+      await grantRoleOnNamespace(genericAccount.id, 'developer', namespace.id);
+
+      const result = await store.rolesForNamespaces(genericAccount.id, adminAccount);
+      const { currentRoles, namespacesWithoutRoles, rolesGrantable } = result;
+
+      expect(namespacesWithoutRoles.length).toBe(1);
+      expect(namespacesWithoutRoles[0].id).toBe(namespace2.id);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(2);
+      const namespaceGrantable = rolesGrantable.find(({ id }) => id === namespace.id);
+      expect(namespaceGrantable).toBeDefined();
+      expect(namespaceGrantable.roles.length).toBe(4);
+      expect(namespaceGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const namespace2Grantable = rolesGrantable.find(({ id }) => id === namespace2.id);
+      expect(namespace2Grantable).toBeDefined();
+      expect(namespace2Grantable.roles.length).toBe(3);
+      expect(namespace2Grantable.roles).toMatchObject(['developer', 'maintainer', 'observer']);
+    });
+
+    it('if you do not have the permissions, you do not see roles available to grant', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const namespace = await saveNamespace();
+      await saveNamespace();
+
+      await grantRoleOnNamespace(adminAccount.id, 'developer', null);
+      await grantRoleOnNamespace(genericAccount.id, 'developer', namespace.id);
+
+      const result = await store.rolesForNamespaces(genericAccount.id, adminAccount);
+      const { currentRoles, namespacesWithoutRoles, rolesGrantable } = result;
+
+      expect(namespacesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ namespace: { id } }) => id === namespace.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(0);
+    });
+  });
+
   function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
     return store.saveRegistry(registry, meta);
   }

@@ -175,6 +175,16 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/accounts/:id/namespaces', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const data = await store.rolesForNamespaces(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
     cb();
   }
 

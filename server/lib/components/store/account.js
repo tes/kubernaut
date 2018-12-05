@@ -1,10 +1,12 @@
 import SQL from './sql';
 import uniq from 'lodash.uniq';
 import Account from '../../domain/Account';
+import Namespace from '../../domain/Namespace';
+import Cluster from '../../domain/Cluster';
 import sqb from 'sqb';
 
 export default function(options = {}) {
-  function start({ config, logger, db }, cb) {
+  function start({ config, logger, db, authz }, cb) {
 
   const { Op, raw } = sqb;
 
@@ -271,15 +273,17 @@ export default function(options = {}) {
 
       const roleRegistryBuilder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_registry acr')
-        .where(Op.eq('acr.account', user.id))
-        .where(Op.in('acr.role', rolesBuilder));
+        .from('account_role_registry arr')
+        .where(Op.eq('arr.account', user.id))
+        .where(Op.in('arr.role', rolesBuilder))
+        .where(Op.is('arr.deleted_on', null));
 
       const roleNamespaceBuilder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_namespace acn')
-        .where(Op.eq('acn.account', user.id))
-        .where(Op.in('acn.role', rolesBuilder));
+        .from('account_role_namespace arn')
+        .where(Op.eq('arn.account', user.id))
+        .where(Op.in('arn.role', rolesBuilder))
+        .where(Op.is('arn.deleted_on', null));
 
         return db.withTransaction(async connection => {
           return Promise.all([
@@ -303,13 +307,14 @@ export default function(options = {}) {
 
       const builder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_namespace acn')
-        .where(Op.eq('acn.account', user.id))
+        .from('account_role_namespace arn')
+        .where(Op.eq('arn.account', user.id))
         .where(Op.or(
-          Op.eq('acn.subject', namespaceId),
-          Op.is('acn.subject', null), // Preserve the bug/feature of null subject => apply to all
+          Op.eq('arn.subject', namespaceId),
+          Op.is('arn.subject', null), // Preserve the bug/feature of null subject => apply to all
         ))
-        .where(Op.in('acn.role', sqb
+        .where(Op.is('arn.deleted_on', null))
+        .where(Op.in('arn.role', sqb
           .select('r.id')
           .from('role_permission rp')
           .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
@@ -328,13 +333,14 @@ export default function(options = {}) {
 
       const builder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_registry acr')
-        .where(Op.eq('acr.account', user.id))
+        .from('account_role_registry arr')
+        .where(Op.eq('arr.account', user.id))
         .where(Op.or(
-          Op.eq('acr.subject', registryId),
-          Op.is('acr.subject', null), // Preserve the bug/feature of null subject => apply to all
+          Op.eq('arr.subject', registryId),
+          Op.is('arr.subject', null), // Preserve the bug/feature of null subject => apply to all
         ))
-        .where(Op.in('acr.role', sqb
+        .where(Op.is('arr.deleted_on', null))
+        .where(Op.in('arr.role', sqb
           .select('r.id')
           .from('role_permission rp')
           .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
@@ -346,6 +352,92 @@ export default function(options = {}) {
       const { answer } = result.rows[0];
       logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${registryId}`);
       return answer;
+    }
+
+    async function rolesForNamespaces(targetUserId, currentUser) {
+      logger.debug(`Collection role information for user ${targetUserId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = sqb
+          .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name', raw('array_agg(r.name) roles'))
+          .from('account_role_namespace arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('arn.subject', raw('n.id'))))
+          .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
+          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
+          .where(Op.eq('arn.account', targetUserId))
+          .where(Op.is('arn.deleted_on', null))
+          .where(Op.in('n.id', await authz.queryNamespaceIdsWithPermission(connection, currentUser.id, 'namespaces-read')))
+          .groupBy('n.id', 'c.name', 'n.name')
+          .orderBy('c.name', 'n.name');
+
+        const namespacesWithoutRolesBuilder = sqb
+          .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name')
+          .from('active_namespace__vw n')
+          .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
+          .where(Op.in('n.id', await authz.queryNamespaceIdsWithPermission(connection, currentUser.id, 'namespaces-grant')))
+          .where(Op.notIn('n.id', sqb
+            .select('namespace_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('c.name', 'n.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('arn.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('account_role_namespace arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('n.id', raw('arn.subject'))))
+          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arn.account', currentUser.id))
+          .where(Op.is('arn.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('arn.subject');
+
+        const rolesGrantableFromGlobal = sqb // If there is a null-subject, grab all namespace ids and roles possible to grant.
+          .select('n.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('account_role_namespace arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.is('arn.subject', null)))
+          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arn.account', currentUser.id))
+          .where(Op.is('arn.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('n.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, g.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || g.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the two together with a fullOuterJoin so as to work for having empty from either.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const namespacesWithoutRolesResult = await connection.query(db.serialize(namespacesWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            namespace: new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              cluster: new Cluster({ name: row.cluster_name }),
+            }),
+            roles: row.roles,
+          })),
+          namespacesWithoutRoles: namespacesWithoutRolesResult.rows.map(row => (
+            new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              cluster: new Cluster({ name: row.cluster_name }),
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
     }
 
     function toAccount(row, roles) {
@@ -399,6 +491,7 @@ export default function(options = {}) {
       hasPermissionOnNamespace,
       hasPermissionOnRegistry,
       hasPermission,
+      rolesForNamespaces,
     });
   }
 
