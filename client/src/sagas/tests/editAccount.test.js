@@ -39,7 +39,7 @@ import {
 
 import {
   getAccountById,
-  getNamespaces,
+  getAccountRolesForNamesaces,
   getRegistries,
   addRoleForNamespace,
   removeRoleForNamespace,
@@ -77,20 +77,24 @@ describe('editAccount sagas', () => {
 
   describe('fetchNamespacesSaga', () => {
     it('should fetch namespaces', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
       const namespacesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchNamespacesSaga(fetchAccountInfo());
+      const gen = fetchNamespacesSaga(fetchAccountInfo({ match }));
       expect(gen.next().value).toMatchObject(put(FETCH_NAMESPACES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getNamespaces));
-      expect(gen.next(namespacesData).value).toMatchObject(put(FETCH_NAMESPACES_SUCCESS({ data: namespacesData } )));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForNamesaces, accountId));
+      expect(gen.next(namespacesData).value).toMatchObject(put(FETCH_NAMESPACES_SUCCESS({ rolesData: namespacesData } )));
       expect(gen.next().done).toBe(true);
     });
 
     it('should tolerate errors fetching namespaces', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
       const error = new Error('ouch');
-      const gen = fetchNamespacesSaga(fetchAccountInfo(quietOptions));
+      const gen = fetchNamespacesSaga(fetchAccountInfo({ ...quietOptions, match }));
       expect(gen.next().value).toMatchObject(put(FETCH_NAMESPACES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getNamespaces));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForNamesaces, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_NAMESPACES_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });

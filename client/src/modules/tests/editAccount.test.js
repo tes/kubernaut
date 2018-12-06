@@ -18,16 +18,31 @@ describe('editAccount Reducer', () => {
 
   it('should indicate when namespaces are loading', () => {
     const state = reduce(createInitialState(), FETCH_NAMESPACES_REQUEST());
-    expect(state.namespaces).toMatchObject({ count: 0, items: [] });
+    expect(state.namespacesRoles).toMatchObject({
+      initialValues: {},
+      currentRoles: [],
+      availableNamespaces: [],
+      rolesGrantable: [],
+    });
     expect(state.meta).toMatchObject({ loading: { } });
     expect(state.meta.loading).toMatchObject({ sections: { namespaces: true } });
     expect(state.meta.loading.loadingPercent).toBeLessThan(100);
   });
 
   it('should update state when namespaces have loaded', () => {
-    const data = { count: 1, items: [{ a: 1 }] };
-    const state = reduce(createInitialState(), FETCH_NAMESPACES_SUCCESS({ data }));
-    expect(state.namespaces).toBe(data);
+    const rolesData = {
+      currentRoles: [{ namespace: { id: 'abc' }, roles: ['a']}],
+      namespacesWithoutRoles: [1],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { abc: { a: true } },
+      currentRoles: rolesData.currentRoles,
+      availableNamespaces: rolesData.namespacesWithoutRoles,
+      rolesGrantable: rolesData.rolesGrantable,
+    };
+    const state = reduce(createInitialState(), FETCH_NAMESPACES_SUCCESS({ rolesData }));
+    expect(state.namespacesRoles).toMatchObject(expected);
     expect(state.meta).toMatchObject({ loading: { } });
     expect(state.meta.loading).toMatchObject({ sections: { namespaces: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
@@ -96,9 +111,19 @@ describe('editAccount Reducer', () => {
 
   it('should update account state when namespace roles have changed', () => {
     const initialState = { ...createInitialState(), account: { a: 1 } };
-    const newAccountData = { b: 1 };
-    const state = reduce(initialState, UPDATE_ROLE_FOR_NAMESPACE_SUCCESS({ data: newAccountData }));
-    expect(state.account).toMatchObject(newAccountData);
+    const newRolesData = {
+      currentRoles: [{ namespace: { id: 'abc' }, roles: ['a']}],
+      namespacesWithoutRoles: [1],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { abc: { a: true } },
+      currentRoles: newRolesData.currentRoles,
+      availableNamespaces: newRolesData.namespacesWithoutRoles,
+      rolesGrantable: newRolesData.rolesGrantable,
+    };
+    const state = reduce(initialState, UPDATE_ROLE_FOR_NAMESPACE_SUCCESS({ data: newRolesData }));
+    expect(state.namespacesRoles).toMatchObject(expected);
   });
 
   it('should update account state when registry roles have changed', () => {

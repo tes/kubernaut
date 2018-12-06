@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { sortBy as _sortBy } from 'lodash';
 import { Field, FormSection } from 'redux-form';
 import {
   Row,
@@ -11,12 +10,15 @@ import {
 } from 'reactstrap';
 import RenderSelect from '../RenderSelect';
 
-const roleForNewNamespaceOptions = [
-  { value: 'admin', display: 'Admin' },
-  { value: 'maintainer', display: 'Maintainer' },
-  { value: 'developer', display: 'Developer' },
-  { value: 'observer', display: 'Observer' },
-];
+const rolesDisplayMap = {
+  'admin': 'Admin',
+  'maintainer': 'Maintainer',
+  'developer': 'Developer',
+  'observer': 'Observer',
+};
+
+const roleForNewNamespaceOptions = (roles) => roles.reduce((acc, role) =>
+  (acc.concat({ value: role, display: rolesDisplayMap[role] })), []);
 
 class Roles extends Component {
   render() {
@@ -77,26 +79,23 @@ class AccountNamespacesRolesForm extends Component {
   render() {
     const {
       namespacesPossibleToAdd,
-      namespaceData,
       currentValues,
+      currentRoles,
+      rolesGrantable,
       submitting,
-      fieldNamespaceIds,
       updateRolesForNamespace,
       addNewNamespace,
       deleteRolesForNamespace,
     } = this.props;
 
-    const namespaceSelectOptions = namespacesPossibleToAdd.map((id) => {
-      const namespace = namespaceData.items.find(({ id: nId }) => (nId === id));
-      return {
-        value: id,
-        display: `${namespace.cluster.name}/${namespace.name}`,
-      };
-    });
+    const namespaceSelectOptions = namespacesPossibleToAdd.map((namespace) => ({
+      value: namespace.id,
+      display: `${namespace.cluster.name}/${namespace.name}`,
+    }));
 
-    const namespacesForFields = _sortBy(namespaceData.items
-      .filter(({ id }) => fieldNamespaceIds.indexOf(id) > -1),
-      ['cluster.name', 'name']);
+    const newNamespaceRoleOptions = currentValues.newNamespace ?
+      roleForNewNamespaceOptions(rolesGrantable.find(({ id }) => id === currentValues.newNamespace).roles)
+      : [];
 
     return (
       <div>
@@ -116,7 +115,7 @@ class AccountNamespacesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      namespacesForFields.map((namespace) => (
+                      currentRoles.map(({ namespace }) => (
                         <FormSection name={namespace.id} key={namespace.id}>
                           <Roles
                             namespace={namespace}
@@ -150,13 +149,15 @@ class AccountNamespacesRolesForm extends Component {
                       name="roleForNewNamespace"
                       className="form-control"
                       component={RenderSelect}
-                      options={roleForNewNamespaceOptions}
+                      options={newNamespaceRoleOptions}
+                      disabled={!currentValues.newNamespace}
                     />
                   </Col>
                   <Col sm="1">
                     <Button
                       outline
                       color="secondary"
+                      disabled={!(currentValues.newNamespace && currentValues.roleForNewNamespace)}
                       onClick={() => {
                         addNewNamespace();
                       }}
@@ -174,8 +175,6 @@ class AccountNamespacesRolesForm extends Component {
 
 AccountNamespacesRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
-  fieldNamespaceIds: PropTypes.array.isRequired,
-  namespaceData: PropTypes.object.isRequired,
   namespacesPossibleToAdd: PropTypes.array.isRequired,
 };
 

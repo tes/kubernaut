@@ -1,4 +1,4 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 import computeLoading from './lib/computeLoading';
 
 const actionsPrefix = `KUBERNAUT/EDIT_ACCOUNT`;
@@ -37,9 +37,11 @@ const defaultState = {
       loadingPercent: 100,
     },
   },
-  namespaces: {
-    count: 0,
-    items: [],
+  namespacesRoles: {
+    initialValues: {},
+    currentRoles: [],
+    availableNamespaces: [],
+    rolesGrantable: [],
   },
   registries: {
     count: 0,
@@ -76,13 +78,27 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'namespaces', true),
     },
   }),
-  [FETCH_NAMESPACES_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    namespaces: payload.data,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'namespaces', false),
-    },
-  }),
+
+  [combineActions(FETCH_NAMESPACES_SUCCESS, UPDATE_ROLE_FOR_NAMESPACE_SUCCESS)]: (state, { payload }) => {
+    const data = payload.rolesData || payload.data;
+    const initialValues = {};
+    data.currentRoles.forEach(({ namespace: n, roles }) => {
+      initialValues[n.id] = roles.reduce((acc, r) => ({ ...acc, [r]: true }), {});
+    });
+    return {
+      ...state,
+      namespacesRoles: {
+        ...defaultState.namespacesRoles,
+        initialValues,
+        currentRoles: data.currentRoles,
+        availableNamespaces: data.namespacesWithoutRoles,
+        rolesGrantable: data.rolesGrantable,
+      },
+      meta: {
+        loading: computeLoading(state.meta.loading, 'namespaces', false),
+      },
+    };
+  },
   [FETCH_NAMESPACES_ERROR]: (state, { payload }) => ({
     ...state,
     meta: {
@@ -110,10 +126,6 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'registries', false),
       error: payload.error,
     },
-  }),
-  [UPDATE_ROLE_FOR_NAMESPACE_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    account: payload.data,
   }),
   [UPDATE_ROLE_FOR_REGISTRY_SUCCESS]: (state, { payload }) => ({
     ...state,

@@ -30,22 +30,6 @@ export default class Account {
     }, {});
   }
 
-  listNamespaceIdsWithRoleAsObject() {
-    return Object.keys(this.roles || []).reduce((namespaces, name) => {
-      this.roles[name].namespaces.forEach((namespace) => {
-        if (namespaces[namespace]) {
-          namespaces[namespace][name] = true;
-          return namespaces;
-        }
-        namespaces[namespace] = {
-          [name]: true,
-        };
-        return namespaces;
-      });
-      return namespaces;
-    }, {});
-  }
-
   listRegistryIdsWithRoleAsObject() {
     return Object.keys(this.roles || []).reduce((registries, name) => {
       this.roles[name].registries.forEach((registry) => {

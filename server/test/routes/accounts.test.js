@@ -14,7 +14,7 @@ import {
   makeRequestFilter,
 } from '../factories';
 
-describe('Accounts API', () => {
+describe.only('Accounts API', () => {
 
   let request;
   let config;
@@ -444,12 +444,13 @@ describe('Accounts API', () => {
         },
       });
 
-      expect(response.id).toBeDefined();
-
-      const account = await store.getAccount(saved.id);
-      expect(account).toBeDefined();
-      expect(account.roles.admin).toBeDefined();
-      expect(account.roles.admin.namespaces).toEqual([namespace.id]);
+      expect(response.currentRoles).toBeDefined();
+      expect(response.namespacesWithoutRoles).toBeDefined();
+      expect(response.rolesGrantable).toBeDefined();
+      expect(response.currentRoles.length).toBe(1);
+      const entry = response.currentRoles[0];
+      expect(entry.namespace.id).toBe(namespace.id);
+      expect(entry.roles).toMatchObject(['admin']);
     });
 
     it('should reject payloads without an account', async () => {

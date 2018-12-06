@@ -49,10 +49,7 @@ class AccountEditPage extends Component {
         <Row className="mt-3">
           <Col sm="12">
             <h5>Namespaces:</h5>
-            <AccountNamespacesRolesForm
-              accountData={accountData}
-              namespaces={this.props.namespaces}
-            />
+            <AccountNamespacesRolesForm />
           </Col>
         </Row>
         <Row className="mt-3">

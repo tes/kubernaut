@@ -152,8 +152,9 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        const account = await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
-        res.json(account);
+        await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
+        const data = await store.rolesForNamespaces(req.body.account, req.user);
+        res.json(data);
       } catch (err) {
         next(err);
       }
@@ -168,8 +169,9 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        const account = await store.revokeRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
-        res.json(account);
+        await store.revokeRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
+        const data = await store.rolesForNamespaces(req.body.account, req.user);
+        res.json(data);
       } catch (err) {
         next(err);
       }
