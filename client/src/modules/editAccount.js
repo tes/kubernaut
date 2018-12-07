@@ -43,6 +43,12 @@ const defaultState = {
     availableNamespaces: [],
     rolesGrantable: [],
   },
+  registriesRoles: {
+    initialValues: {},
+    currentRoles: [],
+    availableRegistries: [],
+    rolesGrantable: [],
+  },
   registries: {
     count: 0,
     items: [],
@@ -78,7 +84,6 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'namespaces', true),
     },
   }),
-
   [combineActions(FETCH_NAMESPACES_SUCCESS, UPDATE_ROLE_FOR_NAMESPACE_SUCCESS)]: (state, { payload }) => {
     const data = payload.rolesData || payload.data;
     const initialValues = {};
@@ -113,23 +118,32 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'registries', true),
     },
   }),
-  [FETCH_REGISTRIES_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    registries: payload.data,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'registries', false),
-    },
-  }),
+  [combineActions(FETCH_REGISTRIES_SUCCESS, UPDATE_ROLE_FOR_REGISTRY_SUCCESS)]: (state, { payload }) => {
+    const data = payload.rolesData || payload.data;
+    const initialValues = {};
+    data.currentRoles.forEach(({ registry: reg, roles }) => {
+      initialValues[reg.id] = roles.reduce((acc, r) => ({ ...acc, [r]: true }), {});
+    });
+    return {
+      ...state,
+      registriesRoles: {
+        ...defaultState.registriesRoles,
+        initialValues,
+        currentRoles: data.currentRoles,
+        availableRegistries: data.registriesWithoutRoles,
+        rolesGrantable: data.rolesGrantable,
+      },
+      meta: {
+        loading: computeLoading(state.meta.loading, 'registries', false),
+      },
+    };
+  },
   [FETCH_REGISTRIES_ERROR]: (state, { payload }) => ({
     ...state,
     meta: {
       loading: computeLoading(state.meta.loading, 'registries', false),
       error: payload.error,
     },
-  }),
-  [UPDATE_ROLE_FOR_REGISTRY_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    account: payload.data,
   }),
   [setCanEdit]: (state, { payload }) => ({
     ...state,

@@ -2,6 +2,7 @@ import SQL from './sql';
 import uniq from 'lodash.uniq';
 import Account from '../../domain/Account';
 import Namespace from '../../domain/Namespace';
+import Registry from '../../domain/Registry';
 import Cluster from '../../domain/Cluster';
 import sqb from 'sqb';
 
@@ -354,8 +355,90 @@ export default function(options = {}) {
       return answer;
     }
 
+    async function rolesForRegistries(targetUserId, currentUser) {
+      logger.debug(`Collection registry role information for user ${targetUserId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = sqb
+          .select('sr.id registry_id', 'sr.name registry_name', raw('array_agg(r.name) roles'))
+          .from('account_role_registry arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('arr.subject', raw('sr.id'))))
+          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+          .where(Op.eq('arr.account', targetUserId))
+          .where(Op.is('arr.deleted_on', null))
+          .where(Op.in('sr.id', await authz.queryRegistryIdsWithPermission(connection, currentUser.id, 'registries-read')))
+          .groupBy('sr.id', 'sr.name')
+          .orderBy('sr.name');
+
+        const registriesWithoutRolesBuilder = sqb
+          .select('sr.id registry_id', 'sr.name registry_name')
+          .from('active_registry__vw sr')
+          .where(Op.in('sr.id', await authz.queryRegistryIdsWithPermission(connection, currentUser.id, 'registries-grant')))
+          .where(Op.notIn('sr.id', sqb
+            .select('registry_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('sr.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('arr.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('account_role_registry arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('sr.id', raw('arr.subject'))))
+          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arr.account', currentUser.id))
+          .where(Op.is('arr.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('arr.subject');
+
+        const rolesGrantableFromGlobal = sqb // If there is a null-subject, grab all registry ids and roles possible to grant.
+          .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('account_role_registry arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.is('arr.subject', null)))
+          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arr.account', currentUser.id))
+          .where(Op.is('arr.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('sr.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, g.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || g.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the two together with a fullOuterJoin so as to work for having empty from either.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const registriesWithoutRolesResult = await connection.query(db.serialize(registriesWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            registry: new Registry({
+              id: row.registry_id,
+              name: row.registry_name,
+            }),
+            roles: row.roles,
+          })),
+          registriesWithoutRoles: registriesWithoutRolesResult.rows.map(row => (
+            new Registry({
+              id: row.registry_id,
+              name: row.registry_name,
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
+    }
+
     async function rolesForNamespaces(targetUserId, currentUser) {
-      logger.debug(`Collection role information for user ${targetUserId} as seen by ${currentUser.id}`);
+      logger.debug(`Collection namespace role information for user ${targetUserId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
         const appliedRolesBuilder = sqb
           .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name', raw('array_agg(r.name) roles'))
@@ -492,6 +575,7 @@ export default function(options = {}) {
       hasPermissionOnRegistry,
       hasPermission,
       rolesForNamespaces,
+      rolesForRegistries,
     });
   }
 

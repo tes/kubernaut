@@ -55,10 +55,7 @@ class AccountEditPage extends Component {
         <Row className="mt-3">
           <Col sm="12">
             <h5>Registries:</h5>
-              <AccountRegistriesRolesForm
-                accountData={accountData}
-                registries={this.props.registries}
-              />
+              <AccountRegistriesRolesForm />
           </Col>
         </Row>
       </Container>

@@ -227,3 +227,8 @@ export const getAccountRolesForNamesaces = (accountId) => {
   const url = `/api/accounts/${accountId}/namespaces`;
   return makeRequest(url);
 };
+
+export const getAccountRolesForRegistries = (accountId) => {
+  const url = `/api/accounts/${accountId}/registries`;
+  return makeRequest(url);
+};

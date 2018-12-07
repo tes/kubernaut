@@ -120,8 +120,9 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        const account = await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
-        res.json(account);
+        await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForRegistries(req.body.account, req.user);
+        res.json(data);
       } catch (err) {
         next(err);
       }
@@ -136,8 +137,9 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        const account = await store.revokeRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
-        res.json(account);
+        await store.revokeRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForRegistries(req.body.account, req.user);
+        res.json(data);
       } catch (err) {
         next(err);
       }
@@ -181,6 +183,16 @@ export default function(options = {}) {
       try {
         if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
         const data = await store.rolesForNamespaces(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/accounts/:id/registries', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const data = await store.rolesForRegistries(req.params.id, req.user);
         res.json(data);
       } catch (error) {
         next(error);

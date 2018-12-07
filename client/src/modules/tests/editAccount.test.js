@@ -51,7 +51,7 @@ describe('editAccount Reducer', () => {
   it('should update state when namespaces have errored', () => {
     const initialState = createInitialState();
     const state = reduce(initialState, FETCH_NAMESPACES_ERROR({ error: 'Oh Noes' }));
-    expect(state.namespaces).toBe(initialState.namespaces);
+    expect(state.namespacesRoles).toBe(initialState.namespacesRoles);
     expect(state.meta).toMatchObject({ loading: { }, error: 'Oh Noes' });
     expect(state.meta.loading).toMatchObject({ sections: { namespaces: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
@@ -59,16 +59,31 @@ describe('editAccount Reducer', () => {
 
   it('should indicate when regisitries are loading', () => {
     const state = reduce(createInitialState(), FETCH_REGISTRIES_REQUEST());
-    expect(state.registries).toMatchObject({});
+    expect(state.registriesRoles).toMatchObject({
+      initialValues: {},
+      currentRoles: [],
+      availableRegistries: [],
+      rolesGrantable: [],
+    });
     expect(state.meta).toMatchObject({ loading: { } });
     expect(state.meta.loading).toMatchObject({ sections: { registries: true } });
     expect(state.meta.loading.loadingPercent).toBeLessThan(100);
   });
 
   it('should update state when regisitries have loaded', () => {
-    const data = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
-    const state = reduce(createInitialState(), FETCH_REGISTRIES_SUCCESS({ data }));
-    expect(state.registries).toBe(data);
+    const rolesData = {
+      currentRoles: [{ registry: { id: 'abc' }, roles: ['a']}],
+      registriesWithoutRoles: [1],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { abc: { a: true } },
+      currentRoles: rolesData.currentRoles,
+      availableRegistries: rolesData.registriesWithoutRoles,
+      rolesGrantable: rolesData.rolesGrantable,
+    };
+    const state = reduce(createInitialState(), FETCH_REGISTRIES_SUCCESS({ rolesData }));
+    expect(state.registriesRoles).toMatchObject(expected);
     expect(state.meta).toMatchObject({ loading: { } });
     expect(state.meta.loading).toMatchObject({ sections: { registries: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
@@ -77,7 +92,7 @@ describe('editAccount Reducer', () => {
   it('should update state when registries have errored', () => {
     const initialState = createInitialState();
     const state = reduce(initialState, FETCH_REGISTRIES_ERROR({ error: 'Oh Noes' }));
-    expect(state.registries).toBe(initialState.registries);
+    expect(state.registriesRoles).toBe(initialState.registriesRoles);
     expect(state.meta).toMatchObject({ loading: { }, error: 'Oh Noes' });
     expect(state.meta.loading).toMatchObject({ sections: { registries: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
@@ -128,9 +143,19 @@ describe('editAccount Reducer', () => {
 
   it('should update account state when registry roles have changed', () => {
     const initialState = { ...createInitialState(), account: { a: 1 } };
-    const newAccountData = { b: 1 };
-    const state = reduce(initialState, UPDATE_ROLE_FOR_REGISTRY_SUCCESS({ data: newAccountData }));
-    expect(state.account).toMatchObject(newAccountData);
+    const newRolesData = {
+      currentRoles: [{ registry: { id: 'abc' }, roles: ['a']}],
+      registriesWithoutRoles: [1],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { abc: { a: true } },
+      currentRoles: newRolesData.currentRoles,
+      availableRegistries: newRolesData.registriesWithoutRoles,
+      rolesGrantable: newRolesData.rolesGrantable,
+    };
+    const state = reduce(initialState, UPDATE_ROLE_FOR_REGISTRY_SUCCESS({ data: newRolesData }));
+    expect(state.registriesRoles).toMatchObject(expected);
   });
 
   it('should set canEdit state', () => {

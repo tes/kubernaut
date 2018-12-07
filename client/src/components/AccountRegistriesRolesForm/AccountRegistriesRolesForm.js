@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FormSection } from 'redux-form';
-import { sortBy as _sortBy } from 'lodash';
 import {
   Row,
   Col,
@@ -11,12 +10,16 @@ import {
 } from 'reactstrap';
 import RenderSelect from '../RenderSelect';
 
-const roleForNewRegistryOptions = [
-  { value: 'admin', display: 'Admin' },
-  { value: 'maintainer', display: 'Maintainer' },
-  { value: 'developer', display: 'Developer' },
-  { value: 'observer', display: 'Observer' },
-];
+const rolesDisplayMap = {
+  'admin': 'Admin',
+  'maintainer': 'Maintainer',
+  'developer': 'Developer',
+  'observer': 'Observer',
+};
+
+const roleForNewRegistryOptions = (roles) => roles.reduce((acc, role) =>
+  (acc.concat({ value: role, display: rolesDisplayMap[role] })), []);
+
 
 class Roles extends Component {
   render() {
@@ -77,26 +80,23 @@ class AccountRegistriesRolesForm extends Component {
   render() {
     const {
       registriesPossibleToAdd,
-      registryData,
       currentValues,
+      currentRoles,
+      rolesGrantable,
       submitting,
-      fieldRegistryIds,
       updateRolesForRegistry,
       addNewRegistry,
       deleteRolesForRegistry,
     } = this.props;
 
-    const registrySelectOptions = registriesPossibleToAdd.map((id) => {
-      const registry = registryData.items.find(({ id: rId }) => (rId === id));
-      return {
-        value: id,
-        display: `${registry.name}`,
-      };
-    });
+    const registrySelectOptions = registriesPossibleToAdd.map((registry) => ({
+      value: registry.id,
+      display: `${registry.name}`,
+    }));
 
-    const registriesForFields = _sortBy(registryData.items
-      .filter(({ id }) => fieldRegistryIds.indexOf(id) > -1),
-      ['name']);
+    const newRegistryRoleOptions = currentValues.newRegistry ?
+      roleForNewRegistryOptions(rolesGrantable.find(({ id }) => id === currentValues.newRegistry).roles)
+      : [];
 
     return (
       <div>
@@ -116,7 +116,7 @@ class AccountRegistriesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      registriesForFields.map((registry) => (
+                      currentRoles.map(({ registry }) => (
                         <FormSection name={registry.id} key={registry.id}>
                           <Roles
                             registry={registry}
@@ -150,13 +150,15 @@ class AccountRegistriesRolesForm extends Component {
                       name="roleForNewRegistry"
                       className="form-control"
                       component={RenderSelect}
-                      options={roleForNewRegistryOptions}
+                      options={newRegistryRoleOptions}
+                      disabled={!currentValues.newRegistry}
                     />
                   </Col>
                   <Col sm="1">
                     <Button
                       outline
                       color="secondary"
+                      disabled={!(currentValues.newRegistry && currentValues.roleForNewRegistry)}
                       onClick={() => {
                         addNewRegistry();
                       }}
@@ -174,8 +176,6 @@ class AccountRegistriesRolesForm extends Component {
 
 AccountRegistriesRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
-  fieldRegistryIds: PropTypes.array.isRequired,
-  registryData: PropTypes.object.isRequired,
   registriesPossibleToAdd: PropTypes.array.isRequired,
 };
 

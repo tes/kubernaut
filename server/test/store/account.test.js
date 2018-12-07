@@ -708,6 +708,144 @@ describe('Account Store', () => {
     });
   });
 
+  describe('Registry roles for a user', () => {
+    it('collects role data as seen by global admin', async () => {
+      const adminAccount = await saveAccount();
+      await grantRoleOnRegistry(adminAccount.id, 'admin', null);
+      const genericAccount = await saveAccount();
+      const registry = await saveRegistry();
+      const registry2 = await saveRegistry();
+
+      await grantRoleOnRegistry(genericAccount.id, 'developer', registry.id);
+      await grantRoleOnRegistry(genericAccount.id, 'observer', registry2.id);
+
+      const result = await store.rolesForRegistries(genericAccount.id, adminAccount);
+      const { currentRoles, registriesWithoutRoles, rolesGrantable } = result;
+
+      expect(registriesWithoutRoles.length).toBe(1);
+
+      expect(currentRoles.length).toBe(2);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry.id).roles).toMatchObject(['developer']);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry2.id).roles).toMatchObject(['observer']);
+
+      expect(rolesGrantable.length).toBe(3);
+      const registryGrantable = rolesGrantable.find(({ id }) => id === registry.id);
+      expect(registryGrantable).toBeDefined();
+      expect(registryGrantable.roles.length).toBe(4);
+      expect(registryGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const registry2Grantable = rolesGrantable.find(({ id }) => id === registry2.id);
+      expect(registry2Grantable).toBeDefined();
+      expect(registry2Grantable.roles.length).toBe(4);
+      expect(registry2Grantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('collects role data as seen by an admin of registries', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const registry = await saveRegistry();
+      const registry2 = await saveRegistry();
+
+      await grantRoleOnRegistry(adminAccount.id, 'admin', registry.id);
+      await grantRoleOnRegistry(adminAccount.id, 'admin', registry2.id);
+      await grantRoleOnRegistry(genericAccount.id, 'developer', registry.id);
+      await grantRoleOnRegistry(genericAccount.id, 'observer', registry2.id);
+
+      const result = await store.rolesForRegistries(genericAccount.id, adminAccount);
+      const { currentRoles, registriesWithoutRoles, rolesGrantable } = result;
+
+      expect(registriesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(2);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry.id).roles).toMatchObject(['developer']);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry2.id).roles).toMatchObject(['observer']);
+
+      expect(rolesGrantable.length).toBe(2);
+      const registryGrantable = rolesGrantable.find(({ id }) => id === registry.id);
+      expect(registryGrantable).toBeDefined();
+      expect(registryGrantable.roles.length).toBe(4);
+      expect(registryGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const registry2Grantable = rolesGrantable.find(({ id }) => id === registry2.id);
+      expect(registry2Grantable).toBeDefined();
+      expect(registry2Grantable.roles.length).toBe(4);
+      expect(registry2Grantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('collects role data for only what a user can see', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const registry = await saveRegistry();
+      const registry2 = await saveRegistry();
+
+      await grantRoleOnRegistry(adminAccount.id, 'admin', registry.id);
+      await grantRoleOnRegistry(genericAccount.id, 'developer', registry.id);
+      await grantRoleOnRegistry(genericAccount.id, 'observer', registry2.id);
+
+      const result = await store.rolesForRegistries(genericAccount.id, adminAccount);
+      const { currentRoles, registriesWithoutRoles, rolesGrantable } = result;
+
+      expect(registriesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(1);
+      const registryGrantable = rolesGrantable.find(({ id }) => id === registry.id);
+      expect(registryGrantable).toBeDefined();
+      expect(registryGrantable.roles.length).toBe(4);
+      expect(registryGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+    });
+
+    it('provides role data for registries visible to user, not granted to subject user', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const registry = await saveRegistry();
+      const registry2 = await saveRegistry();
+
+      await grantRoleOnRegistry(adminAccount.id, 'admin', registry.id);
+      await grantRoleOnRegistry(adminAccount.id, 'maintainer', registry2.id);
+      await grantRoleOnRegistry(genericAccount.id, 'developer', registry.id);
+
+      const result = await store.rolesForRegistries(genericAccount.id, adminAccount);
+      const { currentRoles, registriesWithoutRoles, rolesGrantable } = result;
+
+      expect(registriesWithoutRoles.length).toBe(1);
+      expect(registriesWithoutRoles[0].id).toBe(registry2.id);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(2);
+      const registryGrantable = rolesGrantable.find(({ id }) => id === registry.id);
+      expect(registryGrantable).toBeDefined();
+      expect(registryGrantable.roles.length).toBe(4);
+      expect(registryGrantable.roles).toMatchObject(['admin', 'developer', 'maintainer', 'observer']);
+      const registry2Grantable = rolesGrantable.find(({ id }) => id === registry2.id);
+      expect(registry2Grantable).toBeDefined();
+      expect(registry2Grantable.roles.length).toBe(3);
+      expect(registry2Grantable.roles).toMatchObject(['developer', 'maintainer', 'observer']);
+    });
+
+    it('if you do not have the permissions, you do not see roles available to grant', async () => {
+      const adminAccount = await saveAccount();
+      const genericAccount = await saveAccount();
+      const registry = await saveRegistry();
+      await saveRegistry();
+
+      await grantRoleOnRegistry(adminAccount.id, 'developer', null);
+      await grantRoleOnRegistry(genericAccount.id, 'developer', registry.id);
+
+      const result = await store.rolesForRegistries(genericAccount.id, adminAccount);
+      const { currentRoles, registriesWithoutRoles, rolesGrantable } = result;
+
+      expect(registriesWithoutRoles.length).toBe(0);
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles.find(({ registry: { id } }) => id === registry.id).roles).toMatchObject(['developer']);
+
+      expect(rolesGrantable.length).toBe(0);
+    });
+  });
+
   function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
     return store.saveRegistry(registry, meta);
   }

@@ -40,7 +40,7 @@ import {
 import {
   getAccountById,
   getAccountRolesForNamesaces,
-  getRegistries,
+  getAccountRolesForRegistries,
   addRoleForNamespace,
   removeRoleForNamespace,
   addRoleForRegistry,
@@ -102,20 +102,24 @@ describe('editAccount sagas', () => {
 
   describe('fetchRegistriesSaga', () => {
     it('should fetch registries', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
       const registriesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
 
-      const gen = fetchRegistriesSaga(fetchAccountInfo());
+      const gen = fetchRegistriesSaga(fetchAccountInfo({ match }));
       expect(gen.next().value).toMatchObject(put(FETCH_REGISTRIES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getRegistries));
-      expect(gen.next(registriesData).value).toMatchObject(put(FETCH_REGISTRIES_SUCCESS({ data: registriesData } )));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForRegistries, accountId));
+      expect(gen.next(registriesData).value).toMatchObject(put(FETCH_REGISTRIES_SUCCESS({ rolesData: registriesData } )));
       expect(gen.next().done).toBe(true);
     });
 
     it('should tolerate errors fetching registries', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
       const error = new Error('ouch');
-      const gen = fetchRegistriesSaga(fetchAccountInfo(quietOptions));
+      const gen = fetchRegistriesSaga(fetchAccountInfo({ ...quietOptions, match }));
       expect(gen.next().value).toMatchObject(put(FETCH_REGISTRIES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getRegistries));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForRegistries, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_REGISTRIES_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });

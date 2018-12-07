@@ -26,13 +26,13 @@ import {
 
 import {
   getAccountById,
-  getRegistries,
   addRoleForNamespace,
   removeRoleForNamespace,
   addRoleForRegistry,
   removeRoleForRegistry,
   hasPermission,
   getAccountRolesForNamesaces,
+  getAccountRolesForRegistries,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -67,11 +67,16 @@ export function* fetchNamespacesSaga({ payload = {} }) {
   }
 }
 
-export function* fetchRegistriesSaga({ payload: options }) {
+export function* fetchRegistriesSaga({ payload = {} }) {
+  const { match, ...options } = payload;
+  if (!match) return;
+  const { accountId } = match.params;
+  if (!accountId) return;
+
   yield put(FETCH_REGISTRIES_REQUEST());
   try {
-    const data = yield call(getRegistries);
-    yield put(FETCH_REGISTRIES_SUCCESS({ data }));
+    const rolesData = yield call(getAccountRolesForRegistries, accountId);
+    yield put(FETCH_REGISTRIES_SUCCESS({ rolesData }));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_REGISTRIES_ERROR({ error: error.message }));
