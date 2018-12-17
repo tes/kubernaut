@@ -52,7 +52,6 @@ describe('Accounts API', () => {
       });
 
       expect(account.displayName).toBe('Bob Holness');
-      expect(account.roles.admin).toMatchObject({ name: 'admin' });
     });
   });
 

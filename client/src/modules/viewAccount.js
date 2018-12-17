@@ -15,7 +15,12 @@ export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGIS
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 const defaultState = {
-  account: {},
+  account: {
+    roles: {
+      registries: [],
+      namespaces: [],
+    }
+  },
   canEdit: false,
   meta: {
     loading: {

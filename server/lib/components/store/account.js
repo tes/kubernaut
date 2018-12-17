@@ -69,6 +69,7 @@ export default function(options = {}) {
         .where(Op.eq('a.id', id));
 
       const result = await db.query(db.serialize(builder, {}).sql);
+      if (!result.rowCount) return undefined;
       const account = toAccount(result.rows[0]);
       return account;
     }
@@ -101,14 +102,30 @@ export default function(options = {}) {
 
       const namespacesBuilder = authz.queryNamespacesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
       const registriesBuilder = authz.queryRegistriesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
+      const systemRolesBuilder = sqb
+        .select('r.name', raw('gar.id IS NOT NULL as global'))
+        .from('active_account_roles__vw ar')
+        .join(
+          sqb.leftJoin('active_account_roles__vw gar')
+          .on(Op.eq('ar.account', raw('gar.account')))
+          .on(Op.eq('ar.subject_type', 'system'))
+          .on(Op.eq('gar.subject_type', 'global'))
+          .on(Op.eq('ar.role', raw('gar.role')))
+        )
+        .join(sqb.join('role r').on(Op.eq('r.id', raw('ar.role'))))
+        .where(Op.eq('ar.account', id))
+        .where(Op.eq('ar.subject_type', 'system'))
+        .orderBy('r.priority desc');
 
       return await db.withTransaction(async connection => {
         const namespacesResults = await connection.query(db.serialize(namespacesBuilder, {}).sql);
         const registriesResults = await connection.query(db.serialize(registriesBuilder, {}).sql);
+        const systemResults = await connection.query(db.serialize(systemRolesBuilder, {}).sql);
 
         return {
           namespaces: namespacesResults.rows.map(toNamespaceRoles),
           registries: registriesResults.rows.map(toRegistryRoles),
+          system: systemResults.rows,
         };
       });
     }
@@ -225,14 +242,14 @@ export default function(options = {}) {
         .where(Op.eq('r.name', roleName));
 
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
-      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
       const hasSystemRoleBuilder = sqb
         .select(raw('count(1) > 0 answer'))
         .from('active_account_roles__vw ar')
         .where(Op.eq('ar.account', accountId))
-        .where(Op.eq('ar.subject_type', 'global'))
+        .where(Op.eq('ar.subject_type', 'system'))
         .where(Op.eq('ar.role', role_id));
 
         const systemRoleExistsResult = await connection.query(db.serialize(hasSystemRoleBuilder, {}).sql);
@@ -264,6 +281,14 @@ export default function(options = {}) {
       logger.debug(`Granted role: ${roleName} globally to account: ${accountId}`);
     }
 
+    async function grantGlobalRole(accountId, roleName, meta) {
+      await db.withTransaction(async connection => {
+        await _grantGlobalRole(connection, accountId, roleName, meta);
+      });
+
+      return getAccount(accountId);
+    }
+
     async function _grantSystemRole(connection, accountId, roleName, meta) {
       logger.debug(`Granting role: ${roleName} for system to account: ${accountId}`);
 
@@ -273,8 +298,8 @@ export default function(options = {}) {
         .where(Op.eq('r.name', roleName));
 
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
-      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -301,6 +326,14 @@ export default function(options = {}) {
       logger.debug(`Granted role: ${roleName} for system to account: ${accountId}`);
     }
 
+    async function grantSystemRole(accountId, roleName, meta) {
+      await db.withTransaction(async connection => {
+        await _grantSystemRole(connection, accountId, roleName, meta);
+      });
+
+      return getAccount(accountId);
+    }
+
     async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
       await db.withTransaction(async connection => {
         return _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta);
@@ -318,8 +351,8 @@ export default function(options = {}) {
         .where(Op.eq('r.name', roleName));
 
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
-      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -359,8 +392,8 @@ export default function(options = {}) {
           .where(Op.eq('r.name', roleName));
 
         const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
         const { role_id } = roleIdResult.rows[0];
-        if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
         const builder = sqb
         .update('account_roles', {
@@ -398,8 +431,8 @@ export default function(options = {}) {
         .where(Op.eq('r.name', roleName));
 
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
-      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -439,8 +472,8 @@ export default function(options = {}) {
           .where(Op.eq('r.name', roleName));
 
         const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
         const { role_id } = roleIdResult.rows[0];
-        if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
         const builder = sqb
         .update('account_roles', {
@@ -476,7 +509,7 @@ export default function(options = {}) {
 
       logger.debug(`Found ${count} active administrator accounts`);
 
-      return count;
+      return parseInt(count, 10);
     }
 
     async function hasPermission(user, permission) {
@@ -726,6 +759,8 @@ export default function(options = {}) {
       hasPermission,
       rolesForNamespaces,
       rolesForRegistries,
+      grantGlobalRole,
+      grantSystemRole,
     });
   }
 
