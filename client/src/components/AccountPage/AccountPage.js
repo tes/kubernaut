@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { Container, Row, Col, Progress, Button } from 'reactstrap';
 import { EditAccountLink } from '../Links';
 import Title from '../Title';
-import Account from '../../lib/domain/Account';
 
 class AccountPage extends Component {
 
   render() {
-    const { meta, account: accountData } = this.props;
+    const { meta, account } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Container>
         <Row className="d-flex justify-content-center">
@@ -19,43 +18,19 @@ class AccountPage extends Component {
       </Container>
     );
 
-    const account = new Account(accountData);
-    const registryIds = account.listRegistryIdsWithRole();
-    const registries = Object.keys(registryIds).reduce((acc, registry) => {
-      acc.push({ name: registry, roles: registryIds[registry] });
-      return acc;
-    }, []);
-
-    const namespaceIds = account.listNamespaceIdsWithRole();
-    const namespaces = Object.keys(namespaceIds).reduce((acc, namespace) => {
-      acc.push({ name: namespace, roles: namespaceIds[namespace] });
-      return acc;
-    }, []);
 
     const registryEls = [];
-    let hasUnknownRegistries = false;
-    registries.forEach(({ name, roles }) => {
-      const registry = this.props.registries.items.find(({ id }) => (id === name));
-      if (!registry) {
-        hasUnknownRegistries = true;
-        return;
-      }
+    account.roles.registries.forEach(({ registry, roles }) => {
       const registryName = registry.name;
-      registryEls.push(<dt key={name} className="col-sm-3">{registryName}</dt>);
-      registryEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
+      registryEls.push(<dt key={registry.id} className="col-sm-3">{registryName}</dt>);
+      registryEls.push(<dd key={`${registry.id}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
     });
 
     const namespaceEls = [];
-    let hasUnknownNamespaces = false;
-    namespaces.forEach(({ name, roles }) => {
-      const namespace = this.props.namespaces.items.find(({ id }) => (id === name));
-      if (!namespace) {
-        hasUnknownNamespaces = true;
-        return;
-      }
+    account.roles.namespaces.forEach(({ namespace, roles }) => {
       const namespaceName = `${namespace.cluster.name}/${namespace.name}`;
-      namespaceEls.push(<dt key={name} className="col-sm-3">{namespaceName}</dt>);
-      namespaceEls.push(<dd key={`${name}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
+      namespaceEls.push(<dt key={namespace.id} className="col-sm-3">{namespaceName}</dt>);
+      namespaceEls.push(<dd key={`${namespace.id}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
     });
 
     return (
@@ -78,15 +53,6 @@ class AccountPage extends Component {
               <dl className="row">
                 {namespaceEls}
               </dl>
-              {
-                hasUnknownNamespaces ?
-                <Row>
-                  <Col sm="12">
-                    <p><small>This user has access to namespaces you are not permitted to view.</small></p>
-                  </Col>
-                </Row>
-                : null
-              }
           </Col>
         </Row>
         <Row className="mt-3">
@@ -95,15 +61,6 @@ class AccountPage extends Component {
             <dl className="row">
               {registryEls}
             </dl>
-            {
-              hasUnknownRegistries ?
-              <Row>
-                <Col sm="12">
-                  <p><small>This user has access to registries you are not permitted to view.</small></p>
-                </Col>
-              </Row>
-              : null
-            }
           </Col>
         </Row>
       </Container>
