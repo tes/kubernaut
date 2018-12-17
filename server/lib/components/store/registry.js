@@ -64,12 +64,12 @@ export default function(options) {
         db.buildWhereClause('r.name', criteria.name, bindVariables, findRegistriesBuilder, countRegistriesBuilder);
       }
 
-      return db.withTransaction(async connection => {
+      if (criteria.user) {
+        const idsQuery = await authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.permission);
+        [findRegistriesBuilder, countRegistriesBuilder].forEach(builder => builder.where(Op.in('r.id', idsQuery)));
+      }
 
-        if (criteria.user) {
-          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
-          [findRegistriesBuilder, countRegistriesBuilder].forEach(builder => builder.where(Op.in('r.id', idsQuery)));
-        }
+      return db.withTransaction(async connection => {
         const findRegistriesStatement = db.serialize(findRegistriesBuilder, bindVariables);
         const countRegistriesStatement = db.serialize(countRegistriesBuilder, bindVariables);
 

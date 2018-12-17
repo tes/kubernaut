@@ -63,6 +63,8 @@ export default function(options = {}) {
         if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
 
         const account = await store.getAccount(req.params.id);
+        const accountRoles = await store.getRolesForAccount(req.params.id, req.user);
+        account.roles = accountRoles;
         return account ? res.json(account) : next();
       } catch (err) {
         next(err);

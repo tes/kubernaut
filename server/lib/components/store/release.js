@@ -180,12 +180,12 @@ export default function(options) {
         }
       }
 
-      return db.withTransaction(async connection => {
-        if (criteria.user) {
-          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
-          [findReleasesBuilder, countReleasesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
-        }
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.permission);
+        [findReleasesBuilder, countReleasesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+      }
 
+      return db.withTransaction(async connection => {
         const findReleasesStatement = db.serialize(findReleasesBuilder, bindVariables);
         const countReleasesStatement = db.serialize(countReleasesBuilder, bindVariables);
 

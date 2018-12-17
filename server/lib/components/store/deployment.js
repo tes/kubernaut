@@ -133,11 +133,10 @@ export default function(options) {
         .join(join('namespace n').on(Op.eq('n.id', raw('d.namespace'))))
         .join(join('cluster c').on(Op.eq('c.id', raw('n.cluster'))))
         .where(Op.eq('sr.id', registryId))
-        .where(Op.eq('s.name', service));
+        .where(Op.eq('s.name', service))
+        .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', user.id, 'deployments-read')));
 
       return await db.withTransaction(async connection => {
-        builder.where(Op.in('d.namespace', await authz.queryNamespaceIdsWithPermission(connection, user.id, 'deployments-read')));
-
         return await connection.query(db.serialize(builder, {}).sql);
       }).then((result) => {
         logger.debug(`Found ${result.rowCount} namespaces with deployments for ${service}`);
@@ -232,16 +231,17 @@ export default function(options) {
         }
       }
 
-      return db.withTransaction(async connection => {
-        if (criteria.user && criteria.user.namespace) {
-          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.namespace.permission);
-          [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
-        }
+      if (criteria.user && criteria.user.namespace) {
+        const idsQuery = authz.querySubjectIdsWithPermission('namespace', criteria.user.id, criteria.user.namespace.permission);
+        [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+      }
 
-        if (criteria.user && criteria.user.registry) {
-          const idsQuery = await authz.queryRegistryIdsWithPermission(connection, criteria.user.id, criteria.user.registry.permission);
-          [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
-        }
+      if (criteria.user && criteria.user.registry) {
+        const idsQuery = authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.registry.permission);
+        [findDeploymentsBuilder, countDeploymentsBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
+      }
+
+      return db.withTransaction(async connection => {
         const findDeploymentsStatement = db.serialize(findDeploymentsBuilder, bindVariables);
         const countDeploymentsStatement = db.serialize(countDeploymentsBuilder, bindVariables);
 

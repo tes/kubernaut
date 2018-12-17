@@ -1,5 +1,5 @@
+import { v4 as uuid } from 'uuid';
 import SQL from './sql';
-import uniq from 'lodash.uniq';
 import Account from '../../domain/Account';
 import Namespace from '../../domain/Namespace';
 import Registry from '../../domain/Registry';
@@ -41,13 +41,14 @@ export default function(options = {}) {
       const created = await db.withTransaction(async connection => {
         const saved = await _saveAccount(connection, data, meta);
         await _saveIdentity(connection, saved.id, identity, meta);
-        const counts = await _countActiveAdminstrators(connection);
-        if (counts.registry === 0) {
-          await _grantRoleOnRegistry(connection, saved.id, 'admin', null, meta);
+        const count = await _countActiveAdminstrators(connection);
+        if (count === 0) {
+          await _grantSystemRole(connection, saved.id, 'admin', meta);
+          await _grantGlobalRole(connection, saved.id, 'admin', meta);
+        } else {
+          await _grantSystemRole(connection, saved.id, 'observer', meta);
         }
-        if (counts.namespace === 0) {
-          await _grantRoleOnNamespace(connection, saved.id, 'admin', null, meta);
-        }
+
         return saved;
       });
 
@@ -61,17 +62,54 @@ export default function(options = {}) {
     async function getAccount(id) {
       logger.debug(`Getting account by id: ${id}`);
 
-      return Promise.all([
-        db.query(SQL.SELECT_ACCOUNT_BY_ID, [id]),
-        db.query(SQL.LIST_REGISTRIES),
-        db.query(SQL.LIST_NAMESPACES),
-        db.query(SQL.LIST_ROLES_AND_PERMISSIONS_BY_ACCOUNT, [id]),
-      ]).then(([accountResult, registriesResult, namespacesResult, rolesAndPermissionsResult ]) => {
-        logger.debug(`Found ${accountResult.rowCount} accounts with id: ${id}`);
-        const registries = registriesResult.rows.map(row => row.id);
-        const namespaces = namespacesResult.rows.map(row => row.id);
-        const roles = toRolesAndPermissions(rolesAndPermissionsResult.rows, registries, namespaces);
-        return accountResult.rowCount ? toAccount(accountResult.rows[0], roles) : undefined;
+      const builder = sqb
+        .select('a.id', 'a.display_name', 'a.avatar', 'a.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .from('active_account__vw a')
+        .join(sqb.join('account cb').on(Op.eq('a.created_by', raw('cb.id'))))
+        .where(Op.eq('a.id', id));
+
+      const result = await db.query(db.serialize(builder, {}).sql);
+      const account = toAccount(result.rows[0]);
+      return account;
+    }
+
+    function toNamespaceRoles(row) {
+      return {
+        roles: row.roles,
+        namespace: new Namespace({
+          id: row.namespace_id,
+          name: row.namespace_name,
+          cluster: new Cluster({
+            name: row.cluster_name
+          }),
+        }),
+      };
+    }
+
+    function toRegistryRoles(row) {
+      return {
+        roles: row.roles,
+        registry: new Registry({
+          id: row.registry_id,
+          name: row.registry_name,
+        }),
+      };
+    }
+
+    async function getRolesForAccount(id, currentUser) {
+      logger.debug(`Getting account roles for id: ${id}`);
+
+      const namespacesBuilder = authz.queryNamespacesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
+      const registriesBuilder = authz.queryRegistriesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
+
+      return await db.withTransaction(async connection => {
+        const namespacesResults = await connection.query(db.serialize(namespacesBuilder, {}).sql);
+        const registriesResults = await connection.query(db.serialize(registriesBuilder, {}).sql);
+
+        return {
+          namespaces: namespacesResults.rows.map(toNamespaceRoles),
+          registries: registriesResults.rows.map(toRegistryRoles),
+        };
       });
     }
 
@@ -178,6 +216,91 @@ export default function(options = {}) {
       logger.debug(`Deleted identity id: ${id}`);
     }
 
+    async function _grantGlobalRole(connection, accountId, roleName, meta) {
+      logger.debug(`Granting role: ${roleName} globally to account: ${accountId}`);
+
+      const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+      const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      const { role_id } = roleIdResult.rows[0];
+      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
+
+      const hasSystemRoleBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'global'))
+        .where(Op.eq('ar.role', role_id));
+
+        const systemRoleExistsResult = await connection.query(db.serialize(hasSystemRoleBuilder, {}).sql);
+        const { answer: systemAnswer } = systemRoleExistsResult.rows[0];
+        if (!systemAnswer) throw new Error(`Cannot grant global role ${roleName} to ${accountId} without having granted it for system.`);
+
+      const existsBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'global'))
+        .where(Op.eq('ar.role', role_id));
+
+      const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+      const { answer } = existsResult.rows[0];
+      if (answer) return;
+
+      const insertBuilder = sqb
+        .insert('account_roles', {
+          id: uuid(),
+          account: accountId,
+          role: role_id,
+          subject_type: 'global',
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await connection.query(db.serialize(insertBuilder, {}).sql);
+      logger.debug(`Granted role: ${roleName} globally to account: ${accountId}`);
+    }
+
+    async function _grantSystemRole(connection, accountId, roleName, meta) {
+      logger.debug(`Granting role: ${roleName} for system to account: ${accountId}`);
+
+      const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+      const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      const { role_id } = roleIdResult.rows[0];
+      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
+
+      const existsBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'system'))
+        .where(Op.eq('ar.role', role_id));
+
+      const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+      const { answer } = existsResult.rows[0];
+      if (answer) return;
+
+      const insertBuilder = sqb
+        .insert('account_roles', {
+          id: uuid(),
+          account: accountId,
+          role: role_id,
+          subject_type: 'system',
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await connection.query(db.serialize(insertBuilder, {}).sql);
+      logger.debug(`Granted role: ${roleName} for system to account: ${accountId}`);
+    }
+
     async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
       await db.withTransaction(async connection => {
         return _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta);
@@ -189,25 +312,69 @@ export default function(options = {}) {
     async function _grantRoleOnRegistry(connection, accountId, roleName, registryId, meta) {
       logger.debug(`Granting role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
 
-      const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_REGISTRY, [
-        accountId, roleName, registryId, meta.date, meta.account.id,
-      ]);
+      const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
 
-      const granted = {
-        id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      const { role_id } = roleIdResult.rows[0];
+      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
-      logger.debug(`Granted role: ${granted.name}/${granted.id} on registry: ${registryId} to account: ${accountId}`);
+      const existsBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'registry'))
+        .where(Op.eq('ar.subject', registryId))
+        .where(Op.eq('ar.role', role_id));
 
-      return granted;
+      const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+      const { answer } = existsResult.rows[0];
+      if (answer) return;
+
+      const insertBuilder = sqb
+        .insert('account_roles', {
+          id: uuid(),
+          account: accountId,
+          role: role_id,
+          subject: registryId,
+          subject_type: 'registry',
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await connection.query(db.serialize(insertBuilder, {}).sql);
+
+      logger.debug(`Granted role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
     }
 
     async function revokeRoleOnRegistry(accountId, roleName, registryId, meta) {
       logger.debug(`Revoking role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
 
-      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_REGISTRY, [
-        accountId, roleName, registryId, meta.date, meta.account.id,
-      ]);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        const { role_id } = roleIdResult.rows[0];
+        if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
+
+        const builder = sqb
+        .update('account_roles', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('account', accountId))
+        .where(Op.eq('subject_type', 'registry'))
+        .where(Op.eq('subject', registryId))
+        .where(Op.eq('role', role_id))
+        .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
 
       logger.debug(`Revoked role: ${roleName} on registry: ${registryId} to account: ${accountId}`);
 
@@ -225,24 +392,69 @@ export default function(options = {}) {
     async function _grantRoleOnNamespace(connection, accountId, roleName, namespaceId, meta) {
       logger.debug(`Granting role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
 
-      const result = await connection.query(SQL.ENSURE_ACCOUNT_ROLE_ON_NAMESPACE, [
-        accountId, roleName, namespaceId, meta.date, meta.account.id,
-      ]);
-      const granted = {
-        id: result.rows[0].id, account: accountId, name: roleName, createdOn: meta.date, createdBy: meta.account.id,
-      };
+      const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
 
-      logger.debug(`Granted role: ${granted.name}/${granted.id} on namespace: ${namespaceId} to account: ${accountId}`);
+      const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      const { role_id } = roleIdResult.rows[0];
+      if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
 
-      return granted;
+      const existsBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'namespace'))
+        .where(Op.eq('ar.subject', namespaceId))
+        .where(Op.eq('ar.role', role_id));
+
+      const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+      const { answer } = existsResult.rows[0];
+      if (answer) return;
+
+      const insertBuilder = sqb
+        .insert('account_roles', {
+          id: uuid(),
+          account: accountId,
+          role: role_id,
+          subject: namespaceId,
+          subject_type: 'namespace',
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await connection.query(db.serialize(insertBuilder, {}).sql);
+
+      logger.debug(`Granted role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
     }
 
     async function revokeRoleOnNamespace(accountId, roleName, namespaceId, meta) {
       logger.debug(`Revoking role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
 
-      await db.query(SQL.DELETE_ACCOUNT_ROLE_ON_NAMESPACE, [
-        accountId, roleName, namespaceId, meta.date, meta.account.id,
-      ]);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        const { role_id } = roleIdResult.rows[0];
+        if (!role_id) throw new Error(`Role name ${roleName} does not exist.`);
+
+        const builder = sqb
+        .update('account_roles', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('account', accountId))
+        .where(Op.eq('subject_type', 'namespace'))
+        .where(Op.eq('subject', namespaceId))
+        .where(Op.eq('role', role_id))
+        .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
 
       logger.debug(`Revoked role: ${roleName} on namespace: ${namespaceId} to account: ${accountId}`);
 
@@ -252,54 +464,41 @@ export default function(options = {}) {
     async function _countActiveAdminstrators(connection) {
       logger.debug('Counting active administrators');
 
-      const result = await connection.query(SQL.COUNT_ACTIVE_ADMINISTRATORS);
-      const counts = {
-        registry: parseInt(result.rows[0].registry, 10),
-        namespace: parseInt(result.rows[0].namespace, 10),
-      };
-      logger.debug(`Found ${counts.registry}/${counts.namespace} active administrator accounts`);
+      const builder = sqb
+        .select(raw('count(1) count'))
+        .from('active_account_roles__vw ar')
+        .join(sqb.join('role r').on(Op.eq('ar.role', raw('r.id'))))
+        .where(Op.eq('r.name', 'admin'))
+        .where(Op.eq('ar.subject_type', 'global'));
 
-      return counts;
+      const result = await db.query(db.serialize(builder, {}).sql);
+      const { count } = result.rows[0];
+
+      logger.debug(`Found ${count} active administrator accounts`);
+
+      return count;
     }
 
     async function hasPermission(user, permission) {
       logger.debug(`Checking if user ${user.id} has permission ${permission}`);
 
-      const rolesBuilder = sqb
-        .select('r.id')
-        .from('role_permission rp')
-        .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
-        .join(sqb.join('role r').on(Op.eq('r.id', raw('rp.role'))))
-        .where(Op.eq('p.name', permission));
-
-      const roleRegistryBuilder = sqb
+      const accountRoleBuilder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_registry arr')
-        .where(Op.eq('arr.account', user.id))
-        .where(Op.in('arr.role', rolesBuilder))
-        .where(Op.is('arr.deleted_on', null));
-
-      const roleNamespaceBuilder = sqb
-        .select(raw('count(1) > 0 answer'))
-        .from('account_role_namespace arn')
-        .where(Op.eq('arn.account', user.id))
-        .where(Op.in('arn.role', rolesBuilder))
-        .where(Op.is('arn.deleted_on', null));
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', user.id))
+        .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)))
+        .where(Op.or(
+          Op.eq('ar.subject_type', 'global'),
+          Op.eq('ar.subject_type', 'system')
+        ));
 
         return db.withTransaction(async connection => {
-          return Promise.all([
-            connection.query(db.serialize(roleRegistryBuilder, {}).sql),
-            connection.query(db.serialize(roleNamespaceBuilder, {}).sql),
-          ]).then(([registryResult, namespaceResult]) => {
-            const { answer: registryAnswer } = registryResult.rows[0];
-            const { answer: namespaceAnswer } = namespaceResult.rows[0];
+          const result = await connection.query(db.serialize(accountRoleBuilder, {}).sql);
+          const { answer } =  result.rows[0];
 
-            const answer = registryAnswer || namespaceAnswer;
+          logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission}`);
 
-            logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission}`);
-
-            return answer;
-          });
+          return answer;
         });
     }
 
@@ -308,20 +507,16 @@ export default function(options = {}) {
 
       const builder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_namespace arn')
-        .where(Op.eq('arn.account', user.id))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', user.id))
         .where(Op.or(
-          Op.eq('arn.subject', namespaceId),
-          Op.is('arn.subject', null), // Preserve the bug/feature of null subject => apply to all
+          Op.and(
+            Op.eq('ar.subject', namespaceId),
+            Op.eq('ar.subject_type', 'namespace'),
+          ),
+          Op.eq('ar.subject_type', 'global')
         ))
-        .where(Op.is('arn.deleted_on', null))
-        .where(Op.in('arn.role', sqb
-          .select('r.id')
-          .from('role_permission rp')
-          .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
-          .join(sqb.join('role r').on(Op.eq('r.id', raw('rp.role'))))
-          .where(Op.eq('p.name', permission))
-        ));
+        .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
       const result = await db.query(db.serialize(builder, {}).sql);
       const { answer } = result.rows[0];
@@ -334,20 +529,16 @@ export default function(options = {}) {
 
       const builder = sqb
         .select(raw('count(1) > 0 answer'))
-        .from('account_role_registry arr')
-        .where(Op.eq('arr.account', user.id))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', user.id))
         .where(Op.or(
-          Op.eq('arr.subject', registryId),
-          Op.is('arr.subject', null), // Preserve the bug/feature of null subject => apply to all
+          Op.and(
+            Op.eq('ar.subject', registryId),
+            Op.eq('ar.subject_type', 'registry'),
+          ),
+          Op.eq('ar.subject_type', 'global')
         ))
-        .where(Op.is('arr.deleted_on', null))
-        .where(Op.in('arr.role', sqb
-          .select('r.id')
-          .from('role_permission rp')
-          .join(sqb.join('permission p').on(Op.eq('p.id', raw('rp.permission'))))
-          .join(sqb.join('role r').on(Op.eq('r.id', raw('rp.role'))))
-          .where(Op.eq('p.name', permission))
-        ));
+        .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
       const result = await db.query(db.serialize(builder, {}).sql);
       const { answer } = result.rows[0];
@@ -358,21 +549,12 @@ export default function(options = {}) {
     async function rolesForRegistries(targetUserId, currentUser) {
       logger.debug(`Collection registry role information for user ${targetUserId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
-        const appliedRolesBuilder = sqb
-          .select('sr.id registry_id', 'sr.name registry_name', raw('array_agg(r.name) roles'))
-          .from('account_role_registry arr')
-          .join(sqb.join('active_registry__vw sr').on(Op.eq('arr.subject', raw('sr.id'))))
-          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
-          .where(Op.eq('arr.account', targetUserId))
-          .where(Op.is('arr.deleted_on', null))
-          .where(Op.in('sr.id', await authz.queryRegistryIdsWithPermission(connection, currentUser.id, 'registries-read')))
-          .groupBy('sr.id', 'sr.name')
-          .orderBy('sr.name');
+        const appliedRolesBuilder = authz.queryRegistriesWithAppliedRolesForUserAsSeenBy(targetUserId, currentUser.id);
 
         const registriesWithoutRolesBuilder = sqb
           .select('sr.id registry_id', 'sr.name registry_name')
           .from('active_registry__vw sr')
-          .where(Op.in('sr.id', await authz.queryRegistryIdsWithPermission(connection, currentUser.id, 'registries-grant')))
+          .where(Op.in('sr.id', authz.querySubjectIdsWithPermission('registry', currentUser.id, 'registries-grant')))
           .where(Op.notIn('sr.id', sqb
             .select('registry_id')
             .from(appliedRolesBuilder.as('applied'))
@@ -381,23 +563,22 @@ export default function(options = {}) {
 
         const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
           .select('arr.subject id', raw('array_agg(distinct r2.name) roles'))
-          .from('account_role_registry arr')
+          .from('active_account_roles__vw arr')
           .join(sqb.join('active_registry__vw sr').on(Op.eq('sr.id', raw('arr.subject'))))
           .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
           .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arr.subject_type', 'registry'))
           .where(Op.eq('arr.account', currentUser.id))
-          .where(Op.is('arr.deleted_on', null))
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
           .groupBy('arr.subject');
 
-        const rolesGrantableFromGlobal = sqb // If there is a null-subject, grab all registry ids and roles possible to grant.
+        const rolesGrantableFromGlobal = sqb
           .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
-          .from('account_role_registry arr')
-          .join(sqb.join('active_registry__vw sr').on(Op.is('arr.subject', null)))
+          .from('active_account_roles__vw arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('arr.subject_type', 'global')))
           .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
           .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
           .where(Op.eq('arr.account', currentUser.id))
-          .where(Op.is('arr.deleted_on', null))
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
           .groupBy('sr.id');
 
@@ -440,23 +621,13 @@ export default function(options = {}) {
     async function rolesForNamespaces(targetUserId, currentUser) {
       logger.debug(`Collection namespace role information for user ${targetUserId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
-        const appliedRolesBuilder = sqb
-          .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name', raw('array_agg(r.name) roles'))
-          .from('account_role_namespace arn')
-          .join(sqb.join('active_namespace__vw n').on(Op.eq('arn.subject', raw('n.id'))))
-          .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
-          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
-          .where(Op.eq('arn.account', targetUserId))
-          .where(Op.is('arn.deleted_on', null))
-          .where(Op.in('n.id', await authz.queryNamespaceIdsWithPermission(connection, currentUser.id, 'namespaces-read')))
-          .groupBy('n.id', 'c.name', 'n.name')
-          .orderBy('c.name', 'n.name');
+        const appliedRolesBuilder = authz.queryNamespacesWithAppliedRolesForUserAsSeenBy(targetUserId, currentUser.id);
 
         const namespacesWithoutRolesBuilder = sqb
           .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name')
           .from('active_namespace__vw n')
           .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
-          .where(Op.in('n.id', await authz.queryNamespaceIdsWithPermission(connection, currentUser.id, 'namespaces-grant')))
+          .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', currentUser.id, 'namespaces-grant')))
           .where(Op.notIn('n.id', sqb
             .select('namespace_id')
             .from(appliedRolesBuilder.as('applied'))
@@ -465,19 +636,19 @@ export default function(options = {}) {
 
         const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
           .select('arn.subject id', raw('array_agg(distinct r2.name) roles'))
-          .from('account_role_namespace arn')
+          .from('active_account_roles__vw arn')
           .join(sqb.join('active_namespace__vw n').on(Op.eq('n.id', raw('arn.subject'))))
           .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
           .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arn.subject_type', 'namespace'))
           .where(Op.eq('arn.account', currentUser.id))
-          .where(Op.is('arn.deleted_on', null))
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
           .groupBy('arn.subject');
 
-        const rolesGrantableFromGlobal = sqb // If there is a null-subject, grab all namespace ids and roles possible to grant.
+        const rolesGrantableFromGlobal = sqb
           .select('n.id id', raw('array_agg(distinct r2.name) roles'))
-          .from('account_role_namespace arn')
-          .join(sqb.join('active_namespace__vw n').on(Op.is('arn.subject', null)))
+          .from('active_account_roles__vw arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('arn.subject_type', 'global')))
           .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
           .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
           .where(Op.eq('arn.account', currentUser.id))
@@ -523,7 +694,7 @@ export default function(options = {}) {
       });
     }
 
-    function toAccount(row, roles) {
+    function toAccount(row) {
       return new Account({
         id: row.id,
         displayName: row.display_name,
@@ -533,35 +704,14 @@ export default function(options = {}) {
           id: row.created_by_id,
           displayName: row.created_by_display_name,
         }),
-        roles,
       });
-    }
-
-    function toRolesAndPermissions(rows, allRegistryIds, allNamespaceIds) {
-      const subjects = {
-        registry: {
-          name: 'registries',
-          allSubjectIds: allRegistryIds,
-        },
-        namespace: {
-          name: 'namespaces',
-          allSubjectIds: allNamespaceIds,
-        },
-      };
-      return rows.reduce((roles, row) => {
-        const collection = subjects[row.differentiator];
-        const entry = roles[row.role_name] || { name: row.role_name, permissions: [], registries: [], namespaces: [] };
-        entry.permissions.push(row.permission_name);
-        entry[collection.name] = uniq(entry[collection.name].concat(row.subject_id || collection.allSubjectIds.slice()));
-        roles[row.role_name] = entry;
-        return roles;
-      }, {});
     }
 
     return cb(null, {
       saveAccount,
       ensureAccount,
       getAccount,
+      getRolesForAccount,
       findAccount,
       findAccounts,
       deleteAccount,

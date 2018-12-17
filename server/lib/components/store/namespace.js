@@ -148,12 +148,12 @@ export default function(options) {
         db.buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
       }
 
-      return db.withTransaction(async connection => {
-        if (criteria.user) {
-          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
-          [findNamespacesBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
-        }
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('namespace', criteria.user.id, criteria.user.permission);
+        [findNamespacesBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+      }
 
+      return db.withTransaction(async connection => {
         const findNamespacesStatement = db.serialize(findNamespacesBuilder, bindVariables);
         const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
 
@@ -257,12 +257,12 @@ export default function(options) {
         db.buildWhereClause('n.id', namespaces, bindVariables, selectBuilder, countNamespacesBuilder);
       }
 
-      return db.withTransaction(async connection => {
-        if (criteria.user) {
-          const idsQuery = await authz.queryNamespaceIdsWithPermission(connection, criteria.user.id, criteria.user.permission);
-          [selectBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
-        }
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('namespace', criteria.user.id, criteria.user.permission);
+        [selectBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+      }
 
+      return db.withTransaction(async connection => {
         const findNamespacesStatement = db.serialize(selectBuilder, bindVariables);
         const countNamespacesStatement = db.serialize(countNamespacesBuilder, bindVariables);
 
