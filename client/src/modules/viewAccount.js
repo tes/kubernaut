@@ -6,12 +6,6 @@ export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INF
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);
 export const FETCH_ACCOUNT_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNT_ERROR`);
-export const FETCH_NAMESPACES_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACES_REQUEST`);
-export const FETCH_NAMESPACES_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACES_SUCCESS`);
-export const FETCH_NAMESPACES_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACES_ERROR`);
-export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REGISTRIES_REQUEST`);
-export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
-export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 const defaultState = {
@@ -19,6 +13,7 @@ const defaultState = {
     roles: {
       registries: [],
       namespaces: [],
+      system: [],
     }
   },
   canEdit: false,
@@ -61,48 +56,6 @@ export default handleActions({
     ...state,
     meta: {
       loading: computeLoading(state.meta.loading, 'account', false),
-      error: payload.error,
-    },
-  }),
-  [FETCH_NAMESPACES_REQUEST]: (state) => ({
-    ...state,
-    namespaces: defaultState.namespaces,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'namespaces', true),
-    },
-  }),
-  [FETCH_NAMESPACES_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    namespaces: payload.data,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'namespaces', false),
-    },
-  }),
-  [FETCH_NAMESPACES_ERROR]: (state, { payload }) => ({
-    ...state,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'namespaces', false),
-      error: payload.error,
-    },
-  }),
-  [FETCH_REGISTRIES_REQUEST]: (state) => ({
-    ...state,
-    registries: defaultState.registries,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'registries', true),
-    },
-  }),
-  [FETCH_REGISTRIES_SUCCESS]: (state, { payload }) => ({
-    ...state,
-    registries: payload.data,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'registries', false),
-    },
-  }),
-  [FETCH_REGISTRIES_ERROR]: (state, { payload }) => ({
-    ...state,
-    meta: {
-      loading: computeLoading(state.meta.loading, 'registries', false),
       error: payload.error,
     },
   }),

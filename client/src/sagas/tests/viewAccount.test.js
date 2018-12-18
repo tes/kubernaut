@@ -2,8 +2,6 @@ import { call, put } from 'redux-saga/effects';
 
 import {
   fetchAccountInfoSaga,
-  fetchNamespacesSaga,
-  fetchRegistriesSaga,
   checkPermissionSaga,
 } from '../viewAccount';
 
@@ -12,19 +10,11 @@ import {
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
-  FETCH_NAMESPACES_REQUEST,
-  FETCH_NAMESPACES_SUCCESS,
-  FETCH_NAMESPACES_ERROR,
-  FETCH_REGISTRIES_REQUEST,
-  FETCH_REGISTRIES_SUCCESS,
-  FETCH_REGISTRIES_ERROR,
   setCanEdit,
 } from '../../modules/viewAccount';
 
 import {
   getAccountById,
-  getNamespaces,
-  getRegistries,
   hasPermission,
 } from '../../lib/api';
 
@@ -51,48 +41,6 @@ describe('viewAccount sagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_ACCOUNT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getAccountById, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_ACCOUNT_ERROR({ error: error.message })));
-      expect(gen.next().done).toBe(true);
-    });
-  });
-
-  describe('fetchNamespacesSaga', () => {
-    it('should fetch namespaces', () => {
-      const namespacesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
-
-      const gen = fetchNamespacesSaga(fetchAccountInfo());
-      expect(gen.next().value).toMatchObject(put(FETCH_NAMESPACES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getNamespaces));
-      expect(gen.next(namespacesData).value).toMatchObject(put(FETCH_NAMESPACES_SUCCESS({ data: namespacesData } )));
-      expect(gen.next().done).toBe(true);
-    });
-
-    it('should tolerate errors fetching namespaces', () => {
-      const error = new Error('ouch');
-      const gen = fetchNamespacesSaga(fetchAccountInfo(quietOptions));
-      expect(gen.next().value).toMatchObject(put(FETCH_NAMESPACES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getNamespaces));
-      expect(gen.throw(error).value).toMatchObject(put(FETCH_NAMESPACES_ERROR({ error: error.message })));
-      expect(gen.next().done).toBe(true);
-    });
-  });
-
-  describe('fetchRegistriesSaga', () => {
-    it('should fetch registries', () => {
-      const registriesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
-
-      const gen = fetchRegistriesSaga(fetchAccountInfo());
-      expect(gen.next().value).toMatchObject(put(FETCH_REGISTRIES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getRegistries));
-      expect(gen.next(registriesData).value).toMatchObject(put(FETCH_REGISTRIES_SUCCESS({ data: registriesData } )));
-      expect(gen.next().done).toBe(true);
-    });
-
-    it('should tolerate errors fetching registries', () => {
-      const error = new Error('ouch');
-      const gen = fetchRegistriesSaga(fetchAccountInfo(quietOptions));
-      expect(gen.next().value).toMatchObject(put(FETCH_REGISTRIES_REQUEST()));
-      expect(gen.next().value).toMatchObject(call(getRegistries));
-      expect(gen.throw(error).value).toMatchObject(put(FETCH_REGISTRIES_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });
   });

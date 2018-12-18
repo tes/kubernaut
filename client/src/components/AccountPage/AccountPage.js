@@ -33,6 +33,11 @@ class AccountPage extends Component {
       namespaceEls.push(<dd key={`${namespace.id}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
     });
 
+    const systemEls = [];
+    account.roles.system.forEach(({ name, global = false}) => {
+      systemEls.push(<li key={name}>{name}{ global ? ' (global)' : null }</li>);
+    });
+
     return (
       <Container>
         <Title title={`Account: ${account.displayName}`} />
@@ -47,12 +52,20 @@ class AccountPage extends Component {
         <Row>
             <p><strong>Created:</strong> {account.createdOn}</p>
         </Row>
+        <Row classNAme="mt-3">
+          <Col sm="12">
+            <h5>System</h5>
+            <ul className="list-unstyled">
+              {systemEls}
+            </ul>
+          </Col>
+        </Row>
         <Row className="mt-3">
           <Col sm="12">
             <h5>Namespaces:</h5>
-              <dl className="row">
-                {namespaceEls}
-              </dl>
+            <dl className="row">
+              {namespaceEls}
+            </dl>
           </Col>
         </Row>
         <Row className="mt-3">

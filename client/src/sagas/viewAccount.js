@@ -5,19 +5,11 @@ import {
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
-  FETCH_NAMESPACES_REQUEST,
-  FETCH_NAMESPACES_SUCCESS,
-  FETCH_NAMESPACES_ERROR,
-  FETCH_REGISTRIES_REQUEST,
-  FETCH_REGISTRIES_SUCCESS,
-  FETCH_REGISTRIES_ERROR,
   setCanEdit,
 } from '../modules/viewAccount';
 
 import {
   getAccountById,
-  getNamespaces,
-  getRegistries,
   hasPermission,
 } from '../lib/api';
 
@@ -45,31 +37,7 @@ export function* checkPermissionSaga({ payload = {}}) {
   }
 }
 
-export function* fetchNamespacesSaga({ payload: options }) {
-  yield put(FETCH_NAMESPACES_REQUEST());
-  try {
-    const data = yield call(getNamespaces);
-    yield put(FETCH_NAMESPACES_SUCCESS({ data }));
-  } catch(error) {
-    if (!options.quiet) console.error(error); // eslint-disable-line no-console
-    yield put(FETCH_NAMESPACES_ERROR({ error: error.message }));
-  }
-}
-
-export function* fetchRegistriesSaga({ payload: options }) {
-  yield put(FETCH_REGISTRIES_REQUEST());
-  try {
-    const data = yield call(getRegistries);
-    yield put(FETCH_REGISTRIES_SUCCESS({ data }));
-  } catch(error) {
-    if (!options.quiet) console.error(error); // eslint-disable-line no-console
-    yield put(FETCH_REGISTRIES_ERROR({ error: error.message }));
-  }
-}
-
 export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
   takeLatest(fetchAccountInfo, checkPermissionSaga),
-  takeLatest(fetchAccountInfo, fetchNamespacesSaga),
-  takeLatest(fetchAccountInfo, fetchRegistriesSaga),
 ];
