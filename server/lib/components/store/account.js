@@ -102,20 +102,7 @@ export default function(options = {}) {
 
       const namespacesBuilder = authz.queryNamespacesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
       const registriesBuilder = authz.queryRegistriesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
-      const systemRolesBuilder = sqb
-        .select('r.name', raw('gar.id IS NOT NULL as global'))
-        .from('active_account_roles__vw ar')
-        .join(
-          sqb.leftJoin('active_account_roles__vw gar')
-          .on(Op.eq('ar.account', raw('gar.account')))
-          .on(Op.eq('ar.subject_type', 'system'))
-          .on(Op.eq('gar.subject_type', 'global'))
-          .on(Op.eq('ar.role', raw('gar.role')))
-        )
-        .join(sqb.join('role r').on(Op.eq('r.id', raw('ar.role'))))
-        .where(Op.eq('ar.account', id))
-        .where(Op.eq('ar.subject_type', 'system'))
-        .orderBy('r.priority desc');
+      const systemRolesBuilder = authz.querySystemAppliedRolesForUser(id);
 
       return await db.withTransaction(async connection => {
         const namespacesResults = await connection.query(db.serialize(namespacesBuilder, {}).sql);
@@ -245,6 +232,19 @@ export default function(options = {}) {
       if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
 
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.querySystemRolesGrantableAsSeenBy(meta.account.id).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer: canGrantAnswer } = canGrantResult.rows[0];
+      if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant global role ${roleName}.`);
+
       const hasSystemRoleBuilder = sqb
         .select(raw('count(1) > 0 answer'))
         .from('active_account_roles__vw ar')
@@ -289,6 +289,47 @@ export default function(options = {}) {
       return getAccount(accountId);
     }
 
+    async function revokeGlobalRole(accountId, roleName, meta) {
+      logger.debug(`Revoking global role: ${roleName} from account: ${accountId}`);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.querySystemRolesGrantableAsSeenBy(meta.account.id).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke global role ${roleName}.`);
+
+        const builder = sqb
+          .update('account_roles', {
+            deleted_on: meta.date,
+            deleted_by: meta.account.id,
+          })
+          .where(Op.eq('account', accountId))
+          .where(Op.eq('subject_type', 'global'))
+          .where(Op.eq('role', role_id))
+          .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked global role: ${roleName} from account: ${accountId}`);
+    }
+
     async function _grantSystemRole(connection, accountId, roleName, meta) {
       logger.debug(`Granting role: ${roleName} for system to account: ${accountId}`);
 
@@ -300,6 +341,19 @@ export default function(options = {}) {
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
       if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
+
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.querySystemRolesGrantableAsSeenBy(meta.account.id).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer: canGrantAnswer } = canGrantResult.rows[0];
+      if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant system role ${roleName}.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -332,6 +386,47 @@ export default function(options = {}) {
       });
 
       return getAccount(accountId);
+    }
+
+    async function revokeSystemRole(accountId, roleName, meta) {
+      logger.debug(`Revoking system role: ${roleName} from account: ${accountId}`);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.querySystemRolesGrantableAsSeenBy(meta.account.id).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke global role ${roleName}.`);
+
+        const builder = sqb
+          .update('account_roles', {
+            deleted_on: meta.date,
+            deleted_by: meta.account.id,
+          })
+          .where(Op.eq('account', accountId))
+          .where(Op.in('subject_type', ['global', 'system']))
+          .where(Op.eq('role', role_id))
+          .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked system role: ${roleName} from account: ${accountId}`);
     }
 
     async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
@@ -502,7 +597,8 @@ export default function(options = {}) {
         .from('active_account_roles__vw ar')
         .join(sqb.join('role r').on(Op.eq('ar.role', raw('r.id'))))
         .where(Op.eq('r.name', 'admin'))
-        .where(Op.eq('ar.subject_type', 'global'));
+        .where(Op.eq('ar.subject_type', 'global'))
+        .where(Op.ne('ar.account', '00000000-0000-0000-0000-000000000000'));
 
       const result = await db.query(db.serialize(builder, {}).sql);
       const { count } = result.rows[0];
@@ -727,6 +823,23 @@ export default function(options = {}) {
       });
     }
 
+    async function rolesForSystem(targetUserId, currentUser) {
+      logger.debug(`Collection system role information for user ${targetUserId} as seen by ${currentUser.id}`);
+
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.querySystemAppliedRolesForUser(targetUserId);
+        const rolesGrantableBuilder = authz.querySystemRolesGrantableAsSeenBy(currentUser.id);
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows,
+          rolesGrantable: rolesGrantable.rows.map(({ name }) => (name)),
+        };
+      });
+    }
+
     function toAccount(row) {
       return new Account({
         id: row.id,
@@ -759,8 +872,11 @@ export default function(options = {}) {
       hasPermission,
       rolesForNamespaces,
       rolesForRegistries,
+      rolesForSystem,
       grantGlobalRole,
       grantSystemRole,
+      revokeGlobalRole,
+      revokeSystemRole,
     });
   }
 

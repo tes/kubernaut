@@ -71,11 +71,44 @@ export default {
         .orderBy('sr.name');
     }
 
+    function querySystemAppliedRolesForUser(targetUserId) {
+      return sqb
+        .select('r.name', raw('gar.id IS NOT NULL as global'))
+        .from('active_account_roles__vw ar')
+        .join(
+          sqb.leftJoin('active_account_roles__vw gar')
+          .on(Op.eq('ar.account', raw('gar.account')))
+          .on(Op.eq('ar.subject_type', 'system'))
+          .on(Op.eq('gar.subject_type', 'global'))
+          .on(Op.eq('ar.role', raw('gar.role')))
+        )
+        .join(sqb.join('role r').on(Op.eq('r.id', raw('ar.role'))))
+        .where(Op.eq('ar.account', targetUserId))
+        .where(Op.eq('ar.subject_type', 'system'))
+        .orderBy('r.priority desc');
+    }
+
+    function querySystemRolesGrantableAsSeenBy(currentUserId) {
+      return sqb
+        .select('r.id', 'r.name')
+        .from('role r')
+        .where(Op.lte('r.priority', sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.eq('ar.subject_type', 'system'))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('accounts-write')))
+        ));
+    }
+
     return {
       querySubjectIdsWithPermission,
       queryRoleIdsWithPermission,
       queryNamespacesWithAppliedRolesForUserAsSeenBy,
       queryRegistriesWithAppliedRolesForUserAsSeenBy,
+      querySystemAppliedRolesForUser,
+      querySystemRolesGrantableAsSeenBy,
     };
   }
 };

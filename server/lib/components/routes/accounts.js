@@ -114,6 +114,70 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/roles/system', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantSystemRole(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForSystem(req.body.account, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/system', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeSystemRole(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForSystem(req.body.account, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/roles/global', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantGlobalRole(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForGlobal(req.body.account, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/global', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeGlobalRole(req.body.account, req.body.role, req.body.registry, meta);
+        const data = await store.rolesForGlobal(req.body.account, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/roles/registry', bodyParser.json(), async (req, res, next) => {
       try {
         if (!req.body.account) return next(Boom.badRequest('account is required'));
@@ -196,6 +260,16 @@ export default function(options = {}) {
       try {
         if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
         const data = await store.rolesForRegistries(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/accounts/:id/system', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const data = await store.rolesForSystem(req.params.id, req.user);
         res.json(data);
       } catch (error) {
         next(error);
