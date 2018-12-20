@@ -66,6 +66,7 @@ class AccountSystemRolesForm extends Component {
                                 type="checkbox"
                                 disabled={
                                   submitting
+                                  || rolesGrantable.indexOf(name) < 0
                                   || !currentValues[name]
                                   || !currentValues[name].system
                                 }

@@ -52,7 +52,7 @@ class AccountPage extends Component {
         <Row>
             <p><strong>Created:</strong> {account.createdOn}</p>
         </Row>
-        <Row classNAme="mt-3">
+        <Row className="mt-3">
           <Col sm="12">
             <h5>System</h5>
             <ul className="list-unstyled">
