@@ -26,6 +26,7 @@ class Roles extends Component {
     const {
       registry,
       currentValues = {},
+      rolesGrantable,
       updateRolesForRegistry,
       deleteRolesForRegistry,
     } = this.props;
@@ -43,7 +44,7 @@ class Roles extends Component {
                 name={name}
                 component="input"
                 type="checkbox"
-                disabled={this.props.submitting}
+                disabled={this.props.submitting || rolesGrantable.indexOf(name) < 0}
                 onChange={(event, newValue) => {
                   if (!newValue && howManySet === 1) {
                     event.preventDefault();
@@ -124,6 +125,7 @@ class AccountRegistriesRolesForm extends Component {
                             updateRolesForRegistry={updateRolesForRegistry}
                             deleteRolesForRegistry={deleteRolesForRegistry}
                             submitting={submitting}
+                            rolesGrantable={rolesGrantable.find(({ id }) => id === registry.id).roles}
                           />
                         </FormSection>
                       ))

@@ -27,6 +27,7 @@ class Roles extends Component {
       currentValues = {},
       updateRolesForNamespace,
       deleteRolesForNamespace,
+      rolesGrantable,
     } = this.props;
     const howManySet = Object.keys(currentValues).reduce((acc, role) => {
       return currentValues[role] ? acc + 1 : acc;
@@ -42,7 +43,7 @@ class Roles extends Component {
                 name={name}
                 component="input"
                 type="checkbox"
-                disabled={this.props.submitting}
+                disabled={this.props.submitting || rolesGrantable.indexOf(name) < 0}
                 onChange={(event, newValue) => {
                   if (!newValue && howManySet === 1) {
                     event.preventDefault();
@@ -123,6 +124,7 @@ class AccountNamespacesRolesForm extends Component {
                             updateRolesForNamespace={updateRolesForNamespace}
                             deleteRolesForNamespace={deleteRolesForNamespace}
                             submitting={submitting}
+                            rolesGrantable={rolesGrantable.find(({ id }) => id === namespace.id).roles}
                           />
                         </FormSection>
                       ))

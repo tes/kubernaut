@@ -102,6 +102,46 @@ export default {
         ));
     }
 
+    function queryNamespaceRolesGrantableAsSeenBy(currentUserId, namespaceId) {
+      return sqb
+        .select('r.id')
+        .from('role r')
+        .where(Op.lte('r.priority', sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('namespaces-grant')))
+          .where(Op.or(
+            Op.eq('ar.subject_type', 'global'),
+            Op.and(
+              Op.eq('ar.subject_type', 'namespace'),
+              Op.eq('ar.subject', namespaceId)
+            )
+          ))
+      ));
+    }
+
+    function queryRegistryRolesGrantableAsSeenBy(currentUserId, registryId) {
+      return sqb
+        .select('r.id')
+        .from('role r')
+        .where(Op.lte('r.priority', sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('registries-grant')))
+          .where(Op.or(
+            Op.eq('ar.subject_type', 'global'),
+            Op.and(
+              Op.eq('ar.subject_type', 'registry'),
+              Op.eq('ar.subject', registryId)
+            )
+          ))
+      ));
+    }
+
     return {
       querySubjectIdsWithPermission,
       queryRoleIdsWithPermission,
@@ -109,6 +149,8 @@ export default {
       queryRegistriesWithAppliedRolesForUserAsSeenBy,
       querySystemAppliedRolesForUser,
       querySystemRolesGrantableAsSeenBy,
+      queryNamespaceRolesGrantableAsSeenBy,
+      queryRegistryRolesGrantableAsSeenBy,
     };
   }
 };

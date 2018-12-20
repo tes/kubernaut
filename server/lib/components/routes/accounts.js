@@ -150,6 +150,7 @@ export default function(options = {}) {
       try {
         if (!req.body.account) return next(Boom.badRequest('account is required'));
         if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (req.user.id === req.body.account) return next(Boom.badRequest('cannot set your own global'));
 
         if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
 

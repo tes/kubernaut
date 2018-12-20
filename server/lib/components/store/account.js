@@ -411,7 +411,7 @@ export default function(options = {}) {
 
         const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
         const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
-        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke global role ${roleName}.`);
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke system role ${roleName}.`);
 
         const builder = sqb
           .update('account_roles', {
@@ -448,6 +448,19 @@ export default function(options = {}) {
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
       if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
+
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.queryRegistryRolesGrantableAsSeenBy(meta.account.id, registryId).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer: canGrantAnswer } = canGrantResult.rows[0];
+      if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant registry role ${roleName}.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -490,6 +503,19 @@ export default function(options = {}) {
         if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
         const { role_id } = roleIdResult.rows[0];
 
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.queryRegistryRolesGrantableAsSeenBy(meta.account.id, registryId).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke registry role ${roleName}.`);
+
         const builder = sqb
         .update('account_roles', {
           deleted_on: meta.date,
@@ -528,6 +554,19 @@ export default function(options = {}) {
       const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
       if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
       const { role_id } = roleIdResult.rows[0];
+
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.queryNamespaceRolesGrantableAsSeenBy(meta.account.id, namespaceId).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer: canGrantAnswer } = canGrantResult.rows[0];
+      if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant namespace role ${roleName}.`);
 
       const existsBuilder = sqb
         .select(raw('count(1) > 0 answer'))
@@ -569,6 +608,19 @@ export default function(options = {}) {
         const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
         if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
         const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.queryNamespaceRolesGrantableAsSeenBy(meta.account.id, namespaceId).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke namespace role ${roleName}.`);
 
         const builder = sqb
         .update('account_roles', {

@@ -8,13 +8,14 @@ import {
 
 const formName = 'accountSystemRoles';
 
-export default connect((state) => {
+export default connect((state, props) => {
   const formCurrentValues = getFormValues(formName)(state) || {};
 
   return {
     initialValues: state.editAccount.systemRoles.initialValues,
     rolesGrantable: state.editAccount.systemRoles.rolesGrantable,
     currentValues: formCurrentValues,
+    disableGlobals: props.account.id === state.account.data.id,
   };
 }, {
   updateSystemRole,

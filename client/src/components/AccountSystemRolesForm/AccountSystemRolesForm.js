@@ -15,6 +15,7 @@ class AccountSystemRolesForm extends Component {
       currentValues,
       updateGlobalRole,
       updateSystemRole,
+      disableGlobals,
     } = this.props;
 
     return (
@@ -66,6 +67,7 @@ class AccountSystemRolesForm extends Component {
                                 type="checkbox"
                                 disabled={
                                   submitting
+                                  || disableGlobals
                                   || rolesGrantable.indexOf(name) < 0
                                   || !currentValues[name]
                                   || !currentValues[name].system
@@ -97,6 +99,7 @@ AccountSystemRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
   updateGlobalRole: PropTypes.func.isRequired,
   updateSystemRole: PropTypes.func.isRequired,
+  disableGlobals: PropTypes.bool,
 };
 
 export default AccountSystemRolesForm;

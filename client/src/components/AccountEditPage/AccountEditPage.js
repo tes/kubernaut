@@ -47,7 +47,7 @@ class AccountEditPage extends Component {
         <Row className="mt-3">
           <Col sm="12">
             <h5>System Roles:</h5>
-            <AccountSystemRolesForm />
+            <AccountSystemRolesForm account={account} />
           </Col>
         </Row>
         <Row className="mt-3">
