@@ -9,6 +9,8 @@ export const deleteRolesForRegistry = createAction(`${actionsPrefix}/DELETE_ROLE
 export const updateRolesForRegistry = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_REGISTRY`);
 export const addNewRegistry = createAction(`${actionsPrefix}/ADD_NEW_REGISTRY`);
 export const deleteRolesForNamespace = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_NAMESPACE`);
+export const updateSystemRole = createAction(`${actionsPrefix}/UPDATE_SYSTEM_ROLE`);
+export const updateGlobalRole = createAction(`${actionsPrefix}/UPDATE_GLOBAL_ROLE`);
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);
 export const FETCH_ACCOUNT_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNT_ERROR`);
@@ -18,8 +20,12 @@ export const FETCH_NAMESPACES_ERROR = createAction(`${actionsPrefix}/FETCH_NAMES
 export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REGISTRIES_REQUEST`);
 export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
+export const FETCH_SYSTEM_ROLES_REQUEST = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_REQUEST`);
+export const FETCH_SYSTEM_ROLES_SUCCESS = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_SUCCESS`);
+export const FETCH_SYSTEM_ROLES_ERROR = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_ERROR`);
 export const UPDATE_ROLE_FOR_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_NAMESPACE_SUCCESS`);
 export const UPDATE_ROLE_FOR_REGISTRY_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_REGISTRY_SUCCESS`);
+export const UPDATE_ROLE_FOR_SYSTEM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_SYSTEM_SUCCESS`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 export const selectAccount = (state) => (state.editAccount.account);
@@ -33,6 +39,7 @@ const defaultState = {
         account: false,
         namespaces: false,
         registries: false,
+        system: false,
       },
       loadingPercent: 100,
     },
@@ -47,6 +54,10 @@ const defaultState = {
     initialValues: {},
     currentRoles: [],
     availableRegistries: [],
+    rolesGrantable: [],
+  },
+  systemRoles: {
+    initialValues: {},
     rolesGrantable: [],
   },
   registries: {
@@ -142,6 +153,43 @@ export default handleActions({
     ...state,
     meta: {
       loading: computeLoading(state.meta.loading, 'registries', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_SYSTEM_ROLES_REQUEST]: (state) => ({
+    ...state,
+    systemRoles: defaultState.systemRoles,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'system', true),
+    },
+  }),
+  [combineActions(FETCH_SYSTEM_ROLES_SUCCESS, UPDATE_ROLE_FOR_SYSTEM_SUCCESS)]: (state, { payload }) => {
+    const data = payload.rolesData || payload.data;
+    const initialValues = data.currentRoles.reduce((acc, { name, global }) => ({
+        ...acc,
+        [name]: {
+          system: true,
+          global,
+        }
+      }), {});
+
+    return {
+      ...state,
+      systemRoles: {
+        ...defaultState.systemRoles,
+        initialValues,
+        rolesGrantable: data.rolesGrantable,
+      },
+      meta: {
+        loading: computeLoading(state.meta.loading, 'system', false),
+      },
+    };
+  },
+  [FETCH_SYSTEM_ROLES_ERROR]: (state, { payload }) => ({
+    ...state,
+    systemRoles: defaultState.systemRoles,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'system', false),
       error: payload.error,
     },
   }),

@@ -4,6 +4,7 @@ import { Container, Row, Col, Progress } from 'reactstrap';
 import Title from '../Title';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
+import AccountSystemRolesForm from '../AccountSystemRolesForm';
 import Account from '../../lib/domain/Account';
 
 class AccountEditPage extends Component {
@@ -45,6 +46,12 @@ class AccountEditPage extends Component {
         </Row>
         <Row>
             <p><strong>Created:</strong> {account.createdOn}</p>
+        </Row>
+        <Row className="mt-3">
+          <Col sm="12">
+            <h5>System Roles:</h5>
+            <AccountSystemRolesForm />
+          </Col>
         </Row>
         <Row className="mt-3">
           <Col sm="12">

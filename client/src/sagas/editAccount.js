@@ -8,6 +8,8 @@ import {
   deleteRolesForNamespace,
   deleteRolesForRegistry,
   updateRolesForRegistry,
+  updateSystemRole,
+  updateGlobalRole,
   addNewRegistry,
   selectAccount,
   setCanEdit,
@@ -20,8 +22,12 @@ import {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  FETCH_SYSTEM_ROLES_REQUEST,
+  FETCH_SYSTEM_ROLES_SUCCESS,
+  FETCH_SYSTEM_ROLES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
+  UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
 } from '../modules/editAccount';
 
 import {
@@ -33,6 +39,11 @@ import {
   hasPermission,
   getAccountRolesForNamesaces,
   getAccountRolesForRegistries,
+  getSystemRoles,
+  addRoleForSystem,
+  removeRoleForSystem,
+  addGlobalRole,
+  removeGlobalRole,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -80,6 +91,22 @@ export function* fetchRegistriesSaga({ payload = {} }) {
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_REGISTRIES_ERROR({ error: error.message }));
+  }
+}
+
+export function* fetchSystemRolesSaga({ payload = {} }) {
+  const { match, ...options } = payload;
+  if (!match) return;
+  const { accountId } = match.params;
+  if (!accountId) return;
+
+  yield put(FETCH_SYSTEM_ROLES_REQUEST());
+  try {
+    const rolesData = yield call(getSystemRoles, accountId);
+    yield put(FETCH_SYSTEM_ROLES_SUCCESS({ rolesData }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_SYSTEM_ROLES_ERROR({ error: error.message }));
   }
 }
 
@@ -144,6 +171,38 @@ export function* updateRolesForRegistrySaga({ payload }) {
   }
 }
 
+export function* updateSystemRoleSaga({ payload }) {
+  const { role, newValue, ...options } = payload;
+  const { id: accountId } = yield select(selectAccount);
+  yield put(startSubmit('accountSystemRoles'));
+  try {
+    let data;
+    if (newValue) data = yield call(addRoleForSystem, accountId, role, options);
+    else data = yield call(removeRoleForSystem, accountId, role, options);
+    yield put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data }));
+    yield put(stopSubmit('accountSystemRoles'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopSubmit('accountSystemRoles'));
+  }
+}
+
+export function* updateGlobalRoleSaga({ payload }) {
+  const { role, newValue, ...options } = payload;
+  const { id: accountId } = yield select(selectAccount);
+  yield put(startSubmit('accountSystemRoles'));
+  try {
+    let data;
+    if (newValue) data = yield call(addGlobalRole, accountId, role, options);
+    else data = yield call(removeGlobalRole, accountId, role, options);
+    yield put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data }));
+    yield put(stopSubmit('accountSystemRoles'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopSubmit('accountSystemRoles'));
+  }
+}
+
 export function* addNewRegistrySaga({ payload = {} }) {
   const {
     newRegistry,
@@ -186,6 +245,7 @@ export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
   takeLatest(fetchAccountInfo, fetchNamespacesSaga),
   takeLatest(fetchAccountInfo, fetchRegistriesSaga),
+  takeLatest(fetchAccountInfo, fetchSystemRolesSaga),
   takeLatest(fetchAccountInfo, checkPermissionSaga),
   takeEvery(updateRolesForNamespace, updateRolesForNamespaceSaga),
   takeEvery(addNewNamespace, addNewNamespaceSaga),
@@ -193,4 +253,6 @@ export default [
   takeEvery(updateRolesForRegistry, updateRolesForRegistrySaga),
   takeEvery(addNewRegistry, addNewRegistrySaga),
   takeEvery(deleteRolesForRegistry, deleteRolesForRegistrySaga),
+  takeEvery(updateSystemRole, updateSystemRoleSaga),
+  takeEvery(updateGlobalRole, updateGlobalRoleSaga),
 ];

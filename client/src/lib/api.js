@@ -182,6 +182,50 @@ export const removeRoleForRegistry = (accountId, registryId, role, options = {})
   });
 };
 
+export const addRoleForSystem = (accountId, role, options = {}) => {
+  const url = '/api/roles/system';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
+};
+
+export const removeRoleForSystem = (accountId, role, options = {}) => {
+  const url = '/api/roles/system';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
+};
+
+export const addGlobalRole = (accountId, role, options = {}) => {
+  const url = '/api/roles/global';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
+};
+
+export const removeGlobalRole = (accountId, role, options = {}) => {
+  const url = '/api/roles/global';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
+};
+
 export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit) => {
   const qs = makeQueryString({
     offset,
@@ -230,5 +274,10 @@ export const getAccountRolesForNamesaces = (accountId) => {
 
 export const getAccountRolesForRegistries = (accountId) => {
   const url = `/api/accounts/${accountId}/registries`;
+  return makeRequest(url);
+};
+
+export const getSystemRoles = (accountId) => {
+  const url = `/api/accounts/${accountId}/system`;
   return makeRequest(url);
 };
