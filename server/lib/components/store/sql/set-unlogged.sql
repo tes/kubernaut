@@ -1,5 +1,4 @@
-ALTER TABLE account_role_registry SET UNLOGGED;
-ALTER TABLE account_role_namespace SET UNLOGGED;
+ALTER TABLE account_roles SET UNLOGGED;
 ALTER TABLE release_attribute SET UNLOGGED;
 ALTER TABLE deployment_log_entry SET UNLOGGED;
 ALTER TABLE deployment_attribute SET UNLOGGED;
