@@ -5,14 +5,13 @@ import Title from '../Title';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
 import AccountSystemRolesForm from '../AccountSystemRolesForm';
-import Account from '../../lib/domain/Account';
 
 class AccountEditPage extends Component {
 
   render() {
     const {
       meta,
-      account: accountData,
+      account,
     } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Container>
@@ -35,8 +34,6 @@ class AccountEditPage extends Component {
         </Container>
       );
     }
-
-    const account = new Account(accountData);
 
     return (
       <Container>
