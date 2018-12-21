@@ -1,5 +1,5 @@
 import { call, put, select } from 'redux-saga/effects';
-import { startSubmit, stopSubmit } from 'redux-form';
+import { startSubmit, stopSubmit, reset } from 'redux-form';
 
 import {
   fetchAccountInfoSaga,
@@ -181,6 +181,7 @@ describe('editAccount sagas', () => {
       expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountNamespacesRoles')));
       expect(gen.next().value).toMatchObject(call(removeRoleForNamespace, accountId, namespaceId, role, { quiet: true}));
       expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopSubmit('accountNamespacesRoles')));
+      expect(gen.next().value).toMatchObject(put(reset('accountNamespacesRoles')));
       expect(gen.next().done).toBe(true);
     });
   });
@@ -241,6 +242,7 @@ describe('editAccount sagas', () => {
       expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountRegistriesRoles')));
       expect(gen.next().value).toMatchObject(call(removeRoleForRegistry, accountId, registryId, role, { quiet: true}));
       expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopSubmit('accountRegistriesRoles')));
+      expect(gen.next().value).toMatchObject(put(reset('accountRegistriesRoles')));
       expect(gen.next().done).toBe(true);
     });
   });
