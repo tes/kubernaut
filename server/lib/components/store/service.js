@@ -203,6 +203,22 @@ export default function(options) {
       });
     }
 
+    async function deleteService(id, meta) {
+      logger.debug(`Deleting service id: ${id}`);
+
+      const builder = sqb
+        .update('service', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('id', id))
+        .where(Op.is('deleted_on', null));
+
+      await db.query(db.serialize(builder, {}).sql);
+
+      logger.debug(`Deleted service, id: ${id}`);
+    }
+
     function toService(row) {
       return new Service({
         id: row.id,
@@ -239,6 +255,7 @@ export default function(options) {
       searchByServiceName,
       checkServiceCanDeploytoNamespace,
       findServicesAndShowStatusForNamespace,
+      deleteService,
     });
   }
 

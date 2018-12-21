@@ -550,22 +550,22 @@ describe('Deployment Store', () => {
     });
 
     // Enable when we can get, delete and list services
-    xit('should exclude deleted services from deployment count', async () => {
+    it('should exclude deleted services from deployment count', async () => {
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
       const release = await saveRelease(makeRelease({
         service: {
           name: 'doomed',
         },
       }));
 
-      await saveDeployment(makeDeployment({ release }));
+      await saveDeployment(makeDeployment({ release, namespace }));
       const results1 = await findDeployments();
       expect(results1.count).toBe(1);
 
       await deleteService(release.service.id);
       const results2 = await findDeployments();
       expect(results2.count).toBe(0);
-
-      function deleteService() {}
     });
 
     it('should exclude deleted namespaces from deployment count', async () => {
@@ -724,5 +724,9 @@ describe('Deployment Store', () => {
 
   function findLatestDeploymentsByNamespaceForService(...args) {
     return store.findLatestDeploymentsByNamespaceForService(...args);
+  }
+
+  function deleteService(id, meta = makeRootMeta()) {
+    return store.deleteService(id, meta);
   }
 });

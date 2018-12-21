@@ -345,7 +345,7 @@ describe('Release Store', () => {
     });
 
     // Enable when we can get, delete and list services
-    xit('should exclude deleted services from release count', async () => {
+    it('should exclude deleted services from release count', async () => {
       const release = await saveRelease(makeRelease({
         service: {
           name: 'doomed',
@@ -358,8 +358,6 @@ describe('Release Store', () => {
       await deleteService(release.service.id);
       const results2 = await findReleases();
       expect(results2.count).toBe(0);
-
-      function deleteService() {}
     });
 
     it('should exclude deleted registries from release count', async () => {
@@ -505,5 +503,9 @@ describe('Release Store', () => {
 
   function deleteRegistry(id, meta = makeRootMeta()) {
     return store.deleteRegistry(id, meta);
+  }
+
+  function deleteService(id, meta = makeRootMeta()) {
+    return store.deleteService(id, meta);
   }
 });
