@@ -12,6 +12,9 @@ import {
   addNewRegistrySaga,
   deleteRolesForRegistrySaga,
   checkPermissionSaga,
+  fetchSystemRolesSaga,
+  updateSystemRoleSaga,
+  updateGlobalRoleSaga,
 } from '../editAccount';
 
 import {
@@ -23,9 +26,14 @@ import {
   updateRolesForRegistry,
   addNewRegistry,
   selectAccount,
+  updateSystemRole,
+  updateGlobalRole,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
+  FETCH_SYSTEM_ROLES_REQUEST,
+  FETCH_SYSTEM_ROLES_SUCCESS,
+  FETCH_SYSTEM_ROLES_ERROR,
   FETCH_NAMESPACES_REQUEST,
   FETCH_NAMESPACES_SUCCESS,
   FETCH_NAMESPACES_ERROR,
@@ -34,6 +42,7 @@ import {
   FETCH_REGISTRIES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
+  UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   setCanEdit,
 } from '../../modules/editAccount';
 
@@ -46,6 +55,11 @@ import {
   addRoleForRegistry,
   removeRoleForRegistry,
   hasPermission,
+  getSystemRoles,
+  addRoleForSystem,
+  removeRoleForSystem,
+  addGlobalRole,
+  removeGlobalRole,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -71,6 +85,31 @@ describe('editAccount sagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_ACCOUNT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getAccountById, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_ACCOUNT_ERROR({ error: error.message })));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('fetchSystemRolesSaga', () => {
+    it('should fetch system roles', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
+      const rolesData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
+
+      const gen = fetchSystemRolesSaga(fetchAccountInfo({ match }));
+      expect(gen.next().value).toMatchObject(put(FETCH_SYSTEM_ROLES_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getSystemRoles, accountId));
+      expect(gen.next(rolesData).value).toMatchObject(put(FETCH_SYSTEM_ROLES_SUCCESS({ rolesData } )));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should tolerate errors fetching system roles', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
+      const error = new Error('ouch');
+      const gen = fetchSystemRolesSaga(fetchAccountInfo({ ...quietOptions, match }));
+      expect(gen.next().value).toMatchObject(put(FETCH_SYSTEM_ROLES_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getSystemRoles, accountId));
+      expect(gen.throw(error).value).toMatchObject(put(FETCH_SYSTEM_ROLES_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });
   });
@@ -337,6 +376,104 @@ describe('editAccount sagas', () => {
         role: 'b',
         newValue: false,
       } }));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('updateSystemRoleSaga', () => {
+    it('grants a system role', () => {
+      const role = 'developer';
+      const value = true;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value };
+      const updateResult = { bob: 1 };
+
+      const gen = updateSystemRoleSaga(updateSystemRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(addRoleForSystem, accountId, role, {}));
+      expect(gen.next(updateResult).value).toMatchObject(put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data: updateResult })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('revokes a system role', () => {
+      const role = 'developer';
+      const value = false;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value };
+      const updateResult = { bob: 1 };
+
+      const gen = updateSystemRoleSaga(updateSystemRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(removeRoleForSystem, accountId, role, {}));
+      expect(gen.next(updateResult).value).toMatchObject(put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data: updateResult })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('handle an error', () => {
+      const role = 'developer';
+      const value = true;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value, quiet: true };
+
+      const gen = updateSystemRoleSaga(updateSystemRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(addRoleForSystem, accountId, role, {}));
+      expect(gen.throw(new Error('bob')).value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(put(reset('accountSystemRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('updateGlobalRoleSaga', () => {
+    it('grants a system role', () => {
+      const role = 'developer';
+      const value = true;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value };
+      const updateResult = { bob: 1 };
+
+      const gen = updateGlobalRoleSaga(updateGlobalRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(addGlobalRole, accountId, role, {}));
+      expect(gen.next(updateResult).value).toMatchObject(put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data: updateResult })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('revokes a system role', () => {
+      const role = 'developer';
+      const value = false;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value };
+      const updateResult = { bob: 1 };
+
+      const gen = updateGlobalRoleSaga(updateGlobalRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(removeGlobalRole, accountId, role, {}));
+      expect(gen.next(updateResult).value).toMatchObject(put(UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data: updateResult })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('handle an error', () => {
+      const role = 'developer';
+      const value = true;
+      const accountId = 'abc123';
+      const payload = { role, newValue: value, quiet: true };
+
+      const gen = updateGlobalRoleSaga(updateGlobalRole(payload));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(call(addGlobalRole, accountId, role, {}));
+      expect(gen.throw(new Error('bob')).value).toMatchObject(put(stopSubmit('accountSystemRoles')));
+      expect(gen.next().value).toMatchObject(put(reset('accountSystemRoles')));
       expect(gen.next().done).toBe(true);
     });
   });

@@ -8,8 +8,12 @@ import reduce, {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  FETCH_SYSTEM_ROLES_REQUEST,
+  FETCH_SYSTEM_ROLES_SUCCESS,
+  FETCH_SYSTEM_ROLES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
+  UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   setCanEdit,
 } from '../editAccount';
 
@@ -156,6 +160,58 @@ describe('editAccount Reducer', () => {
     };
     const state = reduce(initialState, UPDATE_ROLE_FOR_REGISTRY_SUCCESS({ data: newRolesData }));
     expect(state.registriesRoles).toMatchObject(expected);
+  });
+
+  it('should indicate when system roles are loading', () => {
+    const state = reduce(createInitialState(), FETCH_SYSTEM_ROLES_REQUEST());
+    expect(state.systemRoles).toMatchObject({
+      initialValues: {},
+      rolesGrantable: [],
+    });
+    expect(state.meta).toMatchObject({ loading: { } });
+    expect(state.meta.loading).toMatchObject({ sections: { system: true } });
+    expect(state.meta.loading.loadingPercent).toBeLessThan(100);
+  });
+
+  it('should update state when system roles have loaded', () => {
+    const rolesData = {
+      currentRoles: [{ name: 'developer', global: false }],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { developer: { system: true, global: false } },
+      rolesGrantable: rolesData.rolesGrantable,
+    };
+    const state = reduce(createInitialState(), FETCH_SYSTEM_ROLES_SUCCESS({ rolesData }));
+    expect(state.systemRoles).toMatchObject(expected);
+    expect(state.meta).toMatchObject({ loading: { } });
+    expect(state.meta.loading).toMatchObject({ sections: { system: false } });
+    expect(state.meta.loading.loadingPercent).toBe(100);
+  });
+
+  it('should update state when system roles have errored', () => {
+    const initialState = createInitialState();
+    const state = reduce(initialState, FETCH_SYSTEM_ROLES_ERROR({ error: 'Oh Noes' }));
+    expect(state.systemRoles).toBe(initialState.systemRoles);
+    expect(state.meta).toMatchObject({ loading: { }, error: 'Oh Noes' });
+    expect(state.meta.loading).toMatchObject({ sections: { system: false } });
+    expect(state.meta.loading.loadingPercent).toBe(100);
+  });
+
+  it('should update account state when system roles have changed', () => {
+    const initialState = { ...createInitialState(), account: { a: 1 } };
+    const newRolesData = {
+      currentRoles: [{ name: 'developer', global: true }],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: {
+        developer: { system: true, global: true },
+      },
+      rolesGrantable: newRolesData.rolesGrantable,
+    };
+    const state = reduce(initialState, UPDATE_ROLE_FOR_SYSTEM_SUCCESS({ data: newRolesData }));
+    expect(state.systemRoles).toMatchObject(expected);
   });
 
   it('should set canEdit state', () => {
