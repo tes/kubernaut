@@ -438,6 +438,33 @@ describe('Account Store', () => {
         grantRoleOnRegistry(saved.id, 'admin', 'missing')
       ).rejects.toHaveProperty('code', '22P02');
     });
+
+    it('should fail if granting user does not have permission to grant', async () => {
+      const registry = await saveRegistry();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        grantRoleOnRegistry(saved.id, 'developer', registry.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant registry role developer')
+      });
+    });
+
+    it('should fail if granting user does not have permission to grant that role', async () => {
+      const registry = await saveRegistry();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnRegistry(saved.id, 'admin', registry.id);
+      await expect(
+        grantRoleOnRegistry(saved.id, 'admin', registry.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant registry role admin')
+      });
+    });
   });
 
   describe('Revoke Role On Registry', () => {
@@ -461,6 +488,34 @@ describe('Account Store', () => {
       const role = await grantRoleOnRegistry(account.id, 'admin', registry.id);
       await revokeRoleOnRegistry(role.id, 'admin', registry.id);
       await revokeRoleOnRegistry(role.id, 'admin', registry.id);
+    });
+
+    it('should fail if revoking user does not have permission to grant', async () => {
+      const registry = await saveRegistry();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantRoleOnRegistry(saved.id, 'developer', registry.id);
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        revokeRoleOnRegistry(saved.id, 'developer', registry.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke registry role developer')
+      });
+    });
+
+    it('should fail if revoking user does not have permission to revoke/grant that role', async () => {
+      const registry = await saveRegistry();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnRegistry(saved.id, 'admin', registry.id);
+      await expect(
+        revokeRoleOnRegistry(saved.id, 'admin', registry.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke registry role admin')
+      });
     });
   });
 
@@ -509,6 +564,33 @@ describe('Account Store', () => {
       ).rejects.toHaveProperty('code', '22P02');
     });
 
+    it('should fail if granting user does not have permission to grant', async () => {
+      const namespace = await saveNamespace();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        grantRoleOnNamespace(saved.id, 'developer', namespace.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant namespace role developer')
+      });
+    });
+
+    it('should fail if granting user does not have permission to grant that role', async () => {
+      const namespace = await saveNamespace();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnNamespace(saved.id, 'admin', namespace.id);
+      await expect(
+        grantRoleOnNamespace(saved.id, 'admin', namespace.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant namespace role admin')
+      });
+    });
+
   });
 
   describe('Revoke Role On Namespace', () => {
@@ -532,6 +614,34 @@ describe('Account Store', () => {
       const role = await grantRoleOnNamespace(account.id, 'admin', namespace.id);
       await revokeRoleOnNamespace(role.id, 'admin', namespace.id);
       await revokeRoleOnNamespace(role.id, 'admin', namespace.id);
+    });
+
+    it('should fail if revoking user does not have permission to grant', async () => {
+      const namespace = await saveNamespace();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantRoleOnNamespace(saved.id, 'developer', namespace.id);
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        revokeRoleOnNamespace(saved.id, 'developer', namespace.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke namespace role developer')
+      });
+    });
+
+    it('should fail if revoking user does not have permission to revoke/grant that role', async () => {
+      const namespace = await saveNamespace();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnNamespace(saved.id, 'admin', namespace.id);
+      await expect(
+        revokeRoleOnNamespace(saved.id, 'admin', namespace.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke namespace role admin')
+      });
     });
   });
 
