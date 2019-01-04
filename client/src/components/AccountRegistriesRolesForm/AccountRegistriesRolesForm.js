@@ -117,18 +117,20 @@ class AccountRegistriesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      currentRoles.map(({ registry }) => (
-                        <FormSection name={registry.id} key={registry.id}>
+                      currentRoles.map(({ registry }) => {
+                        const grantableForRegistry = rolesGrantable.find(({ id }) => id === registry.id);
+                        const rolesGrantableForRegistry = grantableForRegistry ? grantableForRegistry.roles : [];
+                        return <FormSection name={registry.id} key={registry.id}>
                           <Roles
                             registry={registry}
                             currentValues={currentValues[registry.id]}
                             updateRolesForRegistry={updateRolesForRegistry}
                             deleteRolesForRegistry={deleteRolesForRegistry}
                             submitting={submitting}
-                            rolesGrantable={rolesGrantable.find(({ id }) => id === registry.id).roles}
-                          />
-                        </FormSection>
-                      ))
+                            rolesGrantable={rolesGrantableForRegistry}
+                            />
+                        </FormSection>;
+                      })
                     }
                   </tbody>
                 </Table>
@@ -179,6 +181,7 @@ class AccountRegistriesRolesForm extends Component {
 AccountRegistriesRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
   registriesPossibleToAdd: PropTypes.array.isRequired,
+  rolesGrantable: PropTypes.array.isRequired,
 };
 
 export default AccountRegistriesRolesForm;

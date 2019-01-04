@@ -116,18 +116,20 @@ class AccountNamespacesRolesForm extends Component {
                   </thead>
                   <tbody>
                     {
-                      currentRoles.map(({ namespace }) => (
-                        <FormSection name={namespace.id} key={namespace.id}>
+                      currentRoles.map(({ namespace }) => {
+                        const grantableForNamespace = rolesGrantable.find(({ id }) => id === namespace.id);
+                        const rolesGrantableForNamespace = grantableForNamespace ? grantableForNamespace.roles : [];
+                        return <FormSection name={namespace.id} key={namespace.id}>
                           <Roles
                             namespace={namespace}
                             currentValues={currentValues[namespace.id]}
                             updateRolesForNamespace={updateRolesForNamespace}
                             deleteRolesForNamespace={deleteRolesForNamespace}
                             submitting={submitting}
-                            rolesGrantable={rolesGrantable.find(({ id }) => id === namespace.id).roles}
-                          />
-                        </FormSection>
-                      ))
+                            rolesGrantable={rolesGrantableForNamespace}
+                            />
+                        </FormSection>;
+                      })
                     }
                   </tbody>
                 </Table>
@@ -178,6 +180,7 @@ class AccountNamespacesRolesForm extends Component {
 AccountNamespacesRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
   namespacesPossibleToAdd: PropTypes.array.isRequired,
+  rolesGrantable: PropTypes.array.isRequired,
 };
 
 export default AccountNamespacesRolesForm;
