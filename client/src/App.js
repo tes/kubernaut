@@ -20,8 +20,7 @@ import { fetchAccountInfo } from './modules/account';
 
 // Styles
 import 'font-awesome/css/font-awesome.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css'; // Must be imported after bootstrap css
+import './App.scss';
 
 /***************************************************************
 Using require and assigning jQuery to window to workaround the
