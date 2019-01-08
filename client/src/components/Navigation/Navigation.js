@@ -31,10 +31,10 @@ class Navigation extends Component {
   render() {
     return (
       <Navbar color="dark" dark expand="md" className="p-0 pl-1">
-        <NavbarBrand href="/">kubernaut</NavbarBrand>
-         <NavbarToggler onClick={this.toggle} />
-        <Collapse isOpen={this.state.isOpen} navbar>
-          <Nav className="ml-auto" navbar>
+        <NavbarToggler onClick={this.toggle} />
+        <Collapse isOpen={this.state.isOpen} navbar className="justify-content-center">
+          <NavbarBrand href="/">kubernaut</NavbarBrand>
+          <Nav className="" navbar>
             <NavItem tag={LinkContainer} to="/registries">
               <NavLink>Registries</NavLink>
             </NavItem>
