@@ -9,12 +9,32 @@ import {
   FormGroup,
 } from 'reactstrap';
 import RenderSelect from '../RenderSelect';
+import Popover from '../Popover';
 
 const rolesDisplayMap = {
   'admin': 'Admin',
   'maintainer': 'Maintainer',
   'developer': 'Developer',
   'observer': 'Observer',
+};
+
+const help = {
+  admin: {
+    title: 'Namespace \'admin\' role',
+    body: 'Grants all actions for a namespace.',
+  },
+  maintainer: {
+    title: 'Namespace \'maintainer\' role',
+    body: 'Grants management capacity over a namespace. This includes granting services/accounts access to the namespace.',
+  },
+  developer: {
+    title: 'Namespace \'developer\' role',
+    body: 'Grants the ability to deploy to a namespace.',
+  },
+  observer: {
+    title: 'Namespace \'observer\' role',
+    body: 'Grants basic ability to see a namespace and any deployments to it at all.',
+  },
 };
 
 const roleForNewNamespaceOptions = (roles) => roles.reduce((acc, role) =>
@@ -107,10 +127,10 @@ class AccountNamespacesRolesForm extends Component {
                   <thead>
                     <tr>
                       <th></th>
-                      <th className="text-center">Admin</th>
-                      <th className="text-center">Maintainer</th>
-                      <th className="text-center">Developer</th>
-                      <th className="text-center">Observer</th>
+                      <th className="text-center">Admin <Popover {...help['admin']} classNames="d-inline"/></th>
+                      <th className="text-center">Maintainer <Popover {...help['maintainer']} classNames="d-inline"/></th>
+                      <th className="text-center">Developer <Popover {...help['developer']} classNames="d-inline"/></th>
+                      <th className="text-center">Observer <Popover {...help['observer']} classNames="d-inline"/></th>
                       <th></th>
                     </tr>
                   </thead>

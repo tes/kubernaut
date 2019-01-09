@@ -9,12 +9,32 @@ import {
   FormGroup,
 } from 'reactstrap';
 import RenderSelect from '../RenderSelect';
+import Popover from '../Popover';
 
 const rolesDisplayMap = {
   'admin': 'Admin',
   'maintainer': 'Maintainer',
   'developer': 'Developer',
   'observer': 'Observer',
+};
+
+const help = {
+  admin: {
+    title: 'Registry \'admin\' role',
+    body: 'Grants all actions for a registry.',
+  },
+  maintainer: {
+    title: 'Registry \'maintainer\' role',
+    body: 'Grants management capacity over a registry. This currently is only granting accounts visibility of a registry and services/releases bound to it.',
+  },
+  developer: {
+    title: 'Registry \'developer\' role',
+    body: 'Grants the ability to create releases/services against a registry.',
+  },
+  observer: {
+    title: 'Registry \'observer\' role',
+    body: 'Grants basic ability to see a registry and any services bound to it at all.',
+  },
 };
 
 const roleForNewRegistryOptions = (roles) => roles.reduce((acc, role) =>
@@ -108,10 +128,10 @@ class AccountRegistriesRolesForm extends Component {
                   <thead>
                     <tr>
                       <th></th>
-                      <th className="text-center">Admin</th>
-                      <th className="text-center">Maintainer</th>
-                      <th className="text-center">Developer</th>
-                      <th className="text-center">Observer</th>
+                      <th className="text-center">Admin <Popover {...help['admin']} classNames="d-inline"/></th>
+                      <th className="text-center">Maintainer <Popover {...help['maintainer']} classNames="d-inline"/></th>
+                      <th className="text-center">Developer <Popover {...help['developer']} classNames="d-inline"/></th>
+                      <th className="text-center">Observer <Popover {...help['observer']} classNames="d-inline"/></th>
                       <th></th>
                     </tr>
                   </thead>

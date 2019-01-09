@@ -6,6 +6,45 @@ import {
   Col,
   Table,
 } from 'reactstrap';
+import Popover from '../Popover';
+
+const helpSystem = {
+  admin: {
+    title: 'System \'admin\' role',
+    body: 'Grants all system capabilities. For example: Alter registries, namespaces, clusters, accounts.',
+  },
+  maintainer: {
+    title: 'System \'maintainer\' role',
+    body: 'Grants management powers without full access to the system. This enables account management.',
+  },
+  developer: {
+    title: 'System \'developer\' role',
+    body: 'Grants typically required capabilities. At a system level this only adds the ability to observe cluster information compared to \'observer\' role.',
+  },
+  observer: {
+    title: 'System \'observer\' role',
+    body: 'Grants basic requirements to see data about accounts and access the ui.',
+  },
+};
+
+const helpGlobal = {
+  admin: {
+    title: 'Global \'admin\' role',
+    body: 'Grants all capabilities for all subjects. For example: admin powers over any namespace.',
+  },
+  maintainer: {
+    title: 'Global \'maintainer\' role',
+    body: 'Grants management powers for all subjects. For example: enables granting other accounts power over any namespace.',
+  },
+  developer: {
+    title: 'Global \'developer\' role',
+    body: 'Grants developer powers for all subjects. For example: deploying to any namespace.',
+  },
+  observer: {
+    title: 'Global \'observer\' role',
+    body: 'Grants the ability to read all subjects (namespaces/registries).',
+  },
+};
 
 class AccountSystemRolesForm extends Component {
   render() {
@@ -52,6 +91,7 @@ class AccountSystemRolesForm extends Component {
                                   });
                                 }}
                               />
+                            <label className="ml-1" htmlFor={`${name}.system`}><Popover {...helpSystem[name]} /></label>
                             </td>
                           ))
                         }
@@ -79,6 +119,7 @@ class AccountSystemRolesForm extends Component {
                                   });
                                 }}
                               />
+                            <label className="ml-1" htmlFor={`${name}.system`}><Popover {...helpGlobal[name]} /></label>
                             </td>
                           ))
                         }

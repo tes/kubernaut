@@ -35,23 +35,23 @@ class Navigation extends Component {
         <Collapse isOpen={this.state.isOpen} navbar className="justify-content-center">
           <NavbarBrand href="/">kubernaut</NavbarBrand>
           <Nav className="" navbar>
-            <NavItem tag={LinkContainer} to="/registries">
-              <NavLink>Registries</NavLink>
-            </NavItem>
-            <NavItem tag={LinkContainer} to="/namespaces">
-              <NavLink>Namespaces</NavLink>
-            </NavItem>
-            <NavItem tag={LinkContainer} to="/accounts">
-              <NavLink>Accounts</NavLink>
-            </NavItem>
-            <NavItem tag={LinkContainer} to="/releases">
-              <NavLink>Releases</NavLink>
+            <NavItem tag={LinkContainer} to="/services">
+              <NavLink>Services</NavLink>
             </NavItem>
             <NavItem tag={LinkContainer} to="/deployments">
               <NavLink>Deployments</NavLink>
             </NavItem>
-            <NavItem tag={LinkContainer} to="/services">
-              <NavLink>Services</NavLink>
+            <NavItem tag={LinkContainer} to="/releases">
+              <NavLink>Releases</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/namespaces">
+              <NavLink>Namespaces</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/registries">
+              <NavLink>Registries</NavLink>
+            </NavItem>
+            <NavItem tag={LinkContainer} to="/accounts">
+              <NavLink>Accounts</NavLink>
             </NavItem>
           </Nav>
         </Collapse>
