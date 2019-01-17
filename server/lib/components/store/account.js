@@ -727,6 +727,25 @@ export default function(options = {}) {
       return answer;
     }
 
+    async function hasPermissionOnAnyOfSubjectType(user, subjectType, permission) {
+      logger.debug(`Checking if user ${user.id} has permission ${permission} on any subjects of type ${subjectType}`);
+
+      const builder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', user.id))
+        .where(Op.or(
+          Op.eq('ar.subject_type', subjectType),
+          Op.eq('ar.subject_type', 'global')
+        ))
+        .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
+
+        const result = await db.query(db.serialize(builder, {}).sql);
+        const { answer } = result.rows[0];
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on any subjects of type ${subjectType}`);
+        return answer;
+    }
+
     async function rolesForRegistries(targetUserId, currentUser) {
       logger.debug(`Collection registry role information for user ${targetUserId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
@@ -921,6 +940,7 @@ export default function(options = {}) {
       revokeRoleOnNamespace,
       hasPermissionOnNamespace,
       hasPermissionOnRegistry,
+      hasPermissionOnAnyOfSubjectType,
       hasPermission,
       rolesForNamespaces,
       rolesForRegistries,

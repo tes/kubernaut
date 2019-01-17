@@ -240,7 +240,7 @@ describe('Accounts API', () => {
   });
 
   describe('GET /api/account/hasPermission/:permission/on/:type/:id', () => {
-    it('should return results for namespacesOfUserCurrentUserCanSee', async () => {
+    it('should return results for namespaces of user that current user can see', async () => {
       const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
       const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
 
@@ -260,6 +260,30 @@ describe('Accounts API', () => {
 
       expect(result.answer).toBe(true);
     });
+  });
+
+  describe('GET /api/account/hasPermission/:permission/on-any/:type', () => {
+    it('should return results for namespaces a user has a permission on', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
+
+      const result = await request({
+        url: `/api/account/hasPermission/namespaces-read/on-any/namespace`,
+        method: 'GET'
+      });
+
+      expect(result.answer).toBe(true);
+    });
+
+    it('should return results for registries a user has a permission on', async () => {
+      const result = await request({
+        url: `/api/account/hasPermission/registries-write/on-any/registry`,
+        method: 'GET'
+      });
+
+      expect(result.answer).toBe(true);
+    });
+
   });
 
   describe('POST /api/accounts', () => {
