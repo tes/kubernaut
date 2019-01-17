@@ -15,18 +15,18 @@ const _parseFilter = (query) => {
   return filter;
 };
 
-export default (query, filterNames) => {
+export default (query, filterNames, map = {}) => {
   return filterNames.reduce((acc, name) => {
     if(!query[name]) return acc;
     if(!Array.isArray(query[name])) {
       return {
         ...acc,
-        [name]: [_parseFilter(query[name])],
+        [map[name] || name]: [_parseFilter(query[name])],
       };
     }
     return {
       ...acc,
-      [name]: query[name].map(_parseFilter),
+      [map[name] || name]: query[name].map(_parseFilter),
     };
   }, {});
 };

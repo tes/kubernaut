@@ -82,4 +82,24 @@ describe('parseFilters lib', () => {
       { value: ['abc', '123'], exact: true, not: false },
     ]);
   });
+
+  it('uses a map to rename', () => {
+    const query = {
+      bob: 'abc',
+      robert: 'something',
+    };
+
+    const filters = parse(query, ['bob', 'robert'], { robert: 'jeff' });
+    expect(Object.keys(filters)).toMatchObject(['bob', 'jeff']);
+    expect(filters.bob).toMatchObject([{
+      value: query.bob,
+      exact: true,
+      not: false,
+    }]);
+    expect(filters.jeff).toMatchObject([{
+      value: query.robert,
+      exact: true,
+      not: false,
+    }]);
+  });
 });
