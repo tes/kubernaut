@@ -5,7 +5,8 @@ import {
   makeRelease,
   makeCluster,
   makeNamespace,
-  makeRootMeta
+  makeAccount,
+  makeRootMeta,
 } from '../factories';
 
 describe('Service store', () => {
@@ -320,6 +321,77 @@ describe('Service store', () => {
     });
   });
 
+  describe('List namespaces a user can manage, and whether a not a service can deploy to them', () => {
+    it('Should list namespaces with deployable status', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({ cluster }));
+      const namespace2 = await saveNamespace(await makeNamespace({ cluster }));
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+
+      const account = await saveAccount();
+      await grantSystemRole(account.id, 'admin');
+      await grantGlobalRole(account.id, 'admin');
+      await enableServiceForNamespace(namespace2, release.service);
+
+      const results = await store.serviceDeployStatusForNamespaces(release.service.id, account);
+      expect(results).toBeDefined();
+      expect(results.count).toBe(2);
+      expect(results.items).toBeDefined();
+      const namespaceResult = results.items.find(status => status.namespace.id === namespace.id);
+      expect(namespaceResult).toBeDefined();
+      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+      expect(namespace2Result).toBeDefined();
+      expect(namespaceResult.canDeploy).toBe(false);
+      expect(namespace2Result.canDeploy).toBe(true);
+    });
+
+    it('should limit and offset', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      await saveNamespace(await makeNamespace({ name: 'n1', cluster }));
+      const namespace2 = await saveNamespace(await makeNamespace({ name: 'n2', cluster }));
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+
+      const account = await saveAccount();
+      await grantSystemRole(account.id, 'admin');
+      await grantGlobalRole(account.id, 'admin');
+      await enableServiceForNamespace(namespace2, release.service);
+
+      const results = await store.serviceDeployStatusForNamespaces(release.service.id, account, 1, 1);
+      expect(results).toBeDefined();
+      expect(results.count).toBe(2);
+      expect(results.offset).toBe(1);
+      expect(results.limit).toBe(1);
+      expect(results.items).toBeDefined();
+      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+      expect(namespace2Result).toBeDefined();
+      expect(namespace2Result.canDeploy).toBe(true);
+    });
+
+    it('should restrict to only namespaces a user can manage', async () => {
+      const registry = await saveRegistry(makeRegistry(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({ name: 'n1', cluster }));
+      const namespace2 = await saveNamespace(await makeNamespace({ name: 'n2', cluster }));
+      const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
+
+      const account = await saveAccount();
+      await grantSystemRole(account.id, 'admin');
+      await grantRoleOnNamespace(account.id, 'developer', namespace.id);
+      await grantRoleOnNamespace(account.id, 'maintainer', namespace2.id);
+      await enableServiceForNamespace(namespace2, release.service);
+
+      const results = await store.serviceDeployStatusForNamespaces(release.service.id, account);
+      expect(results).toBeDefined();
+      expect(results.count).toBe(1);
+      expect(results.items).toBeDefined();
+      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+      expect(namespace2Result).toBeDefined();
+      expect(namespace2Result.canDeploy).toBe(true);
+    });
+  });
+
   function saveCluster(cluster = makeCluster(), meta = makeRootMeta()) {
     return store.saveCluster(cluster, meta);
   }
@@ -335,4 +407,25 @@ describe('Service store', () => {
   function saveRelease(release = makeRelease(), meta = makeRootMeta()) {
     return store.saveRelease(release, meta);
   }
+
+  function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
+    return store.saveAccount(account, meta);
+  }
+
+  function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
+    return store.grantRoleOnNamespace(id, name, namespace, meta);
+  }
+
+  function grantGlobalRole(accountId, roleName, meta = makeRootMeta()) {
+    return store.grantGlobalRole(accountId, roleName, meta);
+  }
+
+  function grantSystemRole(accountId, roleName, meta = makeRootMeta()) {
+    return store.grantSystemRole(accountId, roleName, meta);
+  }
+
+  function enableServiceForNamespace(namespace, service, meta = makeRootMeta()) {
+    return store.enableServiceForNamespace(namespace, service, meta);
+  }
+
 });

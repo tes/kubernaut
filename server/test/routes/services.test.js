@@ -1,4 +1,5 @@
 import expect from 'expect';
+import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
 import {
@@ -114,6 +115,60 @@ describe('Services API', () => {
 
   });
 
+  describe('GET /api/services/:registry/:service', () => {
+    it('retrieves a service', async () => {
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+      const response = await request({
+        url: `/api/services/${release.service.registry.name}/${release.service.name}`,
+        method: 'GET',
+      });
+
+      expect(response.id).toBe(release.service.id);
+    });
+
+    it('returns a 404 if the service does not exist', async () => {
+      loggerOptions.suppress = true;
+      await request({
+        url: `/api/services/abc/123`,
+        method: 'GET',
+        resolveWithFullResponse: true,
+      }).then(() => {
+        throw new Error('Should have failed with 404');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(404);
+      });
+    });
+  });
+
+  describe('GET /api/services/:registry/:service/namespace-status', () => {
+    it('returns a list of namespaces and the status for which the service has to deploy or not', async () => {
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      const namespace2 = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+      await store.enableServiceForNamespace(namespace2, release.service, makeRootMeta());
+
+      const response = await request({
+        url: `/api/services/${release.service.registry.name}/${release.service.name}/namespace-status`,
+        method: 'GET',
+      });
+
+      expect(response).toBeDefined();
+      expect(response.count).toBe(2);
+      expect(response.items).toBeDefined();
+      const namespaceResult = response.items.find(status => status.namespace.id === namespace.id);
+      expect(namespaceResult).toBeDefined();
+      const namespace2Result = response.items.find(status => status.namespace.id === namespace2.id);
+      expect(namespace2Result).toBeDefined();
+      expect(namespaceResult.canDeploy).toBe(false);
+      expect(namespace2Result.canDeploy).toBe(true);
+    });
+  });
+
   describe('POST /api/service/:serviceId/enable-deployment/:namespaceId', () => {
     beforeEach(async () => {
       await store.nuke();
@@ -165,6 +220,30 @@ describe('Services API', () => {
         enabled: true,
         service: {
           id: release2.service.id,
+        },
+      });
+    });
+
+    it('returns namespaces for a service if asked', async () => {
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+
+      const response = await request({
+        url: `/api/service/${release.service.id}/enable-deployment/${namespace.id}?fetchNamespaces=true`,
+        method: 'POST',
+      });
+
+      expect(response.count).toBe(1);
+      expect(response.offset).toBe(0);
+      expect(response.limit).toBe(20);
+      expect(response.items.length).toBe(1);
+      expect(response.items[0]).toMatchObject({
+        canDeploy: true,
+        namespace: {
+          id: namespace.id,
         },
       });
     });
@@ -225,6 +304,30 @@ describe('Services API', () => {
         enabled: false,
         service: {
           id: release2.service.id,
+        },
+      });
+    });
+
+    it('returns namespaces for a service if asked', async () => {
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(await makeNamespace({
+        cluster,
+      }));
+
+      const response = await request({
+        url: `/api/service/${release.service.id}/disable-deployment/${namespace.id}?fetchNamespaces=true`,
+        method: 'DELETE',
+      });
+
+      expect(response.count).toBe(1);
+      expect(response.offset).toBe(0);
+      expect(response.limit).toBe(20);
+      expect(response.items.length).toBe(1);
+      expect(response.items[0]).toMatchObject({
+        canDeploy: false,
+        namespace: {
+          id: namespace.id,
         },
       });
     });

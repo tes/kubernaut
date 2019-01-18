@@ -27,6 +27,23 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/services/:registry/:service', async (req, res, next) => {
+      try {
+        const registry = await store.findRegistry({ name: req.params.registry });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const service = await store.findService({ filters: parseFilters(req.params, ['service', 'registry'], {
+          service: 'name'
+        }) });
+        if (!service) return next(Boom.notFound());
+
+        return res.json(service);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/services-with-status-for-namespace/:namespaceId', async (req, res, next) => {
       try {
         const { namespaceId } = req.params;
@@ -46,6 +63,29 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/services/:registry/:service/namespace-status', async (req, res, next) => {
+      try {
+        if (! await store.hasPermissionOnAnyOfSubjectType(req.user, 'namespace', 'namespaces-manage')) return next(Boom.forbidden());
+
+        const registry = await store.findRegistry({ name: req.params.registry });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const service = await store.findService({ filters: parseFilters(req.params, ['service', 'registry'], {
+          service: 'name'
+        }) });
+        if (!service) return next(Boom.notFound());
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+        const result = await store.serviceDeployStatusForNamespaces(service.id, req.user, limit, offset);
+
+        return res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/service/:serviceId/enable-deployment/:namespaceId', async (req, res, next) => {
       try {
         const { namespaceId, serviceId } = req.params;
@@ -59,6 +99,7 @@ export default function(options = {}) {
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+        const fetchNamespaces = req.query.fetchNamespaces === "true";
 
         await store.enableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
 
@@ -67,7 +108,8 @@ export default function(options = {}) {
           namespace: namespaceId,
         };
 
-        const page = await store.findServicesAndShowStatusForNamespace(criteria, limit, offset);
+        const page = await (fetchNamespaces ? store.serviceDeployStatusForNamespaces(service.id, req.user, limit, offset)
+          : store.findServicesAndShowStatusForNamespace(criteria, limit, offset));
         res.json(page);
       } catch (err) {
         next(err);
@@ -87,6 +129,7 @@ export default function(options = {}) {
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+        const fetchNamespaces = req.query.fetchNamespaces === "true";
 
         await store.disableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
 
@@ -95,7 +138,8 @@ export default function(options = {}) {
           namespace: namespaceId,
         };
 
-        const page = await store.findServicesAndShowStatusForNamespace(criteria, limit, offset);
+        const page = await (fetchNamespaces ? store.serviceDeployStatusForNamespaces(service.id, req.user, limit, offset)
+          : store.findServicesAndShowStatusForNamespace(criteria, limit, offset));
         res.json(page);
       } catch (err) {
         next(err);

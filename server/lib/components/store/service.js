@@ -2,6 +2,8 @@ import sqb from 'sqb';
 import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
+import Namespace from '../../domain/Namespace';
+import Cluster from '../../domain/Cluster';
 
 const { Op, raw, innerJoin } = sqb;
 
@@ -36,6 +38,12 @@ export default function(options) {
 
       const result = await db.query(db.serialize(searchBuilder, {}).sql);
       return result.rows;
+    }
+
+    async function findService(criteria) {
+      const list = await findServices(criteria, 1, 0);
+      if (list.count > 1) throw new Error(`Expected 0 or 1 services but found ${list.count}}`);
+      return list.count === 1 ? list.items[0] : undefined;
     }
 
     const sortMapping = {
@@ -219,6 +227,69 @@ export default function(options) {
       logger.debug(`Deleted service, id: ${id}`);
     }
 
+    async function serviceDeployStatusForNamespaces(serviceId, user, limit = 20, offset = 0) {
+      logger.debug(`Retrieving service ${serviceId} deployable status for namespaces for user ${user.id}. Limited to ${limit} starting from ${offset}.`);
+
+      const findBuilder = sqb
+        .select(
+          'n.id namespace_id',
+          'n.name namespace_name',
+          'n.color namespace_color',
+          'c.name cluster_name',
+          'c.color cluster_color',
+          sqb
+            .select(raw('count(1) > 0'))
+            .from('service_namespace sn')
+            .where(Op.eq('sn.service', serviceId))
+            .where(Op.eq('sn.namespace', raw('n.id')))
+            .where(Op.is('sn.deleted_on', null))
+            .as('can_deploy')
+        )
+        .from('active_namespace__vw n')
+        .join(sqb.join('cluster c').on(Op.eq('n.cluster', raw('c.id'))))
+        .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')))
+        .orderBy('cluster_name asc', 'namespace_name asc')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_namespace__vw n')
+        .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')));
+
+        return db.withTransaction(async connection => {
+          const findStatement = db.serialize(findBuilder, {});
+          const countStatement = db.serialize(countBuilder, {});
+
+          return Promise.all([
+            connection.query(findStatement.sql, findStatement.values),
+            connection.query(countStatement.sql, countStatement.values),
+          ]).then(([findResult, countResult]) => {
+            const items = findResult.rows.map(row => ({
+              namespace: new Namespace({
+                id: row.namespace_id,
+                name: row.namespace_name,
+                color: row.namespace_color,
+                cluster: new Cluster({
+                  name: row.cluster_name,
+                  color: row.cluster_color,
+                }),
+              }),
+              canDeploy: row.can_deploy
+            }));
+            const count = parseInt(countResult.rows[0].count, 10);
+            logger.debug(`Returning ${items.length} of ${count} namespaces service ${serviceId} can deploy to.`);
+
+            return {
+              limit,
+              offset,
+              count,
+              items,
+            };
+          });
+        });
+    }
+
     function toService(row) {
       return new Service({
         id: row.id,
@@ -251,11 +322,13 @@ export default function(options) {
 
     return cb(null, {
       getService,
+      findService,
       findServices,
       searchByServiceName,
       checkServiceCanDeploytoNamespace,
       findServicesAndShowStatusForNamespace,
       deleteService,
+      serviceDeployStatusForNamespaces,
     });
   }
 
