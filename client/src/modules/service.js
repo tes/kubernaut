@@ -23,6 +23,8 @@ export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actio
 
 export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}/FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS`);
 
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+
 export const selectReleasesPaginationState = (state) => (state.service.releases.pagination);
 export const selectDeploymentsPaginationState = (state) => (state.service.deployments.pagination);
 
@@ -64,7 +66,8 @@ const defaultState = {
   },
   deploymentsWithNotes: {
     data: [],
-  }
+  },
+  canManage: false,
 };
 
 export default handleActions({
@@ -184,4 +187,12 @@ export default handleActions({
       data: payload.data.items,
     },
   }),
+  [initServiceDetailPage]: (state) => ({
+    ...state,
+    canManage: false,
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
+  })
 }, defaultState);

@@ -14,6 +14,7 @@ import namespacesSagas from './namespaces';
 import registriesSagas from './registries';
 import releasesSagas from './releases';
 import serviceSagas from './service';
+import serviceManageSagas from './serviceManage';
 import servicesSagas from './services';
 import viewAccountSagas from './viewAccount';
 import { routesSaga } from '../paths';
@@ -33,6 +34,7 @@ export default function* rootSaga() {
     ...registriesSagas,
     ...releasesSagas,
     ...serviceSagas,
+    ...serviceManageSagas,
     ...servicesSagas,
     ...viewAccountSagas,
     takeLatest(LOCATION_CHANGE, routesSaga),

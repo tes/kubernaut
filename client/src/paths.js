@@ -16,6 +16,7 @@ import { fetchRegistriesPagination } from './modules/registries';
 import { initialiseReleasesPage } from './modules/releases';
 import { initServiceDetailPage } from './modules/service';
 import { initServicesPage } from './modules/services';
+import { initServiceManage } from './modules/serviceManage';
 
 const paths = {
   account: {
@@ -76,6 +77,10 @@ const paths = {
   services: {
     route: '/services',
     action: initServicesPage,
+  },
+  serviceManage: {
+    route: '/services/:registry/:name/manage',
+    action: initServiceManage,
   },
 };
 

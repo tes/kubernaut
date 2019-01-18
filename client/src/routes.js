@@ -20,6 +20,7 @@ import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
 import ServicesPage from './components/ServicesPage';
 import ServiceDetailsPage from './components/ServiceDetailsPage';
+import ServiceManagePage from './components/ServiceManagePage';
 
 import paths from './paths';
 
@@ -127,6 +128,18 @@ export default () => <Switch>
     render={({ match }) =>
       <Wrapper title="Service">
         <ServiceDetailsPage
+          registryName={match.params.registry}
+          serviceName={match.params.name}
+        />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.serviceManage.route}
+    render={({ match }) =>
+      <Wrapper title="Service">
+        <ServiceManagePage
           registryName={match.params.registry}
           serviceName={match.params.name}
         />

@@ -107,6 +107,8 @@ export const getAccount = () => makeRequest('/api/account');
 
 export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
 
+export const getService = ({ registry, service }) => makeRequest(`/api/services/${registry}/${service}`);
+
 export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
   .then(computePagination);
 
@@ -226,10 +228,11 @@ export const removeGlobalRole = (accountId, role, options = {}) => {
   });
 };
 
-export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit) => {
+export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
   const qs = makeQueryString({
     offset,
     limit,
+    fetchNamespaces,
   });
   const url = `/api/service/${serviceId}/enable-deployment/${namespaceId}?${qs}`;
   return makeRequest(url, {
@@ -237,10 +240,11 @@ export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit)
   }).then(computePagination);
 };
 
-export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit) => {
+export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
   const qs = makeQueryString({
     offset,
     limit,
+    fetchNamespaces,
   });
   const url = `/api/service/${serviceId}/disable-deployment/${namespaceId}?${qs}`;
   return makeRequest(url, {
@@ -286,3 +290,6 @@ export const getSystemRoles = (accountId) => {
   const url = `/api/accounts/${accountId}/system`;
   return makeRequest(url);
 };
+
+export const getServiceNamespacesStatus = (registry, service, offset, limit) => makeRequest(`/api/services/${registry}/${service}/namespace-status?${makeQueryString({ offset, limit })}`)
+  .then(computePagination);
