@@ -79,3 +79,6 @@ export const ManageNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
 
 export const EditAccountLink = ({ account = {}, accountId, children}) =>
   <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;
+
+export const ManageServiceLink = ({ registryName, serviceName, children }) =>
+  <Link to={`/services/${registryName}/${serviceName}/manage`}>{children || <span>Manage</span>}</Link>;

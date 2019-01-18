@@ -1,4 +1,6 @@
 import reduce, {
+  initServiceDetailPage,
+  setCanManage,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
@@ -118,5 +120,15 @@ describe('Service Reducer', () => {
     const state = reduce(initialState, FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR({ error: 'Oh Noes' }));
     expect(state.latestDeployments.data).toMatchObject(initialState.latestDeployments.data);
     expect(state.latestDeployments.meta).toMatchObject({ error: 'Oh Noes' });
+  });
+
+  it('should initalise the page state', () => {
+    const state = reduce({ canManage: true }, initServiceDetailPage());
+    expect(state.canManage).toBe(false);
+  });
+
+  it('should set canManage', () => {
+    const state = reduce({ canManage: false }, setCanManage(true));
+    expect(state.canManage).toBe(true);
   });
 });

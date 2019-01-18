@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'reactstrap';
 import Title from '../Title';
 import ServiceReleaseHistory from '../ServiceReleaseHistory';
 import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
+import { ManageServiceLink } from '../Links';
 
 class ServiceDetailsPage extends Component {
 
@@ -12,6 +14,11 @@ class ServiceDetailsPage extends Component {
         <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
         <div className="row">
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>
+            { this.props.canManage ?
+              <ManageServiceLink registryName={this.props.registryName} serviceName={this.props.serviceName}>
+                <Button color="link">manage</Button>
+              </ManageServiceLink>
+             : null }
         </div>
         <div className="row mb-3 d-block">
           <h5>Releases:</h5>
@@ -55,6 +62,7 @@ ServiceDetailsPage.propTypes = {
   releasesList: PropTypes.object,
   deploymentsList: PropTypes.object,
   latestDeployments: PropTypes.array,
+  canManage: PropTypes.bool,
 };
 
 export default ServiceDetailsPage;

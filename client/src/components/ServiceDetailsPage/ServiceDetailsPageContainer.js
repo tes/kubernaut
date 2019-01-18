@@ -14,6 +14,7 @@ export default connect((state, { registryName, serviceName }) => ({
   deploymentsList: state.service.deployments,
   latestDeployments: state.service.latestDeployments.data,
   deploymentsWithNotes: state.service.deploymentsWithNotes.data,
+  canManage: state.service.canManage,
 }),{
   fetchReleasesPagination,
   fetchDeploymentsPagination,

@@ -7,6 +7,7 @@ import {
   fetchLatestDeploymentsByNamespaceForServiceSaga,
   fetchHasDeploymentNotesSaga,
   paginationSaga,
+  canManageSaga,
 } from '../service';
 
 import {
@@ -28,12 +29,14 @@ import {
   selectDeploymentsPaginationState,
   setReleasesPagination,
   setDeploymentsPagination,
+  setCanManage,
 } from '../../modules/service';
 
 import {
   getReleases,
   getDeployments,
   getLatestDeploymentsByNamespaceForService,
+  getCanManageAnyNamespace,
 } from '../../lib/api';
 
 describe('Service sagas', () => {
@@ -253,4 +256,11 @@ describe('Service sagas', () => {
 
   });
 
+  describe('Can manage', () => {
+    it('should fetch and set can manage status', () => {
+      const gen = canManageSaga(initServiceDetailPage());
+      expect(gen.next().value).toMatchObject(call(getCanManageAnyNamespace));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
+    });
+  });
 });

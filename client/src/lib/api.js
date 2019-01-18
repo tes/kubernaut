@@ -267,6 +267,11 @@ export const hasPermissionOn = (permission, type, id) => {
   return makeRequest(url);
 };
 
+export const getCanManageAnyNamespace = () => {
+  const url = '/api/account/hasPermission/namespaces-manage/on-any/namespace';
+  return makeRequest(url);
+};
+
 export const getAccountRolesForNamesaces = (accountId) => {
   const url = `/api/accounts/${accountId}/namespaces`;
   return makeRequest(url);

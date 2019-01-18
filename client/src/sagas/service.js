@@ -15,6 +15,7 @@ import {
   fetchReleases,
   fetchReleasesPagination,
   setReleasesPagination,
+  setCanManage,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
@@ -35,6 +36,7 @@ import {
   getReleases,
   getDeployments,
   getLatestDeploymentsByNamespaceForService,
+  getCanManageAnyNamespace,
 } from '../lib/api';
 
 export function* initServiceDetailPageSaga({ payload = {} }) {
@@ -161,8 +163,18 @@ export function* paginationSaga() {
   })}`));
 }
 
+export function* canManageSaga() {
+  try {
+    const canManage = yield call(getCanManageAnyNamespace);
+    yield put(setCanManage(canManage.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(initServiceDetailPage, initServiceDetailPageSaga),
+  takeLatest(initServiceDetailPage, canManageSaga),
   takeLatest(fetchReleasesPagination, paginationSaga),
   takeLatest(fetchReleases, fetchReleasesDataSaga),
   takeLatest(fetchDeploymentsPagination, paginationSaga),
