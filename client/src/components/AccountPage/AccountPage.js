@@ -39,7 +39,7 @@ class AccountPage extends Component {
     });
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Title title={`Account: ${account.displayName}`} />
         <Row className="mt-3">
             <h4>{account.displayName}</h4>

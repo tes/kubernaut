@@ -45,7 +45,7 @@ class DeployPage extends Component {
     const previouslyDeployedToChosenNamespace = chosenNamespace && this.props.deployments.find((dep) => (dep.namespace.name === chosenNamespace.name) && (dep.namespace.cluster.name === chosenNamespace.cluster.name));
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Row>
           <h4>Create deployment</h4>
         </Row>

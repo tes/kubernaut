@@ -9,7 +9,7 @@ class RegistriesPage extends Component {
     const { registries, fetchRegistriesPagination } = this.props;
 
     return (
-      <div className='row'>
+      <div className='row page-frame'>
         <div className='col-sm'>
           <RegistriesTable registries={registries.data} loading={registries.meta.loading} error={registries.meta.error} fetchRegistries={fetchRegistriesPagination} />
         </div>

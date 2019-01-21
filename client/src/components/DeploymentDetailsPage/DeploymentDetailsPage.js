@@ -184,7 +184,7 @@ class DeploymentDetailsPage extends Component {
     };
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Row>
           <Col sm="12">
             <h3>Deployment Details:</h3>

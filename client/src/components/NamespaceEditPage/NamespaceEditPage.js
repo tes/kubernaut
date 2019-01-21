@@ -20,7 +20,7 @@ class NamespaceEditPage extends Component {
   render() {
     const { meta } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container>
+      <Container className="page-frame">
         <Row className="d-flex justify-content-center">
           <Col sm="12" className="mt-5">
             <Progress animated color="info" value={meta.loading.loadingPercent} />
@@ -31,7 +31,7 @@ class NamespaceEditPage extends Component {
 
     if (!this.props.canEdit) {
       return (
-        <Container>
+        <Container className="page-frame">
           <Row>
             <Col xs="12">
               <p>You are not authorised to view this page.</p>
@@ -99,7 +99,7 @@ class NamespaceEditPage extends Component {
       );
     };
     return (
-      <Container>
+      <Container className="page-frame">
         <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
         <Row>
           <h4>{headingBadge}</h4>

@@ -9,7 +9,7 @@ class NamespacesPage extends Component {
     const { namespaces, fetchNamespacesPagination } = this.props;
 
     return (
-      <div className='row'>
+      <div className='row page-frame'>
         <div className='col-sm'>
           <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespacesPagination} />
         </div>

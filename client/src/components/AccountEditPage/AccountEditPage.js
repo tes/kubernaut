@@ -14,7 +14,7 @@ class AccountEditPage extends Component {
       account,
     } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container>
+      <Container className="page-frame">
         <Row className="d-flex justify-content-center">
           <Col sm="12" className="mt-5">
             <Progress animated color="info" value={meta.loading.loadingPercent} />
@@ -25,7 +25,7 @@ class AccountEditPage extends Component {
 
     if (!this.props.canEdit) {
       return (
-        <Container>
+        <Container className="page-frame">
           <Row>
             <Col xs="12">
               <p>You are not authorised to view this page.</p>
@@ -36,7 +36,7 @@ class AccountEditPage extends Component {
     }
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Title title={`Edit account: ${account.displayName}`} />
         <Row className="mt-3">
             <h4>Editing: {account.displayName}</h4>

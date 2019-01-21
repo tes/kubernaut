@@ -44,7 +44,7 @@ class ServiceManagePage extends Component {
   render() {
     const { meta } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container>
+      <Container className="page-frame">
         <Row className="d-flex justify-content-center">
           <Col sm="12" className="mt-5">
             <Progress animated color="info" value={meta.loading.loadingPercent} />
@@ -55,7 +55,7 @@ class ServiceManagePage extends Component {
 
     if (!this.props.canManage) {
       return (
-        <Container>
+        <Container className="page-frame">
           <Row>
             <Col xs="12">
               <p>You are not authorised to view this page.</p>
@@ -70,7 +70,7 @@ class ServiceManagePage extends Component {
     const serviceId = this.props.serviceId;
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Title title={`Manage service: ${this.props.registryName}/${this.props.serviceName}`} />
         <Row>
           <h4>{this.props.registryName}/{this.props.serviceName}</h4>

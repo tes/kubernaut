@@ -14,7 +14,7 @@ class DeploymentsPage extends Component {
     } = this.props;
 
     return (
-      <div className='row'>
+      <div className='row page-frame'>
         <div className='col-12'>
           <DeploymentsTable
             deployments={deployments.data}

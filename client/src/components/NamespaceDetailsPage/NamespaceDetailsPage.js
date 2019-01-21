@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Badge, Button, Container, Row } from 'reactstrap';
+import { Badge, Button, Container, Row, Col } from 'reactstrap';
 import Title from '../Title';
 import DeploymentsTable from '../DeploymentsTable';
 import { EditNamespaceLink, ManageNamespaceLink } from '../Links';
@@ -23,7 +23,7 @@ class NamespaceDetailsPage extends Component {
     const headingBadge = <Badge style={{ backgroundColor: namespace.color || namespace.cluster.color }} pill>{namespace.cluster.name}/{namespace.name}</Badge>;
 
     return (
-      <Container>
+      <Container className="page-frame">
         <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
         <Row>
           <h4>{headingBadge}</h4>
@@ -53,24 +53,28 @@ class NamespaceDetailsPage extends Component {
         </dl>
 
         <Row>
-          <h5>Deployments for this namespace:</h5>
+          <Col>
+            <h5>Deployments for this namespace:</h5>
+          </Col>
         </Row>
         <Row>
-          <DeploymentsTable
-            deployments={this.props.deployments.data}
-            loading={this.props.deployments.meta.loading}
-            error={this.props.deployments.meta.error}
-            fetchDeployments={(options) => {
-              this.props.fetchDeploymentsPagination({
-                ...options,
-                id: this.props.namespaceId,
-              });
-            }}
-            sort={this.props.deployments.sort}
-            toggleSort={this.props.toggleSort}
-            omitColumns={['where']}
-            hideFilters
-          />
+          <Col>
+            <DeploymentsTable
+              deployments={this.props.deployments.data}
+              loading={this.props.deployments.meta.loading}
+              error={this.props.deployments.meta.error}
+              fetchDeployments={(options) => {
+                this.props.fetchDeploymentsPagination({
+                  ...options,
+                  id: this.props.namespaceId,
+                });
+              }}
+              sort={this.props.deployments.sort}
+              toggleSort={this.props.toggleSort}
+              omitColumns={['where']}
+              hideFilters
+            />
+          </Col>
         </Row>
       </Container>
     );

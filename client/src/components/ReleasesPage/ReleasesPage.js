@@ -15,7 +15,7 @@ class ReleasesPage extends Component {
     } = this.props;
 
     return (
-      <div className='row'>
+      <div className='row page-frame'>
         <div className='col-sm'>
           <ReleasesTable
             releases={releases.data}
