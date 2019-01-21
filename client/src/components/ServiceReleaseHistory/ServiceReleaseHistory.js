@@ -54,7 +54,7 @@ class ServiceReleaseHistory extends Component {
       releases.data.items.forEach((item, index) => {
         const deployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
         const deploymentBadges = deployments.map((dep) => (
-          <Col key={dep.namespace.id}>
+          <Col key={dep.namespace.id} className="mr-1">
             <NamespaceLink
               namespace={dep.namespace}
               pill
@@ -64,7 +64,7 @@ class ServiceReleaseHistory extends Component {
         ));
 
         rows.push((
-          <tr key={item.id} className="row">
+          <tr key={item.id} className="row no-gutters">
             <td className="col-1 pb-0">{item.version}</td>
             <td className="col-3 pb-0"><Human date={item.createdOn} /></td>
             <td className="col-auto pb-0">
@@ -77,7 +77,7 @@ class ServiceReleaseHistory extends Component {
               </CreateDeploymentLink>
             </td>
             <td className="pb-0">
-              <Row>
+              <Row className="no-gutters">
                 {deploymentBadges}
               </Row>
             </td>
@@ -106,33 +106,31 @@ class ServiceReleaseHistory extends Component {
 
     const modalData = this.state.modalData;
     return (
-      <div>
-        <Row>
-          <Col md="12">
-            <Table size="sm" borderless>
-              <thead>
-                <tr className="row">
-                  <th className="col-1">Version</th>
-                  <th className="col-3">When</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows}
-              </tbody>
-            </Table>
-            <TablePagination
-              pages={releases.data.pages}
-              page={releases.data.page}
-              limit={releases.data.limit}
-              fetchContent={this.props.paginationFunc}
-            />
-          </Col>
-        </Row>
+      <Row>
+        <Col>
+          <Table size="sm" borderless>
+            <thead>
+              <tr className="row no-gutters">
+                <th className="col-1">Version</th>
+                <th className="col-3">When</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows}
+            </tbody>
+          </Table>
+          <TablePagination
+            pages={releases.data.pages}
+            page={releases.data.page}
+            limit={releases.data.limit}
+            fetchContent={this.props.paginationFunc}
+          />
+        </Col>
         <Modal
           isOpen={this.state.modalOpen}
           toggle={this.closeModal}
           size="lg"
-        >
+          >
           <ModalHeader>
             Deployment notes for {modalData.service}@{modalData.version}:
           </ModalHeader>
@@ -158,7 +156,7 @@ class ServiceReleaseHistory extends Component {
                           <ReactMarkdown
                             className="text-light bg-dark p-1 mx-2"
                             source={d.note}
-                          />
+                            />
                         </Col>
                       </Row>
                     </Col>
@@ -168,7 +166,7 @@ class ServiceReleaseHistory extends Component {
             </Row>
           </ModalBody>
         </Modal>
-      </div>
+      </Row>
     );
   }
 }

@@ -26,7 +26,7 @@ class ServiceDeploymentHistory extends Component {
     if (deployments && deployments.data && deployments.data.items) {
       deployments.data.items.forEach(item => {
         cards.push((
-          <Row key={item.id}>
+          <Row key={item.id} className="no-gutters">
             <Col sm="12" className="p-0">
               <Card className="m-1">
                 <CardHeader className="d-flex justify-content-between px-2 py-1">
@@ -92,12 +92,14 @@ class ServiceDeploymentHistory extends Component {
           </Col>
         </Row>
         <Row>
-          <TablePagination
-            pages={deployments.data.pages}
-            page={deployments.data.page}
-            limit={deployments.data.limit}
-            fetchContent={this.props.paginationFunc}
-          />
+          <Col>
+            <TablePagination
+              pages={deployments.data.pages}
+              page={deployments.data.page}
+              limit={deployments.data.limit}
+              fetchContent={this.props.paginationFunc}
+              />
+          </Col>
         </Row>
       </div>
     );
