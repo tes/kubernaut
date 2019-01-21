@@ -1,5 +1,4 @@
-$body-bg: rgb(63, 56, 56);
-$body-color: rgb(238, 245, 254);
+$body-bg: #f2f3f8;
 
 $theme-colors: (
   "primary": rgb(98, 162, 246)
@@ -45,19 +44,20 @@ $theme-colors: (
 
 .navbar-dark {
   .navbar-brand {
-    color: rgb(83, 164, 82);
+    color: #b3beef;
   }
 
   &.bg-dark {
-    background-color: rgb(43, 65, 25) !important;
+    background-color: #1d2652 !important;
   }
 }
 
-.page-link {
-  background-color: rgb(36, 62, 96);
-  border-color: rgb(36, 62, 96);
+.card-header, .card-footer {
+  background-color: rgba(0, 0, 255, 0.03);
 }
 
-.card {
-  background-color: rgb(94, 88, 88);
+.page-frame {
+  background-color: #ffffff;
+  padding-left: ($spacer * 3) !important;
+  padding-right: ($spacer * 3) !important;
 }
