@@ -39,7 +39,14 @@ export const ClusterLink = ({ cluster }) => {
 export const NamespaceLink = ({ namespace, pill = false, showCluster = false }) => {
   const text = `${showCluster ? `${namespace.cluster.name}/` : ''}${namespace.name}`;
   const element = pill ? (
-    <Badge style={{ backgroundColor: namespace.color || namespace.cluster.color }} pill>{namespace.cluster.name}/{namespace.name}</Badge>
+    <Badge
+      style={{
+        backgroundColor: namespace.color || namespace.cluster.color
+      }}
+      pill
+      className="shadow-sm"
+    >{namespace.cluster.name}/{namespace.name}
+    </Badge>
   ) : (<span>{text}</span>);
 
   return (
