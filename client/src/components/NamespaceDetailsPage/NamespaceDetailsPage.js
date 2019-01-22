@@ -26,18 +26,20 @@ class NamespaceDetailsPage extends Component {
       <Container className="page-frame">
         <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
         <Row>
-          <h4>{headingBadge}</h4>
-          { this.props.canEdit ?
-            <EditNamespaceLink namespaceId={this.props.namespaceId}>
-              <Button color="link">edit</Button>
-            </EditNamespaceLink>
-           : null }
+          <Col className="d-flex">
+            <h4>{headingBadge}</h4>
+            { this.props.canEdit ?
+              <EditNamespaceLink namespaceId={this.props.namespaceId}>
+                <Button color="link">edit</Button>
+              </EditNamespaceLink>
+              : null }
 
-           { this.props.canManage ?
-             <ManageNamespaceLink namespaceId={this.props.namespaceId}>
-               <Button color="link">manage</Button>
-             </ManageNamespaceLink>
-            : null }
+              { this.props.canManage ?
+                <ManageNamespaceLink namespaceId={this.props.namespaceId}>
+                  <Button color="link">manage</Button>
+                </ManageNamespaceLink>
+                : null }
+          </Col>
         </Row>
 
         <dl className="row">
