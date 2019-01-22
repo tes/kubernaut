@@ -42,15 +42,19 @@ class AccountPage extends Component {
       <Container className="page-frame">
         <Title title={`Account: ${account.displayName}`} />
         <Row className="mt-3">
+          <Col className="d-flex">
             <h4>{account.displayName}</h4>
             { this.props.canEdit ?
               <EditAccountLink accountId={this.props.accountId}>
                 <Button color="link">edit</Button>
               </EditAccountLink>
-             : null }
+              : null }
+          </Col>
         </Row>
         <Row>
+          <Col>
             <p><strong>Created:</strong> {account.createdOn}</p>
+          </Col>
         </Row>
         <Row className="mt-3">
           <Col sm="12">
