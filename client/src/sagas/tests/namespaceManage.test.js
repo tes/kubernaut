@@ -27,6 +27,8 @@ import {
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  canEditRequest,
+  setCanEdit,
 } from '../../modules/namespaceManage';
 
 import {
@@ -71,8 +73,11 @@ describe('NamespaceManageSagas', () => {
       it('fetches and sets permission information', () => {
         const gen = checkPermissionSaga(initialise(initPayload));
         expect(gen.next().value).toMatchObject(put(canManageRequest()));
+        expect(gen.next().value).toMatchObject(put(canEditRequest()));
         expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId));
+        expect(gen.next({ answer: true }).value).toMatchObject(call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId));
         expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
+        expect(gen.next().value).toMatchObject(put(setCanEdit(true)));
         expect(gen.next().done).toBe(true);
       });
     });

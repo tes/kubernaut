@@ -31,21 +31,25 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
-export const NamespaceLink = ({ namespace, pill = false, showCluster = false }) => {
+export const NamespacePill = ({ namespace }) => <Badge
+    style={{
+      backgroundColor: namespace.color || namespace.cluster.color
+    }}
+    pill
+    className="shadow-sm"
+  >{namespace.cluster.name}/{namespace.name}</Badge>;
+
+export const NamespaceLink = ({ namespace, children, pill = false, showCluster = false, container = false }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/namespaces/${namespace.id}`,
+    ...container && { exact: true },
+  };
   const text = `${showCluster ? `${namespace.cluster.name}/` : ''}${namespace.name}`;
-  const element = pill ? (
-    <Badge
-      style={{
-        backgroundColor: namespace.color || namespace.cluster.color
-      }}
-      pill
-      className="shadow-sm"
-    >{namespace.cluster.name}/{namespace.name}
-    </Badge>
-  ) : (<span>{text}</span>);
+  const element = pill ? <NamespacePill namespace={namespace} /> : (children || (<span>{text}</span>));
 
   return (
-    <Link to={`/namespaces/${namespace.id}`}>{element}</Link>
+    <Tag {...props}>{element}</Tag>
   );
 };
 
@@ -73,11 +77,25 @@ export const CreateDeploymentLink = ({ registry = {}, service = {}, version, clu
   );
 };
 
-export const EditNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
-  <Link to={`/namespaces/${namespace.id || namespaceId}/edit`}>{children || <span>Edit</span>}</Link>;
+export const EditNamespaceLink = ({ namespace = {}, container, namespaceId, children}) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/namespaces/${namespace.id || namespaceId}/edit`,
+    ...container && { exact: true }
+  };
 
-export const ManageNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
-  <Link to={`/namespaces/${namespace.id || namespaceId}/manage`}>{children || <span>Manage</span>}</Link>;
+  return <Tag {...props}>{children || <span>Edit</span>}</Tag>;
+};
+
+export const ManageNamespaceLink = ({ namespace = {}, container, namespaceId, children}) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/namespaces/${namespace.id || namespaceId}/manage`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Manage</span>}</Tag>;
+};
 
 export const EditAccountLink = ({ account = {}, accountId, children}) =>
   <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;

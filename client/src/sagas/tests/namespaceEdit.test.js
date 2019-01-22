@@ -21,6 +21,8 @@ import {
   FETCH_CLUSTERS_ERROR,
   canEditRequest,
   setCanEdit,
+  canManageRequest,
+  setCanManage,
 } from '../../modules/namespaceEdit';
 
 import {
@@ -107,8 +109,11 @@ describe('NamespaceEdit sagas', () => {
     it('fetches and sets permission information', () => {
       const gen = checkPermissionSaga(initForm(initPayload));
       expect(gen.next().value).toMatchObject(put(canEditRequest()));
+      expect(gen.next().value).toMatchObject(put(canManageRequest()));
       expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId));
+      expect(gen.next({ answer: true }).value).toMatchObject(call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId));
       expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+      expect(gen.next().value).toMatchObject(put(setCanManage(true)));
       expect(gen.next().done).toBe(true);
     });
   });

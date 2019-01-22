@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray } from 'redux-form';
 import {
-  Badge,
   Container,
   Row,
   Col,
@@ -13,6 +12,7 @@ import {
   Form,
 } from 'reactstrap';
 import Title from '../Title';
+import { NamespacesSubNav } from '../SubNavs';
 import RenderSelect from '../RenderSelect';
 import RenderInput from '../RenderInput';
 
@@ -44,12 +44,6 @@ class NamespaceEditPage extends Component {
 
     const error = this.props.error;
     const namespace = this.props.namespace;
-    const headingBadge = <Badge
-        style={{ backgroundColor: namespace.color }}
-        pill
-      >{namespace.clusterName}/{namespace.name}
-      </Badge>;
-
     const renderAttributes = (props) => {
 
     return (
@@ -120,11 +114,7 @@ class NamespaceEditPage extends Component {
     return (
       <Container className="page-frame">
         <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
-        <Row>
-          <Col>
-            <h4>{headingBadge}</h4>
-          </Col>
-        </Row>
+        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
         <Row>
           <Col>
             <Form>

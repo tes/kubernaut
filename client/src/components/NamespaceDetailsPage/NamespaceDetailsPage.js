@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Badge, Button, Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col } from 'reactstrap';
 import Title from '../Title';
 import DeploymentsTable from '../DeploymentsTable';
-import { EditNamespaceLink, ManageNamespaceLink } from '../Links';
+import { NamespacesSubNav } from '../SubNavs';
 
 class NamespaceDetailsPage extends Component {
 
@@ -20,27 +20,10 @@ class NamespaceDetailsPage extends Component {
       </dd>);
     }
 
-    const headingBadge = <Badge style={{ backgroundColor: namespace.color || namespace.cluster.color }} pill>{namespace.cluster.name}/{namespace.name}</Badge>;
-
     return (
       <Container className="page-frame">
         <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
-        <Row>
-          <Col className="d-flex">
-            <h4>{headingBadge}</h4>
-            { this.props.canEdit ?
-              <EditNamespaceLink namespaceId={this.props.namespaceId}>
-                <Button color="link">edit</Button>
-              </EditNamespaceLink>
-              : null }
-
-              { this.props.canManage ?
-                <ManageNamespaceLink namespaceId={this.props.namespaceId}>
-                  <Button color="link">manage</Button>
-                </ManageNamespaceLink>
-                : null }
-          </Col>
-        </Row>
+        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
 
         <dl className="row">
           <dt className="col-md-3">Context:</dt>

@@ -24,6 +24,8 @@ import {
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  canEditRequest,
+  setCanEdit,
 } from '../modules/namespaceManage';
 import {
   getNamespace,
@@ -39,8 +41,11 @@ export function* checkPermissionSaga({ payload: { match, ...options }}) {
   if (!namespaceId) return;
   try {
     yield put(canManageRequest());
+    yield put(canEditRequest());
     const hasPermission = yield call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId);
+    const canEdit = yield call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId);
     yield put(setCanManage(hasPermission.answer));
+    yield put(setCanEdit(canEdit.answer));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }

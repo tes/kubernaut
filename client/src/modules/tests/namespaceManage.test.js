@@ -9,6 +9,8 @@ import reduce, {
   FETCH_SERVICES_NAMESPACE_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  canEditRequest,
+  setCanEdit,
 } from '../namespaceManage';
 
 describe('NamespaceManage reducer', () => {
@@ -105,12 +107,18 @@ describe('NamespaceManage reducer', () => {
   });
 
   it('should indicate when authorisation is loading', () => {
-    const state = reduce(undefined, canManageRequest());
-    expect(state.meta).toMatchObject({ loading: { sections: { canManage: true } } });
+    let state = reduce(undefined, canManageRequest());
+    state = reduce(state, canEditRequest());
+    expect(state.meta).toMatchObject({ loading: { sections: { canManage: true, canEdit: true } } });
   });
 
   it('should set canManage in state', () => {
     const state = reduce(undefined, setCanManage(true));
     expect(state.canManage).toBe(true);
+  });
+
+  it('should set canEdit in state', () => {
+    const state = reduce(undefined, setCanEdit(true));
+    expect(state.canEdit).toBe(true);
   });
 });

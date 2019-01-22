@@ -14,6 +14,8 @@ import {
   FETCH_CLUSTERS_ERROR,
   canEditRequest,
   setCanEdit,
+  canManageRequest,
+  setCanManage,
 } from '../modules/namespaceEdit';
 import { getNamespace, getClusters, editNamespace, hasPermissionOn } from '../lib/api';
 
@@ -31,8 +33,11 @@ export function* checkPermissionSaga({ payload: { match, ...options } }) {
   if (!namespaceId) return;
   try {
     yield put(canEditRequest());
+    yield put(canManageRequest());
     const hasPermission = yield call(hasPermissionOn, 'namespaces-write', 'namespace', namespaceId);
+    const canManage = yield call(hasPermissionOn, 'namespaces-manage', 'namespace', namespaceId);
     yield put(setCanEdit(hasPermission.answer));
+    yield put(setCanManage(canManage.answer));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }

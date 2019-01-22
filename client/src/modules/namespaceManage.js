@@ -9,6 +9,8 @@ export const fetchServicesPagination = createAction(`${actionsPrefix}/FETCH_SERV
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const canEditRequest = createAction(`${actionsPrefix}/CAN_EDIT_REQUEST`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
 export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACE_ERROR`);
@@ -30,6 +32,7 @@ const defaultState = {
         namespace: false,
         services: false,
         canManage: false,
+        canEdit: false,
       },
       loadingPercent: 100,
     },
@@ -133,6 +136,21 @@ export default handleActions({
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'canManage', false),
+    },
+  }),
+  [canEditRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canEdit', true),
+    }
+  }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canEdit', false),
     },
   }),
 }, defaultState);

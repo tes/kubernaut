@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray } from 'redux-form';
 import {
-  Badge,
   Container,
   Row,
   Col,
@@ -10,6 +9,7 @@ import {
   Progress,
 } from 'reactstrap';
 import Title from '../Title';
+import { NamespacesSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 
 const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => fields.map((member, index) => {
@@ -69,22 +69,12 @@ class NamespaceManagePage extends Component {
 
     const error = this.props.error;
     const namespace = this.props.namespace;
-    const headingBadge = <Badge
-        style={{ backgroundColor: namespace.color }}
-        pill
-      >{namespace.clusterName}/{namespace.name}
-      </Badge>;
-
     const services = this.props.services;
 
     return (
       <Container className="page-frame">
         <Title title={`Manage namespace: ${namespace.clusterName}/${namespace.name}`} />
-        <Row>
-          <Col>
-            <h4>{headingBadge}</h4>
-          </Col>
-        </Row>
+        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
         <Row>
           <Col sm="12">
             <form>

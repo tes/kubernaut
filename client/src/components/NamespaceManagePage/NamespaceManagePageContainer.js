@@ -7,10 +7,14 @@ import NamespaceManagePage from './NamespaceManagePage';
 export default connect(({ namespaceManage, account }, { namespaceId }) => ({
   namespaceId,
   canManage: namespaceManage.canManage,
+  canEdit: namespaceManage.canEdit,
   namespace: {
     id: namespaceManage.id,
     name: namespaceManage.name,
     clusterName: namespaceManage.cluster,
+    cluster: {
+      name: namespaceManage.cluster,
+    },
     color: namespaceManage.color,
   },
   meta: namespaceManage.meta,

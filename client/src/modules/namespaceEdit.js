@@ -16,6 +16,8 @@ export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 
 export const canEditRequest = createAction(`${actionsPrefix}/CAN_EDIT_REQUEST`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
 export const selectNamespaceId = (state) => (state.namespaceEdit.id);
 
@@ -25,12 +27,14 @@ const defaultState = {
   color: '',
   cluster: '',
   canEdit: false,
+  canManage: false,
   meta: {
     loading: {
       sections: {
         clusters: false,
         namespace: false,
         canEdit: false,
+        canManage: false,
       },
       loadingPercent: 100,
     }
@@ -122,5 +126,20 @@ export default handleActions({
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'canEdit', false),
     },
-  })
+  }),
+  [canManageRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', true),
+    }
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', false),
+    },
+  }),
 }, defaultState);

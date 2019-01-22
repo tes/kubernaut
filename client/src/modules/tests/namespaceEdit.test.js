@@ -8,6 +8,8 @@ import reduce, {
   FETCH_CLUSTERS_ERROR,
   canEditRequest,
   setCanEdit,
+  canManageRequest,
+  setCanManage,
 } from '../namespaceEdit';
 
 describe('NamespaceEdit reducer', () => {
@@ -80,8 +82,9 @@ describe('NamespaceEdit reducer', () => {
   });
 
   it('should indicate when authorisation is loading', () => {
-    const state = reduce(undefined, canEditRequest());
-    expect(state.meta).toMatchObject({ loading: { sections: { canEdit: true } } });
+    let state = reduce(undefined, canEditRequest());
+    state = reduce(state, canManageRequest());
+    expect(state.meta).toMatchObject({ loading: { sections: { canEdit: true, canManage: true } } });
   });
 
   it('should set canEdit in state', () => {
@@ -89,4 +92,8 @@ describe('NamespaceEdit reducer', () => {
     expect(state.canEdit).toBe(true);
   });
 
+  it('should set canManage in state', () => {
+    const state = reduce(undefined, setCanManage(true));
+    expect(state.canManage).toBe(true);
+  });
 });
