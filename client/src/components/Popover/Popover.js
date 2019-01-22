@@ -31,6 +31,7 @@ export default class Example extends React.Component {
         <Popover
           placement="auto"
           trigger="focus click hover"
+          className="shadow-sm"
           target={this.targetRef}
           isOpen={this.state.popoverOpen}
           toggle={this.toggle}
