@@ -10,6 +10,7 @@ import {
   Label,
   Button,
   Progress,
+  Form,
 } from 'reactstrap';
 import Title from '../Title';
 import RenderSelect from '../RenderSelect';
@@ -52,94 +53,126 @@ class NamespaceEditPage extends Component {
     const renderAttributes = (props) => {
 
     return (
-        <div>
-          <h6>Attributes:</h6>
-          {props.fields.map((attribute, index) => (
-            <FormGroup className="row" key={attribute}>
-              <Col sm="3">
-                <Field
-                  name={`${attribute}.name`}
-                  className="form-control"
-                  component={RenderInput}
-                  type="text"
-                  autocomplete="foo-no-really"
-                  />
-              </Col>
-              <Col sm="1"><p>:</p></Col>
-              <Col sm="5">
-                <Field
-                  name={`${attribute}.value`}
-                  className="form-control"
-                  component={RenderInput}
-                  type="text"
-                  autoComplete="foo-no-really"
-                  />
-              </Col>
-              <Col>
-                <Button
-                  outline
-                  color="danger"
-                  onClick={(e) => { e.preventDefault(); props.fields.remove(index); }}
-                ><i className={`fa fa-trash`} aria-hidden='true'></i>
-                </Button>
-              </Col>
-            </FormGroup>
-          ))}
-          <Row>
-            <Col sm="2">
-              <Button
-                outline
-                color="info"
-                onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
-              >Add new attribute
-              </Button>
-            </Col>
-          </Row>
-        </div>
+        <Row>
+          <Col>
+            <h6>Attributes:</h6>
+            {props.fields.map((attribute, index) => (
+              <Row form>
+                <Col>
+                  <FormGroup className="row no-gutters" key={attribute}>
+                    <Col sm="3" className="d-flex">
+                      <Field
+                        name={`${attribute}.name`}
+                        className="form-control"
+                        component={RenderInput}
+                        type="text"
+                        autocomplete="foo-no-really"
+                      />
+                    <span>:</span>
+                    </Col>
+                    <Col sm="3">
+                      <Field
+                        name={`${attribute}.value`}
+                        className="form-control"
+                        component={RenderInput}
+                        type="text"
+                        autoComplete="foo-no-really"
+                        />
+                    </Col>
+                    <Col sm="1">
+                      <Button
+                        outline
+                        color="danger"
+                        onClick={(e) => { e.preventDefault(); props.fields.remove(index); }}
+                        ><i className={`fa fa-trash`} aria-hidden='true'></i>
+                      </Button>
+                    </Col>
+                    { index + 1 === props.fields.length ?
+                      <Col sm="3">
+                        <Button
+                          outline
+                          color="info"
+                          onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
+                          >Add new attribute
+                        </Button>
+                      </Col>
+                      : null }
+                </FormGroup>
+                </Col>
+              </Row>
+            ))}
+            <Row>
+              { props.fields.length === 0 ?
+                <Col sm="3">
+                  <Button
+                    outline
+                    color="info"
+                    onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
+                    >Add new attribute
+                  </Button>
+                </Col>
+              : null}
+            </Row>
+          </Col>
+        </Row>
       );
     };
     return (
       <Container className="page-frame">
         <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
         <Row>
-          <h4>{headingBadge}</h4>
+          <Col>
+            <h4>{headingBadge}</h4>
+          </Col>
         </Row>
         <Row>
-          <Col sm="12">
-            <form>
-              <FormGroup className="row">
-                <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
-                <Col sm="5">
-                  <Field
-                    name="color"
-                    className="form-control"
-                    component={RenderInput}
-                    type="text"
-                    />
+          <Col>
+            <Form>
+              <Row form>
+                <Col md="6">
+                  <FormGroup className="row">
+                    <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
+                    <Col sm="5">
+                      <Field
+                        name="color"
+                        className="form-control"
+                        component={RenderInput}
+                        type="text"
+                        />
+                    </Col>
+                  </FormGroup>
                 </Col>
-              </FormGroup>
-              <FormGroup className="row">
-                <Label for="cluster" className="col-sm-2 col-form-label text-right">Cluster:</Label>
-                <Col sm="5">
-                  <Field
-                    name="cluster"
-                    className="form-control"
-                    component={RenderSelect}
-                    options={this.props.clusterOptions}
-                    />
+              </Row>
+              <Row form>
+                <Col md="6">
+                  <FormGroup className="row">
+                    <Label for="cluster" className="col-sm-2 col-form-label text-right">Cluster:</Label>
+                    <Col sm="5">
+                      <Field
+                        name="cluster"
+                        className="form-control"
+                        component={RenderSelect}
+                        options={this.props.clusterOptions}
+                        />
+                    </Col>
+                  </FormGroup>
                 </Col>
-              </FormGroup>
-              <FormGroup className="row">
-                <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
-                <Col sm="5">
-                  <Field
-                    name="context"
-                    className="form-control"
-                    component={RenderInput}
-                    type="text"
-                    />
+              </Row>
+              <Row form>
+                <Col md="6">
+                  <FormGroup className="row">
+                    <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
+                    <Col sm="5">
+                      <Field
+                        name="context"
+                        className="form-control"
+                        component={RenderInput}
+                        type="text"
+                        />
+                    </Col>
+                  </FormGroup>
                 </Col>
-              </FormGroup>
+              </Row>
               <FieldArray
                 name="attributes"
                 component={renderAttributes}
@@ -159,7 +192,7 @@ class NamespaceEditPage extends Component {
                   {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
                 </Col>
               </Row>
-            </form>
+            </Form>
           </Col>
         </Row>
       </Container>
