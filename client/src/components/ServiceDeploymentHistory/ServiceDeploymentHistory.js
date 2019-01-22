@@ -27,15 +27,15 @@ class ServiceDeploymentHistory extends Component {
       deployments.data.items.forEach(item => {
         cards.push((
           <Row key={item.id} className="no-gutters">
-            <Col sm="12" className="p-0">
+            <Col sm="8" className="p-0">
               <Card className="m-1">
                 <CardHeader className="d-flex justify-content-between px-2 py-1">
                   <div><Human date={item.createdOn} /></div>
                   <div>{item.status}</div>
                 </CardHeader>
                 <CardBody className="p-1">
-                  <Row>
-                    <Col sm="11" className="d-flex justify-content-around mx-auto">
+                  <Row className="no-gutters">
+                    <Col className="d-flex justify-content-around mx-auto">
                       <div className="d-flex w-100">
                         <div className="mr-1"><strong>Version:</strong></div>
                         <div>{item.release.version}</div>
@@ -87,7 +87,7 @@ class ServiceDeploymentHistory extends Component {
     return (
       <div>
         <Row>
-          <Col sm="12">
+          <Col>
             {cards}
           </Col>
         </Row>
