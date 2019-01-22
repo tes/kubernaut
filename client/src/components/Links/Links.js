@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { LinkContainer } from 'react-router-bootstrap';
 import { stringify } from 'query-string';
 import { Badge } from 'reactstrap';
 
@@ -87,5 +88,12 @@ export const ManageNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
 export const EditAccountLink = ({ account = {}, accountId, children}) =>
   <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;
 
-export const ManageServiceLink = ({ registryName, serviceName, children }) =>
-  <Link to={`/services/${registryName}/${serviceName}/manage`}>{children || <span>Manage</span>}</Link>;
+export const ManageServiceLink = ({ registryName, serviceName, children, container }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName}/${serviceName}/manage`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Manage</span>}</Tag>;
+};

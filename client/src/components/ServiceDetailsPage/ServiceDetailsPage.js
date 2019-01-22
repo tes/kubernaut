@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Row, Col } from 'reactstrap';
+import { Row, Col } from 'reactstrap';
 import Title from '../Title';
+import { ServicesSubNav } from '../SubNavs';
 import ServiceReleaseHistory from '../ServiceReleaseHistory';
 import ServiceDeploymentHistory from '../ServiceDeploymentHistory';
-import { ManageServiceLink } from '../Links';
 
 class ServiceDetailsPage extends Component {
 
@@ -12,17 +12,7 @@ class ServiceDetailsPage extends Component {
     return (
       <div className="container page-frame">
         <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
-        <Row>
-          <Col className="d-flex">
-            <h4>{this.props.registryName}/{this.props.serviceName}</h4>
-            { this.props.canManage ?
-              <ManageServiceLink registryName={this.props.registryName} serviceName={this.props.serviceName}>
-                <Button color="link">manage</Button>
-              </ManageServiceLink>
-              : null }
-          </Col>
-        </Row>
-
+        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
         <Row>
           <Col>
             <Row>
@@ -49,7 +39,6 @@ class ServiceDetailsPage extends Component {
             </Row>
           </Col>
         </Row>
-
         <Row>
           <Col>
             <h5>Deployments:</h5>

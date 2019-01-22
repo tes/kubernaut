@@ -8,6 +8,7 @@ import {
   Table,
   Progress,
 } from 'reactstrap';
+import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
 import { NamespaceLink } from '../Links';
@@ -72,9 +73,7 @@ class ServiceManagePage extends Component {
     return (
       <Container className="page-frame">
         <Title title={`Manage service: ${this.props.registryName}/${this.props.serviceName}`} />
-        <Row>
-          <h4>{this.props.registryName}/{this.props.serviceName}</h4>
-        </Row>
+        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
         <Row>
           <Col sm="12">
             <form>
