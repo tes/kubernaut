@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
-import { LinkContainer } from 'react-router-bootstrap';
-import { ManageServiceLink } from '../Links';
+import {
+  ServiceLink,
+  ManageServiceLink
+} from '../Links';
 
 class ServicesSubNav extends Component {
   render() {
@@ -17,9 +19,9 @@ class ServicesSubNav extends Component {
         <Col>
           <Nav tabs>
             <NavItem>
-              <LinkContainer exact to={`/services/${registryName}/${serviceName}`}>
+              <ServiceLink container registryName={registryName} serviceName={serviceName}>
                 <NavLink>{`${registryName}/${serviceName}`}</NavLink>
-              </LinkContainer>
+              </ServiceLink>
             </NavItem>
             { canManage ?
               <NavItem>

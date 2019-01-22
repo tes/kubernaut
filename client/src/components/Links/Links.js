@@ -17,12 +17,6 @@ export const RegistryLink = ({ registry }) => {
   );
 };
 
-export const ServiceLink = ({ service }) => {
-  return (
-    <Link to={`/services/${service.registry.name}/${service.name}`}><span>{service.name}</span></Link>
-  );
-};
-
 export const ReleaseLink = ({ release }) => {
   // TODO Replace with Link when page availalbe
   return (
@@ -87,6 +81,16 @@ export const ManageNamespaceLink = ({ namespace = {}, namespaceId, children}) =>
 
 export const EditAccountLink = ({ account = {}, accountId, children}) =>
   <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;
+
+export const ServiceLink = ({ service, serviceName, registryName, children, container }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName || service.registry.name}/${serviceName || service.name}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>{serviceName || service.name}</span>}</Tag>;
+};
 
 export const ManageServiceLink = ({ registryName, serviceName, children, container }) => {
   const Tag = container ? LinkContainer : Link;
