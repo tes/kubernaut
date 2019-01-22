@@ -122,7 +122,7 @@ class AccountNamespacesRolesForm extends Component {
       <div>
         <form>
           <Row>
-            <Col sm="8">
+            <Col sm="9">
                 <Table>
                   <thead>
                     <tr>
@@ -156,8 +156,8 @@ class AccountNamespacesRolesForm extends Component {
             </Col>
           </Row>
           <Row>
-            <h6>Add a namespace:</h6>
             <Col md="12">
+              <h6>Add a namespace:</h6>
               <FormGroup>
                 <Row>
                   <Col sm="4">

@@ -123,7 +123,7 @@ class AccountRegistriesRolesForm extends Component {
       <div>
         <form>
           <Row>
-            <Col sm="8">
+            <Col sm="9">
                 <Table>
                   <thead>
                     <tr>
@@ -157,8 +157,8 @@ class AccountRegistriesRolesForm extends Component {
             </Col>
           </Row>
           <Row>
-            <h6>Add a registry:</h6>
             <Col md="12">
+              <h6>Add a registry:</h6>
               <FormGroup>
                 <Row>
                   <Col sm="4">
