@@ -73,7 +73,7 @@ class ServiceReleaseHistory extends Component {
                 registry={item.service.registry}
                 version={item.version}
               >
-                <i className="fa fa-cloud-upload" aria-hidden='true'></i>
+                <i className="fa fa-cloud-upload text-success" aria-hidden='true'></i>
               </CreateDeploymentLink>
             </td>
             <td className="pb-0">
