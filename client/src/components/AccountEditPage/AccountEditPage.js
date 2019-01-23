@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Container, Row, Col, Progress } from 'reactstrap';
 import Title from '../Title';
+import { AccountsSubNav } from '../SubNavs';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
 import AccountSystemRolesForm from '../AccountSystemRolesForm';
@@ -38,13 +39,13 @@ class AccountEditPage extends Component {
     return (
       <Container className="page-frame">
         <Title title={`Edit account: ${account.displayName}`} />
-        <Row className="mt-3">
-            <h4>Editing: {account.displayName}</h4>
-        </Row>
+        <AccountsSubNav account={account} canEdit={this.props.canEdit} />
         <Row>
+          <Col>
             <p><strong>Created:</strong> {account.createdOn}</p>
+          </Col>
         </Row>
-        <Row className="mt-3">
+        <Row className="mt-1">
           <Col sm="12">
             <h5>System Roles:</h5>
             <AccountSystemRolesForm account={account} />

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col, Progress, Button } from 'reactstrap';
-import { EditAccountLink } from '../Links';
+import { Container, Row, Col, Progress } from 'reactstrap';
 import Title from '../Title';
+import { AccountsSubNav } from '../SubNavs';
 
 class AccountPage extends Component {
 
@@ -41,22 +41,13 @@ class AccountPage extends Component {
     return (
       <Container className="page-frame">
         <Title title={`Account: ${account.displayName}`} />
-        <Row className="mt-3">
-          <Col className="d-flex">
-            <h4>{account.displayName}</h4>
-            { this.props.canEdit ?
-              <EditAccountLink accountId={this.props.accountId}>
-                <Button color="link">edit</Button>
-              </EditAccountLink>
-              : null }
-          </Col>
-        </Row>
+        <AccountsSubNav account={account} canEdit={this.props.canEdit} />
         <Row>
           <Col>
             <p><strong>Created:</strong> {account.createdOn}</p>
           </Col>
         </Row>
-        <Row className="mt-3">
+        <Row className="mt-1">
           <Col sm="12">
             <h5>System</h5>
             <ul className="list-unstyled">

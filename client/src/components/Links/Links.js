@@ -4,10 +4,14 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { stringify } from 'query-string';
 import { Badge } from 'reactstrap';
 
-export const AccountLink = ({ account }) => {
-  return (
-    <Link to={`/accounts/${account.id}`}><span>{account.displayName}</span></Link>
-  );
+export const AccountLink = ({ account, children, container }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/accounts/${account.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>{account.displayName}</span>}</Tag>;
 };
 
 export const RegistryLink = ({ registry }) => {
@@ -97,8 +101,15 @@ export const ManageNamespaceLink = ({ namespace = {}, container, namespaceId, ch
   return <Tag {...props}>{children || <span>Manage</span>}</Tag>;
 };
 
-export const EditAccountLink = ({ account = {}, accountId, children}) =>
-  <Link to={`/accounts/${account.id || accountId}/edit`}>{children || <span>Edit</span>}</Link>;
+export const EditAccountLink = ({ account = {}, container, accountId, children}) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/accounts/${account.id || accountId}/edit`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Edit</span>}</Tag>;
+};
 
 export const ServiceLink = ({ service, serviceName, registryName, children, container }) => {
   const Tag = container ? LinkContainer : Link;
