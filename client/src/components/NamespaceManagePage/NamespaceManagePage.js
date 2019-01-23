@@ -16,7 +16,7 @@ const renderServices = ({ fields, services, namespace, onUpdate, disabled }) => 
   const service = services[index];
   return (
     <tr key={service.service.id}>
-      <td>
+      <td className="text-center">
         <Field
           component="input"
           type="checkbox"
@@ -76,15 +76,15 @@ class NamespaceManagePage extends Component {
         <Title title={`Manage namespace: ${namespace.clusterName}/${namespace.name}`} />
         <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
         <Row>
-          <Col sm="12">
+          <Col sm="8">
             <form>
               <Row>
                 <Table>
                   <thead>
                     <tr>
-                      <th>Can deploy?</th>
-                      <th>Service</th>
-                      <th>Registry</th>
+                      <th className="border-top-0 text-center">Can deploy?</th>
+                      <th className="border-top-0">Service</th>
+                      <th className="border-top-0">Registry</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -106,18 +106,20 @@ class NamespaceManagePage extends Component {
               </Row>
             </form>
             <Row>
-              <TablePagination
-                pages={services.pages}
-                page={services.page}
-                limit={services.limit}
-                fetchContent={({ page, limit }) => {
-                  this.props.fetchServicesPagination({
-                    id: namespace.id,
-                    page,
-                    limit,
-                  });
-                }}
-              />
+              <Col>
+                <TablePagination
+                  pages={services.pages}
+                  page={services.page}
+                  limit={services.limit}
+                  fetchContent={({ page, limit }) => {
+                    this.props.fetchServicesPagination({
+                      id: namespace.id,
+                      page,
+                      limit,
+                    });
+                  }}
+                  />
+              </Col>
             </Row>
           </Col>
         </Row>
