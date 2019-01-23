@@ -47,7 +47,9 @@ class DeployPage extends Component {
     return (
       <Container className="page-frame">
         <Row>
-          <h4>Create deployment</h4>
+          <Col>
+            <h4>Create deployment</h4>
+          </Col>
         </Row>
         <Row>
           <Col md="5">
