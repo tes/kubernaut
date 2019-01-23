@@ -78,24 +78,26 @@ class ServiceManagePage extends Component {
           <Col md="6">
             <form>
               <Row>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th className="text-center border-top-0">Can deploy?</th>
-                      <th className="border-top-0">Namespace</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <FieldArray
-                      name="namespaces"
-                      component={renderNamespaces}
-                      namespaces={namespaces.items}
-                      serviceId={serviceId}
-                      onUpdate={this.props.updateServiceStatusForNamespace}
-                      disabled={this.props.submitting}
-                    />
-                  </tbody>
-                </Table>
+                <Col>
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th className="text-center border-top-0">Can deploy?</th>
+                        <th className="border-top-0">Namespace</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <FieldArray
+                        name="namespaces"
+                        component={renderNamespaces}
+                        namespaces={namespaces.items}
+                        serviceId={serviceId}
+                        onUpdate={this.props.updateServiceStatusForNamespace}
+                        disabled={this.props.submitting}
+                        />
+                    </tbody>
+                  </Table>
+                </Col>
               </Row>
               <Row>
                 <Col sm="12">
@@ -104,17 +106,19 @@ class ServiceManagePage extends Component {
               </Row>
             </form>
             <Row>
-              <TablePagination
-                pages={namespaces.pages}
-                page={namespaces.page}
-                limit={namespaces.limit}
-                fetchContent={({ page, limit }) => {
-                  this.props.fetchNamespacesPagination({
-                    page,
-                    limit,
-                  });
-                }}
-              />
+              <Col>
+                <TablePagination
+                  pages={namespaces.pages}
+                  page={namespaces.page}
+                  limit={namespaces.limit}
+                  fetchContent={({ page, limit }) => {
+                    this.props.fetchNamespacesPagination({
+                      page,
+                      limit,
+                    });
+                  }}
+                  />
+              </Col>
             </Row>
           </Col>
         </Row>
