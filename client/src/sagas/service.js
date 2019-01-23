@@ -16,6 +16,8 @@ import {
   fetchReleasesPagination,
   setReleasesPagination,
   setCanManage,
+  setCurrentService,
+  selectCurrentService,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
   FETCH_RELEASES_ERROR,
@@ -63,17 +65,21 @@ export function* initServiceDetailPageSaga({ payload = {} }) {
     return;
   }
 
+  const serviceKnownInState = yield select(selectCurrentService);
+  const urlMatchesStateService = serviceKnownInState.registryName === registry && serviceKnownInState.name === service;
   const releasesPagination = yield select(selectReleasesPaginationState);
-  if (!_isEqual(releasesPagination, parsedReleasesPagination)) {
+  if (!urlMatchesStateService || !_isEqual(releasesPagination, parsedReleasesPagination)) {
     yield put(setReleasesPagination(parsedReleasesPagination));
     yield put(fetchReleases({ registry, service }));
   }
 
   const deploymentsPagination = yield select(selectDeploymentsPaginationState);
-  if (!_isEqual(deploymentsPagination, parsedDeploymentsPagination)) {
+  if (!urlMatchesStateService || !_isEqual(deploymentsPagination, parsedDeploymentsPagination)) {
     yield put(setDeploymentsPagination(parsedDeploymentsPagination));
     yield put(fetchDeployments({ registry, service }));
   }
+
+  if (!urlMatchesStateService) yield put(setCurrentService({ registry, service }));
 }
 
 export function* fetchReleasesDataSaga({ payload = {} }) {
