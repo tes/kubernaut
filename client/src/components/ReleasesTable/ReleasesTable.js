@@ -115,6 +115,7 @@ class ReleasesTable extends Component {
               <th onClick={() => toggleSort('version')}>Version {sortIcons['version']}</th>
               <th onClick={() => toggleSort('registry')}>Registry {sortIcons['registry']}</th>
               <th onClick={() => toggleSort('createdBy')}>Created By {sortIcons['createdBy']}</th>
+              <th></th>
             </tr>
           </thead>
           {
