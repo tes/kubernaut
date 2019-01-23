@@ -33,7 +33,10 @@ class Navigation extends Component {
       <Navbar color="dark" dark expand="md" className="p-0 pl-1">
         <NavbarToggler onClick={this.toggle} />
         <Collapse isOpen={this.state.isOpen} navbar className="justify-content-center">
-          <NavbarBrand href="/">kubernaut</NavbarBrand>
+          <NavbarBrand
+            tag={LinkContainer}
+            to="/"
+          ><span>kubernaut</span></NavbarBrand>
           <Nav className="" navbar>
             <NavItem tag={LinkContainer} to="/services">
               <NavLink>Services</NavLink>
