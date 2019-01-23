@@ -27,10 +27,10 @@ class TableFilter extends Component {
     return (
       <Row className="mb-2 border py-2">
         <Col xs="12">
-          <Row className="mb-2">
-            <Col>
+          <Row className="mb-2 justify-content-between no-gutters">
+            <Col sm="11" xs="10">
               <Form inline>
-                <FormGroup>
+                <FormGroup className="mb-sm-1">
                   <Field
                     name="searchVal"
                     component={RenderInput}
@@ -40,7 +40,7 @@ class TableFilter extends Component {
                     type="text"
                   />
                 </FormGroup>
-                <FormGroup className="mr-2">
+                <FormGroup className="mr-2 mb-sm-1">
                   <Field
                     name="column"
                     component={RenderSelect}
@@ -48,7 +48,7 @@ class TableFilter extends Component {
                     options={this.props.columns}
                   />
                 </FormGroup>
-                <FormGroup className="mr-2">
+                <FormGroup className="mr-4 mb-sm-1">
                   <Label for="exact" className="mr-sm-2">Exact</Label>
                   <Field
                     name="exact"
@@ -57,7 +57,7 @@ class TableFilter extends Component {
                     className="form-control"
                   />
                 </FormGroup>
-                <FormGroup className="mr-2">
+                <FormGroup className="mr-4 mb-sm-1">
                   <Label for="not" className="mr-sm-2">Not</Label>
                   <Field
                     name="not"
@@ -70,7 +70,7 @@ class TableFilter extends Component {
                   outline
                   color="primary"
                   type="submit"
-                  className="mr-2"
+                  className="mr-2 mb-sm-1"
                   onClick={this.props.handleSubmit((values) => {
                     if (!values.searchVal) return this.props.clearSearch();
                     this.props.search(values);
@@ -78,7 +78,7 @@ class TableFilter extends Component {
                 >Search</Button>
                 <Button
                   outline
-                  className="mr-2"
+                  className="mr-2 mb-sm-1"
                   color="secondary"
                   onClick={this.props.handleSubmit((values) => this.props.addFilter({
                     form: values,
@@ -88,16 +88,22 @@ class TableFilter extends Component {
                   outline
                   color="secondary"
                   type="submit"
-                  className="mr-2"
+                  className="mr-2 mb-sm-1"
                   onClick={(e) => { e.preventDefault(); this.props.clearSearch(); }}
                 >Clear Search</Button>
               </Form>
             </Col>
-            <Col sm="1">
+            <Col xs="1">
               <Button
                 outline
                 onClick={(e) => {e.preventDefault(); this.props.hideFilters(); }}
+                className="d-none d-md-block"
               >Hide</Button>
+              <Button
+                outline
+                onClick={(e) => {e.preventDefault(); this.props.hideFilters(); }}
+                className="d-block d-md-none"
+              ><i className='fa fa-times' aria-hidden='true'></i></Button>
             </Col>
           </Row>
           <Row>
