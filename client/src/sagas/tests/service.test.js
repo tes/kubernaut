@@ -30,6 +30,8 @@ import {
   setReleasesPagination,
   setDeploymentsPagination,
   setCanManage,
+  setCurrentService,
+  selectCurrentService,
 } from '../../modules/service';
 
 import {
@@ -187,16 +189,37 @@ describe('Service sagas', () => {
       expect(gen.next().done).toBe(true);
     });
 
+    it('should kick off releases & deployments request if url service/registry doesn\'t match state', () => {
+      const initPayload = {
+        match: { params: { registry: 'a', name: 'b' } },
+        location: { pathname: '/service/a/b', search: 'r-pagination=page%3D1%26limit%3D10&d-pagination=page%3D1%26limit%3D10' },
+      };
+      const currentStateService = { registryName: 'a', name: 'c' };
+      const requestPayload = { registry: 'a', service: 'b' };
+
+      const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
+      expect(gen.next().value).toMatchObject(select(selectCurrentService));
+      expect(gen.next(currentStateService).value).toMatchObject(select(selectReleasesPaginationState));
+      expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(put(setReleasesPagination({ page: '1', limit: '10' })));
+      expect(gen.next().value).toMatchObject(put(fetchReleases(requestPayload)));
+      expect(gen.next().value).toMatchObject(select(selectDeploymentsPaginationState));
+      expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(put(setDeploymentsPagination({ page: '1', limit: '10' })));
+      expect(gen.next().value).toMatchObject(put(fetchDeployments(requestPayload)));
+      expect(gen.next().value).toMatchObject(put(setCurrentService(requestPayload)));
+      expect(gen.next().done).toBe(true);
+    });
+
     it('should kick off releases request if url pagination doesn\'t match state', () => {
       const initPayload = {
         match: { params: { registry: 'a', name: 'b' } },
         location: { pathname: '/service/a/b', search: 'r-pagination=page%3D2%26limit%3D10&d-pagination=page%3D1%26limit%3D10' },
       };
-
+      const currentStateService = { registryName: 'a', name: 'b' };
       const requestPayload = { registry: 'a', service: 'b' };
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
-      expect(gen.next().value).toMatchObject(select(selectReleasesPaginationState));
+      expect(gen.next().value).toMatchObject(select(selectCurrentService));
+      expect(gen.next(currentStateService).value).toMatchObject(select(selectReleasesPaginationState));
       expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(put(setReleasesPagination({ page: '2', limit: '10' })));
       expect(gen.next().value).toMatchObject(put(fetchReleases(requestPayload)));
       expect(gen.next().value).toMatchObject(select(selectDeploymentsPaginationState));
@@ -208,11 +231,12 @@ describe('Service sagas', () => {
         match: { params: { registry: 'a', name: 'b' } },
         location: { pathname: '/service/a/b', search: 'r-pagination=page%3D1%26limit%3D10&d-pagination=page%3D4%26limit%3D10' },
       };
-
+      const currentStateService = { registryName: 'a', name: 'b' };
       const requestPayload = { registry: 'a', service: 'b' };
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
-      expect(gen.next().value).toMatchObject(select(selectReleasesPaginationState));
+      expect(gen.next().value).toMatchObject(select(selectCurrentService));
+      expect(gen.next(currentStateService).value).toMatchObject(select(selectReleasesPaginationState));
       expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(select(selectDeploymentsPaginationState));
       expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(put(setDeploymentsPagination({ page: '4', limit: '10' })));
       expect(gen.next().value).toMatchObject(put(fetchDeployments(requestPayload)));
