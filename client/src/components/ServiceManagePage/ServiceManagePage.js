@@ -18,7 +18,7 @@ const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled })
 
   return (
     <tr key={status.namespace.id}>
-      <td>
+      <td className="text-center">
         <Field
           component="input"
           type="checkbox"
@@ -75,14 +75,14 @@ class ServiceManagePage extends Component {
         <Title title={`Manage service: ${this.props.registryName}/${this.props.serviceName}`} />
         <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
         <Row>
-          <Col sm="12">
+          <Col md="6">
             <form>
               <Row>
                 <Table>
                   <thead>
                     <tr>
-                      <th>Can deploy?</th>
-                      <th>Namespace</th>
+                      <th className="text-center border-top-0">Can deploy?</th>
+                      <th className="border-top-0">Namespace</th>
                     </tr>
                   </thead>
                   <tbody>
