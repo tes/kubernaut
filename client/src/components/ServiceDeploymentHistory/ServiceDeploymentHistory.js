@@ -25,13 +25,17 @@ class ServiceDeploymentHistory extends Component {
     const cards = [];
     if (deployments && deployments.data && deployments.data.items) {
       deployments.data.items.forEach(item => {
+        const statusColor = (item.status === 'failed' && 'text-danger')
+          || (item.status === 'successful' && 'text-body')
+          || (item.status === 'applied' && 'text-info')
+          || 'text-secondary';
         cards.push((
           <Row key={item.id} className="no-gutters">
             <Col sm="8" className="p-0">
               <Card className="m-1">
                 <CardHeader className="d-flex justify-content-between px-2 py-1">
                   <div><Human date={item.createdOn} /></div>
-                  <div>{item.status}</div>
+                  <div className={statusColor}>{item.status}</div>
                 </CardHeader>
                 <CardBody className="p-1">
                   <Row className="no-gutters">
