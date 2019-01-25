@@ -140,7 +140,7 @@ class DeploymentDetailsPage extends Component {
                       deployment.log.map(entry => {
                         let textClass = 'text-secondary';
                         if (entry.writtenTo === 'stdin') textClass = 'text-info';
-                        if (entry.writtenTo === 'sterr') textClass = 'text-danger';
+                        if (entry.writtenTo === 'stderr') textClass = 'text-danger';
                         return <tr key={entry.id}>
                           <td><Human date={entry.writtenOn} /></td>
                           <td className={textClass}>{entry.content}</td>
