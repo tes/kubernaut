@@ -3,6 +3,7 @@ import {
   submitNoteForm,
   openModal,
   closeModal,
+  toggleManifestOpen,
 } from '../../modules/deployment';
 import { reduxForm } from 'redux-form';
 
@@ -19,12 +20,14 @@ function mapStateToProps(state) {
     initialValues: {
       note: state.deployment.data && state.deployment.data.note,
     },
+    manifestOpen: state.deployment.manifestOpen,
   };
 }
 
 export default connect(mapStateToProps, {
   openModal,
   closeModal,
+  toggleManifestOpen,
 })(reduxForm({
   form: 'deploymentNote',
   enableReinitialize: true,

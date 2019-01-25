@@ -9,12 +9,14 @@ export const submitNoteForm = createFormAction(`${actionsPrefix}/SUBMIT_NOTE_FOR
 export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+export const toggleManifestOpen = createAction(`${actionsPrefix}/TOGGLE_MANIFEST`);
 
 const defaultState = {
   data: null,
   meta: {},
   modalOpen: false,
   canEdit: false,
+  manifestOpen: false,
 };
 
 export default handleActions({
@@ -48,5 +50,9 @@ export default handleActions({
   [setCanEdit]: (state, { payload }) => ({
     ...state,
     canEdit: payload,
-  })
+  }),
+  [toggleManifestOpen]: (state) => ({
+    ...state,
+    manifestOpen: !state.manifestOpen,
+  }),
 }, defaultState);

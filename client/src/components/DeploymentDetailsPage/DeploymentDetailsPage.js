@@ -11,6 +11,10 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Collapse,
+  Card,
+  CardHeader,
+  CardBody,
 } from 'reactstrap';
 import { Field } from 'redux-form';
 import Title from '../Title';
@@ -21,7 +25,7 @@ import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, Names
 class DeploymentDetailsPage extends Component {
 
   render() {
-    const { meta = {}, deployment, canEdit } = this.props;
+    const { meta = {}, deployment, canEdit, manifestOpen } = this.props;
 
     const errorDetails = () =>
       <div>Error loading deployments</div>
@@ -43,39 +47,46 @@ class DeploymentDetailsPage extends Component {
         <div>
           <Title title={`Deployment: ${deployment.release.service.name}@${deployment.release.version} -> ${deployment.namespace.cluster.name}/${deployment.namespace.name}`} />
           <Row>
-            <Col sm="12">
-              <dl className="row">
-                  <dt className='col-md-3'>Service:</dt>
-                  <dd className='col-md-9'><ServiceLink service={deployment.release.service} /></dd>
-                  <dt className='col-md-3'>Version:</dt>
-                  <dd className='col-md-9'><ReleaseLink release={deployment.release} /></dd>
-                  <dt className='col-md-3'>Registry:</dt>
-                  <dd className='col-md-9'><RegistryLink registry={deployment.release.service.registry} /></dd>
-                  <dt className='col-md-3'>Cluster:</dt>
-                  <dd className='col-md-9'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
-                  <dt className='col-md-3'>Namespace:</dt>
-                  <dd className='col-md-9'><NamespaceLink namespace={deployment.namespace} /></dd>
-                  <dt className='col-md-3'>Status:</dt>
-                  <dd className='col-md-9'>{deployment.status}</dd>
-                  <dt className='col-md-3'>Apply Exit Code:</dt>
-                  <dd className='col-md-9'>{deployment.applyExitCode}</dd>
-                  <dt className='col-md-3'>Rollout Status Exit Code:</dt>
-                  <dd className='col-md-9'>{deployment.rolloutStatusExitCode}</dd>
-                  <dt className='col-md-3'>Created On:</dt>
-                  <dd className='col-md-9'>
-                    <span><Human date={deployment.createdOn} /></span>&nbsp;
-                    <span>(<Ago date={deployment.createdOn} />)</span>
-                  </dd>
-                  <dt className='col-md-3'>Created By:</dt>
-                  <dd className='col-md-9'><AccountLink account={deployment.createdBy} /></dd>
-                </dl>
-              </Col>
-            </Row>
+            <Col md="8" sm="12">
+              <Card>
+                <CardHeader>
+                  <span>Details:</span>
+                </CardHeader>
+                <CardBody>
+                  <dl className="row">
+                    <dt className='col-md-3'>Service:</dt>
+                    <dd className='col-md-9'><ServiceLink service={deployment.release.service} /></dd>
+                    <dt className='col-md-3'>Version:</dt>
+                    <dd className='col-md-9'><ReleaseLink release={deployment.release} /></dd>
+                    <dt className='col-md-3'>Registry:</dt>
+                    <dd className='col-md-9'><RegistryLink registry={deployment.release.service.registry} /></dd>
+                    <dt className='col-md-3'>Cluster:</dt>
+                    <dd className='col-md-9'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
+                    <dt className='col-md-3'>Namespace:</dt>
+                    <dd className='col-md-9'><NamespaceLink namespace={deployment.namespace} /></dd>
+                    <dt className='col-md-3'>Status:</dt>
+                    <dd className='col-md-9'>{deployment.status}</dd>
+                    <dt className='col-md-3'>Apply Exit Code:</dt>
+                    <dd className='col-md-9'>{deployment.applyExitCode}</dd>
+                    <dt className='col-md-3'>Rollout Status Exit Code:</dt>
+                    <dd className='col-md-9'>{deployment.rolloutStatusExitCode}</dd>
+                    <dt className='col-md-3'>Created On:</dt>
+                    <dd className='col-md-9'>
+                      <span><Human date={deployment.createdOn} /></span>&nbsp;
+                      <span>(<Ago date={deployment.createdOn} />)</span>
+                    </dd>
+                    <dt className='col-md-3'>Created By:</dt>
+                    <dd className='col-md-9'><AccountLink account={deployment.createdBy} /></dd>
+                  </dl>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
 
             { deployment.note ? (
-              <Row className="mb-3">
-                <Col>
-                  <Row className="text-light bg-dark py-1 mb-1">
+              <Row className="mt-3 mb-3">
+                <Col md="10">
+                  <Row className="text-light bg-dark p-1 mb-1 no-gutters">
                     <Col>
                       <h4>Note:</h4>
                       <ReactMarkdown source={deployment.note} />
@@ -101,17 +112,23 @@ class DeploymentDetailsPage extends Component {
               ) : null
             }
 
-            <Row>
-              <Col sm="12">
-                <h4>Deployment Attributes</h4>
+            <Row className="mb-3">
+              <Col md="8" sm="12">
+                <Card>
+                  <CardHeader>
+                    <span>Attributes:</span>
+                  </CardHeader>
+                  <CardBody>
+                    <dl className="row">
+                      {attributesEls}
+                    </dl>
+                  </CardBody>
+                </Card>
               </Col>
             </Row>
-            <dl className="row">
-              {attributesEls}
-            </dl>
 
             <Row>
-              <Col sm="12">
+              <Col sm="10">
                 <h4>Deployment Log</h4>
               </Col>
             </Row>
@@ -136,17 +153,22 @@ class DeploymentDetailsPage extends Component {
             </Row>
 
             <Row>
-              <Col sm="12">
-                <h4>Kubernetes Manifest</h4>
+              <Col sm="12" className="d-flex mb-2">
+                <h4 className="mr-2">Kubernetes Manifest</h4>
+                <Button
+                  onClick={() => this.props.toggleManifestOpen()}
+                >{manifestOpen ? 'Hide' : 'Show'}</Button>
               </Col>
             </Row>
             <Row>
-              <Col sm="12">
-                <pre className="bg-light p-2">
-                  <code>
-                    {deployment.manifest.yaml}
-                  </code>
-                </pre>
+              <Col sm="10">
+                <Collapse isOpen={manifestOpen}>
+                  <pre className="bg-light p-2">
+                    <code>
+                      {deployment.manifest.yaml}
+                    </code>
+                  </pre>
+                </Collapse>
               </Col>
             </Row>
 
@@ -187,7 +209,7 @@ class DeploymentDetailsPage extends Component {
       <Container className="page-frame">
         <Row>
           <Col sm="12">
-            <h3>Deployment Details:</h3>
+            <h5>Deployment:</h5>
           </Col>
         </Row>
         {

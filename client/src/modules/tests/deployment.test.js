@@ -5,6 +5,7 @@ import reduce, {
   openModal,
   closeModal,
   setCanEdit,
+  toggleManifestOpen,
 } from '../deployment';
 
 describe('Deployment Reducer', () => {
@@ -55,6 +56,15 @@ describe('Deployment Reducer', () => {
       const initialState = reduce(undefined, openModal());
       const state = reduce(initialState, closeModal());
       expect(state.modalOpen).toBe(false);
+    });
+  });
+
+  describe('Manifest collapse', () => {
+    it('should toggle manifest collapse open state', () => {
+      let state = reduce(undefined, toggleManifestOpen());
+      expect(state.manifestOpen).toBe(true);
+      state = reduce(state, toggleManifestOpen());
+      expect(state.manifestOpen).toBe(false);
     });
   });
 
