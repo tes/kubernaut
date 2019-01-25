@@ -66,7 +66,7 @@ class ServiceDeploymentHistory extends Component {
                     ) : null
                   }
                 </CardBody>
-                <CardFooter className="d-flex justify-content-end px-2 py-1">
+                <CardFooter className="d-flex justify-content-between px-2 py-1">
                   <DeploymentLink
                     deployment={item}
                     icon="external-link"
