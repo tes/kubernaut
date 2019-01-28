@@ -13,6 +13,7 @@ import {
   submitNoteForm,
   closeModal,
   setCanEdit,
+  startPollLog,
 } from '../../modules/deployment';
 
 import {
@@ -42,6 +43,17 @@ describe('Deployment sagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENT_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getDeployment, 1));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_DEPLOYMENT_ERROR({ error: error.message })));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('kicks off log polling if status demands it', () => {
+      const deploymentData = { a: 1, status: 'pending' };
+
+      const gen = fetchDeploymentSaga(fetchDeployment(payload));
+      expect(gen.next().value).toMatchObject(put(FETCH_DEPLOYMENT_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getDeployment, 1));
+      expect(gen.next(deploymentData).value).toMatchObject(put(FETCH_DEPLOYMENT_SUCCESS({ data: deploymentData } )));
+      expect(gen.next().value).toMatchObject(put(startPollLog({ id: 1 })));
       expect(gen.next().done).toBe(true);
     });
   });

@@ -41,7 +41,7 @@ export default class Example extends React.Component {
           }}
         >
           <PopoverHeader>{this.props.title}</PopoverHeader>
-          <PopoverBody>{this.props.body}</PopoverBody>
+          <PopoverBody>{this.props.children || this.props.body}</PopoverBody>
         </Popover>
       </div>
     );

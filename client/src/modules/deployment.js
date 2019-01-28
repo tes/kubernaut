@@ -10,6 +10,9 @@ export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const toggleManifestOpen = createAction(`${actionsPrefix}/TOGGLE_MANIFEST`);
+export const startPollLog = createAction(`${actionsPrefix}/START_POLL_LOG`);
+export const stopPollLog = createAction(`${actionsPrefix}/STOP_POLL_LOG`);
+export const updateDeploymentStatus = createAction(`${actionsPrefix}/UPDATE_DEPLOYMENT_STATUS`);
 
 const defaultState = {
   data: null,
@@ -55,4 +58,14 @@ export default handleActions({
     ...state,
     manifestOpen: !state.manifestOpen,
   }),
+  [updateDeploymentStatus]: (state, { payload }) => ({
+    ...state,
+    data: {
+      ...state.data,
+      status: payload.status,
+      applyExitCode: payload.applyExitCode,
+      rolloutStatusExitCode: payload.rolloutStatusExitCode,
+      log: payload.log,
+    }
+  })
 }, defaultState);

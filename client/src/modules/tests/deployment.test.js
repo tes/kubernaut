@@ -6,6 +6,7 @@ import reduce, {
   closeModal,
   setCanEdit,
   toggleManifestOpen,
+  updateDeploymentStatus,
 } from '../deployment';
 
 describe('Deployment Reducer', () => {
@@ -68,4 +69,24 @@ describe('Deployment Reducer', () => {
     });
   });
 
+  describe('Update status', () => {
+    it('Updates state when new status information is passed', () => {
+      const initialState = {
+        data: {
+          status: 'bob',
+          applyExitCode: null,
+          rolloutStatusExitCode: null,
+          log: [],
+        },
+      };
+      const payload = {
+        status: 'pending',
+        applyExitCode: 1,
+        rolloutStatusExitCode: 0,
+        log: [{a: 1}],
+      };
+      const state = reduce(initialState, updateDeploymentStatus(payload));
+      expect(state.data).toMatchObject(payload);
+    });
+  });
 });

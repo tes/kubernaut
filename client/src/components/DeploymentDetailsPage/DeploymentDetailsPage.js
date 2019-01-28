@@ -20,6 +20,7 @@ import { Field } from 'redux-form';
 import Title from '../Title';
 import RenderTextArea from '../RenderTextArea';
 import { Human, Ago } from '../DisplayDate';
+import Popover from '../Popover';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
 
 class DeploymentDetailsPage extends Component {
@@ -42,6 +43,8 @@ class DeploymentDetailsPage extends Component {
         attributesEls.push(<dt key={name} className='col-md-3'>{name}:</dt>);
         attributesEls.push(<dd key={`${name}-val`}className='col-md-9'>{deployment.attributes[name]}</dd>);
       }
+
+      const logPending = deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending';
 
       return (
         <div>
@@ -112,24 +115,16 @@ class DeploymentDetailsPage extends Component {
               ) : null
             }
 
-            <Row className="mb-3">
-              <Col md="8" sm="12">
-                <Card>
-                  <CardHeader>
-                    <span>Attributes:</span>
-                  </CardHeader>
-                  <CardBody>
-                    <dl className="row">
-                      {attributesEls}
-                    </dl>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-
             <Row>
               <Col sm="10">
-                <h4>Deployment Log</h4>
+                <h4 className="d-flex">
+                  Deployment Log
+                  <Popover title="Log output" classNames="pl-1">
+                    <p className="text-info">stdin</p>
+                    <p className="text-secondary">stdout</p>
+                    <p className="text-danger">stderr</p>
+                  </Popover>
+                </h4>
               </Col>
             </Row>
             <Row>
@@ -147,8 +142,26 @@ class DeploymentDetailsPage extends Component {
                         </tr>;
                       })
                     }
+                    {
+                      logPending ? <tr className="text-center"><td><i className="fa fa-spinner fa-pulse" aria-hidden='true' /></td></tr> : null
+                    }
                   </tbody>
                 </Table>
+              </Col>
+            </Row>
+
+            <Row className="mb-3">
+              <Col md="8" sm="12">
+                <Card>
+                  <CardHeader>
+                    <span>Attributes:</span>
+                  </CardHeader>
+                  <CardBody>
+                    <dl className="row">
+                      {attributesEls}
+                    </dl>
+                  </CardBody>
+                </Card>
               </Col>
             </Row>
 
