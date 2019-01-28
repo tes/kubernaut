@@ -143,7 +143,7 @@ class DeploymentDetailsPage extends Component {
                       })
                     }
                     {
-                      logPending ? <tr className="text-center"><td><i className="fa fa-spinner fa-pulse" aria-hidden='true' /></td></tr> : null
+                      logPending ? <tr className="text-center"><td colSpan="2"><i className="fa fa-spinner fa-pulse" aria-hidden='true' /></td></tr> : null
                     }
                   </tbody>
                 </Table>

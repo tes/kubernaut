@@ -83,7 +83,7 @@ export function* pollLogSaga(id) {
       rolloutStatusExitCode,
       log,
     }));
-    if (applyExitCode === null || rolloutStatusExitCode === null || status === 'pending') {
+    if (applyExitCode !== null && rolloutStatusExitCode !== null && status !== 'pending') {
       yield put(stopPollLog());
     }
     yield delay(3000);
