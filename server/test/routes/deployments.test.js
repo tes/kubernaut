@@ -377,43 +377,6 @@ describe('Deployments API', () => {
       });
     });
 
-    it('should wait for rollout', async () => {
-
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
-      const release = makeRelease();
-
-      const savedRelease = await store.saveRelease(release, makeRootMeta());
-      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
-
-      const response = await request({
-        url: `/api/deployments`,
-        method: 'POST',
-        qs: {
-          wait: 'true',
-        },
-        json: {
-          namespace: namespace.name,
-          cluster: cluster.name,
-          registry: release.service.registry.name,
-          service: release.service.name,
-          version: release.version,
-          replicas: 3,
-        },
-      });
-      const lines = response.split('\n');
-      const finalOutput = JSON.parse(lines.slice(-1));
-
-      expect(finalOutput.id).toBeDefined();
-      expect(finalOutput.status).toBe('success');
-      expect(finalOutput.log.length).toBe(3);
-
-      const deployment = await store.getDeployment(finalOutput.id);
-      expect(deployment.applyExitCode).toBe(0);
-      expect(deployment.rolloutStatusExitCode).toBe(0);
-      expect(deployment.log.length).toBe(3);
-    });
-
     it('should use namespace attributes', async () => {
       const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
       const namespace = await store.saveNamespace(makeNamespace({
@@ -454,49 +417,6 @@ describe('Deployments API', () => {
       expect(deployment.rolloutStatusExitCode).toBe(null);
       expect(deployment.log.length).toBe(1);
       expect(deployment.attributes.replicas).toBe("3");
-    });
-
-    it('should report rollout failure', async () => {
-
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
-      const release = makeRelease({
-        service: {
-          name: 'x-release-1',
-        },
-      });
-
-      const savedRelease = await store.saveRelease(release, makeRootMeta());
-      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
-
-      loggerOptions.suppress = true;
-
-      const response = await request({
-        url: `/api/deployments`,
-        method: 'POST',
-        qs: {
-          wait: 'true',
-        },
-        json: {
-          namespace: namespace.name,
-          cluster: cluster.name,
-          registry: release.service.registry.name,
-          service: release.service.name,
-          version: release.version,
-          replicas: 3,
-        },
-      });
-
-      const lines = response.split('\n');
-      const finalOutput = JSON.parse(lines.slice(-1));
-      expect(finalOutput.id).toBeDefined();
-      expect(finalOutput.status).toBe('failure');
-      expect(finalOutput.log.length).toBe(3);
-
-      const deployment = await store.getDeployment(finalOutput.id);
-      expect(deployment.applyExitCode).toBe(0);
-      expect(deployment.rolloutStatusExitCode).toBe(99);
-      expect(deployment.log.length).toBe(3);
     });
 
     it('should reject payloads without a cluster', async () => {

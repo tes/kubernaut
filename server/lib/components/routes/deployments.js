@@ -95,8 +95,6 @@ export default function(options = {}) {
         const serviceCanDeploytoNamespace = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
         if (!serviceCanDeploytoNamespace) return next(Boom.badRequest(`service ${release.service.name} is not allowed to deploy to namespace ${namespace.name}`));
 
-        const streamResults = !!req.query.wait;
-
         const attributes = Object.assign({}, namespace.attributes, release.attributes, req.body);
         const manifest = getManifest(release, attributes);
         const data = { namespace, manifest, release, attributes };
@@ -106,53 +104,25 @@ export default function(options = {}) {
         const log = [];
 
         emitter.on('data', async data => {
-          if (streamResults) res.write(data.content);
           log.push(data);
 
           res.locals.logger.info(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data }));
         }).on('error', async data => {
-          if (streamResults) res.write(data.content);
           log.push(data);
 
           res.locals.logger.error(data.content);
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data }));
         });
 
-        if (streamResults) res.write(`${JSON.stringify({ id: deployment.id })}\n`);
         const applyExitCode = await applyManifest(deployment, emitter);
-        let rolloutStatusExitCodePromise;
 
         if (applyExitCode === 0) {
-          rolloutStatusExitCodePromise = getRolloutStatus(deployment, emitter, streamResults);
-          if (!streamResults) return res.status(202).json({ id: deployment.id, status: 'pending', log });
+          getRolloutStatus(deployment, emitter);
+          return res.status(202).json({ id: deployment.id, status: 'pending', log });
         } else {
-          if (!streamResults) return res.status(500).json({ id: deployment.id, status: 'failure', log });
-
-          res.write('ERROR');
-          return res.end();
+          return res.status(500).json({ id: deployment.id, status: 'failure', log });
         }
-
-        req.setTimeout(0);
-        const rolloutStatusExitCode = await rolloutStatusExitCodePromise;
-
-        const finalResponse = {
-          id: deployment.id,
-          status: rolloutStatusExitCode ? 'failure' : 'success',
-          log
-        };
-
-        if (streamResults) {
-          res.write(JSON.stringify(finalResponse));
-          return res.end();
-        }
-
-        if (rolloutStatusExitCode) {
-          res.status(500).json(finalResponse);
-        } else {
-          res.status(200).json({ id: deployment.id, status: 'success', log });
-        }
-        res.status(200).json({});
       } catch (err) {
         next(err);
       }
@@ -204,10 +174,7 @@ export default function(options = {}) {
       return code;
     }
 
-    async function getRolloutStatus(deployment, emitter, requiresDripFeed) {
-      let dripFeed;
-      if (requiresDripFeed) dripFeed = setInterval(() => emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: '<ignore me - prevents connection timeout>' }), 20 * 1000);
-
+    async function getRolloutStatus(deployment, emitter) {
       try {
         const code = await kubernetes.rolloutStatus(
           deployment.namespace.cluster.config,
@@ -218,11 +185,9 @@ export default function(options = {}) {
         );
 
         await store.saveRolloutStatusExitCode(deployment.id, code);
-        clearInterval(dripFeed);
         return code;
       } catch (e) {
         logger.error('Error getting rollout status', e);
-        clearInterval(dripFeed);
         return Promise.reject(e);
       }
     }
