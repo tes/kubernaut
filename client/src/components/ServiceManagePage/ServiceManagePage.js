@@ -11,9 +11,9 @@ import {
 import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
-import { NamespaceLink } from '../Links';
+import { NamespaceLink, ServiceSecretsForNamespaceLink } from '../Links';
 
-const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled }) => fields.map((member, index) => {
+const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, serviceName, registryName }) => fields.map((member, index) => {
   const status = namespaces[index];
 
   return (
@@ -35,6 +35,13 @@ const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled })
       </td>
       <td>
         <NamespaceLink namespace={status.namespace} pill showCluster />
+      </td>
+      <td>
+        <ServiceSecretsForNamespaceLink
+          namespace={status.namespace}
+          registryName={registryName}
+          serviceName={serviceName}
+        />
       </td>
     </tr>
   );
@@ -84,6 +91,7 @@ class ServiceManagePage extends Component {
                       <tr>
                         <th className="text-center border-top-0">Can deploy?</th>
                         <th className="border-top-0">Namespace</th>
+                        <th className="border-top-0"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -94,7 +102,9 @@ class ServiceManagePage extends Component {
                         serviceId={serviceId}
                         onUpdate={this.props.updateServiceStatusForNamespace}
                         disabled={this.props.submitting}
-                        />
+                        registryName={this.props.registryName}
+                        serviceName={this.props.serviceName}
+                      />
                     </tbody>
                   </Table>
                 </Col>

@@ -14,6 +14,7 @@ import namespacesSagas from './namespaces';
 import registriesSagas from './registries';
 import releasesSagas from './releases';
 import serviceSagas from './service';
+import secretOverviewSagas from './secretOverview';
 import serviceManageSagas from './serviceManage';
 import servicesSagas from './services';
 import viewAccountSagas from './viewAccount';
@@ -34,6 +35,7 @@ export default function* rootSaga() {
     ...registriesSagas,
     ...releasesSagas,
     ...serviceSagas,
+    ...secretOverviewSagas,
     ...serviceManageSagas,
     ...servicesSagas,
     ...viewAccountSagas,

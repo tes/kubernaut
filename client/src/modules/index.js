@@ -15,6 +15,7 @@ import namespaces from './namespaces';
 import registries from './registries';
 import releases from './releases';
 import service from './service';
+import secretOverview from './secretOverview';
 import serviceManage from './serviceManage';
 import services from './services';
 import viewAccount from './viewAccount';
@@ -35,6 +36,7 @@ export default (history) => combineReducers({
   registries,
   releases,
   service,
+  secretOverview,
   serviceManage,
   services,
   viewAccount,

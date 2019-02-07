@@ -15,6 +15,7 @@ import { fetchNamespacesPagination } from './modules/namespaces';
 import { fetchRegistriesPagination } from './modules/registries';
 import { initialiseReleasesPage } from './modules/releases';
 import { initServiceDetailPage } from './modules/service';
+import { initSecretOverview } from './modules/secretOverview';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
 
@@ -69,6 +70,10 @@ const paths = {
   releases: {
     route: '/releases',
     action: initialiseReleasesPage,
+  },
+  secretOverview: {
+    route: '/services/:registry/:name/manage/secrets/:namespaceId',
+    action: initSecretOverview,
   },
   service: {
     route: '/services/:registry/:name',

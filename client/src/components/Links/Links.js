@@ -130,3 +130,13 @@ export const ManageServiceLink = ({ registryName, serviceName, children, contain
 
   return <Tag {...props}>{children || <span>Manage</span>}</Tag>;
 };
+
+export const ServiceSecretsForNamespaceLink = ({ namespace, registryName, serviceName, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName}/${serviceName}/manage/secrets/${namespace.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-key" aria-hidden='true'></i> Secrets</span>}</Tag>;
+};

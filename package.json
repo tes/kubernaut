@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "concurrently 'npm run start-server' 'npm run start-client'",
-    "start-server": "npm run start-server-dependencies && npm run setup-local && nodemon server/index.js --exec babel-node --ignore client/",
+    "start-server": "npm run start-server-dependencies; npm run setup-local; nodemon server/index.js --exec babel-node --ignore client/",
     "start-client": "cd client; npm start",
     "start-server-dependencies": "docker-compose up -d local-dependencies",
     "test": "npm run test-server && npm run test-client",

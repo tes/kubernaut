@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   ServiceLink,
-  ManageServiceLink
+  ManageServiceLink,
+  ServiceSecretsForNamespaceLink,
+  NamespacePill,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -12,6 +14,8 @@ class ServicesSubNav extends Component {
       registryName,
       serviceName,
       canManage,
+      namespace,
+      secrets
     } = this.props;
 
     return (
@@ -30,6 +34,18 @@ class ServicesSubNav extends Component {
                 </ManageServiceLink>
               </NavItem>
               : null }
+            { canManage && namespace && secrets ?
+              <NavItem>
+                <ServiceSecretsForNamespaceLink
+                  container
+                  registryName={registryName}
+                  serviceName={serviceName}
+                  namespace={namespace}
+                >
+                  <NavLink><NamespacePill namespace={namespace}/> secrets</NavLink>
+                </ServiceSecretsForNamespaceLink>
+              </NavItem>
+              : null }
             </Nav>
           </Col>
         </Row>
@@ -41,6 +57,8 @@ ServicesSubNav.propTypes = {
   registryName: PropTypes.string.isRequired,
   serviceName: PropTypes.string.isRequired,
   canManage: PropTypes.bool,
+  namespace: PropTypes.Object,
+  secrets: PropTypes.bool,
 };
 
 export default ServicesSubNav;
