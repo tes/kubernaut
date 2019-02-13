@@ -12,3 +12,5 @@ ALTER TABLE deployment_attribute SET LOGGED;
 ALTER TABLE deployment_log_entry SET LOGGED;
 ALTER TABLE release_attribute SET LOGGED;
 ALTER TABLE identity SET LOGGED;
+ALTER TABLE secret_version SET LOGGED;
+ALTER TABLE secret_version_data SET LOGGED;
