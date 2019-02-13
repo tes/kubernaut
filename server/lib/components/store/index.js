@@ -37,4 +37,5 @@ export default () => systemic({ name: 'stores/postgres' })
     { component: 'store.release', destination: 'release' },
     { component: 'store.deployment', destination: 'deployment' },
     { component: 'store.service', destination: 'service' },
+    { component: 'store.secret', destination: 'secret' },
   );
