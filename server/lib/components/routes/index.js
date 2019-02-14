@@ -7,6 +7,7 @@ import clusters from './clusters';
 import namespaces from './namespaces';
 import deployments from './deployments';
 import services from './services';
+import secrets from './secrets';
 import app from './app';
 
 const minimumRequirements = [
@@ -38,6 +39,8 @@ export default () => systemic({
     .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
   .add('routes.services', services())
     .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.secrets', secrets())
+    .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.app', app())
     .dependsOn(...minimumRequirements, 'auth', 'passport')
   .add('routes')
@@ -50,5 +53,6 @@ export default () => systemic({
       'routes.namespaces',
       'routes.deployments',
       'routes.services',
+      'routes.secrets',
       'routes.app'
     );

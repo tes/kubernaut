@@ -8,7 +8,7 @@ import {
   makeCluster,
 } from '../factories';
 
-describe('Secret store', () => {
+describe.only('Secret store', () => {
   let system = { stop: cb => cb() };
   let store = { nuke: () => new Promise(cb => cb()) };
 
