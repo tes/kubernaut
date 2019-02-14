@@ -163,6 +163,37 @@ describe.only('Secrets API', () => {
           ],
         });
       });
+
+      it('responds with 404 for a missing service');
+      it('responds with 404 for a missing namespace');
+
+    });
+
+    describe('POST /api/secrets/:registry/:service/:namespace', () => {
+      it('saves a version of a secret', async () => {
+        const service = await saveService();
+        const cluster = await saveCluster();
+        const namespace = await saveNamespace(makeNamespace({ cluster }));
+
+        const data = {
+          comment: 'init',
+          secrets: [{ key: 'config.json', value: '{}', editor: 'json' }]
+        };
+
+        const response = await request({
+          url: `/api/secrets/${service.registry.name}/${service.name}/${namespace.id}`,
+          method: 'POST',
+          json: data,
+        });
+
+        expect(response).toBeDefined();
+        const stored = await store.getVersionOfSecretWithDataById(response, makeRootMeta());
+        expect(stored).toBeDefined();
+        expect(stored.comment).toBe(data.comment);
+        expect(stored.secrets).toMatchObject(data.secrets);
+        expect(stored.service.id).toBe(service.id);
+        expect(stored.namespace.id).toBe(namespace.id);
+      });
     });
   });
 
