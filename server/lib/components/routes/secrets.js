@@ -6,6 +6,32 @@ export default function(options = {}) {
   function start({ app, store, auth }, cb) {
     app.use('/api/secrets', auth('api'));
 
+    app.get('/api/secrets/:id', async (req, res, next) => {
+      try {
+        const version = await store.getVersionOfSecretById(req.params.id);
+        if (!version) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, version.namespace.id, 'secrets-apply')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, version.service.registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        return res.json(version);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/secrets/:id/with-data', async (req, res, next) => {
+      try {
+        const version = await store.getVersionOfSecretWithDataById(req.params.id);
+        if (!version) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, version.namespace.id, 'secrets-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, version.service.registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        return res.json(version);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/secrets/:registry/:service/:namespace', async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });

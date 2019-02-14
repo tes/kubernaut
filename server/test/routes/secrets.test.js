@@ -195,6 +195,61 @@ describe.only('Secrets API', () => {
         expect(stored.namespace.id).toBe(namespace.id);
       });
     });
+
+    describe('GET /api/secrets/:id', () => {
+      it('retrieves a version of a secret', async () => {
+        const service = await saveService();
+        const cluster = await saveCluster();
+        const namespace = await saveNamespace(makeNamespace({ cluster }));
+        const id = await store.saveVersionOfSecret(service, namespace, {
+          comment: 'init',
+          secrets: [{ key: 'config.json', value: '{}', editor: 'json' }]
+        }, makeRootMeta());
+
+
+        const response = await request({
+          url: `/api/secrets/${id}`,
+          method: 'GET',
+        });
+
+        expect(response).toBeDefined();
+        expect(response.comment).toBe('init');
+        expect(response.service.id).toBe(service.id);
+        expect(response.namespace.id).toBe(namespace.id);
+      });
+
+      it('returns 404 for a missing version');
+    });
+
+
+    describe('GET /api/secrets/:id/with-data', () => {
+      it('retrieves a version of a secret with data', async () => {
+        const service = await saveService();
+        const cluster = await saveCluster();
+        const namespace = await saveNamespace(makeNamespace({ cluster }));
+        const newVersion = {
+          comment: 'init',
+          secrets: [{ key: 'config.json', value: '{}', editor: 'json' }]
+        };
+        const id = await store.saveVersionOfSecret(service, namespace, newVersion, makeRootMeta());
+
+
+        const response = await request({
+          url: `/api/secrets/${id}/with-data`,
+          method: 'GET',
+        });
+
+        expect(response).toBeDefined();
+        expect(response.comment).toBe('init');
+        expect(response.service.id).toBe(service.id);
+        expect(response.namespace.id).toBe(namespace.id);
+        expect(response.secrets).toBeDefined();
+        expect(response.secrets).toMatchObject(newVersion.secrets);
+      });
+
+      it('returns 404 for a missing version');
+    });
+
   });
 
   function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
