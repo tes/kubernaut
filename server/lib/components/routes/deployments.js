@@ -70,16 +70,13 @@ export default function(options = {}) {
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
         const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
-        const releaseDefaultNamespace = release.attributes.namespace;
-        const deploymentNamespace = req.body.namespace || releaseDefaultNamespace;
-        if (!deploymentNamespace) return next(Boom.badRequest('namespace is required'));
-
-        const namespace = await store.findNamespace({ name: deploymentNamespace, cluster: req.body.cluster })
+        const namespace = await store.findNamespace({ name: req.body.namespace, cluster: req.body.cluster })
           .then((namespace) => namespace ? store.getNamespace(namespace.id) : namespace);
-        if (!namespace) return next(Boom.badRequest(`namespace ${deploymentNamespace} was not found`));
+        if (!namespace) return next(Boom.badRequest(`namespace ${req.body.namespace} was not found`));
         if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'deployments-write')) return next(Boom.forbidden());
 
         const registry = await store.findRegistry({ name: req.body.registry });
