@@ -36,7 +36,7 @@ export default function(options) {
       });
     }
 
-    async function getVersionOfSecretWithDataById(id, meta) {
+    async function getVersionOfSecretWithDataById(id, meta, options = { opaque: false }) {
       const secretDataBuilder = sqb
         .select('vd.key', 'vd.value', 'vd.editor')
         .from('secret_version_data vd')
@@ -49,10 +49,14 @@ export default function(options) {
           connection.query(db.serialize(secretDataBuilder, {}).sql)
         ]);
 
-        return {
-          ...secret,
-          secrets: data.rows,
-        };
+        secret.setSecrets(options.opaque ?
+          data.rows.map(row => ({
+            ...row,
+            value: Buffer.from(row.value).toString('base64')
+          }))
+          : data.rows);
+
+        return secret;
       });
     }
 

@@ -5,6 +5,7 @@ import EventEmitter from 'events';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
 import { safeLoadAll as yaml2json } from 'js-yaml';
 import parseFilters from './lib/parseFilters';
+import secretTemplate from './lib/secretTemplate';
 
 export default function(options = {}) {
 
@@ -66,6 +67,7 @@ export default function(options = {}) {
     app.post('/api/deployments', bodyParser.json(), async (req, res, next) => {
 
       try {
+        const meta = { date: new Date(), account: { id: req.user.id } };
         if (!req.body.cluster) return next(Boom.badRequest('cluster is required'));
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
         if (!req.body.service) return next(Boom.badRequest('service is required'));
@@ -92,11 +94,25 @@ export default function(options = {}) {
         const serviceCanDeploytoNamespace = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
         if (!serviceCanDeploytoNamespace) return next(Boom.badRequest(`service ${release.service.name} is not allowed to deploy to namespace ${namespace.name}`));
 
-        const attributes = Object.assign({}, namespace.attributes, release.attributes, req.body);
-        const manifest = getManifest(release, attributes);
+        const canApplySecretsToNamespace = await store.hasPermissionOnNamespace(req.user, namespace.id, 'secrets-apply');
+        if (!canApplySecretsToNamespace && req.body.secret) return next(Boom.forbidden());
+
+        let versionOfSecret;
+        if (req.body.secret) {
+          versionOfSecret = await store.getVersionOfSecretWithDataById(req.body.secret, meta, { opaque: true });
+          if (!versionOfSecret) return next(Boom.badRequest(`secret ${req.body.secret} was not found`));
+          if (versionOfSecret.service.id !== release.service.id) return next(Boom.forbidden());
+          if (versionOfSecret.namespace.id !== namespace.id) return next(Boom.forbidden());
+          const secretManifest = getSecretManifest(versionOfSecret);
+          versionOfSecret.setYaml(secretManifest);
+        }
+
+        const attributes = Object.assign(versionOfSecret ? { secret: versionOfSecret.id } : {}, namespace.attributes, release.attributes, req.body);
+        const manifest = getManifest(release, attributes, versionOfSecret);
         const data = { namespace, manifest, release, attributes };
-        const meta = { date: new Date(), account: { id: req.user.id } };
+
         const deployment = await store.saveDeployment(data, meta);
+        if (versionOfSecret) deployment.setSecret(versionOfSecret);
         const emitter = new EventEmitter();
         const log = [];
 
@@ -153,18 +169,24 @@ export default function(options = {}) {
       }
     });
 
-    function getManifest(release, attributes) {
+    function getSecretManifest(versionOfSecret) {
+      const secretYaml = versionOfSecret ? hogan.compile(secretTemplate).render(versionOfSecret) : '';
+      return secretYaml;
+    }
+
+    function getManifest(release, attributes, versionOfSecret) {
       const yaml = hogan.compile(release.template.source.yaml).render(attributes);
       const json = yaml2json(yaml);
       return { yaml, json };
     }
 
     async function applyManifest(deployment, emitter) {
+      const yaml = deployment.secret ? `${deployment.secret.yaml}\n${deployment.manifest.yaml}`: deployment.manifest.yaml;
       const code = await kubernetes.apply(
         deployment.namespace.cluster.config,
         deployment.namespace.context,
         deployment.namespace.name,
-        deployment.manifest.yaml,
+        yaml,
         emitter,
       );
       await store.saveApplyExitCode(deployment.id, code);

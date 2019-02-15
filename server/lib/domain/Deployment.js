@@ -16,6 +16,10 @@ export default class Deployment {
     this.deletedBy = deletedBy;
     this.note = note;
   }
+
+  setSecret(version) {
+    this.secret = version;
+  }
 }
 
 function getStatus(applyExitCode, rolloutStatusExitCode) {

@@ -216,7 +216,7 @@ describe('Deployments API', () => {
     });
   });
 
-  describe('POST /api/deployments', () => {
+  describe.only('POST /api/deployments', () => {
 
     it('should save a deployment', async () => {
 
@@ -262,6 +262,58 @@ describe('Deployments API', () => {
       expect(deployment.rolloutStatusExitCode).toBe(null);
       expect(deployment.log.length).toBe(1);
       expect(deployment.attributes.replicas).toBe("3");
+    });
+
+    it('should save a deployment with secret', async () => {
+
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+
+      const release = makeRelease({
+        service: {
+          name: 'release-1',
+        },
+        version: '22',
+      });
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      const secretId = await store.saveVersionOfSecret(savedRelease.service, namespace, {
+        comment: 'init',
+        secrets: [{ key: 'config.json', value: '{"a":1}', editor: 'json' }]
+      }, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
+
+      const response = await request({
+        url: `/api/deployments`,
+        method: 'POST',
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+          replicas: 3,
+          secret: secretId,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+      expect(response.status).toBe('pending');
+      expect(response.log.length).toBe(1);
+
+      const deployment = await store.getDeployment(response.id);
+      expect(deployment).toBeDefined();
+      expect(deployment.namespace.id).toBe(namespace.id);
+      expect(deployment.namespace.cluster.id).toBe(cluster.id);
+      expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
+      expect(deployment.manifest.json[2].spec.replicas).toBe(3);
+      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(deployment.release.service.name).toBe(release.service.name);
+      expect(deployment.release.version).toBe(release.version);
+      expect(deployment.applyExitCode).toBe(0);
+      expect(deployment.rolloutStatusExitCode).toBe(null);
+      expect(deployment.log.length).toBe(1);
+      expect(deployment.attributes.replicas).toBe("3");
+      expect(deployment.attributes.secret).toBe(secretId);
     });
 
     it('should report manifest compilation errors', async () => {
@@ -335,6 +387,52 @@ describe('Deployments API', () => {
       expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
       expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(3);
       expect(kubernetes.getContexts().test.namespaces.default.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+    });
+
+    it('should apply the kubernetes manifest (with secrets)', async () => {
+
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+
+      const release = makeRelease({
+        service: {
+          name: 'release-1',
+          namespace: {
+            name: 'default',
+          },
+        },
+        version: '22',
+      });
+      const savedRelease = await store.saveRelease(release, makeRootMeta());
+      const secretId = await store.saveVersionOfSecret(savedRelease.service, namespace, {
+        comment: 'init',
+        secrets: [{ key: 'config.json', value: '{"a":1}', editor: 'json' }]
+      }, makeRootMeta());
+      await store.enableServiceForNamespace(namespace, savedRelease.service, makeRootMeta());
+
+      const response = await request({
+        url: `/api/deployments`,
+        method: 'POST',
+        json: {
+          namespace: namespace.name,
+          cluster: cluster.name,
+          registry: release.service.registry.name,
+          service: release.service.name,
+          version: release.version,
+          replicas: 3,
+          secret: secretId,
+        },
+      });
+
+      expect(response.id).toBeDefined();
+      expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(5);
+      const secretSpec = kubernetes.getContexts().test.namespaces.default.manifests[0][0];
+      expect(secretSpec.kind).toBe('Secret');
+      expect(secretSpec.metadata.name).toBe(release.service.name);
+      expect(secretSpec.data['config.json']).toBeDefined();
+      expect(secretSpec.data['config.json']).toBe(Buffer.from('{"a":1}').toString('base64'));
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][4].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
     });
 
     it('should report apply failure', async () => {
