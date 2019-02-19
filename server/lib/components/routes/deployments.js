@@ -73,7 +73,7 @@ export default function(options = {}) {
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
-        const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: req.body.version });
+        const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: `${req.body.version}` });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
         const namespace = await store.findNamespace({ name: req.body.namespace, cluster: req.body.cluster })

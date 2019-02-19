@@ -27,16 +27,20 @@ export default function(options) {
         .where(Op.eq('v.id', id));
 
       const result = await db.query(db.serialize(secretVersionBuilder, {}).sql);
+      logger.debug(`Found ${result.rowCount} versions of secret with id: ${id}`);
       return result.rowCount ? toVersion(result.rows[0]) : undefined;
     }
 
     async function getVersionOfSecretById(id, meta) {
+      logger.debug(`Retrieving secret version ${id} for ${meta.account.id}`);
+
       return db.withTransaction(async connection => {
         return _getVersionOfSecretById(connection, id, meta);
       });
     }
 
     async function getVersionOfSecretWithDataById(id, meta, options = { opaque: false }) {
+      logger.debug(`Retrieving secret version ${id} for ${meta.account.id} with secret data`);
       const secretDataBuilder = sqb
         .select('vd.key', 'vd.value', 'vd.editor')
         .from('secret_version_data vd')
@@ -65,6 +69,8 @@ export default function(options) {
     }
 
     async function listVersionsOfSecret(service, namespace, meta, limit = 20, offset = 0) {
+      logger.debug(`Listing up to ${limit} secret versions for service ${service.id} on namespace ${namespace.id} from offset ${offset} for account ${meta.account.id}`);
+
       const versionsBuilder = sqb
         .select('v.id', 'v.comment', 'v.created_on', 'v.created_by', 'a.display_name', 'v.service', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'v.namespace', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color')
         .from('secret_version v')
@@ -93,6 +99,7 @@ export default function(options) {
 
         const items = findResult.rows.map(toVersion);
         const count = parseInt(countResult.rows[0].count, 10);
+        logger.debug(`Returning ${items.length} of ${count} secret versions`);
 
         return {
           limit,
@@ -101,10 +108,10 @@ export default function(options) {
           items,
         };
       });
-
     }
 
     async function saveVersionOfSecret(service, namespace, versionData, meta) {
+      logger.debug(`Saving version of secret for service ${service.id} on namespace ${namespace.id} by account ${meta.account.id}`);
       return await db.withTransaction(async connection => {
         const newVersionId = uuid();
         const versionBuilder = sqb
@@ -132,6 +139,7 @@ export default function(options) {
           await connection.query(db.serialize(versionDataBuilder, {}).sql);
         });
 
+        logger.debug(`Saved version of secret with id ${newVersionId}`);
         return newVersionId;
       });
     }

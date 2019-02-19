@@ -159,7 +159,7 @@ export default function(options) {
 
     async function findDeployments(criteria = {}, limit = 50, offset = 0, sort = 'created', order = 'desc') {
 
-      logger.debug(`Listing up to ${limit} deploymentss starting from offset: ${offset}`);
+      logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
 
       const bindVariables = {};
 
