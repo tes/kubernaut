@@ -11,7 +11,7 @@ import {
   makeRequestWithDefaults,
 } from '../factories';
 
-describe.only('Secrets API', () => {
+describe('Secrets API', () => {
   let request;
   let config;
   let system = { stop: cb => cb() };

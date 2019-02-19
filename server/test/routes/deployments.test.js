@@ -216,7 +216,7 @@ describe('Deployments API', () => {
     });
   });
 
-  describe.only('POST /api/deployments', () => {
+  describe('POST /api/deployments', () => {
 
     it('should save a deployment', async () => {
 
