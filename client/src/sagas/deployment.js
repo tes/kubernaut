@@ -45,7 +45,7 @@ export function* fetchDeploymentSaga({ payload = {} }) {
   try {
     const data = yield call(getDeployment, id);
     yield put(FETCH_DEPLOYMENT_SUCCESS({ data }));
-    if (data.applyExitCode === null || data.rolloutStatusExitCode === null || data.status === 'pending') {
+    if (data.status !== 'failed' && (data.applyExitCode === null || data.rolloutStatusExitCode === null || data.status === 'pending')) {
       yield put(startPollLog({ id }));
     }
   } catch(error) {

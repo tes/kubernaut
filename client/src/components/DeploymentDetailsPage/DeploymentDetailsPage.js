@@ -44,7 +44,7 @@ class DeploymentDetailsPage extends Component {
         attributesEls.push(<dd key={`${name}-val`}className='col-md-9'>{deployment.attributes[name]}</dd>);
       }
 
-      const logPending = deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending';
+      const logPending = deployment.status !== 'failed' && (deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending');
 
       return (
         <div>
