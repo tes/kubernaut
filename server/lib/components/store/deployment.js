@@ -134,6 +134,16 @@ export default function(options) {
         .join(join('cluster c').on(Op.eq('c.id', raw('n.cluster'))))
         .where(Op.eq('sr.id', registryId))
         .where(Op.eq('s.name', service))
+        .where(Op.and(
+          Op.or(
+            Op.lte('d.apply_exit_code', 0),
+            Op.is('d.apply_exit_code', null)
+          ),
+          Op.or(
+            Op.lte('d.rollout_status_exit_code', 0),
+            Op.is('d.rollout_status_exit_code', null)
+          )
+        ))
         .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', user.id, 'deployments-read')));
 
       return await db.withTransaction(async connection => {
