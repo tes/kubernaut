@@ -1,4 +1,4 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { push, getLocation } from 'connected-react-router';
 import {
   extractFromQuery,
@@ -14,12 +14,17 @@ import {
   FETCH_NAMESPACE_REQUEST,
   FETCH_NAMESPACE_SUCCESS,
   FETCH_NAMESPACE_ERROR,
+  FETCH_VERSIONS_REQUEST,
+  FETCH_VERSIONS_SUCCESS,
+  FETCH_VERSIONS_ERROR,
+  fetchVersions,
   canManageRequest,
   setCanManage,
 } from '../modules/secretOverview';
 import {
   getNamespace,
   hasPermissionOn,
+  getSecretVersions,
 } from '../lib/api';
 
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
@@ -54,12 +59,30 @@ export function* locationChangeSaga({ payload = {} }) {
   if(!match || !location) return;
   const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
   yield put(setPagination(pagination));
-  // yield put(fetchVersions(match.params));
+  yield put(fetchVersions(match.params));
+}
+
+export function* fetchVersionsSaga({ payload = {} }) {
+  const { registry, name: service, namespaceId, ...options } = payload;
+  if (!registry || !service || !namespaceId) return;
+
+  const { page, limit } = yield select(selectPaginationState);
+  const offset = (page - 1) * limit;
+
+  yield put(FETCH_VERSIONS_REQUEST());
+  try {
+    const data = yield call(getSecretVersions, registry, service, namespaceId, offset, limit);
+    yield put(FETCH_VERSIONS_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_VERSIONS_ERROR({ error: error.message }));
+  }
 }
 
 export default [
-  takeEvery(initSecretOverview, checkPermissionSaga),
-  takeEvery(initSecretOverview, fetchNamespaceInfoSaga),
-  takeEvery(fetchVersionsPagination, paginationSaga),
-  takeEvery(initSecretOverview, locationChangeSaga),
+  takeLatest(initSecretOverview, checkPermissionSaga),
+  takeLatest(initSecretOverview, fetchNamespaceInfoSaga),
+  takeLatest(fetchVersionsPagination, paginationSaga),
+  takeLatest(initSecretOverview, locationChangeSaga),
+  takeLatest(fetchVersions, fetchVersionsSaga),
 ];

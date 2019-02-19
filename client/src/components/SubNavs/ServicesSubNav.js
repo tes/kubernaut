@@ -57,7 +57,7 @@ ServicesSubNav.propTypes = {
   registryName: PropTypes.string.isRequired,
   serviceName: PropTypes.string.isRequired,
   canManage: PropTypes.bool,
-  namespace: PropTypes.Object,
+  namespace: PropTypes.object,
   secrets: PropTypes.bool,
 };
 

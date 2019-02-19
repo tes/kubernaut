@@ -140,3 +140,13 @@ export const ServiceSecretsForNamespaceLink = ({ namespace, registryName, servic
 
   return <Tag {...props}>{children || <span><i className="fa fa-key" aria-hidden='true'></i> Secrets</span>}</Tag>;
 };
+
+export const SecretVersionLink = ({ secretVersion, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/secrets/${secretVersion.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>View</span>}</Tag>;
+};

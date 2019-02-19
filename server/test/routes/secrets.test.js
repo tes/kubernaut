@@ -1,5 +1,4 @@
 import expect from 'expect';
-import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
 import {

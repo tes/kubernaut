@@ -9,6 +9,10 @@ export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAMESPACE_REQUEST`);
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
 export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACE_ERROR`);
+export const FETCH_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_VERSIONS_REQUEST`);
+export const FETCH_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_VERSIONS_SUCCESS`);
+export const FETCH_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_VERSIONS_ERROR`);
+export const fetchVersions = createAction(`${actionsPrefix}/FETCH_VERSIONS`);
 
 export const selectNamespace = (state) => (state.secretOverview.namespace);
 export const selectPaginationState = (state) => (state.secretOverview.pagination);
@@ -89,6 +93,29 @@ export default handleActions({
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'namespace', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_VERSIONS_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'versions', true),
+    },
+  }),
+  [FETCH_VERSIONS_SUCCESS]: (state, { payload: { data } }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'versions', false),
+    },
+    versions: data,
+  }),
+  [FETCH_VERSIONS_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'versions', false),
       error: payload.error,
     },
   }),

@@ -293,3 +293,6 @@ export const getSystemRoles = (accountId) => {
 
 export const getServiceNamespacesStatus = (registry, service, offset, limit) => makeRequest(`/api/services/${registry}/${service}/namespace-status?${makeQueryString({ offset, limit })}`)
   .then(computePagination);
+
+export const getSecretVersions = (registry, service, namespaceId, offset, limit) => makeRequest(`/api/secrets/${registry}/${service}/${namespaceId}?${makeQueryString({ offset, limit })}`)
+  .then(computePagination);

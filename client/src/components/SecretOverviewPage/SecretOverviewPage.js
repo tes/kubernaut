@@ -4,10 +4,13 @@ import {
   Container,
   Row,
   Col,
-  Table,
+  Card,
+  CardHeader,
+  CardBody,
   Progress,
 } from 'reactstrap';
 import { ServicesSubNav } from '../SubNavs';
+import { AccountLink, SecretVersionLink } from '../Links';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
 
@@ -51,10 +54,37 @@ class SecretOverviewPage extends Component {
           secrets={true}
         />
         <Row>
-          <Col md="6">
+          <Col md="8">
             <Row>
               <Col sm="12">
                 {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <h5>Versions:</h5>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                {
+                  versions.items.map(version => (
+                    <Row key={version.id} className="mb-2">
+                      <Col>
+                        <Card>
+                          <CardHeader className="d-flex justify-content-between px-2 py-1">
+                            <div>{version.createdOn}</div>
+                            <AccountLink account={version.createdBy} />
+                            <SecretVersionLink secretVersion={version} />
+                          </CardHeader>
+                          <CardBody className="py-1 px-2">
+                            <div>{version.comment}</div>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    </Row>
+                  ))
+                }
               </Col>
             </Row>
             <Row>
@@ -82,8 +112,8 @@ class SecretOverviewPage extends Component {
 SecretOverviewPage.propTypes = {
   serviceName: PropTypes.string.isRequired,
   registryName: PropTypes.string.isRequired,
-  serviceId: PropTypes.string.isRequired,
   canManage: PropTypes.bool.isRequired,
+  versions: PropTypes.object.isRequired,
 };
 
 export default SecretOverviewPage;
