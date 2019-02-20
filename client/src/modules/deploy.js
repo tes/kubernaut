@@ -20,6 +20,8 @@ export const validateService = createAction(`${actionsPrefix}/VALIDATE_SERVICE`)
 export const validateVersion = createAction(`${actionsPrefix}/VALIDATE_VERSION`);
 export const fetchNamespacesForService = createAction(`${actionsPrefix}/FETCH_NAMESPACES_FOR_SERVICE`);
 export const fetchLatestDeploymentsPerNamespace = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PER_NAMESPACE`);
+export const fetchSecretVersions = createAction(`${actionsPrefix}/FETCH_SECRET_VERSIONS`);
+export const setSecretVersions = createAction(`${actionsPrefix}/SET_SECRET_VERSIONS`);
 
 export const getDeployFormValues = getFormValues('deploy');
 
@@ -32,6 +34,7 @@ const defaultState = {
   namespaces: [],
   serviceSuggestions: [],
   deployments: [],
+  secretVersions: [],
 };
 
 export default handleActions({
@@ -48,5 +51,6 @@ export default handleActions({
   [SET_NAMESPACES]: (state, { payload }) => ({ ...state, namespaces: payload.data }),
   [SET_DEPLOYMENTS]: (state, { payload }) => ({ ...state, deployments: payload.data }),
   [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
+  [setSecretVersions]: (state, { payload = {} }) => ({ ...state, secretVersions: payload.items }),
   [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
 }, defaultState);

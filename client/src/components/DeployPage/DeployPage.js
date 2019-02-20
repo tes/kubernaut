@@ -15,6 +15,7 @@ import {
 import RenderInput from '../RenderInput';
 import RenderTypeAhead from '../RenderTypeAhead';
 import RenderSelect from '../RenderSelect';
+import RenderSecretVersions from '../RenderSecretVersions';
 import { NamespaceLink } from '../Links';
 
 
@@ -28,13 +29,16 @@ class DeployPage extends Component {
       registrySelected,
       serviceSelected,
       clusterSelected,
+      namespaceSelected,
       clearFormFields,
       validateService,
       validateVersion,
+      fetchSecretVersions,
     } = this.props;
 
     const validRegistryAndService = (registrySelected && serviceSelected);
     const validCluster = (validRegistryAndService && clusterSelected);
+    const validNamespace = (validCluster && namespaceSelected);
 
     const {
       namespace: formNamespace,
@@ -65,7 +69,7 @@ class DeployPage extends Component {
                     onChange={() => {
                       clearFormFields({ source: 'registry' });
                     }}
-                    />
+                  />
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -85,7 +89,7 @@ class DeployPage extends Component {
                     useSuggestion={this.props.useServiceSuggestion}
                     suggestions={this.props.serviceSuggestions}
                     autoComplete="foo-no-really"
-                    />
+                  />
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -104,7 +108,7 @@ class DeployPage extends Component {
                         newValue
                       });
                     }}
-                    />
+                  />
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -119,7 +123,7 @@ class DeployPage extends Component {
                     onChange={() => {
                       clearFormFields({ source: 'cluster' });
                     }}
-                    />
+                  />
                 </Col>
               </FormGroup>
               <FormGroup row>
@@ -131,7 +135,23 @@ class DeployPage extends Component {
                     component={RenderSelect}
                     options={this.props.namespaces}
                     disabled={!validCluster}
-                    />
+                    onChange={(evt, newValue) => {
+                      clearFormFields({ source: 'namespace' });
+                      fetchSecretVersions(this.props.namespacesRich.find(({ name, cluster }) => (newValue === name) && formCluster === cluster.name));
+                    }}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="secret">Secret:</Label>
+                <Col sm="9">
+                  <Field
+                    className=""
+                    name="secret"
+                    component={RenderSecretVersions}
+                    options={this.props.secretVersions}
+                    disabled={!validNamespace}
+                  />
                 </Col>
               </FormGroup>
               <FormGroup row>

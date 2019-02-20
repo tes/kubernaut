@@ -21,6 +21,7 @@ import {
   validateVersion,
   fetchNamespacesForService,
   fetchLatestDeploymentsPerNamespace,
+  fetchSecretVersions,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -28,6 +29,7 @@ import {
   SET_REGISTRIES,
   SET_NAMESPACES,
   SET_DEPLOYMENTS,
+  setSecretVersions,
 } from '../modules/deploy';
 
 import {
@@ -37,6 +39,7 @@ import {
   getServiceSuggestions,
   getReleases,
   getLatestDeploymentsByNamespaceForService,
+  getSecretVersions,
 } from '../lib/api';
 const { INITIALIZE: reduxFormInitialise } = actionTypes;
 
@@ -109,6 +112,7 @@ const formFieldsOrder = [
   'version',
   'cluster',
   'namespace',
+  'secret'
 ];
 export function* clearFormFieldsSaga({ payload }) {
   const index = formFieldsOrder.indexOf(payload.source);
@@ -169,6 +173,18 @@ export function* fetchLatestDeploymentsPerNamespaceSaga({ payload: { service, re
   }
 }
 
+export function* fetchSecretVersionsSaga({ payload = {} }) {
+  const currentValue = yield select(getDeployFormValues);
+  const { registry, service } = currentValue;
+  const namespaceId = payload.id;
+  try {
+    const results = yield call(getSecretVersions, registry, service, namespaceId);
+    yield put(setSecretVersions(results));
+  } catch (error) {
+    if (!payload.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeEvery(INITIALISE, fetchRegistriesSaga),
   takeEvery(INITIALISE, validateServiceSaga),
@@ -180,4 +196,5 @@ export default [
   takeLatest(validateService, validateServiceSaga),
   takeLatest(validateVersion, validateVersionSaga),
   takeEvery(fetchLatestDeploymentsPerNamespace, fetchLatestDeploymentsPerNamespaceSaga),
+  takeLatest(fetchSecretVersions, fetchSecretVersionsSaga),
 ];

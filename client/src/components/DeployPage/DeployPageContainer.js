@@ -13,6 +13,7 @@ import {
   clearFormFields,
   validateService,
   validateVersion,
+  fetchSecretVersions,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -46,10 +47,12 @@ const mapStateToProps = (state, props) => {
     registrySelected: !!currentFormValues.registry,
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
     clusterSelected: !!currentFormValues.cluster,
+    namespaceSelected: !!currentFormValues.namespace,
     submitForm,
     serviceSuggestions: deploy.serviceSuggestions,
     deployments: deploy.deployments,
     currentFormValues,
+    secretVersions: deploy.secretVersions,
   };
 };
 
@@ -59,6 +62,7 @@ export default connect(mapStateToProps, {
   clearFormFields,
   validateService,
   validateVersion,
+  fetchSecretVersions,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

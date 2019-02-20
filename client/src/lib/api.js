@@ -117,12 +117,7 @@ export const getLatestDeploymentsByNamespaceForService = ({ registry, service })
 export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
 
 export const makeDeployment = (data, options = {}) => {
-  const wait = options.wait;
-  const qs = makeQueryString({
-    wait,
-  });
-  const url = `/api/deployments?${qs}`;
-  return makeRequest(url, {
+  return makeRequest('/api/deployments', {
     method: 'POST',
     body: JSON.stringify(data),
   });
