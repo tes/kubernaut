@@ -8,7 +8,8 @@ export default function(options = {}) {
 
     app.get('/api/secrets/:id', async (req, res, next) => {
       try {
-        const version = await store.getVersionOfSecretById(req.params.id);
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const version = await store.getVersionOfSecretById(req.params.id, meta);
         if (!version) return next(Boom.notFound());
         if (! await store.hasPermissionOnNamespace(req.user, version.namespace.id, 'secrets-apply')) return next(Boom.forbidden());
         if (! await store.hasPermissionOnRegistry(req.user, version.service.registry.id, 'registries-read')) return next(Boom.forbidden());
@@ -21,7 +22,8 @@ export default function(options = {}) {
 
     app.get('/api/secrets/:id/with-data', async (req, res, next) => {
       try {
-        const version = await store.getVersionOfSecretWithDataById(req.params.id);
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const version = await store.getVersionOfSecretWithDataById(req.params.id, meta);
         if (!version) return next(Boom.notFound());
         if (! await store.hasPermissionOnNamespace(req.user, version.namespace.id, 'secrets-manage')) return next(Boom.forbidden());
         if (! await store.hasPermissionOnRegistry(req.user, version.service.registry.id, 'registries-read')) return next(Boom.forbidden());
