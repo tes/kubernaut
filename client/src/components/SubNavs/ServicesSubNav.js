@@ -6,6 +6,7 @@ import {
   ManageServiceLink,
   ServiceSecretsForNamespaceLink,
   NamespacePill,
+  SecretVersionLink,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -15,7 +16,9 @@ class ServicesSubNav extends Component {
       serviceName,
       canManage,
       namespace,
-      secrets
+      secrets,
+      version,
+      newVersion,
     } = this.props;
 
     return (
@@ -42,8 +45,30 @@ class ServicesSubNav extends Component {
                   serviceName={serviceName}
                   namespace={namespace}
                 >
-                  <NavLink><NamespacePill namespace={namespace}/> secrets</NavLink>
+                  <NavLink><NamespacePill namespace={namespace}/> <i className="fa fa-key" aria-hidden='true'></i> secrets</NavLink>
                 </ServiceSecretsForNamespaceLink>
+              </NavItem>
+              : null }
+            {
+              canManage && version ?
+              <NavItem>
+                <SecretVersionLink
+                  container
+                  secretVersion={version}
+                >
+                  <NavLink>{version.comment.length < 10 ? version.comment : `${version.comment.substring(0,7)}...`}</NavLink>
+                </SecretVersionLink>
+              </NavItem>
+              : null }
+            {
+              canManage && newVersion ?
+              <NavItem>
+                <SecretVersionLink
+                  container
+                  secretVersion={version}
+                >
+                  <NavLink><i className="fa fa-key" aria-hidden='true'></i> New version</NavLink>
+                </SecretVersionLink>
               </NavItem>
               : null }
             </Nav>
@@ -59,6 +84,8 @@ ServicesSubNav.propTypes = {
   canManage: PropTypes.bool,
   namespace: PropTypes.object,
   secrets: PropTypes.bool,
+  version: PropTypes.object,
+  newVersion: PropTypes.bool,
 };
 
 export default ServicesSubNav;

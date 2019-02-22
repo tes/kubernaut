@@ -114,7 +114,7 @@ export const EditAccountLink = ({ account = {}, container, accountId, children})
 export const ServiceLink = ({ service, serviceName, registryName, children, container }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/${registryName || service.registry.name}/${serviceName || service.name}`,
+    to: `/services/${registryName || (service && service.registry.name)}/${serviceName || (service && service.name)}`,
     ...container && { exact: true }
   };
 
@@ -144,9 +144,19 @@ export const ServiceSecretsForNamespaceLink = ({ namespace, registryName, servic
 export const SecretVersionLink = ({ secretVersion, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/secrets/${secretVersion.id}`,
+    to: `/services/secrets/view/${secretVersion.id}`,
     ...container && { exact: true }
   };
 
   return <Tag {...props}>{children || <span>View</span>}</Tag>;
+};
+
+export const NewSecretVersionLink = ({ namespace, registryName, serviceName, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName}/${serviceName}/manage/secrets/${namespace.id}/new`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>New version</span>}</Tag>;
 };

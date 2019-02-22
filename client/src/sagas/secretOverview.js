@@ -30,7 +30,7 @@ import {
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
   try {
     yield put(canManageRequest());
-    const hasPermission = yield call(hasPermissionOn, 'namespaces-manage', 'namespace', match.params.namespaceId);
+    const hasPermission = yield call(hasPermissionOn, 'secrets-manage', 'namespace', match.params.namespaceId);
     yield put(setCanManage(hasPermission.answer));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
