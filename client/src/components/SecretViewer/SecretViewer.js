@@ -22,7 +22,7 @@ class SecretViewer extends Component {
     }
 
     if (secret.editor === 'json') {
-      contentTag = <JSONInput locale={ locale } theme='darktheme' height viewOnly placeholder={JSON.parse(secret.value)} onChange={(val) => console.info(val)}/>;
+      contentTag = <JSONInput locale={ locale } theme='darktheme' height viewOnly placeholder={JSON.parse(secret.value)} />;
     }
 
     return (
