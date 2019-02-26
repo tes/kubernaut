@@ -293,3 +293,10 @@ export const getSecretVersions = (registry, service, namespaceId, offset, limit)
   .then(computePagination);
 
 export const getSecretVersionWithData = (version) => makeRequest(`/api/secrets/${version}/with-data`);
+
+export const saveSecretVersion = (registry, service, namespace, data) => {
+  return makeRequest(`/api/secrets/${registry}/${service}/${namespace}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};

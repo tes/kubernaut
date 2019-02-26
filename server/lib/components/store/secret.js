@@ -53,12 +53,10 @@ export default function(options) {
           connection.query(db.serialize(secretDataBuilder, {}).sql)
         ]);
 
-        secret.setSecrets(options.opaque ?
-          data.rows.map(row => ({
+        secret.setSecrets(data.rows.map(row => ({
             ...row,
-            value: Buffer.from(row.value).toString('base64')
-          }))
-          : data.rows);
+            value: options.opaque ? Buffer.from(JSON.parse(row.value)).toString('base64') : JSON.parse(row.value)
+          })));
 
         return secret;
       });
@@ -131,10 +129,9 @@ export default function(options) {
             id: uuid(),
             version: newVersionId,
             key: secret.key,
-            value: secret.value,
+            value: JSON.stringify(secret.value),
             editor: secret.editor,
           })));
-
         await Promise.mapSeries(versionDataBuilders, async (versionDataBuilder) => {
           await connection.query(db.serialize(versionDataBuilder, {}).sql);
         });

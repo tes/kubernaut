@@ -17,6 +17,7 @@ import { initialiseReleasesPage } from './modules/releases';
 import { initServiceDetailPage } from './modules/service';
 import { initSecretOverview } from './modules/secretOverview';
 import { fetchVersion } from './modules/secretVersion';
+import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
 
@@ -63,6 +64,10 @@ const paths = {
   namespaces: {
     route: '/namespaces',
     action: fetchNamespacesPagination,
+  },
+  newSecretVersion: {
+    route: '/services/:registry/:name/manage/secrets/:namespaceId/new',
+    action: initNewSecretVersion,
   },
   registries: {
     route: '/registries',

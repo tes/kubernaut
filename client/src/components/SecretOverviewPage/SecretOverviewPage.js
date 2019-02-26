@@ -10,7 +10,7 @@ import {
   Progress,
 } from 'reactstrap';
 import { ServicesSubNav } from '../SubNavs';
-import { AccountLink, SecretVersionLink } from '../Links';
+import { AccountLink, SecretVersionLink, NewSecretVersionLink } from '../Links';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
 
@@ -101,6 +101,11 @@ class SecretOverviewPage extends Component {
                   }}
                   />
               </Col>
+            </Row>
+          </Col>
+          <Col>
+            <Row>
+              <NewSecretVersionLink registryName={this.props.registryName} serviceName={this.props.serviceName} namespace={this.props.namespace}/>
             </Row>
           </Col>
         </Row>

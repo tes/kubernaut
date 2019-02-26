@@ -17,6 +17,7 @@ const defaultState = {
     },
   },
   version: {
+    comment: '',
     service: {
       name: '',
       registry: {
@@ -29,6 +30,7 @@ const defaultState = {
         name: '',
       },
     },
+    secrets: [],
   },
 };
 

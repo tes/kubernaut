@@ -7,6 +7,7 @@ import {
   ServiceSecretsForNamespaceLink,
   NamespacePill,
   SecretVersionLink,
+  NewSecretVersionLink,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -63,12 +64,14 @@ class ServicesSubNav extends Component {
             {
               canManage && newVersion ?
               <NavItem>
-                <SecretVersionLink
+                <NewSecretVersionLink
                   container
-                  secretVersion={version}
+                  registryName={registryName}
+                  serviceName={serviceName}
+                  namespace={namespace}
                 >
                   <NavLink><i className="fa fa-key" aria-hidden='true'></i> New version</NavLink>
-                </SecretVersionLink>
+                </NewSecretVersionLink>
               </NavItem>
               : null }
             </Nav>

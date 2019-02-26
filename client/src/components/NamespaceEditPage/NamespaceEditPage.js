@@ -46,7 +46,7 @@ class NamespaceEditPage extends Component {
     const namespace = this.props.namespace;
     const renderAttributes = (props) => {
 
-    return (
+      return (
         <Row>
           <Col>
             <h6>Attributes:</h6>

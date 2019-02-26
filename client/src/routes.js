@@ -23,6 +23,7 @@ import ServiceDetailsPage from './components/ServiceDetailsPage';
 import ServiceManagePage from './components/ServiceManagePage';
 import SecretOverviewPage from './components/SecretOverviewPage';
 import SecretVersionViewPage from './components/SecretVersionViewPage';
+import NewSecretVersionPage from './components/NewSecretVersionPage';
 
 import paths from './paths';
 
@@ -154,6 +155,18 @@ export default () => <Switch>
     render={({ match }) =>
       <Wrapper title="Secret">
         <SecretOverviewPage
+          registryName={match.params.registry}
+          serviceName={match.params.name}
+        />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.newSecretVersion.route}
+    render={({ match }) =>
+      <Wrapper title="Secret">
+        <NewSecretVersionPage
           registryName={match.params.registry}
           serviceName={match.params.name}
         />

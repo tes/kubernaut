@@ -5,8 +5,11 @@ import {
   CardBody,
   CardHeader,
 } from 'reactstrap';
-import JSONInput from 'react-json-editor-ajrm';
-import locale    from 'react-json-editor-ajrm/locale/en';
+import AceEditor from 'react-ace';
+import 'brace/mode/json';
+import 'brace/theme/vibrant_ink';
+import 'brace/ext/language_tools';
+require('brace');
 
 class SecretViewer extends Component {
 
@@ -22,7 +25,23 @@ class SecretViewer extends Component {
     }
 
     if (secret.editor === 'json') {
-      contentTag = <JSONInput locale={ locale } theme='darktheme' height viewOnly placeholder={JSON.parse(secret.value)} />;
+      contentTag = <AceEditor
+        value={secret.value}
+        mode="json"
+        theme="vibrant_ink"
+        name={`${secret.key}-editor`}
+        editorProps={{
+          $blockScrolling: true,
+        }}
+        setOptions={{
+          useSoftTabs: true
+        }}
+        tabSize={2}
+        width="100%"
+        height="300px"
+        showPrintMargin={false}
+        readOnly
+      />;
     }
 
     return (
