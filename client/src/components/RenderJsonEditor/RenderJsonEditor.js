@@ -14,6 +14,9 @@ class RenderJsonEditor extends Component {
         mode="json"
         theme="github"
         onChange={this.props.input.onChange}
+        onValidate={(annotations) => {
+          (this.props.validateAnnotations || (() => {}))({ annotations, index: this.props.index });
+        }}
         name={`${this.props.input.name}-editor`}
         editorProps={{
           $blockScrolling: true,

@@ -1,5 +1,14 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
-import { resetSection, arrayPush, getFormValues, SubmissionError, arrayRemove } from 'redux-form';
+import {
+  resetSection,
+  arrayPush,
+  getFormValues,
+  SubmissionError,
+  arrayRemove,
+  startAsyncValidation,
+  stopAsyncValidation,
+  getFormAsyncErrors,
+} from 'redux-form';
 import { push } from 'connected-react-router';
 import {
   initNewSecretVersion,
@@ -15,6 +24,7 @@ import {
   canManageRequest,
   setCanManage,
   selectNamespace,
+  validateAnnotations,
 } from '../modules/newSecretVersion';
 import {
   getNamespace,
@@ -88,7 +98,23 @@ export function* saveVersionSaga() {
   } catch (err) {
     yield put(saveVersion.failure(new SubmissionError({ _error: err.message })));
   }
+}
 
+export function* validateAnnotationsSaga({ payload }) {
+  const { annotations, index } = payload;
+  yield put(startAsyncValidation('newSecretVersion'));
+  const existingErrors = yield select(getFormAsyncErrors('newSecretVersion')) || {};
+
+  if (annotations && annotations.length && annotations.filter(a => a.type === 'error').length) {
+    const newErrors = {
+      ...(existingErrors || {}),
+      secrets: (existingErrors || {}).secrets || [],
+    };
+    newErrors.secrets[index] = { value: 'Invalid' };
+    yield put(stopAsyncValidation('newSecretVersion', newErrors));
+  } else {
+    yield put(stopAsyncValidation('newSecretVersion', existingErrors));
+  }
 }
 
 export default [
@@ -97,5 +123,6 @@ export default [
   takeLatest(initNewSecretVersion, fetchLastVersionSaga),
   takeLatest(addSecret, addSecretSaga),
   takeLatest(removeSecret, removeSecretSaga),
+  takeLatest(validateAnnotations, validateAnnotationsSaga),
   takeLatest(saveVersion.REQUEST, saveVersionSaga),
 ];

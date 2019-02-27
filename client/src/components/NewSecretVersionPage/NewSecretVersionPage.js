@@ -41,13 +41,15 @@ class RenderSecretsTabbed extends Component {
                         component={RenderInput}
                         type="text"
                         autoComplete="foo-no-really"
-                        />
+                      />
                     ) : this.props.fields.get(index).editor === 'json' ? (
                       <Field
                         name={`${secret}.value`}
                         className="form-control"
                         component={RenderJsonEditor}
-                        />
+                        validateAnnotations={this.props.validateAnnotations}
+                        index={index}
+                      />
                     ) : null
                   }
                 </Col>
@@ -103,7 +105,7 @@ class SecretOverviewPage extends Component {
     }
 
     const error = this.props.error;
-
+    const secretErrors = this.props.secretErrors;
     return (
       <Container className="page-frame">
         <Title title={`Secrets: ${this.props.registryName}/${this.props.serviceName}`} />
@@ -154,14 +156,22 @@ class SecretOverviewPage extends Component {
                                 <p className="mb-1">{secret.key}</p>
                                 <div className="d-flex justify-content-between">
                                   <small>{`Type: ${secret.editor}`}</small>
-                                  <i className="fa fa-trash clickable mr-2" onClick={() => this.props.removeSecret(index)}></i>
+                                  <div>
+                                    { secretErrors[index] && secretErrors[index].value ? <i className="fa fa-exclamation-circle mr-1"></i> : null }
+                                    <i className="fa fa-trash clickable mr-2" onClick={() => this.props.removeSecret(index)}></i>
+                                  </div>
                                 </div>
                               </ListGroupItem>
                             ))}
                           </ListGroup>
                         </Col>
                         <Col>
-                          <FieldArray name="secrets" activeTab={this.state.activeTab} component={RenderSecretsTabbed} />
+                          <FieldArray
+                            name="secrets"
+                            activeTab={this.state.activeTab}
+                            component={RenderSecretsTabbed}
+                            validateAnnotations={this.props.validateAnnotations}
+                          />
                         </Col>
                       </Row>
                     </CardBody>

@@ -14,6 +14,7 @@ export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESP
 export const addSecret = createAction(`${actionsPrefix}/ADD_SECRET`);
 export const removeSecret = createAction(`${actionsPrefix}/REMOVE_SECRET`);
 export const saveVersion = createFormAction(`${actionsPrefix}/SAVE_VERSION`);
+export const validateAnnotations = createAction(`${actionsPrefix}/VALIDATE_ANNOTATIONS`);
 
 export const selectNamespace = (state) => (state.newSecretVersion.namespace);
 

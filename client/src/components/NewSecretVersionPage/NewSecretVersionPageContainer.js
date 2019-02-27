@@ -1,12 +1,15 @@
 import { connect } from 'react-redux';
-import { reduxForm, getFormValues } from 'redux-form';
-import { addSecret, saveVersion, removeSecret } from '../../modules/newSecretVersion';
+import { reduxForm, getFormValues, getFormAsyncErrors } from 'redux-form';
+import { addSecret, saveVersion, removeSecret, validateAnnotations } from '../../modules/newSecretVersion';
 import NewSecretVersionPage from './NewSecretVersionPage';
 
 export default connect((state, props) => {
   const { newSecretVersion } = state;
   const { registryName, serviceName } = props;
   const formValues = getFormValues('newSecretVersion')(state);
+  const asyncErrors = getFormAsyncErrors('newSecretVersion')(state) || {};
+  const secretErrors = asyncErrors.secrets || [];
+  const doSecretsHaveErrors = secretErrors.filter(s => s && s.value).length > 0;
 
   const canAddNewSecret = formValues
     && formValues.newSecretSection
@@ -14,7 +17,7 @@ export default connect((state, props) => {
     && formValues.newSecretSection.newSecretType
     && (!(formValues.secrets || []).find(s => s.key === formValues.newSecretSection.newSecretName));
 
-  const canSave = formValues && formValues.comment;
+  const canSave = !doSecretsHaveErrors && formValues && formValues.comment;
 
   return {
     canManage: newSecretVersion.canManage,
@@ -28,10 +31,12 @@ export default connect((state, props) => {
     canSave,
     saveVersion,
     formSecrets: (formValues && formValues.secrets) || [],
+    secretErrors,
   };
 },{
   addSecret,
   removeSecret,
+  validateAnnotations,
 })(reduxForm({
   form: 'newSecretVersion',
   enableReinitialize: true,
