@@ -25,7 +25,7 @@ const help = {
   },
   maintainer: {
     title: 'Namespace \'maintainer\' role',
-    body: 'Grants management capacity over a namespace. This includes granting services/accounts access to the namespace.',
+    body: 'Grants management capacity over a namespace. This includes granting services/accounts access to the namespace, as well as managing secrets.',
   },
   developer: {
     title: 'Namespace \'developer\' role',
