@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { reduxForm, getFormValues } from 'redux-form';
-import { addSecret, saveVersion } from '../../modules/newSecretVersion';
+import { addSecret, saveVersion, removeSecret } from '../../modules/newSecretVersion';
 import NewSecretVersionPage from './NewSecretVersionPage';
 
 export default connect((state, props) => {
@@ -8,7 +8,12 @@ export default connect((state, props) => {
   const { registryName, serviceName } = props;
   const formValues = getFormValues('newSecretVersion')(state);
 
-  const canAddNewSecret = formValues && formValues.newSecretSection && formValues.newSecretSection.newSecretName && formValues.newSecretSection.newSecretType;
+  const canAddNewSecret = formValues
+    && formValues.newSecretSection
+    && formValues.newSecretSection.newSecretName
+    && formValues.newSecretSection.newSecretType
+    && (!(formValues.secrets || []).find(s => s.key === formValues.newSecretSection.newSecretName));
+
   const canSave = formValues && formValues.comment;
 
   return {
@@ -22,9 +27,11 @@ export default connect((state, props) => {
     canAddNewSecret,
     canSave,
     saveVersion,
+    formSecrets: (formValues && formValues.secrets) || [],
   };
 },{
   addSecret,
+  removeSecret,
 })(reduxForm({
   form: 'newSecretVersion',
   enableReinitialize: true,

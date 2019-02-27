@@ -6,13 +6,16 @@ import {
   Row,
   Col,
   Card,
-  CardHeader,
   CardBody,
   Label,
   Form,
   FormGroup,
   Progress,
   Button,
+  TabContent,
+  TabPane,
+  ListGroup,
+  ListGroupItem,
 } from 'reactstrap';
 import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
@@ -21,19 +24,15 @@ import RenderJsonEditor from '../RenderJsonEditor';
 import Title from '../Title';
 
 
-class RenderSecrets extends Component {
+class RenderSecretsTabbed extends Component {
   render() {
     return (
-      <Row>
-        <Col>
-          {this.props.fields.map((secret, index) => {
-            return (
-              <Card className="mb-2" key={this.props.fields.get(index).key}>
-                <CardHeader className="d-flex justify-content-between">
-                  <span>{this.props.fields.get(index).key}</span>
-                  <i className="fa fa-trash" onClick={() => this.props.fields.remove(index)}></i>
-                </CardHeader>
-                <CardBody>
+      <TabContent activeTab={this.props.activeTab}>
+        {this.props.fields.map((secret, index) => {
+          return (
+            <TabPane tabId={`${index + 1}`} key={this.props.fields.get(index).key}>
+              <Row>
+                <Col className="p-2">
                   {
                     this.props.fields.get(index).editor === 'simple' ? (
                       <Field
@@ -51,17 +50,33 @@ class RenderSecrets extends Component {
                         />
                     ) : null
                   }
-                </CardBody>
-              </Card>
-            );
-          })}
-        </Col>
-      </Row>
+                </Col>
+              </Row>
+            </TabPane>
+          );
+        })}
+      </TabContent>
     );
   }
 }
 
 class SecretOverviewPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      activeTab: '1',
+    };
+    this.toggleTab = this.toggleTab.bind(this);
+  }
+
+  toggleTab(tab) {
+    if (this.state.activeTab !== tab) {
+      this.setState({
+        activeTab: tab
+      });
+    }
+  }
 
   render() {
     const { meta } = this.props;
@@ -107,60 +122,90 @@ class SecretOverviewPage extends Component {
                 {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
               </Col>
             </Row>
-            <Row>
-              <Col>
-                <Form onSubmit={this.props.handleSubmit(this.props.saveVersion)}>
-                  <FormGroup row>
-                    <Label sm="3" className="text-right" for="comment">Comment:</Label>
-                    <Col sm="6">
+            <Form onSubmit={this.props.handleSubmit(this.props.saveVersion)}>
+              <FormGroup row>
+                <Label sm="3" className="text-right" for="comment">Comment:</Label>
+                <Col sm="6">
+                  <Field
+                    className="form-control"
+                    name="comment"
+                    component={RenderInput}
+                    type="text"
+                    autoComplete="foo-no-really"
+                  />
+                </Col>
+                <Col><Button disabled={!this.props.canSave} type="submit">Save</Button></Col>
+              </FormGroup>
+              <Row>
+                <Col>
+                  <Card>
+                    <CardBody className="p-0 min-vh-75 max-vh-75">
+                      <Row>
+                        <Col sm="3" className="border-right pr-0">
+                          <ListGroup flush className="min-vh-75 max-vh-75 overflow-auto">
+                            {this.props.formSecrets.map((secret, index) => (
+                              <ListGroupItem
+                                action
+                                onClick={() => this.toggleTab(`${index + 1}`) }
+                                key={secret.key}
+                                className="p-1"
+                                active={this.state.activeTab === `${index + 1}`}
+                              >
+                                <p className="mb-1">{secret.key}</p>
+                                <div className="d-flex justify-content-between">
+                                  <small>{`Type: ${secret.editor}`}</small>
+                                  <i className="fa fa-trash clickable mr-2" onClick={() => this.props.removeSecret(index)}></i>
+                                </div>
+                              </ListGroupItem>
+                            ))}
+                          </ListGroup>
+                        </Col>
+                        <Col>
+                          <FieldArray name="secrets" activeTab={this.state.activeTab} component={RenderSecretsTabbed} />
+                        </Col>
+                      </Row>
+                    </CardBody>
+                  </Card>
+                </Col>
+              </Row>
+              <FormSection name="newSecretSection">
+                <Row form>
+                  <Col>
+                    <FormGroup>
+                      <Label className="text-right" for="newsecret">New Secret (key)</Label>
                       <Field
-                        className="form-control"
-                        name="comment"
-                        component={RenderInput}
+                        name="newSecretName"
                         type="text"
+                        component={RenderInput}
                         autoComplete="foo-no-really"
+                        className="form-control"
                       />
-                    </Col>
-                    <Col><Button disabled={!this.props.canSave} type="submit">Save</Button></Col>
-                  </FormGroup>
-                  <FormGroup row>
-                    <Label sm="3" className="text-right" for="secrets">Secrets:</Label>
-                    <Col>
-                      <FieldArray name="secrets" component={RenderSecrets} />
-                    </Col>
-                  </FormGroup>
-                  <FormSection name="newSecretSection">
-                    <FormGroup row>
-                      <Label sm="3" className="text-right" for="newsecret">New Secret (key):</Label>
-                      <Col>
-                        <Field
-                          name="newSecretName"
-                          type="text"
-                          component={RenderInput}
-                          autoComplete="foo-no-really"
-                        />
-                      </Col>
                     </FormGroup>
-                    <FormGroup row>
-                      <Label sm="3" className="text-right" for="newsecret">New Secret (type):</Label>
-                      <Col>
-                        <Field
-                          name="newSecretType"
-                          type="text"
-                          component={RenderSelect}
-                          autoComplete="foo-no-really"
-                          options={['simple', 'json']}
-                        />
-                      </Col>
+                  </Col>
+                  <Col>
+                    <FormGroup>
+                      <Label className="text-right" for="newsecret">New Secret (type)</Label>
+                      <Field
+                        name="newSecretType"
+                        type="text"
+                        component={RenderSelect}
+                        autoComplete="foo-no-really"
+                        options={['simple', 'json']}
+                        className="form-control"
+                      />
                     </FormGroup>
-                    <FormGroup row>
-                      <Col sm="3"></Col>
-                      <Col><Button disabled={!this.props.canAddNewSecret} onClick={() => this.props.addSecret()}>Add</Button></Col>
+                  </Col>
+                  <Col className="d-flex align-items-end">
+                    <FormGroup>
+                      <Button
+                        disabled={!this.props.canAddNewSecret}
+                        onClick={() => this.props.addSecret()}
+                      >Add</Button>
                     </FormGroup>
-                  </FormSection>
-                </Form>
-              </Col>
-            </Row>
+                  </Col>
+                </Row>
+              </FormSection>
+            </Form>
           </Col>
         </Row>
       </Container>

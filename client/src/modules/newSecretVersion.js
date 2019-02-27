@@ -12,6 +12,7 @@ export const FETCH_NAMESPACE_REQUEST = createAction(`${actionsPrefix}/FETCH_NAME
 export const FETCH_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/FETCH_NAMESPACE_SUCCESS`);
 export const FETCH_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_NAMESPACE_ERROR`);
 export const addSecret = createAction(`${actionsPrefix}/ADD_SECRET`);
+export const removeSecret = createAction(`${actionsPrefix}/REMOVE_SECRET`);
 export const saveVersion = createFormAction(`${actionsPrefix}/SAVE_VERSION`);
 
 export const selectNamespace = (state) => (state.newSecretVersion.namespace);
@@ -47,7 +48,10 @@ const defaultState = {
     }
   },
   initialValues: {
-    secrets: []
+    secrets: [],
+    newSecretSection: {
+      newSecretType: 'json'
+    }
   },
 };
 

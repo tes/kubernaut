@@ -70,3 +70,6 @@ $theme-colors: (
   --webkit-box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.15);
   box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.15);
 }
+
+.min-vh-75 { min-height: 75vh !important; }
+.max-vh-75 { max-height: 75vh !important; }

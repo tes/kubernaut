@@ -1,5 +1,5 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
-import { resetSection, arrayPush, getFormValues, SubmissionError } from 'redux-form';
+import { resetSection, arrayPush, getFormValues, SubmissionError, arrayRemove } from 'redux-form';
 import { push } from 'connected-react-router';
 import {
   initNewSecretVersion,
@@ -10,6 +10,7 @@ import {
   FETCH_NAMESPACE_SUCCESS,
   FETCH_NAMESPACE_ERROR,
   addSecret,
+  removeSecret,
   saveVersion,
   canManageRequest,
   setCanManage,
@@ -72,6 +73,10 @@ export function* addSecretSaga() {
   yield put(resetSection('newSecretVersion', 'newSecretSection'));
 }
 
+export function* removeSecretSaga({ payload }) {
+  yield put(arrayRemove('newSecretVersion', 'secrets', payload));
+}
+
 export function* saveVersionSaga() {
   const formValues = yield select(getFormValues('newSecretVersion'));
   const namespace = yield select(selectNamespace);
@@ -91,5 +96,6 @@ export default [
   takeLatest(initNewSecretVersion, fetchNamespaceInfoSaga),
   takeLatest(initNewSecretVersion, fetchLastVersionSaga),
   takeLatest(addSecret, addSecretSaga),
+  takeLatest(removeSecret, removeSecretSaga),
   takeLatest(saveVersion.REQUEST, saveVersionSaga),
 ];
