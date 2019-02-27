@@ -14,41 +14,12 @@ import {
   Progress,
   Button,
 } from 'reactstrap';
-import AceEditor from 'react-ace';
-import 'brace/mode/json';
-import 'brace/theme/vibrant_ink';
-import 'brace/ext/language_tools';
 import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
+import RenderJsonEditor from '../RenderJsonEditor';
 import Title from '../Title';
-require('brace');
 
-class RenderJsonEditor extends Component {
-  render() {
-    return (
-      <AceEditor
-        value={this.props.input.value}
-        mode="json"
-        theme="vibrant_ink"
-        onChange={this.props.input.onChange}
-        name={`${this.props.input.name}-editor`}
-        editorProps={{
-          $blockScrolling: true,
-        }}
-        setOptions={{
-          useSoftTabs: true
-        }}
-        enableBasicAutocompletion={true}
-        enableLiveAutocompletion={true}
-        tabSize={2}
-        width="100%"
-        height="300px"
-        showPrintMargin={false}
-      />
-    );
-  }
-}
 
 class RenderSecrets extends Component {
   render() {
