@@ -32,14 +32,15 @@ class SecretViewer extends Component {
         theme="github"
         name={`${secret.key}-editor`}
         editorProps={{
-          $blockScrolling: true,
+          $blockScrolling: true
         }}
         setOptions={{
-          useSoftTabs: true
+          maxLines: 50,
+          useSoftTabs: true,
         }}
         tabSize={2}
         width="100%"
-        height="300px"
+        height="100%"
         showPrintMargin={false}
         readOnly
       />;
