@@ -141,7 +141,7 @@ describe('Deploy sagas', () => {
 
   it('clears field data on changes', () => {
     const gen = clearFormFieldsSaga(clearFormFields({ source: 'service' }));
-    expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace')));
+    expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace', 'secret')));
   });
 
   it('validates service field entry and error', () => {
