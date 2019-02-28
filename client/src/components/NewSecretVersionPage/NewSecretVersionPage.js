@@ -20,9 +20,23 @@ import {
 import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
-import RenderJsonEditor from '../RenderJsonEditor';
+import RenderEditor from '../RenderEditor';
 import Title from '../Title';
 
+const editorLookup = {
+  simple: {
+    value: 'simple',
+    display: 'simple'
+  },
+  json: {
+    value: 'json',
+    display: 'json (linted)'
+  },
+  plain_text: {
+    value: 'plain_text',
+    display: 'plain text'
+  },
+};
 
 class RenderSecretsTabbed extends Component {
   render() {
@@ -46,8 +60,17 @@ class RenderSecretsTabbed extends Component {
                       <Field
                         name={`${secret}.value`}
                         className="form-control"
-                        component={RenderJsonEditor}
+                        component={RenderEditor}
+                        mode="json"
                         validateAnnotations={this.props.validateAnnotations}
+                        index={index}
+                      />
+                  ) : this.props.fields.get(index).editor === 'plain_text' ? (
+                      <Field
+                        name={`${secret}.value`}
+                        className="form-control"
+                        component={RenderEditor}
+                        mode="plain_text"
                         index={index}
                       />
                     ) : null
@@ -155,7 +178,7 @@ class SecretOverviewPage extends Component {
                               >
                                 <p className="mb-1">{secret.key}</p>
                                 <div className="d-flex justify-content-between">
-                                  <small>{`Type: ${secret.editor}`}</small>
+                                  <small>{`Type: ${editorLookup[secret.editor].display}`}</small>
                                   <div>
                                     { secretErrors[index] && secretErrors[index].value ? <i className="fa fa-exclamation-circle mr-1"></i> : null }
                                     <i className="fa fa-trash clickable mr-2" onClick={() => this.props.removeSecret(index)}></i>
@@ -182,7 +205,7 @@ class SecretOverviewPage extends Component {
                 <Row form>
                   <Col>
                     <FormGroup>
-                      <Label className="text-right" for="newsecret">New Secret (key)</Label>
+                      <Label className="text-right" for="newsecret">New Secret name</Label>
                       <Field
                         name="newSecretName"
                         type="text"
@@ -194,13 +217,13 @@ class SecretOverviewPage extends Component {
                   </Col>
                   <Col>
                     <FormGroup>
-                      <Label className="text-right" for="newsecret">New Secret (type)</Label>
+                      <Label className="text-right" for="newsecret">Editor</Label>
                       <Field
                         name="newSecretType"
                         type="text"
                         component={RenderSelect}
                         autoComplete="foo-no-really"
-                        options={['simple', 'json']}
+                        options={Object.values(editorLookup)}
                         className="form-control"
                       />
                     </FormGroup>

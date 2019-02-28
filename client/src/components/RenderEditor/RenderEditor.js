@@ -2,16 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import AceEditor from 'react-ace';
 import 'brace/mode/json';
+import 'brace/mode/plain_text';
 import 'brace/theme/github';
 import 'brace/ext/language_tools';
 require('brace');
 
-class RenderJsonEditor extends Component {
+class RenderEditor extends Component {
   render() {
     return (
       <AceEditor
         value={this.props.input.value}
-        mode="json"
+        mode={this.props.mode}
         theme="github"
         onChange={this.props.input.onChange}
         onValidate={(annotations) => {
@@ -25,7 +26,7 @@ class RenderJsonEditor extends Component {
           useSoftTabs: true
         }}
         enableBasicAutocompletion={true}
-        enableLiveAutocompletion={true}
+        enableLiveAutocompletion={this.props.mode !== 'plain_text'}
         tabSize={2}
         width="95%"
         height="70vh"
@@ -35,8 +36,9 @@ class RenderJsonEditor extends Component {
   }
 }
 
-RenderJsonEditor.propTypes = {
+RenderEditor.propTypes = {
   input: PropTypes.object.isRequired,
+  mode: PropTypes.oneOf(['json', 'plain_text'])
 };
 
-export default RenderJsonEditor;
+export default RenderEditor;

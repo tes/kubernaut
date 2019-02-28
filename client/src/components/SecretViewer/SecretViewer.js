@@ -7,6 +7,7 @@ import {
 } from 'reactstrap';
 import AceEditor from 'react-ace';
 import 'brace/mode/json';
+import 'brace/mode/plain_text';
 import 'brace/theme/github';
 import 'brace/ext/language_tools';
 require('brace');
@@ -24,10 +25,10 @@ class SecretViewer extends Component {
       contentTag = <pre>{secret.value}</pre>;
     }
 
-    if (secret.editor === 'json') {
+    if (secret.editor === 'json' || secret.editor === 'plain_text') {
       contentTag = <AceEditor
         value={secret.value}
-        mode="json"
+        mode={secret.editor}
         theme="github"
         name={`${secret.key}-editor`}
         editorProps={{
