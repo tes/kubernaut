@@ -9,7 +9,7 @@ import {
   getSecretVersionWithData,
 } from '../lib/api';
 
-export function* fetchVersionsSaga({ payload = {} }) {
+export function* fetchVersionSaga({ payload = {} }) {
   const { match, ...options } = payload;
   if (!match) return;
   const { params } = match;
@@ -28,5 +28,5 @@ export function* fetchVersionsSaga({ payload = {} }) {
 }
 
 export default [
-  takeLatest(fetchVersion, fetchVersionsSaga),
+  takeLatest(fetchVersion, fetchVersionSaga),
 ];

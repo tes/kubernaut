@@ -1,5 +1,9 @@
 import { createAction, handleActions } from 'redux-actions';
 import { createFormAction } from 'redux-form-saga';
+import {
+  getFormValues as rfGetFormValues,
+  getFormAsyncErrors as rfGetFormAsyncErrors,
+} from 'redux-form';
 import computeLoading from './lib/computeLoading';
 const actionsPrefix = 'KUBERNAUT/NEW_SECRET_VERSION';
 export const initNewSecretVersion = createAction(`${actionsPrefix}/INITIALISE`);
@@ -17,6 +21,8 @@ export const saveVersion = createFormAction(`${actionsPrefix}/SAVE_VERSION`);
 export const validateAnnotations = createAction(`${actionsPrefix}/VALIDATE_ANNOTATIONS`);
 
 export const selectNamespace = (state) => (state.newSecretVersion.namespace);
+export const getFormValues = (state) => rfGetFormValues('newSecretVersion')(state);
+export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newSecretVersion')(state);
 
 const defaultState = {
   meta: {

@@ -2,12 +2,10 @@ import { takeLatest, call, put, select } from 'redux-saga/effects';
 import {
   resetSection,
   arrayPush,
-  getFormValues,
   SubmissionError,
   arrayRemove,
   startAsyncValidation,
   stopAsyncValidation,
-  getFormAsyncErrors,
 } from 'redux-form';
 import { push } from 'connected-react-router';
 import {
@@ -25,6 +23,8 @@ import {
   setCanManage,
   selectNamespace,
   validateAnnotations,
+  getFormValues,
+  getFormAsyncErrors,
 } from '../modules/newSecretVersion';
 import {
   getNamespace,
@@ -56,23 +56,26 @@ export function* fetchNamespaceInfoSaga({ payload: { match, ...options } }) {
 }
 
 export function* fetchLastVersionSaga({ payload = {} }) {
-  const { registry, name: service, namespaceId, ...options } = payload.match.params;
+  const { registry, name: service, namespaceId } = payload.match.params;
   if (!registry || !service || !namespaceId) return;
 
   yield put(FETCH_VERSIONS_REQUEST());
   try {
     const data = yield call(getSecretVersions, registry, service, namespaceId, 0, 1);
-    if (!data.items.length) yield put(FETCH_VERSIONS_SUCCESS());
+    if (!data.items.length) {
+      yield put(FETCH_VERSIONS_SUCCESS({}));
+      return;
+    }
     const latestVersion = yield call(getSecretVersionWithData, data.items[0].id);
     yield put(FETCH_VERSIONS_SUCCESS({ latestVersion }));
   } catch(error) {
-    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    if (!payload.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_VERSIONS_ERROR({ error: error.message }));
   }
 }
 
 export function* addSecretSaga() {
-  const formValues = yield select(getFormValues('newSecretVersion'));
+  const formValues = yield select(getFormValues);
   if (!formValues.newSecretSection) return;
   if (!formValues.newSecretSection.newSecretName || !formValues.newSecretSection.newSecretType) return;
   yield put(arrayPush('newSecretVersion', 'secrets', {
@@ -88,7 +91,7 @@ export function* removeSecretSaga({ payload }) {
 }
 
 export function* saveVersionSaga() {
-  const formValues = yield select(getFormValues('newSecretVersion'));
+  const formValues = yield select(getFormValues);
   const namespace = yield select(selectNamespace);
 
   try {
@@ -103,7 +106,7 @@ export function* saveVersionSaga() {
 export function* validateAnnotationsSaga({ payload }) {
   const { annotations, index } = payload;
   yield put(startAsyncValidation('newSecretVersion'));
-  const existingErrors = yield select(getFormAsyncErrors('newSecretVersion')) || {};
+  const existingErrors = yield select(getFormAsyncErrors) || {};
 
   if (annotations && annotations.length && annotations.filter(a => a.type === 'error').length) {
     const newErrors = {
