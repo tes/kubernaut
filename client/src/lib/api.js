@@ -26,15 +26,17 @@ const makeRequest = async (url, options = {}) => {
   if (options.returnResponse) return res;
   if (res.status >= 400) {
     let message = `${url} returned ${res.status} ${res.statusText}`;
-
+    let serverError;
     try {
-      const serverError = await res.json();
+      serverError = await res.json();
       if (serverError.message) message = serverError.message;
     } catch(parseError) {
       if (!options.quiet) console.warn('Could not parse server response', res); // eslint-disable-line no-console
     }
 
-    throw new Error(message);
+    const toThrow = new Error(message);
+    if (serverError) toThrow.data = serverError;
+    throw toThrow;
   }
   return await res.json();
 };

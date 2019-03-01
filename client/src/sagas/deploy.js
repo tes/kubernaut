@@ -81,6 +81,7 @@ export function* triggerDeploymentSaga({ payload: formValues }, options = {}) {
     data = yield call(makeDeployment, formValues, options);
   } catch(err) {
     if (!options.quiet) console.error(err); // eslint-disable-line no-console
+    if (err.data && err.data.id) return yield put(push(`/deployments/${err.data.id}`));
     return yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));
   }
   yield put(submitForm.success());
