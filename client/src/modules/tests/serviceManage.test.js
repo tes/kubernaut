@@ -11,7 +11,7 @@ import reduce, {
   setCanManage,
 } from '../serviceManage';
 
-describe('NamespaceManage reducer', () => {
+describe('ServiceManage reducer', () => {
   it('should initialise page data with default state', () => {
     const defaultState = reduce(undefined, {});
     const state = reduce(undefined, initServiceManage());
