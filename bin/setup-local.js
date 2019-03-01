@@ -54,7 +54,9 @@ try {
     const cluster = await ensureCluster('development');
     const stagingCluster = await ensureCluster('staging', 'blue');
     const liveCluster = await ensureCluster('live', 'goldenrod');
+    const localCluster = await ensureCluster('local', 'lightblue');
 
+    await ensureNamespace('default', localCluster);
     const defaultNS = await ensureNamespace('default', cluster);
     const privateNS = await ensureNamespace('private', cluster);
     const defaultNSOnStagingCluster = await ensureNamespace('default', stagingCluster);
