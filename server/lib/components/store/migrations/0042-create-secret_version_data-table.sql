@@ -15,7 +15,7 @@ CREATE TABLE secret_version_data
         REFERENCES secret_version (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE CASCADE,
-    CONSTRAINT editor_check CHECK (editor IN ('json', 'simple', "plain_text"))
+    CONSTRAINT editor_check CHECK (editor IN ('json', 'simple', 'plain_text'))
 );
 
 CREATE INDEX version ON secret_version_data (
