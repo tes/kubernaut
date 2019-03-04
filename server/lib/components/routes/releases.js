@@ -68,6 +68,7 @@ export default function(options = {}) {
         const release = await store.saveRelease(data, meta);
         res.json({ id: release.id });
       } catch (err) {
+        if (err.code && err.code === '23505') return next(Boom.conflict(err.detail)); // unique_violation
         next(err);
       }
     });
