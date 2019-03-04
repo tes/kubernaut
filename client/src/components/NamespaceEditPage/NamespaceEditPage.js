@@ -16,6 +16,74 @@ import { NamespacesSubNav } from '../SubNavs';
 import RenderSelect from '../RenderSelect';
 import RenderInput from '../RenderInput';
 
+const renderAttributes = (props) => {
+
+  return (
+    <Row>
+      <Col>
+        <h6>Attributes:</h6>
+        {props.fields.map((attribute, index) => (
+          <Row form key={props.fields.get(index).tempKey}>
+            <Col>
+              <FormGroup className="row no-gutters" key={attribute}>
+                <Col sm="3" className="d-flex">
+                  <Field
+                    name={`${attribute}.name`}
+                    className="form-control"
+                    component={RenderInput}
+                    type="text"
+                    autocomplete="foo-no-really"
+                  />
+                <span>:</span>
+                </Col>
+                <Col sm="3">
+                  <Field
+                    name={`${attribute}.value`}
+                    className="form-control"
+                    component={RenderInput}
+                    type="text"
+                    autoComplete="foo-no-really"
+                    />
+                </Col>
+                <Col sm="1">
+                  <Button
+                    outline
+                    color="danger"
+                    onClick={(e) => { e.preventDefault(); props.fields.remove(index); }}
+                    ><i className={`fa fa-trash`} aria-hidden='true'></i>
+                  </Button>
+                </Col>
+                { index + 1 === props.fields.length ?
+                  <Col sm="3">
+                    <Button
+                      outline
+                      color="info"
+                      onClick={(e) => { e.preventDefault(); props.fields.push({ tempKey: Math.random() }); }}
+                      >Add new attribute
+                    </Button>
+                  </Col>
+                  : null }
+            </FormGroup>
+            </Col>
+          </Row>
+        ))}
+        <Row>
+          { props.fields.length === 0 ?
+            <Col sm="3">
+              <Button
+                outline
+                color="info"
+                onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
+                >Add new attribute
+              </Button>
+            </Col>
+          : null}
+        </Row>
+      </Col>
+    </Row>
+  );
+};
+
 class NamespaceEditPage extends Component {
 
   render() {
@@ -44,73 +112,7 @@ class NamespaceEditPage extends Component {
 
     const error = this.props.error;
     const namespace = this.props.namespace;
-    const renderAttributes = (props) => {
 
-      return (
-        <Row>
-          <Col>
-            <h6>Attributes:</h6>
-            {props.fields.map((attribute, index) => (
-              <Row form>
-                <Col>
-                  <FormGroup className="row no-gutters" key={attribute}>
-                    <Col sm="3" className="d-flex">
-                      <Field
-                        name={`${attribute}.name`}
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        autocomplete="foo-no-really"
-                      />
-                    <span>:</span>
-                    </Col>
-                    <Col sm="3">
-                      <Field
-                        name={`${attribute}.value`}
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        autoComplete="foo-no-really"
-                        />
-                    </Col>
-                    <Col sm="1">
-                      <Button
-                        outline
-                        color="danger"
-                        onClick={(e) => { e.preventDefault(); props.fields.remove(index); }}
-                        ><i className={`fa fa-trash`} aria-hidden='true'></i>
-                      </Button>
-                    </Col>
-                    { index + 1 === props.fields.length ?
-                      <Col sm="3">
-                        <Button
-                          outline
-                          color="info"
-                          onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
-                          >Add new attribute
-                        </Button>
-                      </Col>
-                      : null }
-                </FormGroup>
-                </Col>
-              </Row>
-            ))}
-            <Row>
-              { props.fields.length === 0 ?
-                <Col sm="3">
-                  <Button
-                    outline
-                    color="info"
-                    onClick={(e) => { e.preventDefault(); props.fields.push({}); }}
-                    >Add new attribute
-                  </Button>
-                </Col>
-              : null}
-            </Row>
-          </Col>
-        </Row>
-      );
-    };
     return (
       <Container className="page-frame">
         <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />

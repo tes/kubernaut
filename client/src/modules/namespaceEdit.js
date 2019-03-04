@@ -101,7 +101,7 @@ export default handleActions({
       color: data.color || '',
       cluster: data.cluster.id || '',
       attributes: Object.keys(data.attributes).reduce((arr, attr) => {
-        return arr.concat({ name: attr, value: data.attributes[attr] });
+        return arr.concat({ name: attr, value: data.attributes[attr], tempKey: Math.random() });
       }, []),
     },
   }),
