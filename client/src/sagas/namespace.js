@@ -87,11 +87,8 @@ export function* locationChangeSaga({ payload = {} }) {
   const { match, location } = payload;
   if (!match || !location) return;
 
-  const namespace = yield select(selectNamespace);
-  if (!namespace.id || namespace.id !== match.params.namespaceId) {
-    yield put(fetchNamespacePageData({ id: match.params.namespaceId }));
-    yield take(FETCH_NAMESPACE_SUCCESS);
-  }
+  yield put(fetchNamespacePageData({ id: match.params.namespaceId }));
+  yield take(FETCH_NAMESPACE_SUCCESS);
 
   const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
   const sort = parseQueryString(extractFromQuery(location.search, 'sort') || '');

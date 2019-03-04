@@ -140,7 +140,6 @@ describe('Namespace sagas', () => {
       };
 
       const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
-      expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({}).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
       expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
       expect(gen.next().value).toMatchObject(put(setPagination({})));
@@ -160,7 +159,6 @@ describe('Namespace sagas', () => {
       };
 
       const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
-      expect(gen.next().value).toMatchObject(select(selectNamespace));
       expect(gen.next({ id: 'abc' }).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
       expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
       expect(gen.next().value).toMatchObject(put(setPagination({})));
@@ -179,7 +177,8 @@ describe('Namespace sagas', () => {
       };
 
       const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
-      expect(gen.next().value).toMatchObject(select(selectNamespace));
+      expect(gen.next({ id: 'abc' }).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
+      expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
       expect(gen.next({ id: 'bob' }).value).toMatchObject(put(setPagination({
         page: '1',
         limit: '20',
@@ -199,7 +198,8 @@ describe('Namespace sagas', () => {
       };
 
       const gen = locationChangeSaga(initialiseNamespacePage({ location, match }));
-      expect(gen.next().value).toMatchObject(select(selectNamespace));
+      expect(gen.next({ id: 'abc' }).value).toMatchObject(put(fetchNamespacePageData({ id: 'bob' })));
+      expect(gen.next().value).toMatchObject(take(FETCH_NAMESPACE_SUCCESS));
       expect(gen.next({ id: 'bob' }).value).toMatchObject(put(setPagination({})));
       expect(gen.next().value).toMatchObject(put(setSort({
         column: 'name',
