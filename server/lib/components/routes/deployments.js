@@ -45,6 +45,12 @@ export default function(options = {}) {
         const deployment = await store.getDeployment(req.params.id);
         if (!deployment) return next(Boom.notFound());
         if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
+        if (deployment.attributes.secret && await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'secrets-apply')) {
+          const meta = { date: new Date(), account: { id: req.user.id } };
+          const storedSecret = await store.getVersionOfSecretById(deployment.attributes.secret, meta);
+          if (storedSecret) deployment.attributes.secret = storedSecret;
+        }
+
         res.json(deployment);
       } catch (err) {
         next(err);

@@ -41,7 +41,11 @@ class DeploymentDetailsPage extends Component {
 
       for (const name in deployment.attributes) {
         attributesEls.push(<dt key={name} className='col-md-3'>{name}:</dt>);
-        attributesEls.push(<dd key={`${name}-val`}className='col-md-9'>{deployment.attributes[name]}</dd>);
+        if (name === 'secret' && typeof(deployment.attributes[name]) === 'object') {
+          const secret = deployment.attributes[name];
+          attributesEls.push(<dd key={`${name}-val`} className='col-md-9'><pre style={{display: 'inline'}}>{secret.comment}</pre> - <AccountLink account={secret.createdBy} /></dd>);
+        }
+        else attributesEls.push(<dd key={`${name}-val`} className='col-md-9'>{deployment.attributes[name]}</dd>);
       }
 
       const logPending = deployment.status !== 'failed' && (deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending');

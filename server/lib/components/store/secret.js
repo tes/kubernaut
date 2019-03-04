@@ -53,6 +53,8 @@ export default function(options) {
           connection.query(db.serialize(secretDataBuilder, {}).sql)
         ]);
 
+        if (!secret) return undefined;
+
         secret.setSecrets(data.rows.map(row => ({
             ...row,
             value: options.opaque ? Buffer.from(JSON.parse(row.value)).toString('base64') : JSON.parse(row.value)
