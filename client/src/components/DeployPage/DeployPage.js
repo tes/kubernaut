@@ -162,6 +162,10 @@ class DeployPage extends Component {
                     disabled={!valid && !asyncValidating}
                     >Create Deployment
                   </button>
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Col sm={{ size: 9, offset: 3 }}>
                   {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
                 </Col>
               </FormGroup>
