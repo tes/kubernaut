@@ -26,6 +26,7 @@ const mapStateToProps = (state, props) => {
     version,
     cluster,
     namespace,
+    secret,
   } = props.parsedLocation;
   const { deploy } = state;
   const currentFormValues = getFormValues(formName)(state) || {};
@@ -38,6 +39,7 @@ const mapStateToProps = (state, props) => {
       version,
       cluster,
       namespace,
+      secret,
     },
     registries: deploy.registries,
     clusters: _uniq(deploy.namespaces.map(({ cluster }) => (cluster.name))),

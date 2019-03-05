@@ -64,7 +64,17 @@ export const DeploymentLink = ({ deployment, icon, children }) => {
   );
 };
 
-export const CreateDeploymentLink = ({ registry = {}, service = {}, version, cluster = {}, namespace = {}, text, children }) => {
+export const CreateDeploymentLink = (props) => {
+  const {
+    registry = {},
+    service = {},
+    version,
+    cluster = {},
+    namespace = {},
+    secret = {},
+    text,
+    children,
+  } = props;
   const element = children || (<span>{text ? text : 'Deploy'}</span>);
   return (
     <Link to={{
@@ -75,6 +85,7 @@ export const CreateDeploymentLink = ({ registry = {}, service = {}, version, clu
           version,
           cluster: cluster.name || '',
           namespace: namespace.name || '',
+          secret: secret || '',
         })
       }}
     >{element}</Link>

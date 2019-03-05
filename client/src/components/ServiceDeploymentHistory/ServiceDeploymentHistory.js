@@ -79,6 +79,7 @@ class ServiceDeploymentHistory extends Component {
                     version={item.release.version}
                     cluster={item.namespace.cluster}
                     namespace={item.namespace}
+                    secret={item.attributes.secret || ''}
                     text="Re-deploy"
                     />
                 </CardFooter>

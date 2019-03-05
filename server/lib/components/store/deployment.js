@@ -167,6 +167,22 @@ export default function(options) {
       }
     };
 
+    async function _getDeploymentAttributes(connection, deploymentIds) {
+      if (!deploymentIds || !deploymentIds.length) return [];
+
+      const builder = sqb
+        .select('da.deployment', 'da.name', 'da.value')
+        .from('deployment_attribute da')
+        .where(Op.in('da.deployment', deploymentIds));
+
+      const attributeResults = await connection.query(db.serialize(builder, {}).sql);
+      return attributeResults.rows.reduce((acc, row) => {
+        if (!acc[row.deployment]) acc[row.deployment] = [];
+        acc[row.deployment].push(row);
+        return acc;
+      }, {});
+    }
+
     async function findDeployments(criteria = {}, limit = 50, offset = 0, sort = 'created', order = 'desc') {
 
       logger.debug(`Listing up to ${limit} deployments starting from offset: ${offset}`);
@@ -258,8 +274,9 @@ export default function(options) {
         return Promise.all([
           connection.query(findDeploymentsStatement.sql, findDeploymentsStatement.values),
           connection.query(countDeploymentsStatement.sql, countDeploymentsStatement.values),
-        ]).then(([deploymentsResult, countResult]) => {
-          const items = deploymentsResult.rows.map(row => toDeployment(row));
+        ]).then(async ([deploymentsResult, countResult]) => {
+          const attributes = await _getDeploymentAttributes(connection, deploymentsResult.rows.map(({ id }) => id));
+          const items = deploymentsResult.rows.map(row => toDeployment(row, attributes[row.id] || []));
           const count = parseInt(countResult.rows[0].count, 10);
           logger.debug(`Returning ${items.length} of ${count} deployments`);
           return { limit, offset, count, items };
