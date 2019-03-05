@@ -189,11 +189,8 @@ export function* fetchSecretVersionsSaga(payload) {
 }
 
 export function* fetchSecretsInitProxySaga() {
-  let currentValue = yield select(getDeployFormValues);
-  if (!currentValue) {
-    yield take(reduxFormInitialise);
-    currentValue = yield select(getDeployFormValues);
-  }
+  yield take(reduxFormInitialise);
+  const currentValue = yield select(getDeployFormValues);
   if (!currentValue.cluster || !currentValue.namespace) return;
 
   let namespaces = yield select(selectNamespaces);
@@ -201,7 +198,12 @@ export function* fetchSecretsInitProxySaga() {
     yield take(SET_NAMESPACES);
     namespaces = yield select(selectNamespaces);
   }
+
   const namespace = namespaces.find(({ name, cluster }) => (currentValue.namespace === name) && currentValue.cluster === cluster.name);
+  if (!namespace) {
+    console.error(`looking for ${currentValue.cluster}/${currentValue.namespace} but not found in deployable namespaces for current service ${currentValue.registry}/${currentValue.service}`); // eslint-disable-line no-console
+    return;
+  }
 
   yield call(fetchSecretVersionsSaga, {
     registry: currentValue.registry,
