@@ -12,12 +12,12 @@ class NamespaceDetailsPage extends Component {
 
     const namespaceAttributes = [];
     for (const attribute in namespace.attributes) {
-      namespaceAttributes.push(<dt key={attribute} className="col-md-3">{attribute}:</dt>);
-      namespaceAttributes.push(<dd
-        key={`${attribute}-${namespace.attributes[attribute]}`}
-        className="col-md-9"
-      >{namespace.attributes[attribute]}
-      </dd>);
+      namespaceAttributes.push(
+        <dl className="d-flex mb-0" key={attribute}>
+          <dt className="text-right mr-1">{attribute}:</dt>
+          <dd className="flex-fill mb-0">{namespace.attributes[attribute]}</dd>
+        </dl>
+      );
     }
 
     return (
@@ -31,9 +31,7 @@ class NamespaceDetailsPage extends Component {
 
           <dt className="col-md-3">Attributes:</dt>
           <dd className="col-md-9">
-            <dl className="row">
               {namespaceAttributes}
-            </dl>
           </dd>
         </dl>
 
