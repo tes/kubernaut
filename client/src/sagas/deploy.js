@@ -1,8 +1,7 @@
-import { takeEvery, takeLatest, take, call, put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, take, call, put, select, all } from 'redux-saga/effects';
 import {
   SubmissionError,
   change,
-  clearFields,
   stopAsyncValidation,
   startAsyncValidation,
   actionTypes,
@@ -30,6 +29,7 @@ import {
   SET_NAMESPACES,
   SET_DEPLOYMENTS,
   setSecretVersions,
+  selectNamespaces,
 } from '../modules/deploy';
 
 import {
@@ -122,7 +122,8 @@ export function* clearFormFieldsSaga({ payload }) {
   const index = formFieldsOrder.indexOf(payload.source);
   if (index < 0) return;
   const fields = formFieldsOrder.slice(index + 1);
-  yield put(clearFields('deploy', false, false, ...fields));
+  // yield put(clearFields('deploy', false, false, ...fields)); // This has a bug in redux-form
+  yield all(fields.map(field => put(change('deploy', field, ''))));
 }
 
 export function* validateServiceSaga({ payload: options = {} }) {
@@ -177,10 +178,8 @@ export function* fetchLatestDeploymentsPerNamespaceSaga({ payload: { service, re
   }
 }
 
-export function* fetchSecretVersionsSaga({ payload = {} }) {
-  const currentValue = yield select(getDeployFormValues);
-  const { registry, service } = currentValue;
-  const namespaceId = payload.id;
+export function* fetchSecretVersionsSaga(payload) {
+  const { registry, service, namespaceId } = payload;
   try {
     const results = yield call(getSecretVersions, registry, service, namespaceId);
     yield put(setSecretVersions(results));
@@ -189,16 +188,51 @@ export function* fetchSecretVersionsSaga({ payload = {} }) {
   }
 }
 
+export function* fetchSecretsInitProxySaga() {
+  let currentValue = yield select(getDeployFormValues);
+  if (!currentValue) {
+    yield take(reduxFormInitialise);
+    currentValue = yield select(getDeployFormValues);
+  }
+  if (!currentValue.cluster || !currentValue.namespace) return;
+
+  let namespaces = yield select(selectNamespaces);
+  if (!namespaces.length) {
+    yield take(SET_NAMESPACES);
+    namespaces = yield select(selectNamespaces);
+  }
+  const namespace = namespaces.find(({ name, cluster }) => (currentValue.namespace === name) && currentValue.cluster === cluster.name);
+
+  yield call(fetchSecretVersionsSaga, {
+    registry: currentValue.registry,
+    service: currentValue.service,
+    namespaceId: namespace.id,
+  });
+}
+
+export function* fetchSecretsNamespaceChangedProxySaga({ payload = {} }) {
+  const currentValue = yield select(getDeployFormValues);
+  if (!currentValue.cluster) return;
+  const namespaceId = payload.id;
+
+  yield call(fetchSecretVersionsSaga, {
+    registry: currentValue.registry,
+    service: currentValue.service,
+    namespaceId,
+  });
+}
+
 export default [
-  takeEvery(INITIALISE, fetchRegistriesSaga),
-  takeEvery(INITIALISE, validateServiceSaga),
-  takeEvery(fetchNamespacesForService, fetchNamespacesSaga),
-  takeEvery(submitForm.REQUEST, triggerDeploymentSaga),
-  takeEvery(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
-  takeEvery(useServiceSuggestion, useServiceSuggestionsSaga),
+  takeLatest(INITIALISE, fetchRegistriesSaga),
+  takeLatest(INITIALISE, validateServiceSaga),
+  takeLatest(INITIALISE, fetchSecretsInitProxySaga),
+  takeLatest(fetchNamespacesForService, fetchNamespacesSaga),
+  takeLatest(submitForm.REQUEST, triggerDeploymentSaga),
+  takeLatest(fetchServiceSuggestions, fetchServiceSuggestionsSaga),
+  takeLatest(useServiceSuggestion, useServiceSuggestionsSaga),
   takeEvery(clearFormFields, clearFormFieldsSaga),
   takeLatest(validateService, validateServiceSaga),
   takeLatest(validateVersion, validateVersionSaga),
-  takeEvery(fetchLatestDeploymentsPerNamespace, fetchLatestDeploymentsPerNamespaceSaga),
-  takeLatest(fetchSecretVersions, fetchSecretVersionsSaga),
+  takeLatest(fetchLatestDeploymentsPerNamespace, fetchLatestDeploymentsPerNamespaceSaga),
+  takeLatest(fetchSecretVersions, fetchSecretsNamespaceChangedProxySaga),
 ];

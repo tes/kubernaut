@@ -1,5 +1,5 @@
-import { put, call, select } from 'redux-saga/effects';
-import { SubmissionError, change, clearFields, startAsyncValidation, stopAsyncValidation } from 'redux-form';
+import { put, call, select, all } from 'redux-saga/effects';
+import { SubmissionError, change, startAsyncValidation, stopAsyncValidation } from 'redux-form';
 import { push } from 'connected-react-router';
 
 import {
@@ -141,7 +141,13 @@ describe('Deploy sagas', () => {
 
   it('clears field data on changes', () => {
     const gen = clearFormFieldsSaga(clearFormFields({ source: 'service' }));
-    expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace', 'secret')));
+    // expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace', 'secret')));
+    expect(gen.next().value).toMatchObject(all([
+      put(change('deploy', 'version', '')),
+      put(change('deploy', 'cluster', '')),
+      put(change('deploy', 'namespace', '')),
+      put(change('deploy', 'secret', ''))
+    ]));
   });
 
   it('validates service field entry and error', () => {

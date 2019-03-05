@@ -24,6 +24,7 @@ export const fetchSecretVersions = createAction(`${actionsPrefix}/FETCH_SECRET_V
 export const setSecretVersions = createAction(`${actionsPrefix}/SET_SECRET_VERSIONS`);
 
 export const getDeployFormValues = getFormValues('deploy');
+export const selectNamespaces = (state) => state.deploy.namespaces;
 
 const defaultState = {
   meta: {

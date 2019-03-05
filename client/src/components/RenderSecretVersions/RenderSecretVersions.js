@@ -5,7 +5,10 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
+  Button,
 } from 'reactstrap';
+
+const outlinedDropDownToggle = (props) => <Button outline color="secondary" {...props} />;
 
 class RenderSecretVersions extends Component {
   constructor(props) {
@@ -27,13 +30,13 @@ class RenderSecretVersions extends Component {
     const isDisabled = disabled || options.length === 0;
 
     const currentSelectedVersion = input.value ? options.find(v => (v.id === input.value)) : null;
-    const displayValue = currentSelectedVersion ? `${currentSelectedVersion.comment} - ${currentSelectedVersion.createdBy.displayName}` : 'Choose a secret:';
+    const displayValue = currentSelectedVersion ? `${currentSelectedVersion.comment} - ${currentSelectedVersion.createdBy.displayName}` : 'Choose a version:';
     const maxHeight = window.innerHeight - 50 < 500 ? window.innerHeight - 50 : 500;
 
     return (
       <Dropdown className={className} isOpen={this.state.open} toggle={this.toggle} disabled={isDisabled}>
-        <DropdownToggle disabled={isDisabled} className="w-100">
-          {displayValue}
+        <DropdownToggle disabled={isDisabled} className="w-100 d-flex" tag={outlinedDropDownToggle}>
+          <span className="mr-auto">{displayValue}</span><i className="fa fa-caret-down"></i>
         </DropdownToggle>
         <DropdownMenu
           className="w-100"
