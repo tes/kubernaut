@@ -73,6 +73,7 @@ export default function(options) {
         .join(sqb.join('active_release__vw r').on(Op.eq('d.release', raw('r.id'))))
         .where(Op.eq('d.namespace', namespace.id))
         .where(Op.eq('r.service', release.service.id))
+        .where(Op.eq('da.name', 'secret'))
         .orderBy('d.created_on desc')
         .limit(1);
 
