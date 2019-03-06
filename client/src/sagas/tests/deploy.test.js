@@ -12,6 +12,7 @@ import {
   validateServiceSaga,
   validateVersionSaga,
   fetchLatestDeploymentsPerNamespaceSaga,
+  fetchSecretVersionsSaga,
 } from '../deploy';
 
 import {
@@ -33,6 +34,7 @@ import {
   validateVersion,
   fetchNamespacesForService,
   fetchLatestDeploymentsPerNamespace,
+  setSecretVersions,
 } from '../../modules/deploy';
 
 import {
@@ -42,6 +44,8 @@ import {
   getReleases,
   getNamespacesForService,
   getLatestDeploymentsByNamespaceForService,
+  getSecretVersions,
+  getLatestDeployedSecretVersion,
 } from '../../lib/api';
 
 const formValues = {
@@ -224,5 +228,38 @@ describe('Deploy sagas', () => {
     expect(gen.next().value).toMatchObject(call(getLatestDeploymentsByNamespaceForService, { registry, service }));
     expect(gen.next(data).value).toMatchObject(put(SET_DEPLOYMENTS({ data })));
     expect(gen.next().done).toBe(true);
+  });
+
+  it('fetches secret version data', () => {
+    const payload = { registry: 'default', service: 'bob', version: '123', namespaceId: 'abcdef' };
+
+    const gen = fetchSecretVersionsSaga(payload);
+    expect(gen.next().value).toMatchObject(call(getSecretVersions, 'default', 'bob', 'abcdef'));
+    expect(gen.next({a:1}).value).toMatchObject(put(setSecretVersions({a:1})));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next({}).value).toMatchObject(call(getLatestDeployedSecretVersion, 'default', 'bob', '123', 'abcdef'));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('fetches secret version data & sets latest deployed version of secret', () => {
+    const payload = { registry: 'default', service: 'bob', version: '123', namespaceId: 'abcdef' };
+
+    const gen = fetchSecretVersionsSaga(payload);
+    expect(gen.next().value).toMatchObject(call(getSecretVersions, 'default', 'bob', 'abcdef'));
+    expect(gen.next({a:1}).value).toMatchObject(put(setSecretVersions({a:1})));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next({}).value).toMatchObject(call(getLatestDeployedSecretVersion, 'default', 'bob', '123', 'abcdef'));
+    expect(gen.next({ id: 'abcd' }).value).toMatchObject(put(change('deploy', 'secret', 'abcd')));
+    expect(gen.next().done).toBe(true);
+  });
+
+  it('fetches secret version data & uses existing form value', () => {
+    const payload = { registry: 'default', service: 'bob', version: '123', namespaceId: 'abcdef' };
+
+    const gen = fetchSecretVersionsSaga(payload);
+    expect(gen.next().value).toMatchObject(call(getSecretVersions, 'default', 'bob', 'abcdef'));
+    expect(gen.next({a:1}).value).toMatchObject(put(setSecretVersions({a:1})));
+    expect(gen.next().value).toMatchObject(select(getDeployFormValues));
+    expect(gen.next({ secret: 'abcd' }).done).toBe(true);
   });
 });

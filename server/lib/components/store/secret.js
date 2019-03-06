@@ -64,8 +64,30 @@ export default function(options) {
       });
     }
 
-    async function getLatestDeployedSecretForServiceToNamespace() {
+    async function getLatestDeployedSecretForReleaseToNamespace(release, namespace, meta) {
+      logger.debug(`Fetching latest deployed secret to namespace ${namespace.id} for ${meta.account.id}`);
+      const baseBuilder = () => sqb
+        .select('da.value')
+        .from('deployment_attribute da')
+        .join(sqb.join('active_deployment__vw d').on(Op.eq('da.deployment', raw('d.id'))))
+        .join(sqb.join('active_release__vw r').on(Op.eq('d.release', raw('r.id'))))
+        .where(Op.eq('d.namespace', namespace.id))
+        .where(Op.eq('r.service', release.service.id))
+        .orderBy('d.created_on desc')
+        .limit(1);
 
+      const releaseSpecificBuilder = baseBuilder().where(Op.eq('r.version', release.version));
+
+      return db.withTransaction(async connection => {
+        const [deploymentsResult, releaseResult] = await Promise.all([
+          connection.query(db.serialize(baseBuilder(), {}).sql),
+          connection.query(db.serialize(releaseSpecificBuilder, {}).sql),
+        ]);
+        if (!releaseResult.rowCount && !deploymentsResult.rowCount) return undefined;
+
+        const { value: id } = releaseResult.rowCount ? releaseResult.rows[0] : deploymentsResult.rows[0];
+        return await _getVersionOfSecretById(connection, id, meta);
+      });
     }
 
     async function listVersionsOfSecret(service, namespace, meta, limit = 20, offset = 0) {
@@ -178,7 +200,7 @@ export default function(options) {
       getVersionOfSecretById,
       getVersionOfSecretWithDataById,
       listVersionsOfSecret,
-      getLatestDeployedSecretForServiceToNamespace,
+      getLatestDeployedSecretForReleaseToNamespace,
     });
   }
 

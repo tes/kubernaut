@@ -294,6 +294,8 @@ export const getServiceNamespacesStatus = (registry, service, offset, limit) => 
 export const getSecretVersions = (registry, service, namespaceId, offset, limit) => makeRequest(`/api/secrets/${registry}/${service}/${namespaceId}?${makeQueryString({ offset, limit })}`)
   .then(computePagination);
 
+export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
+
 export const getSecretVersionWithData = (version) => makeRequest(`/api/secrets/${version}/with-data`);
 
 export const saveSecretVersion = (registry, service, namespace, data) => {

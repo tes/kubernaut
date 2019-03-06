@@ -60,6 +60,28 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/secrets/:registry/:service/:version/:namespace/latest-deployed', async (req, res, next) => {
+      try {
+        const registry = await store.findRegistry({ name: req.params.registry });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const release = await store.findRelease({ filters: parseFilters(req.params, ['service', 'registry', 'version'])});
+        if (!release) return next(Boom.notFound());
+
+        const namespace = await store.getNamespace(req.params.namespace);
+        if (!namespace) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'secrets-apply')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+
+        const result = await store.getLatestDeployedSecretForReleaseToNamespace(release, namespace, meta);
+        res.json(result || {});
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/secrets/:registry/:service/:namespace', bodyParser.json(), async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });

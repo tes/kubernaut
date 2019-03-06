@@ -158,6 +158,7 @@ function makeDeployment(overrides = {}) {
     attributes: {
       replicas: `${chance.integer({ min: 1, max: 10 })}`,
       containerPort: `${chance.integer({ min: 3000, max: 10000 })}`,
+      ...overrides.attributes,
     },
     context,
     manifest: new Manifest({ yaml, json }),

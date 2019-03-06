@@ -32,7 +32,7 @@ class RenderSecretVersions extends Component {
     const currentSelectedVersion = input.value ? options.find(v => (v.id === input.value)) : null;
     const displayValue = currentSelectedVersion ? `${currentSelectedVersion.comment} - ${currentSelectedVersion.createdBy.displayName}` : 'Choose a version:';
     const maxHeight = window.innerHeight - 50 < 500 ? window.innerHeight - 50 : 500;
-
+    const displayExistsNewerWarning = input.value && options.findIndex(v => v.id === input.value) > 0;
     return (
       <Dropdown className={className} isOpen={this.state.open} toggle={this.toggle} disabled={isDisabled}>
         <DropdownToggle disabled={isDisabled} className="w-100 d-flex" tag={outlinedDropDownToggle}>
@@ -67,6 +67,9 @@ class RenderSecretVersions extends Component {
             ))
           }
         </DropdownMenu>
+        { displayExistsNewerWarning ?
+          <span className="help-block"><span className="text-info">There is a newer version available.</span></span>
+        : null }
       </Dropdown>
     );
   }

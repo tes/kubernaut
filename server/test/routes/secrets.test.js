@@ -8,6 +8,7 @@ import {
   makeNamespace,
   makeService,
   makeRequestWithDefaults,
+  makeDeployment,
 } from '../factories';
 
 describe('Secrets API', () => {
@@ -251,6 +252,77 @@ describe('Secrets API', () => {
 
   });
 
+  describe('GET /api/secrets/:registry/:service/:version/:namespace/latest-deployed', () => {
+    it('gets the last deployed version of a secret for a service to a namespace', async () => {
+      const release = await saveRelease();
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
+      const [firstMeta, secondMeta] = [makeRootMeta(), makeRootMeta()].sort((a, b) => (a.date - b.date));
+
+      const firstDeployed = await store.saveVersionOfSecret(release.service, namespace, {
+        comment: 'first',
+        secrets: [],
+      }, firstMeta);
+      const secondDeployed = await store.saveVersionOfSecret(release.service, namespace, {
+        comment: 'second',
+        secrets: [],
+      }, secondMeta);
+
+      await saveDeployment({
+        release,
+        namespace,
+        attributes: { secret: firstDeployed },
+      }, firstMeta);
+      await saveDeployment({
+        release,
+        namespace,
+        attributes: { secret: secondDeployed },
+      }, secondMeta);
+
+      const response = await request({
+        url: `/api/secrets/${release.service.registry.name}/${release.service.name}/${release.version}/${namespace.id}/latest-deployed`,
+        method: 'GET',
+      });
+      expect(response).toBeDefined();
+      expect(response.id).toBe(secondDeployed);
+    });
+
+    it('gets the last deployed version of a secret for a specific version of a service to a namespace', async () => {
+      const release = await saveRelease();
+      const secondRelease = await saveRelease(release.service);
+      const cluster = await saveCluster();
+      const namespace = await saveNamespace(makeNamespace({ cluster }));
+      const [firstMeta, secondMeta] = [makeRootMeta(), makeRootMeta()].sort((a, b) => (a.date - b.date));
+
+      const firstDeployed = await store.saveVersionOfSecret(release.service, namespace, {
+        comment: 'first',
+        secrets: [],
+      }, firstMeta);
+      const secondDeployed = await store.saveVersionOfSecret(secondRelease.service, namespace, {
+        comment: 'second',
+        secrets: [],
+      }, secondMeta);
+
+      await saveDeployment({
+        release,
+        namespace,
+        attributes: { secret: firstDeployed },
+      }, firstMeta);
+      await saveDeployment({
+        release: secondRelease,
+        namespace,
+        attributes: { secret: secondDeployed },
+      }, secondMeta);
+
+      const response = await request({
+        url: `/api/secrets/${release.service.registry.name}/${release.service.name}/${release.version}/${namespace.id}/latest-deployed`,
+        method: 'GET',
+      });
+      expect(response).toBeDefined();
+      expect(response.id).toBe(firstDeployed);
+    });
+  });
+
   function saveNamespace(namespace = makeNamespace(), meta = makeRootMeta()) {
     return store.saveNamespace(namespace, meta);
   }
@@ -262,5 +334,14 @@ describe('Secrets API', () => {
   async function saveService(service = makeService(), meta = makeRootMeta()) {
     const release = await store.saveRelease(makeRelease({ service }), meta);
     return release.service;
+  }
+
+  async function saveRelease(service = makeService(), meta = makeRootMeta()) {
+    return store.saveRelease(makeRelease({ service }), meta);
+  }
+
+  async function saveDeployment(overrides = {}, meta = makeRootMeta()) {
+      const data = makeDeployment(overrides);
+      return await store.saveDeployment(data, meta);
   }
 });

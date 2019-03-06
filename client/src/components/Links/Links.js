@@ -71,7 +71,7 @@ export const CreateDeploymentLink = (props) => {
     version,
     cluster = {},
     namespace = {},
-    secret = {},
+    secret = '',
     text,
     children,
   } = props;
@@ -85,7 +85,7 @@ export const CreateDeploymentLink = (props) => {
           version,
           cluster: cluster.name || '',
           namespace: namespace.name || '',
-          secret: secret || '',
+          secret: secret,
         })
       }}
     >{element}</Link>

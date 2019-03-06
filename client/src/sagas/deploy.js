@@ -40,6 +40,7 @@ import {
   getReleases,
   getLatestDeploymentsByNamespaceForService,
   getSecretVersions,
+  getLatestDeployedSecretVersion,
 } from '../lib/api';
 const { INITIALIZE: reduxFormInitialise } = actionTypes;
 
@@ -179,10 +180,15 @@ export function* fetchLatestDeploymentsPerNamespaceSaga({ payload: { service, re
 }
 
 export function* fetchSecretVersionsSaga(payload) {
-  const { registry, service, namespaceId } = payload;
+  const { registry, service, version, namespaceId } = payload;
+  if (!registry || !service || !version || !namespaceId) return;
   try {
     const results = yield call(getSecretVersions, registry, service, namespaceId);
     yield put(setSecretVersions(results));
+    const { secret: currentSecretValue } = yield select(getDeployFormValues);
+    if (currentSecretValue) return;
+    const latestDeployed = yield call(getLatestDeployedSecretVersion, registry, service, version, namespaceId);
+    if (latestDeployed) yield put(change('deploy', 'secret', latestDeployed.id));
   } catch (error) {
     if (!payload.quiet) console.error(error); // eslint-disable-line no-console
   }
@@ -208,6 +214,7 @@ export function* fetchSecretsInitProxySaga() {
   yield call(fetchSecretVersionsSaga, {
     registry: currentValue.registry,
     service: currentValue.service,
+    version: currentValue.version,
     namespaceId: namespace.id,
   });
 }
@@ -220,6 +227,7 @@ export function* fetchSecretsNamespaceChangedProxySaga({ payload = {} }) {
   yield call(fetchSecretVersionsSaga, {
     registry: currentValue.registry,
     service: currentValue.service,
+    version: currentValue.version,
     namespaceId,
   });
 }
