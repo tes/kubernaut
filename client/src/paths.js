@@ -21,6 +21,7 @@ import { fetchVersion } from './modules/secretVersion';
 import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
+import { initHomePage } from './modules/home';
 
 const paths = {
   account: {
@@ -48,7 +49,8 @@ const paths = {
     action: initialiseDeploymentsPage,
   },
   home: {
-    route: '/'
+    route: '/',
+    action: initHomePage,
   },
   namespace: {
     route: '/namespaces/:namespaceId',
