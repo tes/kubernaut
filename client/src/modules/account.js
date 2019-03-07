@@ -4,6 +4,7 @@ export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INF
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);
 export const FETCH_ACCOUNT_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNT_ERROR`);
+export const selectAccount = (state) => state.account.data;
 
 const defaultState = {
   data: {

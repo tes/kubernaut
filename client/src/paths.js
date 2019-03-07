@@ -1,6 +1,7 @@
 import { matchPath } from "react-router";
 import { find as _find } from 'lodash';
-import { put } from 'redux-saga/effects';
+import { put, select, take } from 'redux-saga/effects';
+import { selectAccount, FETCH_ACCOUNT_SUCCESS } from './modules/account';
 
 import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
@@ -107,5 +108,9 @@ export function* routesSaga ({ payload }) {
     match = matchPath(payload.location.pathname, { path: route, exact: true });
     return match;
   });
-  if (path && path.action) yield put(path.action({ match, location: payload.location }));
+  if (path && path.action) {
+    const hasAccountData = !!(yield select(selectAccount)).id;
+    if (!hasAccountData) yield take(FETCH_ACCOUNT_SUCCESS);
+    yield put(path.action({ match, location: payload.location }));
+  }
 }
