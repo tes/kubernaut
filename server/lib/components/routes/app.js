@@ -11,6 +11,7 @@ module.exports = function() {
 
     const clientApp = function(status) {
       return (req, res, next) => {
+        if (!req.user) return res.redirect('/login');
         res.set('Cache-Control', 'public, max-age=600, must-revalidate');
         res.status(status);
         res.sendFile(path.join(process.cwd(), 'client', 'build', 'index.html'));
@@ -39,16 +40,12 @@ module.exports = function() {
     // Handle requests to the client app without disabling logging
     app.get([
       /^\/$/,
-      '/registries/:registry?',
-      '/namespaces/:namespace?',
-      '/namespaces/:namespace/edit',
-      '/namespaces/:namespace/manage',
-      '/accounts/:account?',
-      '/accounts/:account/edit',
-      '/releases/:release?',
-      '/deployments/:deployment?',
-      '/services',
-      '/services/:registry/:service',
+      /^\/accounts(?:\/.)*/,
+      /^\/deployments(?:\/.)*/,
+      /^\/namespaces(?:\/.)*/,
+      /^\/registries(?:\/.)*/,
+      /^\/releases(?:\/.)*/,
+      /^\/services(?:\/.)*/,
     ], clientApp(200));
 
     // Serve other static resources with logging disabled
