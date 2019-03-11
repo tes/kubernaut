@@ -10,6 +10,7 @@ import release from './release';
 import deployment from './deployment';
 import service from './service';
 import secret from './secret';
+import audit from './audit';
 import authz from './authz';
 import store from './store';
 
@@ -28,6 +29,7 @@ export default () => systemic({ name: 'stores/postgres' })
   .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.service', service()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.secret', secret()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.audit', audit()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store', store()).dependsOn(
     'config', 'logger', 'db',
     { component: 'store.registry', destination: 'registry' },
@@ -38,4 +40,5 @@ export default () => systemic({ name: 'stores/postgres' })
     { component: 'store.deployment', destination: 'deployment' },
     { component: 'store.service', destination: 'service' },
     { component: 'store.secret', destination: 'secret' },
+    { component: 'store.audit', destination: 'audit' },
   );
