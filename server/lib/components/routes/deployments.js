@@ -113,7 +113,9 @@ export default function(options = {}) {
           versionOfSecret.setYaml(secretManifest);
         }
 
-        const attributes = Object.assign(versionOfSecret ? { secret: versionOfSecret.id } : {}, namespace.attributes, release.attributes, req.body);
+        const serviceNamespaceAttrs = await store.getServiceAttributesForNamespace(release.service, namespace);
+
+        const attributes = Object.assign({}, namespace.attributes, release.attributes, serviceNamespaceAttrs, req.body, versionOfSecret ? { secret: versionOfSecret.id } : {});
         const manifest = getManifest(release, attributes, versionOfSecret);
         const data = { namespace, manifest, release, attributes };
 

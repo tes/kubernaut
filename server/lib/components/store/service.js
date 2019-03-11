@@ -1,4 +1,5 @@
 import sqb from 'sqb';
+import Promise from 'bluebird';
 import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
@@ -290,6 +291,49 @@ export default function(options) {
         });
     }
 
+    async function getServiceAttributesForNamespace(service, namespace) {
+      const builder = sqb
+        .select('name', 'value')
+        .from('service_namespace_attribute')
+        .where(Op.eq('service', service.id))
+        .where(Op.eq('namespace', namespace.id));
+
+      const result = await db.query(db.serialize(builder, {}).sql);
+      if (!result.rowCount) return {};
+
+      return result.rows.reduce((acc, row) => ({
+        ...acc,
+        [row.name]: row.value,
+      }), {});
+    }
+
+    async function saveServiceAttributesForNamespace(service, namespace, attributes) {
+      const deleteBuilder = sqb
+        .delete('service_namespace_attribute')
+        .where(Op.eq('service', service.id))
+        .where(Op.eq('namespace', namespace.id));
+
+      const insertBuilders = [];
+      for (const name in attributes) {
+        insertBuilders.push(sqb
+        .insert('service_namespace_attribute', {
+          service: service.id,
+          namespace: namespace.id,
+          name,
+          value: attributes[name],
+        }));
+      }
+      await db.withTransaction(async connection => {
+        await connection.query(db.serialize(deleteBuilder, {}).sql);
+
+        await Promise.mapSeries(insertBuilders, async (insertBuilder) => {
+          await connection.query(db.serialize(insertBuilder, {}).sql);
+        });
+      });
+
+      return await getServiceAttributesForNamespace(service, namespace);
+    }
+
     function toService(row) {
       return new Service({
         id: row.id,
@@ -329,6 +373,8 @@ export default function(options) {
       findServicesAndShowStatusForNamespace,
       deleteService,
       serviceDeployStatusForNamespaces,
+      getServiceAttributesForNamespace,
+      saveServiceAttributesForNamespace,
     });
   }
 
