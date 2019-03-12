@@ -16,14 +16,15 @@ import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
 import NamespaceManagePage from './components/NamespaceManagePage';
+import NewSecretVersionPage from './components/NewSecretVersionPage';
 import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
 import ServicesPage from './components/ServicesPage';
 import ServiceDetailsPage from './components/ServiceDetailsPage';
 import ServiceManagePage from './components/ServiceManagePage';
+import ServiceNamespaceAttrsPage from './components/ServiceNamespaceAttrsPage';
 import SecretOverviewPage from './components/SecretOverviewPage';
 import SecretVersionViewPage from './components/SecretVersionViewPage';
-import NewSecretVersionPage from './components/NewSecretVersionPage';
 
 import paths from './paths';
 
@@ -143,6 +144,18 @@ export default () => <Switch>
     render={({ match }) =>
       <Wrapper title="Service">
         <ServiceManagePage
+          registryName={match.params.registry}
+          serviceName={match.params.name}
+        />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.serviceNamespaceAttrs.route}
+    render={({ match }) =>
+      <Wrapper title="Service Attributes">
+        <ServiceNamespaceAttrsPage
           registryName={match.params.registry}
           serviceName={match.params.name}
         />

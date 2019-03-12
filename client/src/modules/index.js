@@ -20,6 +20,7 @@ import service from './service';
 import secretOverview from './secretOverview';
 import secretVersion from './secretVersion';
 import serviceManage from './serviceManage';
+import serviceNamespaceAttrs from './serviceNamespaceAttrs';
 import services from './services';
 import viewAccount from './viewAccount';
 
@@ -44,6 +45,7 @@ export default (history) => combineReducers({
   secretOverview,
   secretVersion,
   serviceManage,
+  serviceNamespaceAttrs,
   services,
   viewAccount,
 });

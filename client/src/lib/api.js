@@ -304,3 +304,10 @@ export const saveSecretVersion = (registry, service, namespace, data) => {
     body: JSON.stringify(data),
   });
 };
+
+export const getServiceAttributesForNamespace = (registry, service, namespaceId) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`);
+
+export const setServiceAttributesForNamespace = (registry, service, namespaceId, data) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`, {
+  method: 'POST',
+  body: JSON.stringify(data),
+});

@@ -22,6 +22,7 @@ import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
 import { initHomePage } from './modules/home';
+import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 
 const paths = {
   account: {
@@ -91,6 +92,10 @@ const paths = {
   service: {
     route: '/services/:registry/:name',
     action: initServiceDetailPage,
+  },
+  serviceNamespaceAttrs: {
+    route: '/services/:registry/:name/manage/attributes/:namespaceId',
+    action: initServiceNamespaceAttrs,
   },
   services: {
     route: '/services',

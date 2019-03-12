@@ -6,14 +6,12 @@ import {
   Row,
   Col,
   FormGroup,
-  Label,
   Button,
   Progress,
   Form,
 } from 'reactstrap';
 import Title from '../Title';
-import { NamespacesSubNav } from '../SubNavs';
-import RenderSelect from '../RenderSelect';
+import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 
 const renderAttributes = (props) => {
@@ -21,7 +19,6 @@ const renderAttributes = (props) => {
   return (
     <Row>
       <Col>
-        <h6>Attributes:</h6>
         {props.fields.map((attribute, index) => (
           <Row form key={props.fields.get(index).tempKey}>
             <Col>
@@ -84,7 +81,7 @@ const renderAttributes = (props) => {
   );
 };
 
-class NamespaceEditPage extends Component {
+class ServiceNamespaceAttrsPage extends Component {
 
   render() {
     const { meta } = this.props;
@@ -98,7 +95,7 @@ class NamespaceEditPage extends Component {
       </Container>
     );
 
-    if (!this.props.canEdit) {
+    if (!this.props.canManage) {
       return (
         <Container className="page-frame">
           <Row>
@@ -115,56 +112,11 @@ class NamespaceEditPage extends Component {
 
     return (
       <Container className="page-frame">
-        <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
-        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
+        <Title title={`${this.props.registryName}/${this.props.serviceName} attributes for: ${namespace.clusterName}/${namespace.name}`} />
+        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} namespace={namespace} attributes />
         <Row>
           <Col>
             <Form>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="color"
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="cluster" className="col-sm-2 col-form-label text-right">Cluster:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="cluster"
-                        className="form-control"
-                        component={RenderSelect}
-                        options={this.props.clusterOptions}
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="context"
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
               <FieldArray
                 name="attributes"
                 component={renderAttributes}
@@ -192,11 +144,10 @@ class NamespaceEditPage extends Component {
   }
 }
 
-NamespaceEditPage.propTypes = {
-  namespaceId: PropTypes.string.isRequired,
-  canEdit: PropTypes.bool.isRequired,
+ServiceNamespaceAttrsPage.propTypes = {
+  canManage: PropTypes.bool.isRequired,
   namespace: PropTypes.object.isRequired,
-  clusterOptions: PropTypes.array.isRequired,
+  meta: PropTypes.object.isRequired,
 };
 
-export default NamespaceEditPage;
+export default ServiceNamespaceAttrsPage;
