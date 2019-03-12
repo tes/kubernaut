@@ -11,7 +11,7 @@ import {
 import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
-import { NamespaceLink, ServiceSecretsForNamespaceLink } from '../Links';
+import { NamespaceLink, ServiceSecretsForNamespaceLink, ServiceAttributesForNamespaceLink } from '../Links';
 
 const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, serviceName, registryName }) => fields.map((member, index) => {
   const status = namespaces[index];
@@ -38,6 +38,13 @@ const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, s
       </td>
       <td>
         <ServiceSecretsForNamespaceLink
+          namespace={status.namespace}
+          registryName={registryName}
+          serviceName={serviceName}
+        />
+      </td>
+      <td>
+        <ServiceAttributesForNamespaceLink
           namespace={status.namespace}
           registryName={registryName}
           serviceName={serviceName}
@@ -82,7 +89,7 @@ class ServiceManagePage extends Component {
         <Title title={`Manage service: ${this.props.registryName}/${this.props.serviceName}`} />
         <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
         <Row>
-          <Col md="6">
+          <Col md="8">
             <form>
               <Row>
                 <Col>
@@ -91,6 +98,7 @@ class ServiceManagePage extends Component {
                       <tr>
                         <th className="text-center border-top-0">Can deploy?</th>
                         <th className="border-top-0">Namespace</th>
+                        <th className="border-top-0"></th>
                         <th className="border-top-0"></th>
                       </tr>
                     </thead>

@@ -171,3 +171,13 @@ export const NewSecretVersionLink = ({ namespace, registryName, serviceName, con
 
   return <Tag {...props}>{children || <span>New version</span>}</Tag>;
 };
+
+export const ServiceAttributesForNamespaceLink = ({ namespace, registryName, serviceName, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName}/${serviceName}/manage/attributes/${namespace.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-tags" aria-hidden='true'></i> Attributes</span>}</Tag>;
+};

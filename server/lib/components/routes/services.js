@@ -162,7 +162,7 @@ export default function(options = {}) {
         if (!namespace) return next(Boom.notFound());
         if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'namespaces-manage')) return next(Boom.forbidden());
 
-        const attributes = await store.saveServiceAttributesForNamespace(service, namespace, attributes);
+        const attributes = await store.getServiceAttributesForNamespace(service, namespace);
         res.json(attributes);
       } catch (err) {
         next(err);
