@@ -15,6 +15,8 @@ export default function(options = {}) {
 
     app.get('/api/deployments', async (req, res, next) => {
       try {
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed deployments');
         const filters = parseFilters(req.query, ['registry', 'service', 'version', 'namespace', 'cluster']);
         const criteria = {
           filters,
@@ -50,7 +52,8 @@ export default function(options = {}) {
           const storedSecret = await store.getVersionOfSecretById(deployment.attributes.secret, meta);
           if (storedSecret) deployment.attributes.secret = storedSecret;
         }
-
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed deployment', { deployment });
         res.json(deployment);
       } catch (err) {
         next(err);
@@ -60,10 +63,16 @@ export default function(options = {}) {
     app.get('/api/deployments/latest-by-namespace/:registry/:service', async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });
-
+        if (!registry) return next(Boom.notFound());
         if(! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
+        const service = await store.findService({ filters: parseFilters(req.params, ['service', 'registry'], {
+          service: 'name'
+        }) });
+        if (!service) return next(Boom.notFound());
+        const meta = { date: new Date(), account: { id: req.user.id } };
 
         const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user);
+        await store.audit(meta, 'viewed latest deployments for service by namespace', { registry, service });
         res.json(deployments);
       } catch(err) {
         next(err);
@@ -120,6 +129,7 @@ export default function(options = {}) {
         const data = { namespace, manifest, release, attributes };
 
         const deployment = await store.saveDeployment(data, meta);
+        await store.audit(meta, 'created deployment', { deployment, release, service: release.service, namespace, registry, secretVersion: versionOfSecret });
         if (versionOfSecret) deployment.setSecret(versionOfSecret);
         const emitter = new EventEmitter();
         const log = [];
@@ -157,6 +167,8 @@ export default function(options = {}) {
         if (req.body.note === undefined) return next(Boom.badRequest('note is required'));
         if (typeof req.body.note !== 'string') return next(Boom.badRequest('note must be a string'));
         const result = await store.setDeploymentNote(deployment.id, req.body.note);
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.audit(meta, 'saved note to deployment', { deployment });
         res.status(200).json(result);
       } catch (err) {
         next(err);
@@ -171,6 +183,7 @@ export default function(options = {}) {
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteDeployment(req.params.id, meta);
+        await store.audit(meta, 'deleted note from deployment', { deployment });
         res.status(204).send();
       } catch (err) {
         next(err);
