@@ -204,7 +204,7 @@ describe('Deployments API', () => {
     });
 
     it('should return empty for no deployments', async () => {
-
+      await store.saveRelease(makeRelease({ service: { name: 'hello-world2' } }), makeRootMeta());
       loggerOptions.suppress = true;
 
       const deployments = await request({

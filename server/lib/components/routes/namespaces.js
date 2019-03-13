@@ -118,7 +118,7 @@ export default function(options = {}) {
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteNamespace(req.params.id, meta);
-        await store.audit('deleted namespace', { namespace });
+        await store.audit(meta,'deleted namespace', { namespace });
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -136,7 +136,8 @@ export default function(options = {}) {
           user: { id: req.user.id, permission: 'namespaces-read' },
           service,
         });
-        await store.audit('checked namespaces service can deploy to', { service });
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.audit(meta, 'checked namespaces service can deploy to', { service });
         res.json(namespaces);
       } catch (err) {
         next(err);

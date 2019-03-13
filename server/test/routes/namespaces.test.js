@@ -11,7 +11,7 @@ import {
   makeRequestWithDefaults,
 } from '../factories';
 
-describe('Namespaces API', () => {
+describe.only('Namespaces API', () => {
 
   let request;
   let config;
