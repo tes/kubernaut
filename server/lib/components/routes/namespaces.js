@@ -11,6 +11,8 @@ export default function(options = {}) {
 
     app.get('/api/namespaces', async (req, res, next) => {
       try {
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed namespaces');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const result = await store.findNamespaces({
@@ -30,6 +32,8 @@ export default function(options = {}) {
 
         const namespace = await store.getNamespace(req.params.id);
         if (!namespace) return next(Boom.notFound());
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed namespace', { namespace });
         res.json(namespace);
       } catch (err) {
         next(err);
@@ -60,6 +64,7 @@ export default function(options = {}) {
         const data = { name: req.body.name, cluster, context: req.body.context, color: req.body.color };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const namespace = await store.saveNamespace(data, meta);
+        await store.audit(meta, 'saved namespace', { namespace });
         res.json(namespace);
       } catch (err) {
         next(err);
@@ -97,6 +102,8 @@ export default function(options = {}) {
         }
 
         const namespace = await store.updateNamespace(req.params.id, values);
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.audit(meta, 'updated namespace', { namespace });
         res.json(namespace);
       } catch (err) {
         next(err);
@@ -106,9 +113,12 @@ export default function(options = {}) {
     app.delete('/api/namespaces/:id', async (req, res, next) => {
       try {
         if (! await store.hasPermissionOnNamespace(req.user, req.params.id, 'namespaces-write')) return next(Boom.forbidden());
+        const namespace = await store.getNamespace(req.params.id);
+        if (!namespace) return next(Boom.notFound());
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteNamespace(req.params.id, meta);
+        await store.audit('deleted namespace', { namespace });
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -126,6 +136,7 @@ export default function(options = {}) {
           user: { id: req.user.id, permission: 'namespaces-read' },
           service,
         });
+        await store.audit('checked namespaces service can deploy to', { service });
         res.json(namespaces);
       } catch (err) {
         next(err);
