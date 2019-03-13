@@ -11,6 +11,8 @@ export default function(options = {}) {
 
     app.get('/api/services', async (req, res, next) => {
       try {
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed services');
         const filters = parseFilters(req.query, ['name', 'createdBy', 'registry']);
         const criteria = {
           user: { id: req.user.id, permission: 'registries-read' },
@@ -38,7 +40,8 @@ export default function(options = {}) {
           service: 'name'
         }) });
         if (!service) return next(Boom.notFound());
-
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed service', { service });
         return res.json(service);
       } catch (err) {
         next(err);
@@ -48,6 +51,8 @@ export default function(options = {}) {
     app.get('/api/services-with-status-for-namespace/:namespaceId', async (req, res, next) => {
       try {
         const { namespaceId } = req.params;
+        const namespace = await store.getNamespace(namespaceId);
+        if (!namespace) return next(Boom.notFound());
         if (! await store.hasPermissionOnNamespace(req.user, namespaceId, 'namespaces-manage')) return next(Boom.forbidden());
 
         const criteria = {
@@ -58,6 +63,8 @@ export default function(options = {}) {
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 
         const result = await store.findServicesAndShowStatusForNamespace(criteria, limit, offset);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed services status for namespace', { namespace });
         res.json(result);
       } catch (err) {
         next(err);
@@ -80,7 +87,8 @@ export default function(options = {}) {
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const result = await store.serviceDeployStatusForNamespaces(service.id, req.user, limit, offset);
-
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed service status for namespaces', { registry, service });
         return res.json(result);
       } catch (err) {
         next(err);
@@ -103,7 +111,8 @@ export default function(options = {}) {
         const fetchNamespaces = req.query.fetchNamespaces === "true";
 
         await store.enableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
-
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'enabled service to deploy to namespace', { service, namespace });
         const criteria = {
           user: { id: req.user.id, permission: 'registries-read' },
           namespace: namespaceId,
@@ -133,6 +142,8 @@ export default function(options = {}) {
         const fetchNamespaces = req.query.fetchNamespaces === "true";
 
         await store.disableServiceForNamespace(namespace, service, { date: new Date(), account: { id: req.user.id } });
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'disabled service to deploy to namespace', { service, namespace });
 
         const criteria = {
           user: { id: req.user.id, permission: 'registries-read' },
@@ -163,6 +174,8 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'namespaces-manage')) return next(Boom.forbidden());
 
         const attributes = await store.getServiceAttributesForNamespace(service, namespace);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed service attributes for namespace', { registry, service, namespace });
         res.json(attributes);
       } catch (err) {
         next(err);
@@ -186,6 +199,8 @@ export default function(options = {}) {
 
         const attributes = req.body || {};
         const newAttributes = await store.saveServiceAttributesForNamespace(service, namespace, attributes);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'updated service attributes for namespace', { registry, service, namespace });
         res.json(newAttributes);
       } catch (err) {
         next(err);
