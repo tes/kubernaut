@@ -11,6 +11,8 @@ export default function(options = {}) {
 
     app.get('/api/clusters', async (req, res, next) => {
       try {
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed clusters');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const result = await store.findClusters({}, limit, offset);
@@ -23,7 +25,10 @@ export default function(options = {}) {
     app.get('/api/clusters/:id', async (req, res, next) => {
       try {
         const cluster = await store.getCluster(req.params.id);
-        return cluster ? res.json(cluster) : next();
+        if (!cluster) return next();
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed cluster', { cluster });
+        res.json(cluster);
       } catch (err) {
         next(err);
       }
@@ -52,6 +57,7 @@ export default function(options = {}) {
         };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const cluster = await store.saveCluster(data, meta);
+        await store.audit(meta, 'saved cluster', { cluster });
         res.json(cluster);
       } catch (err) {
         next(err);
@@ -60,8 +66,11 @@ export default function(options = {}) {
 
     app.delete('/api/clusters/:id', async (req, res, next) => {
       try {
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next();
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteCluster(req.params.id, meta);
+        await store.audit(meta, 'deleted cluster', { cluster });
         res.status(204).send();
       } catch (err) {
         next(err);
