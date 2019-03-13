@@ -15,6 +15,8 @@ export default function(options = {}) {
 
     app.get('/api/releases', async (req, res, next) => {
       try {
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed releases');
         const filters = parseFilters(req.query, ['service', 'version', 'registry', 'createdBy']);
         const criteria = {
           user: { id: req.user.id, permission: 'releases-read' },
@@ -37,6 +39,8 @@ export default function(options = {}) {
         const release = await store.getRelease(req.params.id);
         if (!release) return next(Boom.notFound());
         if (! await store.hasPermissionOnRegistry(req.user, release.service.registry.id, 'releases-read')) return next(Boom.forbidden());
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed release', { release });
         res.json(release);
       } catch (err) {
         next(err);
@@ -66,6 +70,7 @@ export default function(options = {}) {
         };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const release = await store.saveRelease(data, meta);
+        await store.audit(meta, 'saved release', release);
         res.json({ id: release.id });
       } catch (err) {
         if (err.code && err.code === '23505') return next(Boom.conflict(err.detail)); // unique_violation
@@ -81,6 +86,7 @@ export default function(options = {}) {
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteRelease(req.params.id, meta);
+        await store.audit(meta, 'deleted release', { release });
         res.status(204).send();
       } catch (err) {
         next(err);
