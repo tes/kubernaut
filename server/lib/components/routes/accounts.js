@@ -23,6 +23,8 @@ export default function(options = {}) {
     app.get('/api/accounts', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed accounts');
         const filters = parseFilters(req.query, ['name', 'createdBy']);
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -73,9 +75,10 @@ export default function(options = {}) {
     app.get('/api/accounts/:id', async (req, res, next) => {
       try {
         if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
-
         const account = await store.getAccount(req.params.id);
         if (!account) return next();
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed account', { account });
         const accountRoles = await store.getRolesForAccount(req.params.id, req.user);
         account.roles = accountRoles;
         res.json(account);
@@ -90,6 +93,7 @@ export default function(options = {}) {
         const data = { displayName: req.body.displayName };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const account = await store.saveAccount(data, meta);
+        await store.audit(meta, 'saved account', { account });
         res.json(account);
       } catch (err) {
         next(err);
@@ -98,10 +102,12 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
-
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-write'))) return next(Boom.forbidden());
+        const account = await store.getAccount(req.params.id);
+        if (!account) return next();
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.deleteAccount(req.params.id, meta);
+        await store.audit(meta, 'deleted account', { account });
         res.status(204).send();
       } catch (err) {
         next(err);
@@ -115,11 +121,16 @@ export default function(options = {}) {
         if (!req.body.provider) return next(Boom.badRequest('provider is required'));
         if (!req.body.type) return next(Boom.badRequest('type is required'));
 
-        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-write'))) return next(Boom.forbidden());
+
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const data = { name: req.body.name, provider: req.body.provider, type: req.body.type };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const identity = await store.saveIdentity(req.body.account, data, meta);
+        await store.audit(meta, 'added identity to account', { account });
+
         res.json(identity);
       } catch (err) {
         next(err);
@@ -132,9 +143,12 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
 
         if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.grantSystemRole(req.body.account, req.body.role, meta);
+        await store.audit(meta, `added system role [${req.body.role}] to account`, { account });
         const data = await store.rolesForSystem(req.body.account, req.user);
         res.json(data);
       } catch (err) {
@@ -148,9 +162,12 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
 
         if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.revokeSystemRole(req.body.account, req.body.role, meta);
+        await store.audit(meta, `deleted system role [${req.body.role}] from account`, { account });
         const data = await store.rolesForSystem(req.body.account, req.user);
         res.json(data);
       } catch (err) {
@@ -165,10 +182,13 @@ export default function(options = {}) {
         if (req.user.id === req.body.account) return next(Boom.badRequest('cannot set your own global'));
 
         if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.grantGlobalRole(req.body.account, req.body.role, meta);
         const data = await store.rolesForSystem(req.body.account, req.user);
+        await store.audit(meta, `added global role [${req.body.role}] to account`, { account });
         res.json(data);
       } catch (err) {
         next(err);
@@ -181,10 +201,13 @@ export default function(options = {}) {
         if (!req.body.role) return next(Boom.badRequest('role is required'));
 
         if (! await store.hasPermission(req.user, 'accounts-write')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.revokeGlobalRole(req.body.account, req.body.role, meta);
         const data = await store.rolesForSystem(req.body.account, req.user);
+        await store.audit(meta, `deleted global role [${req.body.role}] from account`, { account });
         res.json(data);
       } catch (err) {
         next(err);
@@ -198,10 +221,16 @@ export default function(options = {}) {
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
 
         if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.grantRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
         const data = await store.rolesForRegistries(req.body.account, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for registry to account`, {
+          account,
+          registry: { id: req.body.registry },
+        });
         res.json(data);
       } catch (err) {
         next(err);
@@ -215,10 +244,16 @@ export default function(options = {}) {
         if (!req.body.registry) return next(Boom.badRequest('registry is required'));
 
         if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.revokeRoleOnRegistry(req.body.account, req.body.role, req.body.registry, meta);
         const data = await store.rolesForRegistries(req.body.account, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for registry from account`, {
+          account,
+          registry: { id: req.body.registry },
+        });
         res.json(data);
       } catch (err) {
         next(err);
@@ -232,10 +267,16 @@ export default function(options = {}) {
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
 
         if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.grantRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
         const data = await store.rolesForNamespaces(req.body.account, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for namespace to account`, {
+          account,
+          namespace: { id: req.body.namespace },
+        });
         res.json(data);
       } catch (err) {
         next(err);
@@ -249,10 +290,16 @@ export default function(options = {}) {
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
 
         if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
         await store.revokeRoleOnNamespace(req.body.account, req.body.role, req.body.namespace, meta);
         const data = await store.rolesForNamespaces(req.body.account, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for namespace from account`, {
+          account,
+          namespace: { id: req.body.namespace },
+        });
         res.json(data);
       } catch (err) {
         next(err);
