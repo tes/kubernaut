@@ -12,6 +12,8 @@ CREATE TABLE audit
     action_namespace uuid,
     action_release uuid,
     action_service uuid,
+    action_secret_version uuid,
+    action_registry uuid,
 
     CONSTRAINT audit_pkey PRIMARY KEY (id),
     CONSTRAINT account FOREIGN KEY (account)
@@ -46,6 +48,16 @@ CREATE TABLE audit
 
     CONSTRAINT action_service FOREIGN KEY (action_service)
         REFERENCES service (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+
+    CONSTRAINT action_secret_version FOREIGN KEY (action_secret_version)
+        REFERENCES secret_version (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+
+    CONSTRAINT action_registry FOREIGN KEY (action_registry)
+        REFERENCES registry (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE CASCADE
 
@@ -87,6 +99,14 @@ CREATE INDEX audit_action_release ON audit (
 
 CREATE INDEX audit_action_service ON audit (
   action_service
+);
+
+CREATE INDEX audit_action_secret_version ON audit (
+  action_secret_version
+);
+
+CREATE INDEX audit_action_registry ON audit (
+  action_registry
 );
 
 COMMIT;

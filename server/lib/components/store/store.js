@@ -14,6 +14,7 @@ export default function(options = {}) {
       deployment,
       service,
       secret,
+      audit,
       db,
     } = deps;
 
@@ -38,6 +39,7 @@ export default function(options = {}) {
       ...deployment,
       ...service,
       ...secret,
+      ...audit,
       nuke : config.unsafe ? nuke : undefined,
       logged: config.unsafe ? logged : undefined,
       unlogged: config.unsafe ? unlogged : undefined,
