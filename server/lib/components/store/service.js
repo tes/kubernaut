@@ -292,6 +292,7 @@ export default function(options) {
     }
 
     async function getServiceAttributesForNamespace(service, namespace) {
+      logger.debug(`Retrieving service attributes for ${service.id} on namespace ${namespace.id}`);
       const builder = sqb
         .select('name', 'value')
         .from('service_namespace_attribute')
@@ -299,6 +300,7 @@ export default function(options) {
         .where(Op.eq('namespace', namespace.id));
 
       const result = await db.query(db.serialize(builder, {}).sql);
+      logger.debug(`Found ${result.rowCount} attributes for ${service.id} on namespace ${namespace.id}`);
       if (!result.rowCount) return {};
 
       return result.rows.reduce((acc, row) => ({
@@ -308,6 +310,8 @@ export default function(options) {
     }
 
     async function saveServiceAttributesForNamespace(service, namespace, attributes) {
+      logger.debug(`Updating service attributes for ${service.id} on namespace ${namespace.id}`);
+
       const deleteBuilder = sqb
         .delete('service_namespace_attribute')
         .where(Op.eq('service', service.id))
