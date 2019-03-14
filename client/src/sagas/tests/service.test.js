@@ -31,6 +31,7 @@ import {
   setDeploymentsPagination,
   setCanManage,
   setCurrentService,
+  clearCurrentService,
   selectCurrentService,
 } from '../../modules/service';
 
@@ -174,6 +175,7 @@ describe('Service sagas', () => {
       };
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
+      expect(gen.next().value).toMatchObject(put(clearCurrentService()));
       expect(gen.next().value).toMatchObject(put(replace('/service/a/b?r-pagination=page%3D1%26limit%3D10')));
       expect(gen.next().done).toBe(true);
     });
@@ -185,6 +187,7 @@ describe('Service sagas', () => {
       };
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
+      expect(gen.next().value).toMatchObject(put(clearCurrentService()));
       expect(gen.next().value).toMatchObject(put(replace('/service/a/b?r-pagination=page%3D1%26limit%3D10&d-pagination=page%3D1%26limit%3D10')));
       expect(gen.next().done).toBe(true);
     });

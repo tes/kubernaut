@@ -26,6 +26,7 @@ export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
 export const setCurrentService = createAction(`${actionsPrefix}/SET_CURRENT_SERVICE`);
+export const clearCurrentService = createAction(`${actionsPrefix}/CLEAR_CURRENT_SERVICE`);
 
 export const selectCurrentService = (state) => (state.service.service);
 export const selectReleasesPaginationState = (state) => (state.service.releases.pagination);
@@ -84,6 +85,10 @@ export default handleActions({
       registryName: payload.registry,
       name: payload.service,
     },
+  }),
+  [clearCurrentService]: (state) => ({
+    ...state,
+    service: defaultState.service,
   }),
   [FETCH_RELEASES_REQUEST]: (state) => ({
     ...state,

@@ -17,6 +17,7 @@ import {
   setReleasesPagination,
   setCanManage,
   setCurrentService,
+  clearCurrentService,
   selectCurrentService,
   FETCH_RELEASES_REQUEST,
   FETCH_RELEASES_SUCCESS,
@@ -52,6 +53,7 @@ export function* initServiceDetailPageSaga({ payload = {} }) {
   const parsedDeploymentsPagination = parseQueryString(extractFromQuery(location.search, 'd-pagination') || '');
 
   if (_isEqual({}, parsedReleasesPagination)) {
+    yield put(clearCurrentService());
     yield put(replace(`${location.pathname}?${alterQuery(location.search, {
       'r-pagination': makeQueryString({ ...releasesDefaultPagination }),
     })}`));
@@ -59,6 +61,7 @@ export function* initServiceDetailPageSaga({ payload = {} }) {
   }
 
   if (_isEqual({}, parsedDeploymentsPagination)) {
+    yield put(clearCurrentService());
     yield put(replace(`${location.pathname}?${alterQuery(location.search, {
       'd-pagination': makeQueryString({ ...deploymentsDefaultPagination }),
     })}`));
