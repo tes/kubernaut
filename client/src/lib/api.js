@@ -90,6 +90,15 @@ export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} 
   return makeRequest(`/api/accounts?${qs}`).then(computePagination);
 };
 
+export const getAuditEntries = ({ limit = 20, offset = 0 }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/audit?${qs}`).then(computePagination);
+};
+
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
 export const getServices = ({ offset, limit, sort, order, filters = {} }) =>

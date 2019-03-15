@@ -8,6 +8,7 @@ import Title from './components/Title';
 import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
+import AuditPage from './components/AuditPage';
 import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
@@ -204,6 +205,10 @@ export default () => <Switch>
       const parsedQueryString = parseQuery(location.search);
       return <Wrapper title="Deploy"><DeployPage parsedLocation={parsedQueryString} /></Wrapper>;
     }}
+  />
+  <Route
+    path={paths.audit.route}
+    render={() => <Wrapper><AuditPage /></Wrapper> }
   />
   <Route
     path={paths.home.route}

@@ -22,6 +22,7 @@ import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
 import { initHomePage } from './modules/home';
+import { initAuditPage } from './modules/audit';
 import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 
 const paths = {
@@ -36,6 +37,10 @@ const paths = {
   accounts: {
     route: '/accounts',
     action: initialiseAccountsPage,
+  },
+  audit: {
+    route: '/audit',
+    action: initAuditPage,
   },
   deploy: {
     route: '/deploy',

@@ -3,6 +3,7 @@ import { LOCATION_CHANGE } from 'connected-react-router';
 
 import accountSagas from './account';
 import accountsSagas from './accounts';
+import auditSagas from './audit';
 import deploySagas from './deploy';
 import deploymentSagas from './deployment';
 import deploymentsSagas from './deployments';
@@ -28,6 +29,7 @@ export default function* rootSaga() {
   yield all([
     ...accountSagas,
     ...accountsSagas,
+    ...auditSagas,
     ...deploySagas,
     ...deploymentSagas,
     ...deploymentsSagas,

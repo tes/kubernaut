@@ -73,7 +73,7 @@ export default function(options) {
         id: row.id,
         createdOn: row.created_on,
         action: row.action,
-        account: new Account({
+        sourceAccount: new Account({
           id: row.account_id,
           displayName: row.account_display_name,
         }),
