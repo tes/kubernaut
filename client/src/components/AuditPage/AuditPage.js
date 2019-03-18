@@ -77,7 +77,7 @@ class ServicesPage extends Component {
                         }
                         {
                           audit.deployment ? <div className="mr-1">
-                            Deployment: <DeploymentLink deployment={audit.deployment} />
+                            Deployment: <DeploymentLink deployment={audit.deployment}>View</DeploymentLink>
                           </div> : null
                         }
                         {
