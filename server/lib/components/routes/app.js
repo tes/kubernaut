@@ -46,7 +46,7 @@ module.exports = function() {
       /^\/registries(?:\/.)*/,
       /^\/releases(?:\/.)*/,
       /^\/services(?:\/.)*/,
-      // /^\/audit(?:\/.)*/,
+      /^\/audit(?:\/.)*/,
     ], clientApp(200));
 
     // Serve other static resources with logging disabled
