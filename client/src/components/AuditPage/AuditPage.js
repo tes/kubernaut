@@ -97,7 +97,7 @@ class ServicesPage extends Component {
                         }
                         {
                           audit.secretVersion ? <div className="mr-1">
-                            Secret version: <SecretVersionLink version={audit.secretVersion} />
+                            Secret version: <SecretVersionLink secretVersion={audit.secretVersion} />
                           </div> : null
                         }
                         {
