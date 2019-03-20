@@ -103,7 +103,7 @@ class AuditPage extends Component {
                       <CardBody className="px-2 py-1">
                         {audit.action}
                       </CardBody>
-                      <CardFooter className="d-flex justify-content-start px-2 py-1">
+                      <CardFooter className="d-flex justify-content-start flex-wrap px-2 py-1">
                         {
                           audit.account ? <div className="mr-1 cellFilterActionsParent">
                             Account: <AccountLink account={audit.account} />
