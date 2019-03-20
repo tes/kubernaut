@@ -3,7 +3,7 @@ export { default } from './TableFilterContainer';
 
 export const CreateQuickFilters = (addFilter) => {
   return {
-    QuickFilters: ({ value, column }) => (
+    QuickFilters: ({ value, column, displayValue }) => (
       <span className="cellFilterActions ml-2">
         <i
           className="fa fa-search-plus clickable"
@@ -14,6 +14,7 @@ export const CreateQuickFilters = (addFilter) => {
                 value,
                 key: column,
                 exact: true,
+                displayValue,
               }]
             });
           }}
@@ -28,6 +29,7 @@ export const CreateQuickFilters = (addFilter) => {
                 key: column,
                 exact: true,
                 not: true,
+                displayValue,
               }]
             });
           }}

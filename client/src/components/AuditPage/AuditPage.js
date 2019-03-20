@@ -24,6 +24,17 @@ import {
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
 
+const filterDisplayNameLookup = {
+  sourceAccount: 'Source account',
+  account: 'Account',
+  cluster: 'Cluster',
+  deployment: 'Deployment',
+  namespace: 'Namespace',
+  registry: 'Registry',
+  release: 'Release',
+  secret: 'Secret',
+  service: 'Service',
+};
 class AuditPage extends Component {
 
   render() {
@@ -57,8 +68,8 @@ class AuditPage extends Component {
         <Row>
           <Col className="d-flex justify-content-start flex-wrap">
             {this.props.filters.map((filter) => {
-              const displayName = filter.key;
-              const filterValue = filter.exact ? [].concat(filter.value).map(f => `"${f}"`) : filter.value;
+              const displayName = filterDisplayNameLookup[filter.key];
+              const filterValue = filter.displayValue || filter.value;
               const closeEl = <i
                   onClick={() => this.props.removeFilter(filter.uuid)}
                   className='fa fa-times clickable'
@@ -85,7 +96,7 @@ class AuditPage extends Component {
                       <CardHeader className="d-flex justify-content-between px-2 py-1">
                         <div className="cellFilterActionsParent">
                           <AccountLink account={audit.sourceAccount} />
-                          <QuickFilters value={audit.sourceAccount.id} column='sourceAccount' />
+                          <QuickFilters value={audit.sourceAccount.id} column='sourceAccount' displayValue={audit.sourceAccount.displayName} />
                         </div>
                         {audit.createdOn}
                       </CardHeader>
@@ -96,13 +107,13 @@ class AuditPage extends Component {
                         {
                           audit.account ? <div className="mr-1 cellFilterActionsParent">
                             Account: <AccountLink account={audit.account} />
-                            <QuickFilters value={audit.account.id} column='account' />
+                          <QuickFilters value={audit.account.id} column='account' displayValue={audit.account.displayName} />
                           </div> : null
                         }
                         {
                           audit.cluster ? <div className="mr-1 cellFilterActionsParent">
                             Cluster: <ClusterLink cluster={audit.cluster} />
-                            <QuickFilters value={audit.cluster.id} column='cluster' />
+                          <QuickFilters value={audit.cluster.id} column='cluster' displayValue={audit.cluster.name} />
                           </div> : null
                         }
                         {
@@ -114,19 +125,23 @@ class AuditPage extends Component {
                         {
                           audit.namespace ? <div className="mr-1 cellFilterActionsParent">
                             Namespace: <NamespaceLink namespace={audit.namespace} pill showCluster />
-                            <QuickFilters value={audit.namespace.id} column='namespace' />
+                            <QuickFilters
+                              value={audit.namespace.id}
+                              column='namespace'
+                              displayValue={`${audit.namespace.cluster.name}/${audit.namespace.name}`}
+                            />
                           </div> : null
                         }
                         {
                           audit.registry ? <div className="mr-1 cellFilterActionsParent">
                             Registry: <RegistryLink registry={audit.registry} />
-                            <QuickFilters value={audit.registry.id} column='registry' />
+                          <QuickFilters value={audit.registry.id} column='registry' displayValue={audit.registry.name} />
                           </div> : null
                         }
                         {
                           audit.release ? <div className="mr-1 cellFilterActionsParent">
                             Release: <ReleaseLink release={audit.release} />
-                            <QuickFilters value={audit.release.id} column='release' />
+                          <QuickFilters value={audit.release.id} column='release' displayValue={audit.release.version} />
                           </div> : null
                         }
                         {
@@ -138,7 +153,7 @@ class AuditPage extends Component {
                         {
                           audit.service ? <div className="mr-1 cellFilterActionsParent">
                             Service: <ServiceLink service={audit.service} />
-                            <QuickFilters value={audit.service.id} column='service' />
+                          <QuickFilters value={audit.service.id} column='service' displayValue={audit.service.name} />
                           </div> : null
                         }
                       </CardFooter>

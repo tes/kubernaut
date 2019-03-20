@@ -25,13 +25,14 @@ export const parseFiltersFromQS = (qs) => {
   const filters = [];
   for (const key in simpleParsed) {
     [].concat(simpleParsed[key]).forEach(filterString => {
-      const { value, not, exact } = parse(filterString, ',', ':');
+      const { value, not, exact, displayValue } = parse(filterString, ',', ':');
       filters.push({
         uuid: uuid.v4(),
         key,
         value,
         not: not === 'true',
         exact: exact === 'true',
+        displayValue,
       });
     });
   }
@@ -69,11 +70,11 @@ export const createFilterSelectors = (statePath) => ({
       [search.key]: [{ value: search.value, not: search.not, exact: search.exact }],
     } : {};
 
-    return filters.reduce((acc, { key, value, not, exact }) => {
-      if (!acc[key]) return { ...acc, [key]: [{ value, not, exact }]};
+    return filters.reduce((acc, { key, value, not, exact, displayValue }) => {
+      if (!acc[key]) return { ...acc, [key]: [{ value, not, exact, displayValue }]};
       return {
         ...acc,
-        [key]: acc[key].concat({ value, not, exact}),
+        [key]: acc[key].concat({ value, not, exact, displayValue }),
       };
     }, starter);
   },
@@ -139,6 +140,7 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
             key,
             not = false,
             exact = false,
+            displayValue,
           } = newFilter;
 
           if (!value || !key) return;
@@ -148,6 +150,7 @@ export const createFilterReducers = (actions, defaultState, statePath = 'filter'
             value,
             exact,
             not,
+            displayValue,
           });
         });
       }
