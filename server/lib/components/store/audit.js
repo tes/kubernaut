@@ -56,6 +56,45 @@ export default function(options) {
         .select(raw('count(*) count'))
         .from('audit au');
 
+      if (criteria.filters) {
+        if (criteria.filters.sourceAccount) {
+          db.applyFilter(criteria.filters.sourceAccount, 'au.account', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.secretVersion) {
+          db.applyFilter(criteria.filters.secretVersion, 'au.action_secret_version', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.namespace) {
+          db.applyFilter(criteria.filters.namespace, 'au.action_namespace', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.service) {
+          db.applyFilter(criteria.filters.service, 'au.action_service', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.release) {
+          db.applyFilter(criteria.filters.release, 'au.action_release', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.deployment) {
+          db.applyFilter(criteria.filters.deployment, 'au.action_deployment', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.account) {
+          db.applyFilter(criteria.filters.account, 'au.action_account', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.cluster) {
+          db.applyFilter(criteria.filters.cluster, 'au.action_cluster', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.registry) {
+          db.applyFilter(criteria.filters.registry, 'au.action_registry', auditBuilder, countBuilder);
+        }
+
+      }
+
       const [auditResults, countResults] = await db.withTransaction(connection => Promise.all([
         connection.query(db.serialize(auditBuilder, {}).sql),
         connection.query(db.serialize(countBuilder, {}).sql)

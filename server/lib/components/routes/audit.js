@@ -1,6 +1,6 @@
 import Boom from 'boom';
 import { idTypes as auditIdTypes } from '../../domain/AuditEntry';
-// import parseFilters from './lib/parseFilters';
+import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
   function start({ app, store, auth }, cb) {
@@ -57,15 +57,12 @@ export default function(options = {}) {
         const meta = { date: new Date(), account: req.user };
         // await store.audit(meta, 'viewed audit');
 
-        // const filters = parseFilters(req.query, ['name', 'createdBy', 'registry']);
-        // const criteria = {
-        //   user: { id: req.user.id, permission: 'registries-read' },
-        //   filters,
-        // };
+        const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry']);
+
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 
-        const result = await store.findAudits({}, limit, offset);
+        const result = await store.findAudits({ filters }, limit, offset);
         const enrichedResult = await tagAudits(result, meta);
         res.json(enrichedResult);
       } catch (err) {

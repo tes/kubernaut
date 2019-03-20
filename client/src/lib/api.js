@@ -90,10 +90,11 @@ export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} 
   return makeRequest(`/api/accounts?${qs}`).then(computePagination);
 };
 
-export const getAuditEntries = ({ limit = 20, offset = 0 }) => {
+export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   const qs = makeQueryString({
     limit,
     offset,
+    ...stringifyFilters(filters),
   });
 
   return makeRequest(`/api/audit?${qs}`).then(computePagination);

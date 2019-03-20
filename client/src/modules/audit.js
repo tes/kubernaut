@@ -1,7 +1,13 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
 import computeLoading from './lib/computeLoading';
-
+import {
+  createFilterActions,
+  createFilterSelectors,
+  createDefaultFilterState,
+  createFilterReducers,
+} from './lib/filter';
 const actionsPrefix = `KUBERNAUT/AUDIT`;
+const filterActions = createFilterActions(actionsPrefix);
 export const initAuditPage = createAction(`${actionsPrefix}/INIT_AUDIT_PAGE`);
 export const fetchAudit = createAction(`${actionsPrefix}/FETCH_AUDIT`);
 export const fetchAuditPagination = createAction(`${actionsPrefix}/FETCH_AUDIT_PAGINATION`);
@@ -10,8 +16,17 @@ export const FETCH_AUDIT_SUCCESS = createAction(`${actionsPrefix}/FETCH_AUDIT_SU
 export const FETCH_AUDIT_ERROR = createAction(`${actionsPrefix}/FETCH_AUDIT_ERROR`);
 export const setCanView = createAction(`${actionsPrefix}/SET_CAN_VIEW`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
+export const {
+  addFilter,
+  removeFilter,
+  setFilters,
+} = filterActions;
 
 export const selectPaginationState = (state) => (state.audit.pagination);
+export const {
+  selectTableFilters,
+} = createFilterSelectors('audit.filter');
+const defaultFilterState = createDefaultFilterState({});
 
 const defaultState = {
   canView: false,
@@ -35,6 +50,7 @@ const defaultState = {
     page: 1,
     limit: 30,
   },
+  filter: defaultFilterState,
 };
 
 export default handleActions({
@@ -70,4 +86,5 @@ export default handleActions({
       limit: payload.limit || defaultState.pagination.limit,
     },
   }),
+  ...createFilterReducers(filterActions, defaultFilterState),
 }, defaultState);

@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardBody,
   CardFooter,
+  Badge,
 } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import {
@@ -21,8 +22,9 @@ import {
   SecretVersionLink,
   ServiceLink,
 } from '../Links';
+import { CreateQuickFilters } from '../TableFilter';
 
-class ServicesPage extends Component {
+class AuditPage extends Component {
 
   render() {
     const { meta, audits } = this.props;
@@ -48,8 +50,31 @@ class ServicesPage extends Component {
       );
     }
 
+    const { QuickFilters } = CreateQuickFilters(this.props.addFilter);
+
     return (
       <Container className="page-frame">
+        <Row>
+          <Col className="d-flex justify-content-start flex-wrap">
+            {this.props.filters.map((filter) => {
+              const displayName = filter.key;
+              const filterValue = filter.exact ? [].concat(filter.value).map(f => `"${f}"`) : filter.value;
+              const closeEl = <i
+                  onClick={() => this.props.removeFilter(filter.uuid)}
+                  className='fa fa-times clickable'
+                  aria-hidden='true'
+                ></i>;
+
+              return (
+                <div key={filter.uuid}>
+                  <Badge color={filter.not ? 'danger' : 'success'} className="mr-2">
+                    <span>{displayName} : {filterValue.toString()} {closeEl}</span>
+                  </Badge>
+                </div>
+              );
+            })}
+          </Col>
+        </Row>
         <Row>
           <Col>
             { audits.items.map(audit => {
@@ -58,7 +83,10 @@ class ServicesPage extends Component {
                   <Col>
                     <Card className="m-1">
                       <CardHeader className="d-flex justify-content-between px-2 py-1">
-                        <AccountLink account={audit.sourceAccount} />
+                        <div className="cellFilterActionsParent">
+                          <AccountLink account={audit.sourceAccount} />
+                          <QuickFilters value={audit.sourceAccount.id} column='sourceAccount' />
+                        </div>
                         {audit.createdOn}
                       </CardHeader>
                       <CardBody className="px-2 py-1">
@@ -66,43 +94,51 @@ class ServicesPage extends Component {
                       </CardBody>
                       <CardFooter className="d-flex justify-content-start px-2 py-1">
                         {
-                          audit.account ? <div className="mr-1">
+                          audit.account ? <div className="mr-1 cellFilterActionsParent">
                             Account: <AccountLink account={audit.account} />
+                            <QuickFilters value={audit.account.id} column='account' />
                           </div> : null
                         }
                         {
-                          audit.cluster ? <div className="mr-1">
+                          audit.cluster ? <div className="mr-1 cellFilterActionsParent">
                             Cluster: <ClusterLink cluster={audit.cluster} />
+                            <QuickFilters value={audit.cluster.id} column='cluster' />
                           </div> : null
                         }
                         {
-                          audit.deployment ? <div className="mr-1">
+                          audit.deployment ? <div className="mr-1 cellFilterActionsParent">
                             Deployment: <DeploymentLink deployment={audit.deployment}>View</DeploymentLink>
+                            <QuickFilters value={audit.deployment.id} column='deployment' />
                           </div> : null
                         }
                         {
-                          audit.namespace ? <div className="mr-1">
+                          audit.namespace ? <div className="mr-1 cellFilterActionsParent">
                             Namespace: <NamespaceLink namespace={audit.namespace} pill showCluster />
+                            <QuickFilters value={audit.namespace.id} column='namespace' />
                           </div> : null
                         }
                         {
-                          audit.registry ? <div className="mr-1">
+                          audit.registry ? <div className="mr-1 cellFilterActionsParent">
                             Registry: <RegistryLink registry={audit.registry} />
+                            <QuickFilters value={audit.registry.id} column='registry' />
                           </div> : null
                         }
                         {
-                          audit.release ? <div className="mr-1">
+                          audit.release ? <div className="mr-1 cellFilterActionsParent">
                             Release: <ReleaseLink release={audit.release} />
+                            <QuickFilters value={audit.release.id} column='release' />
                           </div> : null
                         }
                         {
-                          audit.secretVersion ? <div className="mr-1">
+                          audit.secretVersion ? <div className="mr-1 cellFilterActionsParent">
                             Secret version: <SecretVersionLink secretVersion={audit.secretVersion} />
+                            <QuickFilters value={audit.secretVersion.id} column='secret' />
                           </div> : null
                         }
                         {
-                          audit.service ? <div className="mr-1">
+                          audit.service ? <div className="mr-1 cellFilterActionsParent">
                             Service: <ServiceLink service={audit.service} />
+                            <QuickFilters value={audit.service.id} column='service' />
                           </div> : null
                         }
                       </CardFooter>
@@ -128,8 +164,8 @@ class ServicesPage extends Component {
   }
 }
 
-ServicesPage.propTypes = {
+AuditPage.propTypes = {
   services: PropTypes.object,
 };
 
-export default ServicesPage;
+export default AuditPage;
