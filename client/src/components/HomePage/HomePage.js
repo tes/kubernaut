@@ -68,7 +68,7 @@ class HomePage extends Component {
                         <tr key={dep.id}>
                           <td><ServiceLink service={dep.release.service}/></td>
                           <td className="text-center"><ReleaseLink release={dep.release}/></td>
-                          <th><i className={`fa fa-${dep.status === 'failed' ? 'times' : dep.status === 'successful' ? 'check' : 'spinner'} text-${dep.status === 'failed' ? 'danger' : dep.status === 'successful' ? 'success' : 'secondary'}`}></i></th>
+                          <th><i className={`fa fa-${dep.status === 'failed' ? 'times' : dep.status === 'successful' ? 'check' : 'spinner fa-pulse'} text-${dep.status === 'failed' ? 'danger' : dep.status === 'successful' ? 'success' : 'secondary'}`}></i></th>
                           <td><NamespaceLink namespace={dep.namespace} pill showCluster/></td>
                           <td><DeploymentLink deployment={dep} icon='external-link' /></td>
                         </tr>
