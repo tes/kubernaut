@@ -35,6 +35,7 @@ import {
   fetchNamespacesForService,
   fetchLatestDeploymentsPerNamespace,
   setSecretVersions,
+  selectNamespaces,
 } from '../../modules/deploy';
 
 import {
@@ -52,8 +53,7 @@ const formValues = {
   registry: 'abc',
   service: 'abc',
   version: 'abc',
-  cluster: 'abc',
-  namespace: 'abc',
+  namespace: 'abc-123',
 };
 
 describe('Deploy sagas', () => {
@@ -95,8 +95,10 @@ describe('Deploy sagas', () => {
 
   it('should submit form values and trigger a deployment', () => {
     const options = { quiet: true };
+    const namespaces = [{ id: 'abc-123', name: 'abc', cluster: { name: 'def' } }];
     const gen = triggerDeploymentSaga(submitForm.request(formValues), options);
-    expect(gen.next().value).toMatchObject(call(makeDeployment, formValues, options));
+    expect(gen.next().value).toMatchObject(select(selectNamespaces));
+    expect(gen.next(namespaces).value).toMatchObject(call(makeDeployment, { ...formValues, cluster: 'def', namespace: 'abc' }, options));
     expect(gen.next({ id: 'abc' }).value).toMatchObject(put(submitForm.success()));
     expect(gen.next().value).toMatchObject(put(push('/deployments/abc')));
     expect(gen.next().done).toBe(true);
@@ -104,10 +106,12 @@ describe('Deploy sagas', () => {
 
   it('should handle failures submitting form values', () => {
     const options = { quiet: true };
+    const namespaces = [{ id: 'abc-123', name: 'abc', cluster: { name: 'def' } }];
     const error = new Error('ouch');
     const formError = new SubmissionError({ _error: error.message });
     const gen = triggerDeploymentSaga(submitForm.request(formValues), options);
-    expect(gen.next().value).toMatchObject(call(makeDeployment, formValues, options));
+    expect(gen.next().value).toMatchObject(select(selectNamespaces));
+    expect(gen.next(namespaces).value).toMatchObject(call(makeDeployment, { ...formValues, cluster: 'def', namespace: 'abc' }, options));
     expect(gen.throw(error).value).toMatchObject(put(submitForm.failure(formError)));
     expect(gen.next().done).toBe(true);
   });
@@ -148,7 +152,6 @@ describe('Deploy sagas', () => {
     // expect(gen.next().value).toMatchObject(put(clearFields('deploy', false, false, 'version', 'cluster', 'namespace', 'secret')));
     expect(gen.next().value).toMatchObject(all([
       put(change('deploy', 'version', '')),
-      put(change('deploy', 'cluster', '')),
       put(change('deploy', 'namespace', '')),
       put(change('deploy', 'secret', ''))
     ]));

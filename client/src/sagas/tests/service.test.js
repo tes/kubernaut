@@ -162,7 +162,7 @@ describe('Service sagas', () => {
         search: 'abc=123',
       }).value).toMatchObject(select(selectReleasesPaginationState));
       expect(gen.next(releasesPagination).value).toMatchObject(select(selectDeploymentsPaginationState));
-      expect(gen.next(deploymentsPagination).value).toMatchObject(put(push('/services/a/b?abc=123&r-pagination=page%3D2%26limit%3D10&d-pagination=page%3D4%26limit%3D12')));
+      expect(gen.next(deploymentsPagination).value).toMatchObject(put(push('/services/a/b?abc=123&d-pagination=limit%3D12%26page%3D4&r-pagination=limit%3D10%26page%3D2')));
       expect(gen.next().done).toBe(true);
     });
   });
@@ -176,7 +176,7 @@ describe('Service sagas', () => {
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
       expect(gen.next().value).toMatchObject(put(clearCurrentService()));
-      expect(gen.next().value).toMatchObject(put(replace('/service/a/b?r-pagination=page%3D1%26limit%3D10')));
+      expect(gen.next().value).toMatchObject(put(replace('/service/a/b?r-pagination=limit%3D10%26page%3D1')));
       expect(gen.next().done).toBe(true);
     });
 
@@ -188,7 +188,7 @@ describe('Service sagas', () => {
 
       const gen = initServiceDetailPageSaga(initServiceDetailPage(initPayload));
       expect(gen.next().value).toMatchObject(put(clearCurrentService()));
-      expect(gen.next().value).toMatchObject(put(replace('/service/a/b?r-pagination=page%3D1%26limit%3D10&d-pagination=page%3D1%26limit%3D10')));
+      expect(gen.next().value).toMatchObject(put(replace('/service/a/b?d-pagination=limit%3D10%26page%3D1&r-pagination=page%3D1%26limit%3D10')));
       expect(gen.next().done).toBe(true);
     });
 

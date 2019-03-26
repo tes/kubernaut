@@ -15,6 +15,7 @@ import {
 import RenderInput from '../RenderInput';
 import RenderTypeAhead from '../RenderTypeAhead';
 import RenderSelect from '../RenderSelect';
+import RenderNamespaces from '../RenderNamespaces';
 import RenderSecretVersions from '../RenderSecretVersions';
 import { NamespaceLink } from '../Links';
 
@@ -28,7 +29,6 @@ class DeployPage extends Component {
       asyncValidating,
       registrySelected,
       serviceSelected,
-      clusterSelected,
       namespaceSelected,
       clearFormFields,
       validateService,
@@ -37,15 +37,13 @@ class DeployPage extends Component {
     } = this.props;
 
     const validRegistryAndService = (registrySelected && serviceSelected);
-    const validCluster = (validRegistryAndService && clusterSelected);
-    const validNamespace = (validCluster && namespaceSelected);
+    const validNamespace = namespaceSelected;
 
     const {
       namespace: formNamespace,
       version: formVersion,
-      cluster: formCluster,
     } = this.props.currentFormValues;
-    const chosenNamespace = this.props.namespacesRich.find(({ name, cluster }) => (formNamespace === name) && formCluster === cluster.name);
+    const chosenNamespace = this.props.namespacesRich.find(({ id }) => (formNamespace === id));
     const previouslyDeployedToChosenNamespace = chosenNamespace && this.props.deployments.find((dep) => (dep.namespace.name === chosenNamespace.name) && (dep.namespace.cluster.name === chosenNamespace.cluster.name));
 
     return (
@@ -112,32 +110,17 @@ class DeployPage extends Component {
                 </Col>
               </FormGroup>
               <FormGroup row>
-                <Label sm="3" className="text-right" for="cluster">Where:</Label>
+                <Label sm="3" className="text-right" for="secret">Where:</Label>
                 <Col sm="9">
                   <Field
-                    className="form-control"
-                    name="cluster"
-                    component={RenderSelect}
-                    options={this.props.clusters}
-                    disabled={!validRegistryAndService}
-                    onChange={() => {
-                      clearFormFields({ source: 'cluster' });
-                    }}
-                  />
-                </Col>
-              </FormGroup>
-              <FormGroup row>
-                <Label sm="3" className="text-right" for="namespace">Namespace:</Label>
-                <Col sm="9">
-                  <Field
-                    className="form-control"
+                    className=""
                     name="namespace"
-                    component={RenderSelect}
-                    options={this.props.namespaces}
-                    disabled={!validCluster}
+                    component={RenderNamespaces}
+                    options={this.props.namespacesRich}
+                    disabled={!validRegistryAndService}
                     onChange={(evt, newValue) => {
                       clearFormFields({ source: 'namespace' });
-                      fetchSecretVersions(this.props.namespacesRich.find(({ name, cluster }) => (newValue === name) && formCluster === cluster.name));
+                      fetchSecretVersions(this.props.namespacesRich.find(({ id }) => (newValue === id)));
                     }}
                   />
                 </Col>
@@ -234,8 +217,6 @@ class DeployPage extends Component {
 DeployPage.propTypes = {
   initialValues: PropTypes.object,
   registries: PropTypes.array,
-  clusters: PropTypes.array,
-  namespaces: PropTypes.array,
   submitForm: PropTypes.func.isRequired,
   deployments: PropTypes.array,
 };

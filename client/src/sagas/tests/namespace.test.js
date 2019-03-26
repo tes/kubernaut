@@ -110,14 +110,14 @@ describe('Namespace sagas', () => {
     const gen = paginationSaga(fetchDeploymentsPagination());
     expect(gen.next().value).toMatchObject(select(getLocation));
     expect(gen.next({ pathname: '/namespaces/bob', search: '' }).value).toMatchObject(select(selectPaginationState));
-    expect(gen.next(paginationState).value).toMatchObject(put(push('/namespaces/bob?pagination=page%3D1%26limit%3D20')));
+    expect(gen.next(paginationState).value).toMatchObject(put(push('/namespaces/bob?pagination=limit%3D20%26page%3D1')));
   });
 
   it('should push sort state to url', () => {
     const gen = sortDeploymentsSaga(toggleSort());
     expect(gen.next().value).toMatchObject(select(getLocation));
     expect(gen.next({ pathname: '/namespaces/bob', search: '' }).value).toMatchObject(select(selectSortState));
-    expect(gen.next(sortState).value).toMatchObject(put(push('/namespaces/bob?sort=column%3Dname%26order%3Dasc&pagination=')));
+    expect(gen.next(sortState).value).toMatchObject(put(push('/namespaces/bob?pagination&sort=column%3Dname%26order%3Dasc')));
   });
 
   it('should check permissions', () => {

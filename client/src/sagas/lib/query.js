@@ -1,13 +1,12 @@
-import { parse, stringify as makeQueryString } from 'querystring';
+import { parse, stringify as makeQueryString } from 'query-string';
 export {
   parse as parseQueryString,
   stringify as makeQueryString
-} from 'querystring';
+} from 'query-string';
 
-const cleanParse = (querystring) => (parse(querystring.match(/\??(.*)/)[1]));
-export const extractFromQuery = (currentQueryString, prop) => (cleanParse(currentQueryString)[prop]);
+export const extractFromQuery = (currentQueryString, prop) => (parse(currentQueryString)[prop]);
 export const alterQuery = (currentQueryString, changes) => {
-  const query = cleanParse(currentQueryString);
+  const query = parse(currentQueryString);
   const newQuery = { ...query, ...changes };
   return makeQueryString(newQuery);
 };

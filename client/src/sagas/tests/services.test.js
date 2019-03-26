@@ -88,7 +88,7 @@ describe('Services sagas', () => {
         abc: [{ value: '123', not: false, exact: false }],
       };
 
-      const newUrl = '/services?a=b&filters=abc%3Dvalue%253A123&pagination=&search=';
+      const newUrl = '/services?a=b&filters=abc%3Dvalue%253A123&pagination&search';
       const gen = addFilterSaga(addFilter());
       expect(gen.next().value).toMatchObject(put(reset('services_table_filter')));
       expect(gen.next().value).toMatchObject(select(getLocation));
@@ -106,7 +106,7 @@ describe('Services sagas', () => {
         def: [{ value: 'abc', not: false, exact: false }],
       };
 
-      const newUrl = '/services?a=b&filters=def%3Dvalue%253Aabc&pagination=';
+      const newUrl = '/services?a=b&filters=def%3Dvalue%253Aabc&pagination';
       const gen = removeFilterSaga(removeFilter());
       expect(gen.next().value).toMatchObject(select(getLocation));
       expect(gen.next(location).value).toMatchObject(select(selectTableFilters));
@@ -127,7 +127,7 @@ describe('Services sagas', () => {
         exact: false,
       };
 
-      const newUrl = '/services?a=b&search=key%3Dabc%26value%3Dbob%26not%3Dtrue&pagination=';
+      const newUrl = '/services?a=b&pagination&search=key%3Dabc%26value%3Dbob%26not%3Dtrue';
       const gen = searchSaga(search());
       expect(gen.next().value).toMatchObject(select(getLocation));
       expect(gen.next(location).value).toMatchObject(select(selectSearchFilter));
@@ -147,7 +147,7 @@ describe('Services sagas', () => {
       limit: 50,
     };
 
-    const newUrl = '/services?a=b&pagination=page%3D1%26limit%3D50';
+    const newUrl = '/services?a=b&pagination=limit%3D50%26page%3D1';
     const gen = paginationSaga(fetchServicesPagination());
     expect(gen.next().value).toMatchObject(select(getLocation));
     expect(gen.next(location).value).toMatchObject(select(selectPaginationState));

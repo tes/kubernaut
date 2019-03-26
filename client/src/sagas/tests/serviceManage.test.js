@@ -119,7 +119,7 @@ describe('ServiceManageSagas', () => {
     const gen = paginationSaga(fetchNamespacesPagination());
     expect(gen.next().value).toMatchObject(select(getLocation));
     expect(gen.next({ pathname: '/services/default/bob/manage', search: '' }).value).toMatchObject(select(selectPaginationState));
-    expect(gen.next(paginationState).value).toMatchObject(put(push('/services/default/bob/manage?pagination=page%3D1%26limit%3D20')));
+    expect(gen.next(paginationState).value).toMatchObject(put(push('/services/default/bob/manage?pagination=limit%3D20%26page%3D1')));
   });
 
   describe('locationChangeSaga', () => {

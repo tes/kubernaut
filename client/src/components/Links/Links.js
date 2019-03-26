@@ -69,7 +69,6 @@ export const CreateDeploymentLink = (props) => {
     registry = {},
     service = {},
     version,
-    cluster = {},
     namespace = {},
     secret = '',
     text,
@@ -83,8 +82,7 @@ export const CreateDeploymentLink = (props) => {
           registry: registry.name || '',
           service: service.name || '',
           version,
-          cluster: cluster.name || '',
-          namespace: namespace.name || '',
+          namespace: namespace.id || '',
           secret: secret,
         })
       }}

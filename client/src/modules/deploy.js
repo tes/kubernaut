@@ -10,6 +10,7 @@ export const CLEAR_LOADING = createAction(`${actionsPrefix}/CLEAR_LOADING`);
 export const SET_REGISTRIES = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const SET_NAMESPACES = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 export const SET_DEPLOYMENTS = createAction(`${actionsPrefix}/SET_DEPLOYMENTS`);
+export const SET_INITIAL_FORM_VALUES = createAction(`${actionsPrefix}/SET_INITIAL_FORM_VALUES`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const fetchServiceSuggestions = createAction(`${actionsPrefix}/FETCH_SERVICE_SUGGESTIONS`);
 export const setServiceSuggestions = createAction(`${actionsPrefix}/SET_SERVICE_SUGGESTIONS`);
@@ -36,6 +37,7 @@ const defaultState = {
   serviceSuggestions: [],
   deployments: [],
   secretVersions: [],
+  initialValues: {},
 };
 
 export default handleActions({
@@ -54,4 +56,5 @@ export default handleActions({
   [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
   [setSecretVersions]: (state, { payload = {} }) => ({ ...state, secretVersions: payload.items }),
   [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
+  [SET_INITIAL_FORM_VALUES]: (state, { payload }) => ({ ...state, initialValues: payload }),
 }, defaultState);

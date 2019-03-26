@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { parse as parseQuery } from 'query-string';
 
 // Components
 import Title from './components/Title';
@@ -202,8 +201,7 @@ export default () => <Switch>
     exact
     path={paths.deploy.route}
     render={({ location }) => {
-      const parsedQueryString = parseQuery(location.search);
-      return <Wrapper title="Deploy"><DeployPage parsedLocation={parsedQueryString} /></Wrapper>;
+      return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
     }}
   />
   <Route

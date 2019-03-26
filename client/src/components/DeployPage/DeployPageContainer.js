@@ -4,7 +4,6 @@ import {
   getFormValues,
   getFormAsyncErrors,
 } from 'redux-form';
-import _uniq from 'lodash/uniq';
 
 import {
   submitForm,
@@ -20,35 +19,17 @@ import DeployPage from './DeployPage';
 const formName = 'deploy';
 
 const mapStateToProps = (state, props) => {
-  const {
-    registry,
-    service,
-    version,
-    cluster,
-    namespace,
-    secret,
-  } = props.parsedLocation;
   const { deploy } = state;
   const currentFormValues = getFormValues(formName)(state) || {};
   const currentFormAsyncErrors = getFormAsyncErrors(formName)(state) || {};
 
   return {
-    initialValues: {
-      registry,
-      service,
-      version,
-      cluster,
-      namespace,
-      secret,
-    },
+    initialValues: deploy.initialValues,
     registries: deploy.registries,
-    clusters: _uniq(deploy.namespaces.map(({ cluster }) => (cluster.name))),
-    namespaces: deploy.namespaces.filter((namespace) => (namespace.cluster.name === currentFormValues.cluster)).map(({ name }) => (name)),
-    namespacesRich: deploy.namespaces.filter((namespace) => (namespace.cluster.name === currentFormValues.cluster)),
+    namespacesRich: deploy.namespaces,
     meta: deploy.meta,
     registrySelected: !!currentFormValues.registry,
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
-    clusterSelected: !!currentFormValues.cluster,
     namespaceSelected: !!currentFormValues.namespace,
     submitForm,
     serviceSuggestions: deploy.serviceSuggestions,
