@@ -19,6 +19,7 @@ import { Field } from 'redux-form';
 import Title from '../Title';
 import RenderTextArea from '../RenderTextArea';
 import { Human, Ago } from '../DisplayDate';
+import DeploymentStatus from '../DeploymentStatus';
 import Popover from '../Popover';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
 
@@ -39,12 +40,13 @@ class DeploymentDetailsPage extends Component {
       const attributesEls = [];
 
       for (const name in deployment.attributes) {
-        attributesEls.push(<dt key={name} className='col-md-3'>{name}:</dt>);
+        attributesEls.push(<dt key={name} className='col-md-auto mr-2'>{name}:</dt>);
         if (name === 'secret' && typeof(deployment.attributes[name]) === 'object') {
           const secret = deployment.attributes[name];
-          attributesEls.push(<dd key={`${name}-val`} className='col-md-9'><pre style={{display: 'inline'}}>{secret.comment}</pre> - <AccountLink account={secret.createdBy} /></dd>);
+          attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'><pre style={{display: 'inline'}}>{secret.comment}</pre> - <AccountLink account={secret.createdBy} /></dd>);
         }
-        else attributesEls.push(<dd key={`${name}-val`} className='col-md-9'>{deployment.attributes[name]}</dd>);
+        else attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'>{deployment.attributes[name]}</dd>);
+        attributesEls.push(<div className="w-100"></div>); // Force new line
       }
 
       const logPending = deployment.status !== 'failed' && (deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending');
@@ -59,30 +61,40 @@ class DeploymentDetailsPage extends Component {
                   <span>Details:</span>
                 </CardHeader>
                 <CardBody>
-                  <dl className="row">
-                    <dt className='col-md-3'>Service:</dt>
-                    <dd className='col-md-9'><ServiceLink service={deployment.release.service} /></dd>
-                    <dt className='col-md-3'>Version:</dt>
-                    <dd className='col-md-9'><ReleaseLink release={deployment.release} /></dd>
-                    <dt className='col-md-3'>Registry:</dt>
-                    <dd className='col-md-9'><RegistryLink registry={deployment.release.service.registry} /></dd>
-                    <dt className='col-md-3'>Cluster:</dt>
-                    <dd className='col-md-9'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
-                    <dt className='col-md-3'>Namespace:</dt>
-                    <dd className='col-md-9'><NamespaceLink namespace={deployment.namespace} /></dd>
-                    <dt className='col-md-3'>Status:</dt>
-                    <dd className='col-md-9'>{deployment.status}</dd>
-                    <dt className='col-md-3'>Apply Exit Code:</dt>
-                    <dd className='col-md-9'>{deployment.applyExitCode}</dd>
-                    <dt className='col-md-3'>Rollout Status Exit Code:</dt>
-                    <dd className='col-md-9'>{deployment.rolloutStatusExitCode}</dd>
-                    <dt className='col-md-3'>Created On:</dt>
-                    <dd className='col-md-9'>
+                  <dl className="row no-gutters">
+                    <dt className='col-md-auto mr-2'>Service:</dt>
+                    <dd className='col-md-auto'><ServiceLink service={deployment.release.service} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Version:</dt>
+                    <dd className='col-md-auto'><ReleaseLink release={deployment.release} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Registry:</dt>
+                    <dd className='col-md-auto'><RegistryLink registry={deployment.release.service.registry} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Cluster:</dt>
+                    <dd className='col-md-auto'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Namespace:</dt>
+                    <dd className='col-md-auto'><NamespaceLink namespace={deployment.namespace} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Status:</dt>
+                    <dd className='col-md-auto'><DeploymentStatus deployment={deployment}/> {deployment.status}</dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Apply Exit Code:</dt>
+                    <dd className='col-md-auto'>{deployment.applyExitCode}</dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Rollout Status Exit Code:</dt>
+                    <dd className='col-md-auto'>{deployment.rolloutStatusExitCode}</dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Created On:</dt>
+                    <dd className='col-md-auto'>
                       <span><Human date={deployment.createdOn} /></span>&nbsp;
                       <span>(<Ago date={deployment.createdOn} />)</span>
                     </dd>
-                    <dt className='col-md-3'>Created By:</dt>
-                    <dd className='col-md-9'><AccountLink account={deployment.createdBy} /></dd>
+                    <div className="w-100"></div>
+                    <dt className='col-md-auto mr-2'>Created By:</dt>
+                    <dd className='col-md-auto'><AccountLink account={deployment.createdBy} /></dd>
+                    <div className="w-100"></div>
                   </dl>
                 </CardBody>
               </Card>
@@ -160,7 +172,7 @@ class DeploymentDetailsPage extends Component {
                     <span>Attributes:</span>
                   </CardHeader>
                   <CardBody>
-                    <dl className="row">
+                    <dl className="row no-gutters">
                       {attributesEls}
                     </dl>
                   </CardBody>
