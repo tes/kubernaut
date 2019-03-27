@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray } from 'redux-form';
 import {
-  Container,
   Row,
   Col,
   Table,
@@ -46,24 +45,20 @@ class NamespaceManagePage extends Component {
   render() {
     const { meta } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container className="page-frame">
-        <Row className="d-flex justify-content-center">
-          <Col sm="12" className="mt-5">
-            <Progress animated color="info" value={meta.loading.loadingPercent} />
-          </Col>
-        </Row>
-      </Container>
+      <Row className="page-frame d-flex justify-content-center">
+        <Col sm="12" className="mt-5">
+          <Progress animated color="info" value={meta.loading.loadingPercent} />
+        </Col>
+      </Row>
     );
 
     if (!this.props.canManage) {
       return (
-        <Container className="page-frame">
-          <Row>
-            <Col xs="12">
-              <p>You are not authorised to view this page.</p>
-            </Col>
-          </Row>
-        </Container>
+        <Row className="page-frame">
+          <Col xs="12">
+            <p>You are not authorised to view this page.</p>
+          </Col>
+        </Row>
       );
     }
 
@@ -72,58 +67,62 @@ class NamespaceManagePage extends Component {
     const services = this.props.services;
 
     return (
-      <Container className="page-frame">
-        <Title title={`Manage namespace: ${namespace.clusterName}/${namespace.name}`} />
-        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
-        <Row>
-          <Col sm="8">
-            <form>
+      <Row className="page-frame">
+        <Col>
+          <Title title={`Manage namespace: ${namespace.clusterName}/${namespace.name}`} />
+          <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
+          <Row>
+            <Col sm="8">
+              <form>
+                <Row>
+                  <Col>
+                    <Table>
+                      <thead>
+                        <tr>
+                          <th className="border-top-0 text-center">Can deploy?</th>
+                          <th className="border-top-0">Service</th>
+                          <th className="border-top-0">Registry</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <FieldArray
+                          name="services"
+                          component={renderServices}
+                          services={services.items}
+                          namespace={namespace}
+                          onUpdate={this.props.updateServiceStatusForNamespace}
+                          disabled={this.props.submitting}
+                          />
+                      </tbody>
+                    </Table>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col sm="12">
+                    {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+                  </Col>
+                </Row>
+              </form>
               <Row>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th className="border-top-0 text-center">Can deploy?</th>
-                      <th className="border-top-0">Service</th>
-                      <th className="border-top-0">Registry</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <FieldArray
-                      name="services"
-                      component={renderServices}
-                      services={services.items}
-                      namespace={namespace}
-                      onUpdate={this.props.updateServiceStatusForNamespace}
-                      disabled={this.props.submitting}
+                <Col>
+                  <TablePagination
+                    pages={services.pages}
+                    page={services.page}
+                    limit={services.limit}
+                    fetchContent={({ page, limit }) => {
+                      this.props.fetchServicesPagination({
+                        id: namespace.id,
+                        page,
+                        limit,
+                      });
+                    }}
                     />
-                  </tbody>
-                </Table>
-              </Row>
-              <Row>
-                <Col sm="12">
-                  {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
                 </Col>
               </Row>
-            </form>
-            <Row>
-              <Col>
-                <TablePagination
-                  pages={services.pages}
-                  page={services.page}
-                  limit={services.limit}
-                  fetchContent={({ page, limit }) => {
-                    this.props.fetchServicesPagination({
-                      id: namespace.id,
-                      page,
-                      limit,
-                    });
-                  }}
-                  />
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col, Progress } from 'reactstrap';
+import { Row, Col, Progress } from 'reactstrap';
 import Title from '../Title';
 import { AccountsSubNav } from '../SubNavs';
 
@@ -9,13 +9,11 @@ class AccountPage extends Component {
   render() {
     const { meta, account } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container>
-        <Row className="d-flex justify-content-center">
+        <Row className="page-frame d-flex justify-content-center">
           <Col sm="12" className="mt-5">
             <Progress animated color="info" value={meta.loading.loadingPercent} />
           </Col>
         </Row>
-      </Container>
     );
 
 
@@ -39,39 +37,41 @@ class AccountPage extends Component {
     });
 
     return (
-      <Container className="page-frame">
-        <Title title={`Account: ${account.displayName}`} />
-        <AccountsSubNav account={account} canEdit={this.props.canEdit} />
-        <Row>
-          <Col>
-            <p><strong>Created:</strong> {account.createdOn}</p>
-          </Col>
-        </Row>
-        <Row className="mt-1">
-          <Col sm="12">
-            <h5>System</h5>
-            <ul className="list-unstyled">
-              {systemEls}
-            </ul>
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col sm="12">
-            <h5>Namespaces:</h5>
-            <dl className="row">
-              {namespaceEls}
-            </dl>
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col sm="12">
-            <h5>Registries:</h5>
-            <dl className="row">
-              {registryEls}
-            </dl>
-          </Col>
-        </Row>
-      </Container>
+      <Row className="page-frame">
+        <Col>
+          <Title title={`Account: ${account.displayName}`} />
+          <AccountsSubNav account={account} canEdit={this.props.canEdit} />
+          <Row>
+            <Col>
+              <p><strong>Created:</strong> {account.createdOn}</p>
+            </Col>
+          </Row>
+          <Row className="mt-1">
+            <Col sm="12">
+              <h5>System</h5>
+              <ul className="list-unstyled">
+                {systemEls}
+              </ul>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm="12">
+              <h5>Namespaces:</h5>
+              <dl className="row">
+                {namespaceEls}
+              </dl>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm="12">
+              <h5>Registries:</h5>
+              <dl className="row">
+                {registryEls}
+              </dl>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

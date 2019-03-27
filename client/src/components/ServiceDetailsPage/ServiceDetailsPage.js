@@ -10,55 +10,57 @@ class ServiceDetailsPage extends Component {
 
   render() {
     return (
-      <div className="container page-frame">
-        <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
-        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
-        <Row>
-          <Col>
-            <Row>
-              <Col>
-                <h5>Releases:</h5>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <ServiceReleaseHistory
-                  releases={this.props.releasesList}
-                  latestDeployments={this.props.latestDeployments}
-                  deploymentsWithNotes={this.props.deploymentsWithNotes}
-                  paginationFunc={({ page, limit }) => {
-                    this.props.fetchReleasesPagination({
-                      registry: this.props.registryName,
-                      service: this.props.serviceName,
-                      page,
-                      limit,
-                    });
-                  }}
-                  />
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <h5>Deployments:</h5>
-            <ServiceDeploymentHistory
-              deployments={this.props.deploymentsList}
-              paginationFunc={({ page, limit }) => {
-                this.props.fetchDeploymentsPagination({
-                  registry: this.props.registryName,
-                  service: this.props.serviceName,
-                  page,
-                  limit,
-                });
-              }}
-            />
-          </Col>
-        </Row>
-        <div className="row d-block">
+      <Row className="page-frame">
+        <Col>
+          <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
+          <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} />
+          <Row>
+            <Col>
+              <Row>
+                <Col>
+                  <h5>Releases:</h5>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <ServiceReleaseHistory
+                    releases={this.props.releasesList}
+                    latestDeployments={this.props.latestDeployments}
+                    deploymentsWithNotes={this.props.deploymentsWithNotes}
+                    paginationFunc={({ page, limit }) => {
+                      this.props.fetchReleasesPagination({
+                        registry: this.props.registryName,
+                        service: this.props.serviceName,
+                        page,
+                        limit,
+                      });
+                    }}
+                    />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <h5>Deployments:</h5>
+              <ServiceDeploymentHistory
+                deployments={this.props.deploymentsList}
+                paginationFunc={({ page, limit }) => {
+                  this.props.fetchDeploymentsPagination({
+                    registry: this.props.registryName,
+                    service: this.props.serviceName,
+                    page,
+                    limit,
+                  });
+                }}
+              />
+            </Col>
+          </Row>
+          <div className="row d-block">
 
-        </div>
-      </div>
+          </div>
+        </Col>
+      </Row>
     );
   }
 }

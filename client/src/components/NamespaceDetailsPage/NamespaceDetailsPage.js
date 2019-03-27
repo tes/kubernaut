@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col } from 'reactstrap';
+import { Row, Col } from 'reactstrap';
 import Title from '../Title';
 import DeploymentsTable from '../DeploymentsTable';
 import { NamespacesSubNav } from '../SubNavs';
@@ -21,45 +21,47 @@ class NamespaceDetailsPage extends Component {
     }
 
     return (
-      <Container className="page-frame">
-        <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
-        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
+      <Row className="page-frame">
+        <Col>
+          <Title title={`Namespace: ${namespace.cluster.name}/${namespace.name}`}/>
+          <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
 
-        <dl className="row">
-          <dt className="col-md-3">Context:</dt>
-          <dd className="col-md-9">{namespace.context}</dd>
+          <dl className="row">
+            <dt className="col-md-3">Context:</dt>
+            <dd className="col-md-9">{namespace.context}</dd>
 
-          <dt className="col-md-3">Attributes:</dt>
-          <dd className="col-md-9">
+            <dt className="col-md-3">Attributes:</dt>
+            <dd className="col-md-9">
               {namespaceAttributes}
-          </dd>
-        </dl>
+            </dd>
+          </dl>
 
-        <Row>
-          <Col>
-            <h5>Deployments for this namespace:</h5>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <DeploymentsTable
-              deployments={this.props.deployments.data}
-              loading={this.props.deployments.meta.loading}
-              error={this.props.deployments.meta.error}
-              fetchDeployments={(options) => {
-                this.props.fetchDeploymentsPagination({
-                  ...options,
-                  id: this.props.namespaceId,
-                });
-              }}
-              sort={this.props.deployments.sort}
-              toggleSort={this.props.toggleSort}
-              omitColumns={['where']}
-              hideFilters
-            />
-          </Col>
-        </Row>
-      </Container>
+          <Row>
+            <Col>
+              <h5>Deployments for this namespace:</h5>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <DeploymentsTable
+                deployments={this.props.deployments.data}
+                loading={this.props.deployments.meta.loading}
+                error={this.props.deployments.meta.error}
+                fetchDeployments={(options) => {
+                  this.props.fetchDeploymentsPagination({
+                    ...options,
+                    id: this.props.namespaceId,
+                  });
+                }}
+                sort={this.props.deployments.sort}
+                toggleSort={this.props.toggleSort}
+                omitColumns={['where']}
+                hideFilters
+                />
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray } from 'redux-form';
 import {
-  Container,
   Row,
   Col,
   FormGroup,
@@ -89,24 +88,20 @@ class NamespaceEditPage extends Component {
   render() {
     const { meta } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
-      <Container className="page-frame">
-        <Row className="d-flex justify-content-center">
-          <Col sm="12" className="mt-5">
-            <Progress animated color="info" value={meta.loading.loadingPercent} />
-          </Col>
-        </Row>
-      </Container>
+      <Row className="page-frame d-flex justify-content-center">
+        <Col sm="12" className="mt-5">
+          <Progress animated color="info" value={meta.loading.loadingPercent} />
+        </Col>
+      </Row>
     );
 
     if (!this.props.canEdit) {
       return (
-        <Container className="page-frame">
-          <Row>
-            <Col xs="12">
-              <p>You are not authorised to view this page.</p>
-            </Col>
-          </Row>
-        </Container>
+        <Row className="page-frame">
+          <Col xs="12">
+            <p>You are not authorised to view this page.</p>
+          </Col>
+        </Row>
       );
     }
 
@@ -114,80 +109,82 @@ class NamespaceEditPage extends Component {
     const namespace = this.props.namespace;
 
     return (
-      <Container className="page-frame">
-        <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
-        <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
-        <Row>
-          <Col>
-            <Form>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="color"
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="cluster" className="col-sm-2 col-form-label text-right">Cluster:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="cluster"
-                        className="form-control"
-                        component={RenderSelect}
-                        options={this.props.clusterOptions}
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
-              <Row form>
-                <Col md="6">
-                  <FormGroup className="row">
-                    <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
-                    <Col sm="5">
-                      <Field
-                        name="context"
-                        className="form-control"
-                        component={RenderInput}
-                        type="text"
-                        />
-                    </Col>
-                  </FormGroup>
-                </Col>
-              </Row>
-              <FieldArray
-                name="attributes"
-                component={renderAttributes}
-              />
-              <Row className="mt-2">
-                <Col sm="2">
-                  <Button
-                    outline
-                    color="info"
-                    onClick={this.props.handleSubmit(this.props.submitForm)}
-                  >Save
-                  </Button>
-                </Col>
-              </Row>
-              <Row>
-                <Col sm="12">
-                  {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
-                </Col>
-              </Row>
-            </Form>
-          </Col>
-        </Row>
-      </Container>
+      <Row className="page-frame">
+        <Col>
+          <Title title={`Edit namespace: ${namespace.clusterName}/${namespace.name}`} />
+          <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
+          <Row>
+            <Col>
+              <Form>
+                <Row form>
+                  <Col md="6">
+                    <FormGroup className="row">
+                      <Label for="color" className="col-sm-2 col-form-label text-right">Color:</Label>
+                      <Col sm="5">
+                        <Field
+                          name="color"
+                          className="form-control"
+                          component={RenderInput}
+                          type="text"
+                          />
+                      </Col>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row form>
+                  <Col md="6">
+                    <FormGroup className="row">
+                      <Label for="cluster" className="col-sm-2 col-form-label text-right">Cluster:</Label>
+                      <Col sm="5">
+                        <Field
+                          name="cluster"
+                          className="form-control"
+                          component={RenderSelect}
+                          options={this.props.clusterOptions}
+                          />
+                      </Col>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row form>
+                  <Col md="6">
+                    <FormGroup className="row">
+                      <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
+                      <Col sm="5">
+                        <Field
+                          name="context"
+                          className="form-control"
+                          component={RenderInput}
+                          type="text"
+                          />
+                      </Col>
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <FieldArray
+                  name="attributes"
+                  component={renderAttributes}
+                  />
+                <Row className="mt-2">
+                  <Col sm="2">
+                    <Button
+                      outline
+                      color="info"
+                      onClick={this.props.handleSubmit(this.props.submitForm)}
+                      >Save
+                    </Button>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col sm="12">
+                    {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

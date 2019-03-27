@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactMarkdown from 'react-markdown';
 import {
-  Container,
   Row,
   Col,
   Table,
@@ -223,20 +222,22 @@ class DeploymentDetailsPage extends Component {
     };
 
     return (
-      <Container className="page-frame">
-        <Row>
-          <Col sm="12">
-            <h5>Deployment:</h5>
-          </Col>
-        </Row>
-        {
-          (() => {
-            if (meta.error) return errorDetails();
-            else if (meta.loading || !deployment) return loadingDetails();
-            else return deploymentDetails();
-          })()
-        }
-      </Container>
+      <Row className="page-frame">
+        <Col>
+          <Row>
+            <Col sm="12">
+              <h5>Deployment:</h5>
+            </Col>
+          </Row>
+          {
+            (() => {
+              if (meta.error) return errorDetails();
+              else if (meta.loading || !deployment) return loadingDetails();
+              else return deploymentDetails();
+            })()
+          }
+        </Col>
+      </Row>
     );
   }
 }

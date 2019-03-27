@@ -62,8 +62,8 @@ $theme-colors: (
 
 .page-frame {
   background-color: #ffffff;
-  padding-left: ($spacer * 3) !important;
-  padding-right: ($spacer * 3) !important;
+  padding-left: ($spacer) !important;
+  padding-right: ($spacer) !important;
   padding-top: ($spacer * .25) !important;
   padding-bottom: ($spacer* .5) !important;
   border-radius: 4px;
