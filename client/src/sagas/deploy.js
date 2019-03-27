@@ -83,6 +83,7 @@ export function* triggerDeploymentSaga({ payload: formValues }, options = {}) {
     version: formValues.version,
     namespace: selectedNamespace.name,
     cluster: selectedNamespace.cluster.name,
+    secret: formValues.secret,
   };
 
   let data;
