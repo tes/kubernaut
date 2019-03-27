@@ -20,7 +20,7 @@ class HomePage extends Component {
   render() {
     return (
       <Row className='page-frame'>
-        <Col>
+        <Col md className="mb-2">
           <Card>
             <CardHeader className="py-1 px-2">Recent releases</CardHeader>
             <CardBody className="py-1 px-2">
@@ -47,7 +47,7 @@ class HomePage extends Component {
             </CardBody>
           </Card>
         </Col>
-        <Col>
+        <Col lg="7" className="mb-2">
           <Card>
             <CardHeader className="py-1 px-2">Recent deployments</CardHeader>
             <CardBody className="py-1 px-2">
