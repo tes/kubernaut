@@ -6,13 +6,14 @@ import TablePagination from '../TablePagination';
 import { Human, Ago } from '../DisplayDate';
 import { AccountLink, ServiceLink, ReleaseLink, NamespaceLink, DeploymentLink } from '../Links';
 import TableFilter, { CreateQuickFilters } from '../TableFilter';
+import DeploymentStatus from '../DeploymentStatus';
 
 const columns = [
+  { key: 'status', label: 'Status', sortable: false },
   { key: 'service', label: 'Service' },
   { key: 'version', label: 'Version' },
   { key: 'created', label: 'Created' },
   { key: 'where', label: 'Where' },
-  { key: 'status', label: 'Status', sortable: false },
   { key: 'createdBy', label: 'Created By' },
   { key: 'deployLink', label: '', sortable: false }
 ];
@@ -74,6 +75,7 @@ class DeploymentsTable extends Component {
           {
             deployments.items.map(deployment => {
               return <tr key={deployment.id} id={deployment.id}>
+                { omitStatus ? null : <td className="text-center"><DeploymentStatus deployment={deployment} /></td> }
                 { omitService ? null : <td className="cellFilterActionsParent">
                   <ServiceLink service={deployment.release.service} />
                   <QuickFilters value={deployment.release.service.name} column='service' />
@@ -94,7 +96,6 @@ class DeploymentsTable extends Component {
                     ]}
                   />
                 </td> }
-                { omitStatus ? null : <td>{deployment.status}</td> }
                 { omitCreatedBy ? null : <td className="cellFilterActionsParent">
                   <AccountLink account={deployment.createdBy} />
                   <QuickFilters value={deployment.createdBy.displayName} column='createdBy' />

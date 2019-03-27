@@ -14,6 +14,7 @@ import {
   NamespaceLink,
   DeploymentLink,
 } from '../Links';
+import DeploymentStatus from '../DeploymentStatus';
 
 class HomePage extends Component {
 
@@ -54,9 +55,9 @@ class HomePage extends Component {
               <Table hover size="sm">
                 <thead>
                   <tr>
+                    <th className="border-top-0"></th>
                     <th className="border-top-0">Service</th>
                     <th className="border-top-0 text-center">Version</th>
-                    <th className="border-top-0"></th>
                     <th className="border-top-0">Namespace</th>
                     <th className="border-top-0"></th>
                   </tr>
@@ -65,9 +66,9 @@ class HomePage extends Component {
                   {
                     this.props.deployments.map(dep => (
                       <tr key={dep.id}>
+                        <th><DeploymentStatus deployment={dep} /></th>
                         <td><ServiceLink service={dep.release.service}/></td>
                         <td className="text-center"><ReleaseLink release={dep.release}/></td>
-                        <th><i className={`fa fa-${dep.status === 'failed' ? 'times' : dep.status === 'successful' ? 'check' : 'spinner fa-pulse'} text-${dep.status === 'failed' ? 'danger' : dep.status === 'successful' ? 'success' : 'secondary'}`}></i></th>
                         <td><NamespaceLink namespace={dep.namespace} pill showCluster/></td>
                         <td><DeploymentLink deployment={dep} icon='external-link' /></td>
                       </tr>
