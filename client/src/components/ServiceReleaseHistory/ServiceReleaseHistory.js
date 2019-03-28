@@ -12,7 +12,7 @@ import {
 } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { Human } from '../DisplayDate';
-import { CreateDeploymentLink, NamespaceLink } from '../Links';
+import { CreateDeploymentLink, NamespaceLink, DeploymentLink } from '../Links';
 
 class ServiceReleaseHistory extends Component {
 
@@ -149,6 +149,9 @@ class ServiceReleaseHistory extends Component {
                             <div className="mr-1"><strong>Where:</strong></div>
                             <div><NamespaceLink namespace={d.namespace} pill showCluster /></div>
                           </div>
+                        </Col>
+                        <Col className="text-right">
+                          <DeploymentLink deployment={d}>View deployment</DeploymentLink>
                         </Col>
                       </Row>
                       <Row>
