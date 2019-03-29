@@ -68,7 +68,7 @@
     "confabulous": "^1.5.3",
     "connect-pg-simple": "^5.0.0",
     "cryptus": "^1.2.0",
-    "elastic-apm-node": "^1.0.0",
+    "elastic-apm-node": "^2.7.1",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",
     "highwayhash": "^2.4.0",
@@ -99,9 +99,9 @@
     "sqb": "^3.4.0",
     "sqb-serializer-pg": "^3.1.1",
     "systemic": "^3.0.0",
-    "systemic-service-runner": "^1.1.0",
     "systemic-express": "^1.1.1",
     "systemic-pg": "^2.0.0",
+    "systemic-service-runner": "^1.1.0",
     "uuid": "^3.1.0"
   },
   "repository": {
