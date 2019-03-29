@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import './lib/preload';
 import system from './lib/system';
-import runner from 'systemic-domain-runner';
+import runner from 'systemic-service-runner';
 
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 
