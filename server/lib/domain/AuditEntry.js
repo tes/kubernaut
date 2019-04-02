@@ -9,7 +9,7 @@ export const idTypes = [
   'registry'
 ];
 
-export default class Deployment {
+export default class AuditEntry {
 
   constructor({ id, createdOn, action, sourceAccount, ids = {} }) {
     this.id = id;
