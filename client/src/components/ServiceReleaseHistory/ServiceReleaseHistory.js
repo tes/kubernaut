@@ -10,6 +10,7 @@ import {
   ModalHeader,
   ModalBody,
 } from 'reactstrap';
+import { sortBy } from 'lodash';
 import TablePagination from '../TablePagination';
 import { Human } from '../DisplayDate';
 import { CreateDeploymentLink, NamespaceLink, DeploymentLink } from '../Links';
@@ -48,20 +49,28 @@ class ServiceReleaseHistory extends Component {
   }
 
   render() {
-    const { releases, latestDeployments, deploymentsWithNotes } = this.props;
+    const { releases, latestDeployments, deploymentsWithNotes, releasesNamespaceHistory } = this.props;
     const rows = [];
     if (releases && releases.data && releases.data.items) {
       releases.data.items.forEach((item, index) => {
-        const deployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
-        const deploymentBadges = deployments.map((dep) => (
-          <Col key={dep.namespace.id} className="mr-1">
-            <NamespaceLink
-              namespace={dep.namespace}
-              pill
-              showCluster
-            />
-          </Col>
-        ));
+        const activeDeployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
+        const historicalDeployments = sortBy(releasesNamespaceHistory
+          .filter((dep) => (dep.release.id === item.id)), ['cluster.name', 'namespace.name']);
+        const deploymentBadges = historicalDeployments.map((dep) => {
+          const hasActive = activeDeployments.find(activeDep => (
+            dep.namespace.id === activeDep.namespace.id
+          ));
+
+          return (
+            <Col key={dep.namespace.id} className="mr-1" style={{ opacity: hasActive ? '1' : '0.2'}}>
+              <NamespaceLink
+                namespace={dep.namespace}
+                pill
+                showCluster
+              />
+            </Col>
+          );
+        });
 
         rows.push((
           <tr key={item.id} className="row no-gutters">

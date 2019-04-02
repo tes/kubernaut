@@ -154,6 +154,32 @@ export default function(options) {
       });
     }
 
+    async function findNamespaceHistoryForReleases(criteria) {
+      logger.debug(`Getting releases deployment namespace history for user ${criteria.user.id}`);
+
+      const builder = sqb
+        .select('r.id release_id', 'r.version release_version', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color')
+        .from('active_deployment__vw d')
+        .join(join('active_namespace__vw n').on(Op.eq('n.id', raw('d.namespace'))))
+        .join(join('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster'))))
+        .join(join('active_release__vw r').on(Op.eq('r.id', raw('d.release'))))
+        .join(join('active_service__vw s').on(Op.eq('s.id', raw('r.service'))))
+        .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', criteria.user.id, 'deployments-read')))
+        .where(Op.in('s.registry', await authz.querySubjectIdsWithPermission('registry', criteria.user.id, 'releases-read')))
+        .groupBy('r.id', 'r.version', 'c.id', 'c.name', 'c.color', 'n.id', 'n.name', 'n.color');
+
+        if (criteria.filters.release) {
+          db.applyFilter(criteria.filters.release, 'r.id', builder);
+        }
+
+      return await db.withTransaction(async connection => {
+        return await connection.query(db.serialize(builder, {}).sql);
+      }).then((result) => {
+        logger.debug(`Found ${result.rowCount} for releases deployment namespace history`);
+        return result.rows.map(toLatestDeployment);
+      });
+    }
+
     const sortMapping = (sort, order) => {
       const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
@@ -386,6 +412,7 @@ export default function(options) {
       findDeployments,
       deleteDeployment,
       setDeploymentNote,
+      findNamespaceHistoryForReleases,
     });
   }
 

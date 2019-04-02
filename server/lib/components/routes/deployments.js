@@ -42,24 +42,6 @@ export default function(options = {}) {
       }
     });
 
-    app.get('/api/deployments/:id', async (req, res, next) => {
-      try {
-        const deployment = await store.getDeployment(req.params.id);
-        if (!deployment) return next(Boom.notFound());
-        if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
-        if (deployment.attributes.secret && await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'secrets-apply')) {
-          const meta = { date: new Date(), account: { id: req.user.id } };
-          const storedSecret = await store.getVersionOfSecretById(deployment.attributes.secret, meta);
-          if (storedSecret) deployment.attributes.secret = storedSecret;
-        }
-        const meta = { date: new Date(), account: req.user };
-        await store.audit(meta, 'viewed deployment', { deployment });
-        res.json(deployment);
-      } catch (err) {
-        next(err);
-      }
-    });
-
     app.get('/api/deployments/latest-by-namespace/:registry/:service', async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });
@@ -75,6 +57,44 @@ export default function(options = {}) {
         await store.audit(meta, 'viewed latest deployments for service by namespace', { registry, service });
         res.json(deployments);
       } catch(err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/deployments/namespaces-history-per-release', async (req, res, next) => {
+      try {
+        const meta = { date: new Date(), account: req.user };
+        const filters = parseFilters(req.query, ['release']);
+        const criteria = {
+          filters,
+          user: {
+            id: req.user.id,
+          }
+        };
+
+        if (!filters.release) return next(Boom.badRequest());
+        await store.audit(meta, 'viewed historic namespace deployment for releases');
+        const result = await store.findNamespaceHistoryForReleases(criteria);
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/deployments/:id', async (req, res, next) => {
+      try {
+        const deployment = await store.getDeployment(req.params.id);
+        if (!deployment) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'deployments-read')) return next(Boom.forbidden());
+        if (deployment.attributes.secret && await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'secrets-apply')) {
+          const meta = { date: new Date(), account: { id: req.user.id } };
+          const storedSecret = await store.getVersionOfSecretById(deployment.attributes.secret, meta);
+          if (storedSecret) deployment.attributes.secret = storedSecret;
+        }
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed deployment', { deployment });
+        res.json(deployment);
+      } catch (err) {
         next(err);
       }
     });

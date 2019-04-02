@@ -22,6 +22,7 @@ export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS = createAction(`${act
 export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actionsPrefix}/FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR`);
 
 export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}/FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS`);
+export const FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS = createAction(`${actionsPrefix}/FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS`);
 
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
@@ -69,6 +70,9 @@ const defaultState = {
     meta: {},
   },
   deploymentsWithNotes: {
+    data: [],
+  },
+  releasesNamespaceHistory: {
     data: [],
   },
   canManage: false,
@@ -204,6 +208,12 @@ export default handleActions({
     ...state,
     deploymentsWithNotes: {
       data: payload.data.items,
+    },
+  }),
+  [FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    releasesNamespaceHistory: {
+      data: payload.data,
     },
   }),
   [initServiceDetailPage]: (state) => ({

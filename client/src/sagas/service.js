@@ -29,6 +29,7 @@ import {
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
   FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS,
+  FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS,
   selectReleasesPaginationState,
   selectDeploymentsPaginationState,
   releasesDefaultPagination,
@@ -40,6 +41,7 @@ import {
   getDeployments,
   getLatestDeploymentsByNamespaceForService,
   getCanManageAnyNamespace,
+  getNamespaceHistoryForRelease,
 } from '../lib/api';
 
 export function* initServiceDetailPageSaga({ payload = {} }) {
@@ -162,6 +164,23 @@ export function* fetchHasDeploymentNotesSaga({ payload = {} }) {
   }
 }
 
+export function* fetchReleaseNamespaceHistorySaga({ payload = {} }) {
+  const { data: releases, ...options } = payload;
+  if (!releases.count || !releases.items) return;
+
+  try {
+    const releaseIds = releases.items.map(r => r.id);
+    const exact = true;
+    const filters = {
+      release: [{ value: releaseIds, exact }]
+    };
+    const data = yield call(getNamespaceHistoryForRelease, { filters });
+    yield put(FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export function* paginationSaga() {
   const location = yield select(getLocation);
   const releasesPagination = yield select(selectReleasesPaginationState);
@@ -190,4 +209,5 @@ export default [
   takeLatest(fetchDeployments, fetchDeploymentsDataSaga),
   takeLatest(fetchReleases, fetchLatestDeploymentsByNamespaceForServiceSaga),
   takeLatest(FETCH_RELEASES_SUCCESS, fetchHasDeploymentNotesSaga),
+  takeLatest(FETCH_RELEASES_SUCCESS, fetchReleaseNamespaceHistorySaga),
 ];

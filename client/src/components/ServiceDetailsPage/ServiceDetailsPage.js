@@ -27,6 +27,7 @@ class ServiceDetailsPage extends Component {
                     releases={this.props.releasesList}
                     latestDeployments={this.props.latestDeployments}
                     deploymentsWithNotes={this.props.deploymentsWithNotes}
+                    releasesNamespaceHistory={this.props.releasesNamespaceHistory}
                     paginationFunc={({ page, limit }) => {
                       this.props.fetchReleasesPagination({
                         registry: this.props.registryName,

@@ -100,6 +100,14 @@ export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   return makeRequest(`/api/audit?${qs}`).then(computePagination);
 };
 
+export const getNamespaceHistoryForRelease = ({ filters = {} }) => {
+  const qs = makeQueryString({
+    ...stringifyFilters(filters),
+  });
+
+  return makeRequest(`/api/deployments/namespaces-history-per-release?${qs}`);
+};
+
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
 
 export const getServices = ({ offset, limit, sort, order, filters = {} }) =>
