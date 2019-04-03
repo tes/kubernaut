@@ -62,21 +62,21 @@ class ServiceReleaseHistory extends Component {
           ));
 
           return (
-            <Col key={dep.namespace.id} className="mr-1" style={{ opacity: hasActive ? '1' : '0.2'}}>
+            <div key={dep.namespace.id} className="mr-1" style={{ opacity: hasActive ? '1' : '0.2'}}>
               <NamespaceLink
                 namespace={dep.namespace}
                 pill
                 showCluster
               />
-            </Col>
+          </div>
           );
         });
 
         rows.push((
-          <tr key={item.id} className="row no-gutters">
-            <td className="col-1 pb-0">{item.version}</td>
-            <td className="col-3 pb-0"><Human date={item.createdOn} /></td>
-            <td className="col-auto pb-0">
+          <tr key={item.id}>
+            <td className="pb-0">{item.version}</td>
+            <td className="pb-0"><Human date={item.createdOn} /></td>
+            <td className="pb-0">
               <CreateDeploymentLink
                 service={item.service}
                 registry={item.service.registry}
@@ -86,9 +86,9 @@ class ServiceReleaseHistory extends Component {
               </CreateDeploymentLink>
             </td>
             <td className="pb-0">
-              <Row className="no-gutters">
+              <div className="d-flex">
                 {deploymentBadges}
-              </Row>
+              </div>
             </td>
           </tr>
         ));
@@ -117,11 +117,11 @@ class ServiceReleaseHistory extends Component {
     return (
       <Row>
         <Col>
-          <Table size="sm" borderless>
+          <Table size="sm" className="table-responsive" borderless>
             <thead>
-              <tr className="row no-gutters">
-                <th className="col-1">Version</th>
-                <th className="col-3">When</th>
+              <tr>
+                <th className="text-center">Version</th>
+                <th>When</th>
               </tr>
             </thead>
             <tbody>
