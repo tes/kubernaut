@@ -14,6 +14,7 @@ export default connect((state, props) => {
   return {
     initialValues: state.editAccount.systemRoles.initialValues,
     rolesGrantable: state.editAccount.systemRoles.rolesGrantable,
+    globalGrantable: state.editAccount.systemRoles.globalGrantable,
     currentValues: formCurrentValues,
     disableGlobals: props.account.id === state.account.data.id,
   };

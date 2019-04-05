@@ -926,6 +926,160 @@ describe('Account Store', () => {
     });
   });
 
+  describe('System roles', () => {
+    it('grants global role from global admin', async () => {
+      const adminAccount = await saveAccount();
+      await grantSystemRole(adminAccount.id, 'admin');
+      await grantGlobalRole(adminAccount.id, 'admin');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer', makeMeta({ account: adminAccount }));
+      await grantGlobalRole(genericAccount.id, 'developer', makeMeta({ account: adminAccount }));
+
+
+      const result = await store.rolesForSystem(genericAccount.id, adminAccount);
+      const { currentRoles } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: true });
+    });
+
+    it('does not allow global changes to self', async () => {
+      const adminAccount = await saveAccount();
+      await grantSystemRole(adminAccount.id, 'admin');
+      await grantGlobalRole(adminAccount.id, 'admin');
+
+      const result = await store.rolesForSystem(adminAccount.id, adminAccount);
+      const { globalGrantable } = result;
+
+      expect(globalGrantable.length).toBe(0);
+    });
+
+    it('revokes global role as global maintainer', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+      await grantGlobalRole(maintainerAccount.id, 'maintainer');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+      await grantGlobalRole(genericAccount.id, 'developer');
+      await revokeGlobalRole(genericAccount.id, 'developer', makeMeta({ account: maintainerAccount }));
+
+
+      const result = await store.rolesForSystem(genericAccount.id, maintainerAccount);
+      const { currentRoles } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: false });
+    });
+
+    it('cannot revoke global role from non global maintainer', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+      await grantGlobalRole(genericAccount.id, 'developer');
+
+      await expect(
+        revokeGlobalRole(genericAccount.id, 'developer', makeMeta({ account: maintainerAccount }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke global role developer')
+      });
+    });
+
+    it('grants global role from global maintainer', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+      await grantGlobalRole(maintainerAccount.id, 'maintainer');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer', makeMeta({ account: maintainerAccount }));
+      await grantGlobalRole(genericAccount.id, 'developer', makeMeta({ account: maintainerAccount }));
+
+
+      const result = await store.rolesForSystem(genericAccount.id, maintainerAccount);
+      const { currentRoles } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: true });
+    });
+
+    it('cannot grant global role from non global maintainer', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+
+      await expect(
+        grantGlobalRole(genericAccount.id, 'developer', makeMeta({ account: maintainerAccount }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant global role developer')
+      });
+    });
+
+    it('collects role data as seen by global admin', async () => {
+      const adminAccount = await saveAccount();
+      await grantSystemRole(adminAccount.id, 'admin');
+      await grantGlobalRole(adminAccount.id, 'admin');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+
+
+      const result = await store.rolesForSystem(genericAccount.id, adminAccount);
+      const { currentRoles, rolesGrantable, globalGrantable } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: false });
+
+      expect(rolesGrantable.length).toBe(4);
+      expect(rolesGrantable).toMatchObject(['admin', 'maintainer', 'developer', 'observer']);
+
+      expect(globalGrantable.length).toBe(4);
+      expect(globalGrantable).toMatchObject(['admin', 'maintainer', 'developer', 'observer']);
+    });
+
+    it('collects role data as seen by global maintainer', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+      await grantGlobalRole(maintainerAccount.id, 'maintainer');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+
+
+      const result = await store.rolesForSystem(genericAccount.id, maintainerAccount);
+      const { currentRoles, rolesGrantable, globalGrantable } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: false });
+
+      expect(rolesGrantable.length).toBe(3);
+      expect(rolesGrantable).toMatchObject(['maintainer', 'developer', 'observer']);
+
+      expect(globalGrantable.length).toBe(3);
+      expect(globalGrantable).toMatchObject(['maintainer', 'developer', 'observer']);
+    });
+
+    it('collects role data as seen by maintainer without global', async () => {
+      const maintainerAccount = await saveAccount();
+      await grantSystemRole(maintainerAccount.id, 'maintainer');
+      // await grantGlobalRole(maintainerAccount.id, 'admin');
+      const genericAccount = await saveAccount();
+      await grantSystemRole(genericAccount.id, 'developer');
+
+
+      const result = await store.rolesForSystem(genericAccount.id, maintainerAccount);
+      const { currentRoles, rolesGrantable, globalGrantable } = result;
+
+      expect(currentRoles.length).toBe(1);
+      expect(currentRoles[0]).toMatchObject({ name: 'developer', global: false });
+
+      expect(rolesGrantable.length).toBe(3);
+      expect(rolesGrantable).toMatchObject(['maintainer', 'developer', 'observer']);
+
+      expect(globalGrantable.length).toBe(0);
+      expect(globalGrantable).toMatchObject([]);
+    });
+  });
+
   function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
     return store.saveRegistry(registry, meta);
   }
@@ -980,6 +1134,10 @@ describe('Account Store', () => {
 
   function grantGlobalRole(accountId, roleName, meta = makeRootMeta()) {
     return store.grantGlobalRole(accountId, roleName, meta);
+  }
+
+  function revokeGlobalRole(accountId, roleName, meta = makeRootMeta()) {
+    return store.revokeGlobalRole(accountId, roleName, meta);
   }
 
   function grantSystemRole(accountId, roleName, meta = makeRootMeta()) {

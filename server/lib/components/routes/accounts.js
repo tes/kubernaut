@@ -147,6 +147,9 @@ export default function(options = {}) {
         if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
+        const canGrantSystem = await store.checkCanGrantSystem(req.body.role, meta);
+        if (!canGrantSystem) return next(Boom.forbidden());
+
         await store.grantSystemRole(req.body.account, req.body.role, meta);
         await store.audit(meta, `added system role [${req.body.role}] to account`, { account });
         const data = await store.rolesForSystem(req.body.account, req.user);
@@ -166,6 +169,18 @@ export default function(options = {}) {
         if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
+        const canRevokeSystem = await store.checkCanRevokeSystem(req.body.role, meta);
+        if (!canRevokeSystem) return next(Boom.forbidden());
+
+        const currentRoles = await store.rolesForSystem(req.body.account, req.user);
+        const roleToRevoke = currentRoles.currentRoles.find(({ name }) => name === req.body.role);
+        if (!roleToRevoke) return next(Boom.badRequest());
+
+        if (roleToRevoke.global) {
+          const canRevokeGlobal = await store.checkCanRevokeGlobal(req.body.account, req.body.role, meta);
+          if (!canRevokeGlobal) return next(Boom.forbidden());
+        }
+
         await store.revokeSystemRole(req.body.account, req.body.role, meta);
         await store.audit(meta, `deleted system role [${req.body.role}] from account`, { account });
         const data = await store.rolesForSystem(req.body.account, req.user);
@@ -186,6 +201,9 @@ export default function(options = {}) {
         if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
+        const canGrantGlobal = await store.checkCanGrantGlobal(req.body.account, req.body.role, meta);
+        if (!canGrantGlobal) return next(Boom.forbidden());
+
         await store.grantGlobalRole(req.body.account, req.body.role, meta);
         const data = await store.rolesForSystem(req.body.account, req.user);
         await store.audit(meta, `added global role [${req.body.role}] to account`, { account });
@@ -205,6 +223,9 @@ export default function(options = {}) {
         if (!account) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
+        const canRevokeGlobal = await store.checkCanRevokeGlobal(req.body.account, req.body.role, meta);
+        if (!canRevokeGlobal) return next(Boom.forbidden());
+
         await store.revokeGlobalRole(req.body.account, req.body.role, meta);
         const data = await store.rolesForSystem(req.body.account, req.user);
         await store.audit(meta, `deleted global role [${req.body.role}] from account`, { account });

@@ -99,7 +99,24 @@ export default {
           .where(Op.eq('ar.account', currentUserId))
           .where(Op.eq('ar.subject_type', 'system'))
           .where(Op.in('ar.role', queryRoleIdsWithPermission('accounts-write')))
-        ));
+        ))
+        .orderBy('r.priority desc');
+    }
+
+    function queryGlobalRolesGrantableAsSeenBy(targetUserId, currentUserId) {
+      return sqb
+        .select('r.id', 'r.name')
+        .from('role r')
+        .where(Op.lte('r.priority', sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.ne('ar.account', targetUserId))
+          .where(Op.eq('ar.subject_type', 'global'))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('accounts-write')))
+        ))
+        .orderBy('r.priority desc');
     }
 
     function queryNamespaceRolesGrantableAsSeenBy(currentUserId, namespaceId) {
@@ -151,6 +168,7 @@ export default {
       querySystemRolesGrantableAsSeenBy,
       queryNamespaceRolesGrantableAsSeenBy,
       queryRegistryRolesGrantableAsSeenBy,
+      queryGlobalRolesGrantableAsSeenBy,
     };
   }
 };

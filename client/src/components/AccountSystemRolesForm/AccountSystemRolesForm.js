@@ -50,6 +50,7 @@ class AccountSystemRolesForm extends Component {
   render() {
     const {
       rolesGrantable,
+      globalGrantable,
       submitting,
       currentValues,
       updateGlobalRole,
@@ -83,7 +84,13 @@ class AccountSystemRolesForm extends Component {
                                 name={`${name}.system`}
                                 component="input"
                                 type="checkbox"
-                                disabled={submitting || rolesGrantable.indexOf(name) < 0}
+                                disabled={
+                                  submitting
+                                  || rolesGrantable.indexOf(name) < 0
+                                  || (currentValues[name]
+                                    && currentValues[name].global
+                                    && globalGrantable.indexOf(name) < 0)
+                                }
                                 onChange={(event, newValue) => {
                                   updateSystemRole({
                                     role: name,
@@ -109,6 +116,7 @@ class AccountSystemRolesForm extends Component {
                                   submitting
                                   || disableGlobals
                                   || rolesGrantable.indexOf(name) < 0
+                                  || globalGrantable.indexOf(name) < 0
                                   || !currentValues[name]
                                   || !currentValues[name].system
                                 }
@@ -136,6 +144,7 @@ class AccountSystemRolesForm extends Component {
 
 AccountSystemRolesForm.propTypes = {
   rolesGrantable: PropTypes.array.isRequired,
+  globalGrantable: PropTypes.array.isRequired,
   submitting: PropTypes.bool.isRequired,
   currentValues: PropTypes.object.isRequired,
   updateGlobalRole: PropTypes.func.isRequired,

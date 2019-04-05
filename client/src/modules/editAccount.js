@@ -59,6 +59,7 @@ const defaultState = {
   systemRoles: {
     initialValues: {},
     rolesGrantable: [],
+    globalGrantable: [],
   },
   registries: {
     count: 0,
@@ -179,6 +180,7 @@ export default handleActions({
         ...defaultState.systemRoles,
         initialValues,
         rolesGrantable: data.rolesGrantable,
+        globalGrantable: data.globalGrantable,
       },
       meta: {
         loading: computeLoading(state.meta.loading, 'system', false),
