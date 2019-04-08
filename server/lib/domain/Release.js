@@ -1,6 +1,6 @@
 export default class Release {
 
-  constructor({ id, service, version, template, attributes, createdOn, createdBy, deletedOn, deletedBy }) {
+  constructor({ id, service, version, template, attributes, createdOn, createdBy, deletedOn, deletedBy, comment }) {
     this.id = id;
     this.service = service;
     this.version = version;
@@ -10,5 +10,6 @@ export default class Release {
     this.createdBy = createdBy;
     this.deletedOn = deletedOn;
     this.deletedBy = deletedBy;
+    this.comment = comment;
   }
 }

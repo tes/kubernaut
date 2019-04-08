@@ -110,6 +110,7 @@ function makeRelease(overrides = {}) {
   return new Release(merge({
     service,
     version,
+    comment: chance.sentence(),
     template: new ReleaseTemplate({
       yaml,
       json,

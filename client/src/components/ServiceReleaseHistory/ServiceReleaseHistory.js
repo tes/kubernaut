@@ -9,11 +9,19 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  UncontrolledTooltip,
 } from 'reactstrap';
 import { sortBy } from 'lodash';
 import TablePagination from '../TablePagination';
-import { Human } from '../DisplayDate';
+import { Human, Ago } from '../DisplayDate';
 import { CreateDeploymentLink, NamespaceLink, DeploymentLink } from '../Links';
+
+const trimWithoutCuttingWord = (string, maxLength) => {
+  const newStringSimple = string.substring(0, maxLength);
+  const newStringCutToWord = newStringSimple.substring(0, newStringSimple.lastIndexOf(' '));
+
+  return newStringCutToWord || newStringSimple;
+};
 
 class ServiceReleaseHistory extends Component {
 
@@ -72,10 +80,22 @@ class ServiceReleaseHistory extends Component {
           );
         });
 
+        const releaseComment = item.comment ? (
+          item.comment.length < 30 ? item.comment : (
+            <span>
+              <span id={`comment-${item.id}`}>{trimWithoutCuttingWord(item.comment, 30)} ...</span>
+              <UncontrolledTooltip delay={250} target={`comment-${item.id}`}>
+                {item.comment}
+              </UncontrolledTooltip>
+            </span>
+          )
+        ) : null;
+
         rows.push((
           <tr key={item.id}>
-            <td className="pb-0">{item.version}</td>
-            <td className="pb-0"><Human date={item.createdOn} /></td>
+            <td className="pb-0 text-center">{item.version}</td>
+            <td className="pb-0"><Ago date={item.createdOn} /></td>
+            <td className="pb-0">{releaseComment}</td>
             <td className="pb-0">
               <CreateDeploymentLink
                 service={item.service}
@@ -122,6 +142,7 @@ class ServiceReleaseHistory extends Component {
               <tr>
                 <th className="text-center">Version</th>
                 <th>When</th>
+                <th>Message</th>
               </tr>
             </thead>
             <tbody>

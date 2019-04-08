@@ -64,6 +64,7 @@ export default function(options = {}) {
               name: req.body.registry,
             },
           },
+          comment: `${req.body.comment || ''}`,
           version: req.body.version,
           template: await getTemplate(req.file.buffer, res.locals.logger),
           attributes: req.body,

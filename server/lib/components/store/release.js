@@ -61,7 +61,7 @@ export default function(options) {
       logger.debug(`Saving release: ${service.name}/${data.version}`);
 
       const result = await connection.query(SQL.SAVE_RELEASE, [
-        service.id, data.version, template.id, meta.date, meta.account.id,
+        service.id, data.version, template.id, meta.date, meta.account.id, data.comment
       ]);
 
       const release = new Release({
@@ -130,7 +130,7 @@ export default function(options) {
       const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findReleasesBuilder = sqb
-        .select('r.id', 'r.version', 'r.created_on', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('r.id', 'r.version', 'r.created_on', 'r.comment', 's.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_release__vw r', 'service s', 'registry sr', 'account cb')
         .where(Op.eq('r.service', raw('s.id')))
         .where(Op.eq('s.registry', raw('sr.id')))
@@ -235,6 +235,7 @@ export default function(options) {
           id: row.created_by_id,
           displayName: row.created_by_display_name,
         }),
+        comment: row.comment,
       });
     }
 

@@ -3,6 +3,7 @@ SELECT
   r.version,
   r.template,
   r.created_on,
+  r.comment,
   cb.id AS created_by_id,
   cb.display_name AS created_by_display_name,
   s.id AS service_id,
