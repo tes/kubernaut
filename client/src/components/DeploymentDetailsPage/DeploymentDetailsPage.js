@@ -21,7 +21,7 @@ import RenderTextArea from '../RenderTextArea';
 import { Human, Ago } from '../DisplayDate';
 import DeploymentStatus from '../DeploymentStatus';
 import Popover from '../Popover';
-import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, ClusterLink, NamespaceLink } from '../Links';
+import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, NamespaceLink } from '../Links';
 
 class DeploymentDetailsPage extends Component {
 
@@ -54,31 +54,22 @@ class DeploymentDetailsPage extends Component {
       return (
         <div>
           <Title title={`Deployment: ${deployment.release.service.name}@${deployment.release.version} -> ${deployment.namespace.cluster.name}/${deployment.namespace.name}`} />
-          <Row>
+          <Row className="mb-2">
             <Col md="8" sm="12">
               <Card>
-                <CardHeader>
-                  <span>Details:</span>
+                <CardHeader className="d-flex justify-content-between">
+                  <span>
+                    Deployment of <ServiceLink service={deployment.release.service} />@<ReleaseLink release={deployment.release} /> to <NamespaceLink namespace={deployment.namespace} pill showCluster />
+                  </span>
+                  <span><DeploymentStatus deployment={deployment}/></span>
                 </CardHeader>
                 <CardBody>
                   <dl className="row no-gutters">
-                    <dt className='col-md-auto mr-2'>Service:</dt>
-                    <dd className='col-md-auto'><ServiceLink service={deployment.release.service} /></dd>
-                    <div className="w-100"></div>
-                    <dt className='col-md-auto mr-2'>Version:</dt>
-                    <dd className='col-md-auto'><ReleaseLink release={deployment.release} /></dd>
-                    <div className="w-100"></div>
                     <dt className='col-md-auto mr-2'>Registry:</dt>
                     <dd className='col-md-auto'><RegistryLink registry={deployment.release.service.registry} /></dd>
                     <div className="w-100"></div>
-                    <dt className='col-md-auto mr-2'>Cluster:</dt>
-                    <dd className='col-md-auto'><ClusterLink cluster={deployment.namespace.cluster} /></dd>
-                    <div className="w-100"></div>
-                    <dt className='col-md-auto mr-2'>Namespace:</dt>
-                    <dd className='col-md-auto'><NamespaceLink namespace={deployment.namespace} /></dd>
-                    <div className="w-100"></div>
                     <dt className='col-md-auto mr-2'>Status:</dt>
-                    <dd className='col-md-auto'><DeploymentStatus deployment={deployment}/> {deployment.status}</dd>
+                    <dd className='col-md-auto'>{deployment.status}</dd>
                     <div className="w-100"></div>
                     <dt className='col-md-auto mr-2'>Apply Exit Code:</dt>
                     <dd className='col-md-auto'>{deployment.applyExitCode}</dd>
@@ -96,139 +87,137 @@ class DeploymentDetailsPage extends Component {
                     <dd className='col-md-auto'><AccountLink account={deployment.createdBy} /></dd>
                     <div className="w-100"></div>
                   </dl>
+                  { deployment.note ? (
+                    <Row>
+                      <Col>
+                        <Row className="text-light bg-dark p-1 mb-1 no-gutters">
+                          <Col>
+                            <h4>Note:</h4>
+                            <ReactMarkdown source={deployment.note} />
+                          </Col>
+                        </Row>
+                        {
+                          canEdit ? (
+                            <Row>
+                              <Col>
+                                <Button onClick={() => this.props.openModal()} color="link">Edit note</Button>
+                              </Col>
+                            </Row>
+                          ) : null
+                        }
+                      </Col>
+                    </Row>
+                  ) : canEdit ? (
+                      <Row>
+                        <Col>
+                          <Button onClick={() => this.props.openModal()} color="link">Add note</Button>
+                        </Col>
+                      </Row>
+                    ) : null
+                  }
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col sm="10">
+              <h4 className="d-flex">
+                Deployment Log
+                <Popover title="Log output" classNames="pl-1">
+                  <p className="text-info">stdin</p>
+                  <p className="text-secondary">stdout</p>
+                  <p className="text-danger">stderr</p>
+                </Popover>
+              </h4>
+            </Col>
+          </Row>
+          <Row>
+            <Col sm="12">
+              <Table hover responsive size="sm">
+                <tbody>
+                  {
+                    deployment.log.map(entry => {
+                      let textClass = 'text-secondary';
+                      if (entry.writtenTo === 'stdin') textClass = 'text-info';
+                      if (entry.writtenTo === 'stderr') textClass = 'text-danger';
+                      return <tr key={entry.id}>
+                        <td><Human date={entry.writtenOn} /></td>
+                        <td className={textClass}>{entry.content}</td>
+                      </tr>;
+                    })
+                  }
+                  {
+                    logPending ? <tr className="text-center"><td colSpan="2"><i className="fa fa-spinner fa-pulse" aria-hidden='true' /></td></tr> : null
+                  }
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md="8" sm="12">
+              <Card>
+                <CardHeader>
+                  <span>Attributes:</span>
+                </CardHeader>
+                <CardBody>
+                  <dl className="row no-gutters">
+                    {attributesEls}
+                  </dl>
                 </CardBody>
               </Card>
             </Col>
           </Row>
 
-            { deployment.note ? (
-              <Row className="mt-3 mb-3">
-                <Col md="10">
-                  <Row className="text-light bg-dark p-1 mb-1 no-gutters">
-                    <Col>
-                      <h4>Note:</h4>
-                      <ReactMarkdown source={deployment.note} />
-                    </Col>
-                  </Row>
-                  {
-                    canEdit ? (
-                      <Row>
-                        <Col>
-                          <Button onClick={() => this.props.openModal()} color="link">Edit note</Button>
-                        </Col>
-                      </Row>
-                    ) : null
-                  }
-                </Col>
-              </Row>
-            ) : canEdit ? (
-                <Row>
-                  <Col>
-                    <Button onClick={() => this.props.openModal()} color="link">Add note</Button>
-                  </Col>
-                </Row>
-              ) : null
-            }
+          <Row>
+            <Col sm="12" className="d-flex mb-2">
+              <h4 className="mr-2">Kubernetes Manifest</h4>
+              <Button
+                onClick={() => this.props.toggleManifestOpen()}
+              >{manifestOpen ? 'Hide' : 'Show'}</Button>
+            </Col>
+          </Row>
+          <Row>
+            <Col sm="10">
+              <Collapse isOpen={manifestOpen}>
+                <pre className="bg-light p-2">
+                  <code>
+                    {deployment.manifest.yaml}
+                  </code>
+                </pre>
+              </Collapse>
+            </Col>
+          </Row>
 
-            <Row>
-              <Col sm="10">
-                <h4 className="d-flex">
-                  Deployment Log
-                  <Popover title="Log output" classNames="pl-1">
-                    <p className="text-info">stdin</p>
-                    <p className="text-secondary">stdout</p>
-                    <p className="text-danger">stderr</p>
-                  </Popover>
-                </h4>
-              </Col>
-            </Row>
-            <Row>
-              <Col sm="12">
-                <Table hover responsive size="sm">
-                  <tbody>
-                    {
-                      deployment.log.map(entry => {
-                        let textClass = 'text-secondary';
-                        if (entry.writtenTo === 'stdin') textClass = 'text-info';
-                        if (entry.writtenTo === 'stderr') textClass = 'text-danger';
-                        return <tr key={entry.id}>
-                          <td><Human date={entry.writtenOn} /></td>
-                          <td className={textClass}>{entry.content}</td>
-                        </tr>;
-                      })
-                    }
-                    {
-                      logPending ? <tr className="text-center"><td colSpan="2"><i className="fa fa-spinner fa-pulse" aria-hidden='true' /></td></tr> : null
-                    }
-                  </tbody>
-                </Table>
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Col md="8" sm="12">
-                <Card>
-                  <CardHeader>
-                    <span>Attributes:</span>
-                  </CardHeader>
-                  <CardBody>
-                    <dl className="row no-gutters">
-                      {attributesEls}
-                    </dl>
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col sm="12" className="d-flex mb-2">
-                <h4 className="mr-2">Kubernetes Manifest</h4>
+          <Modal
+            isOpen={this.props.modalOpen}
+            toggle={this.props.closeModal}
+            size="lg"
+          >
+            <form onSubmit={this.props.handleSubmit((values, dispatch) => {
+                this.props.submitNoteForm({
+                  id: deployment.id,
+                  ...values
+                }, dispatch);
+              })}>
+              <ModalHeader>
+                Edit deployment note:
+              </ModalHeader>
+              <ModalBody>
+                <Field
+                  name="note"
+                  component={RenderTextArea}
+                  className="form-control"
+                  rows="6"
+                />
+              </ModalBody>
+              <ModalFooter>
                 <Button
-                  onClick={() => this.props.toggleManifestOpen()}
-                >{manifestOpen ? 'Hide' : 'Show'}</Button>
-              </Col>
-            </Row>
-            <Row>
-              <Col sm="10">
-                <Collapse isOpen={manifestOpen}>
-                  <pre className="bg-light p-2">
-                    <code>
-                      {deployment.manifest.yaml}
-                    </code>
-                  </pre>
-                </Collapse>
-              </Col>
-            </Row>
-
-            <Modal
-              isOpen={this.props.modalOpen}
-              toggle={this.props.closeModal}
-              size="lg"
-            >
-              <form onSubmit={this.props.handleSubmit((values, dispatch) => {
-                  this.props.submitNoteForm({
-                    id: deployment.id,
-                    ...values
-                  }, dispatch);
-                })}>
-                <ModalHeader>
-                  Edit deployment note:
-                </ModalHeader>
-                <ModalBody>
-                  <Field
-                    name="note"
-                    component={RenderTextArea}
-                    className="form-control"
-                    rows="6"
-                  />
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    type="submit"
-                  >Save</Button>
-                </ModalFooter>
-              </form>
-            </Modal>
+                  type="submit"
+                >Save</Button>
+              </ModalFooter>
+            </form>
+          </Modal>
         </div>
       );
     };
@@ -236,11 +225,6 @@ class DeploymentDetailsPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
-          <Row>
-            <Col sm="12">
-              <h5>Deployment:</h5>
-            </Col>
-          </Row>
           {
             (() => {
               if (meta.error) return errorDetails();
