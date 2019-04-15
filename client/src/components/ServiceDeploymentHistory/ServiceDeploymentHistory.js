@@ -10,13 +10,14 @@ import {
   CardFooter,
 } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human } from '../DisplayDate';
+import { Human, Ago } from '../DisplayDate';
 import {
   DeploymentLink,
   CreateDeploymentLink,
   NamespaceLink,
   AccountLink,
 } from '../Links';
+import DeploymentStatus from '../DeploymentStatus';
 
 class ServiceDeploymentHistory extends Component {
 
@@ -25,17 +26,13 @@ class ServiceDeploymentHistory extends Component {
     const cards = [];
     if (deployments && deployments.data && deployments.data.items) {
       deployments.data.items.forEach(item => {
-        const statusColor = (item.status === 'failed' && 'text-danger')
-          || (item.status === 'successful' && 'text-body')
-          || (item.status === 'applied' && 'text-info')
-          || 'text-secondary';
         cards.push((
           <Row key={item.id} className="no-gutters">
             <Col sm="8" className="p-0">
               <Card className="m-1">
                 <CardHeader className="d-flex justify-content-between px-2 py-1">
-                  <div><Human date={item.createdOn} /></div>
-                  <div className={statusColor}>{item.status}</div>
+                  <div><Human date={item.createdOn} /> (<Ago date={item.createdOn} />)</div>
+                  <span><DeploymentStatus deployment={item}/></span>
                 </CardHeader>
                 <CardBody className="p-1">
                   <Row className="no-gutters">
