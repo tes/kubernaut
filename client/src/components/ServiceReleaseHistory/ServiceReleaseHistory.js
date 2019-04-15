@@ -84,7 +84,7 @@ class ServiceReleaseHistory extends Component {
           item.comment.length < 30 ? item.comment : (
             <span>
               <span id={`comment-${item.id}`}>{trimWithoutCuttingWord(item.comment, 30)} ...</span>
-              <UncontrolledTooltip delay={250} target={`comment-${item.id}`}>
+              <UncontrolledTooltip delay={250} target={`comment-${item.id}`} placement="right">
                 {item.comment}
               </UncontrolledTooltip>
             </span>
@@ -102,7 +102,13 @@ class ServiceReleaseHistory extends Component {
                 registry={item.service.registry}
                 version={item.version}
               >
-                <i className="fa fa-cloud-upload text-success" aria-hidden='true'></i>
+                <h5 className="m-0">
+                  <i
+                    className="fa fa-cloud-upload text-info"
+                    aria-hidden='true'
+                    title="Deploy this release"
+                  ></i>
+                </h5>
               </CreateDeploymentLink>
             </td>
             <td className="pb-0">
