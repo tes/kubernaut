@@ -17,9 +17,11 @@ SELECT
   n.id AS namespace_id,
   n.name AS namespace_name,
   n.context AS namespace_context,
+  n.color AS namespace_color,
   c.id AS cluster_id,
   c.name AS cluster_name,
-  c.config AS cluster_config
+  c.config AS cluster_config,
+  c.color AS cluster_color
 FROM
   active_deployment__vw d,
   release r,
