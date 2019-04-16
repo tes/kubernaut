@@ -17,7 +17,7 @@ export default function(options = {}) {
       try {
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed deployments');
-        const filters = parseFilters(req.query, ['registry', 'service', 'version', 'namespace', 'cluster']);
+        const filters = parseFilters(req.query, ['registry', 'service', 'version', 'namespace', 'cluster', 'createdBy']);
         const criteria = {
           filters,
           user: {

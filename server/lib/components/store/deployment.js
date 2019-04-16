@@ -230,12 +230,13 @@ export default function(options) {
 
       const countDeploymentsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_deployment__vw d', 'release r', 'service s', 'registry sr', 'cluster c', 'namespace n')
+        .from('active_deployment__vw d', 'release r', 'service s', 'registry sr', 'cluster c', 'namespace n', 'account cb')
         .where(Op.eq('d.release', raw('r.id')))
         .where(Op.eq('r.service', raw('s.id')))
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('d.namespace', raw('n.id')))
-        .where(Op.eq('n.cluster', raw('c.id')));
+        .where(Op.eq('n.cluster', raw('c.id')))
+        .where(Op.eq('d.created_by', raw('cb.id')));
 
       if (criteria.hasOwnProperty('service')) {
         db.applyFilter({ value: criteria.service }, 's.name', findDeploymentsBuilder, countDeploymentsBuilder);
@@ -280,6 +281,10 @@ export default function(options) {
 
         if (criteria.filters.namespaces) {
           db.applyFilter(criteria.filters.namespace, 'n.id', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+
+        if (criteria.filters.createdBy) {
+          db.applyFilter(criteria.filters.createdBy, 'cb.display_name', findDeploymentsBuilder, countDeploymentsBuilder);
         }
       }
 
