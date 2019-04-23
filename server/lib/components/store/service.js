@@ -238,6 +238,7 @@ export default function(options) {
           'n.color namespace_color',
           'c.name cluster_name',
           'c.color cluster_color',
+          'c.priority cluster_priority',
           sqb
             .select(raw('count(1) > 0'))
             .from('service_namespace sn')
@@ -249,7 +250,7 @@ export default function(options) {
         .from('active_namespace__vw n')
         .join(sqb.join('cluster c').on(Op.eq('n.cluster', raw('c.id'))))
         .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')))
-        .orderBy('cluster_name asc', 'namespace_name asc')
+        .orderBy('namespace_name asc', 'cluster_priority asc', 'cluster_name asc')
         .limit(limit)
         .offset(offset);
 

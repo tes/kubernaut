@@ -243,7 +243,7 @@ export default function(options) {
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
         .where(Op.in('n.id', serviceNamespaceBuilder))
-        .orderBy('n.name asc', 'c.name asc')
+        .orderBy('c.priority asc', 'c.name asc', 'n.name asc')
         .limit(limit)
         .offset(offset);
 

@@ -63,7 +63,7 @@ class ServiceReleaseHistory extends Component {
       releases.data.items.forEach((item, index) => {
         const activeDeployments = latestDeployments.filter((dep) => (dep.release.id === item.id));
         const historicalDeployments = sortBy(releasesNamespaceHistory
-          .filter((dep) => (dep.release.id === item.id)), ['cluster.name', 'namespace.name']);
+          .filter((dep) => (dep.release.id === item.id)), ['cluster.priority', 'cluster.name', 'namespace.name']);
         const deploymentBadges = historicalDeployments.map((dep) => {
           const hasActive = activeDeployments.find(activeDep => (
             dep.namespace.id === activeDep.namespace.id

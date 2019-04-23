@@ -54,8 +54,8 @@ export default {
         .where(Op.eq('arn.subject_type', 'namespace'))
         .where(Op.eq('arn.account', targetUserId))
         .where(Op.in('n.id', querySubjectIdsWithPermission('namespace', currentUserId, 'namespaces-read')))
-        .groupBy('n.id', 'c.name', 'n.name')
-        .orderBy('c.name', 'n.name');
+        .groupBy('n.id', 'c.priority', 'c.name', 'n.name')
+        .orderBy('c.priority', 'c.name', 'n.name');
     }
 
     function queryRegistriesWithAppliedRolesForUserAsSeenBy(targetUserId, currentUserId) {

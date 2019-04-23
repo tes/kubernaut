@@ -123,6 +123,7 @@ export default function(options) {
             n.color namespace_color,
             c.name cluster_name,
             c.color cluster_color,
+            c.priority cluster_priority,
             LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id,
             LAST_VALUE(r.version) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_version
           `))
@@ -144,7 +145,8 @@ export default function(options) {
             Op.is('d.rollout_status_exit_code', null)
           )
         ))
-        .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', user.id, 'deployments-read')));
+        .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', user.id, 'deployments-read')))
+        .orderBy('c.priority asc');
 
       return await db.withTransaction(async connection => {
         return await connection.query(db.serialize(builder, {}).sql);
@@ -158,7 +160,7 @@ export default function(options) {
       logger.debug(`Getting releases deployment namespace history for user ${criteria.user.id}`);
 
       const builder = sqb
-        .select('r.id release_id', 'r.version release_version', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color')
+        .select('r.id release_id', 'r.version release_version', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'c.priority cluster_priority', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color')
         .from('active_deployment__vw d')
         .join(join('active_namespace__vw n').on(Op.eq('n.id', raw('d.namespace'))))
         .join(join('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster'))))
@@ -166,7 +168,7 @@ export default function(options) {
         .join(join('active_service__vw s').on(Op.eq('s.id', raw('r.service'))))
         .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', criteria.user.id, 'deployments-read')))
         .where(Op.in('s.registry', await authz.querySubjectIdsWithPermission('registry', criteria.user.id, 'releases-read')))
-        .groupBy('r.id', 'r.version', 'c.id', 'c.name', 'c.color', 'n.id', 'n.name', 'n.color');
+        .groupBy('r.id', 'r.version', 'c.id', 'c.name', 'c.color', 'c.priority', 'n.id', 'n.name', 'n.color');
 
         if (criteria.filters.release) {
           db.applyFilter(criteria.filters.release, 'r.id', builder);
@@ -346,6 +348,7 @@ export default function(options) {
         cluster: new Cluster({
           name: row.cluster_name,
           color: row.cluster_color,
+          priority: row.cluster_priority,
         }),
         release: new Release({
           id: row.release_id,

@@ -882,7 +882,7 @@ export default function(options = {}) {
             .select('namespace_id')
             .from(appliedRolesBuilder.as('applied'))
           ))
-          .orderBy('c.name', 'n.name');
+          .orderBy('c.priority', 'c.name', 'n.name');
 
         const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
           .select('arn.subject id', raw('array_agg(distinct r2.name) roles'))

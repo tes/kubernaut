@@ -27,7 +27,7 @@ try {
       }), makeRootMeta({ date: new Date() }));
     };
 
-    const ensureCluster = async (name, color = 'saddlebrown') => {
+    const ensureCluster = async (name, color = 'saddlebrown', priority) => {
       const existingCluster = await store.findCluster({ name });
       if (existingCluster) return existingCluster;
 
@@ -35,6 +35,7 @@ try {
         name,
         config: resolve(process.env.HOME, '.kube/config'),
         color,
+        priority,
       }), makeRootMeta({ date: new Date() }));
     };
     const ensureNamespace = async (name, cluster) => {
@@ -51,10 +52,10 @@ try {
     const registry = await ensureRegistry('default');
     const secondRegistry = await ensureRegistry('second-registry');
 
-    const cluster = await ensureCluster('development');
-    const stagingCluster = await ensureCluster('staging', 'blue');
-    const liveCluster = await ensureCluster('live', 'goldenrod');
-    const localCluster = await ensureCluster('local', 'lightblue');
+    const cluster = await ensureCluster('development', 'saddlebrown', 100);
+    const stagingCluster = await ensureCluster('staging', 'blue', 200);
+    const liveCluster = await ensureCluster('live', 'goldenrod', 300);
+    const localCluster = await ensureCluster('local', 'lightblue', 100);
 
     await ensureNamespace('default', localCluster);
     const defaultNS = await ensureNamespace('default', cluster);
