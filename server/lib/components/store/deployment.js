@@ -127,12 +127,12 @@ export default function(options) {
             LAST_VALUE(r.id) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_id,
             LAST_VALUE(r.version) OVER ( PARTITION BY d.namespace ORDER BY d.created_on ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING ) release_version
           `))
-        .from('deployment d')
-        .join(join('release r').on(Op.eq('r.id', raw('d.release'))))
-        .join(join('service s').on(Op.eq('s.id', raw('r.service'))))
-        .join(join('registry sr').on(Op.eq('sr.id', raw('s.registry'))))
-        .join(join('namespace n').on(Op.eq('n.id', raw('d.namespace'))))
-        .join(join('cluster c').on(Op.eq('c.id', raw('n.cluster'))))
+        .from('active_deployment__vw d')
+        .join(join('active_release__vw r').on(Op.eq('r.id', raw('d.release'))))
+        .join(join('active_service__vw s').on(Op.eq('s.id', raw('r.service'))))
+        .join(join('active_registry__vw sr').on(Op.eq('sr.id', raw('s.registry'))))
+        .join(join('active_namespace__vw n').on(Op.eq('n.id', raw('d.namespace'))))
+        .join(join('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster'))))
         .where(Op.eq('sr.id', registryId))
         .where(Op.eq('s.name', service))
         .where(Op.and(
