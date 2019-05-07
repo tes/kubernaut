@@ -71,7 +71,7 @@
     "elastic-apm-node": "^2.7.1",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",
-    "highwayhash": "^2.4.0",
+    "highwayhash": "^2.5.0",
     "hogan.js": "^3.0.2",
     "is-css-color-hex": "^0.2.0",
     "is-css-color-name": "^0.1.3",
