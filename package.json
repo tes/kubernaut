@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "async": "^2.6.0",
+    "aws-sdk": "^2.450.0",
     "body-parser": "^1.17.2",
     "boom": "^5.2.0",
     "bunyan": "^1.8.12",

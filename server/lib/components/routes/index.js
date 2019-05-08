@@ -18,7 +18,8 @@ const minimumRequirements = [
   {
     component: 'logger.middleware',
     destination: 'loggerMiddleware'
-  }
+  },
+  'broadcast'
 ];
 
 export default () => systemic({

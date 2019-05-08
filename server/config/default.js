@@ -65,4 +65,5 @@ module.exports = {
       level: 'debug',
     },
   },
+  broadcast: {},
 };

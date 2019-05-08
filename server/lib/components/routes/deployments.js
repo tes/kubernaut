@@ -9,7 +9,7 @@ import secretTemplate from './lib/secretTemplate';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, auth, logger }, cb) {
+  function start({ pkg, app, store, kubernetes, auth, logger, broadcast }, cb) {
 
     app.use('/api/deployments', auth('api'));
 
@@ -236,6 +236,11 @@ export default function(options = {}) {
 
     async function getRolloutStatus(deployment, emitter) {
       try {
+        await broadcast({
+          type: 'deployment',
+          id: deployment.id,
+          message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
+        });
         const code = await kubernetes.rolloutStatus(
           deployment.namespace.cluster.config,
           deployment.namespace.context,
@@ -245,6 +250,19 @@ export default function(options = {}) {
         );
 
         await store.saveRolloutStatusExitCode(deployment.id, code);
+        if (code) {
+          await broadcast({
+            type: 'deployment-failed',
+            id: deployment.id,
+            message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
+          });
+        } else {
+          await broadcast({
+            type: 'deployment-success',
+            id: deployment.id,
+            message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
+          });
+        }
         return code;
       } catch (e) {
         logger.error('Error getting rollout status', e);
