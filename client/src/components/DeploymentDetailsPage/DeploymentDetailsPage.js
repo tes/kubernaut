@@ -46,7 +46,7 @@ class DeploymentDetailsPage extends Component {
           attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'><pre style={{display: 'inline'}}>{secret.comment}</pre> - <AccountLink account={secret.createdBy} /></dd>);
         }
         else attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'>{deployment.attributes[name]}</dd>);
-        attributesEls.push(<div className="w-100"></div>); // Force new line
+        attributesEls.push(<div key={`${name}-spacer`}className="w-100"></div>); // Force new line
       }
 
       const logPending = deployment.status !== 'failed' && (deployment.applyExitCode === null || deployment.rolloutStatusExitCode === null || deployment.status === 'pending');
