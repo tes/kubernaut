@@ -141,7 +141,7 @@ class DeploymentDetailsPage extends Component {
                       if (entry.writtenTo === 'stdin') textClass = 'text-info';
                       if (entry.writtenTo === 'stderr') textClass = 'text-danger';
                       return <tr key={entry.id}>
-                        <td><Human date={entry.writtenOn} /></td>
+                        <td style={{whiteSpace: 'nowrap'}}><Ago date={entry.writtenOn} /></td>
                         <td className={textClass}>{entry.content}</td>
                       </tr>;
                     })

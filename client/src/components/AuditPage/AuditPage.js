@@ -22,6 +22,7 @@ import {
   ServiceLink,
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
+import { Ago } from '../DisplayDate';
 
 const filterDisplayNameLookup = {
   sourceAccount: 'Source account',
@@ -94,7 +95,7 @@ class AuditPage extends Component {
                             <AccountLink account={audit.sourceAccount} />
                             <QuickFilters value={audit.sourceAccount.id} column='sourceAccount' displayValue={audit.sourceAccount.displayName} />
                           </div>
-                          {audit.createdOn}
+                          <div><Ago date={audit.createdOn} /></div>
                         </CardHeader>
                         <CardBody className="px-2 py-1">
                           {audit.action}

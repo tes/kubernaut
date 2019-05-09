@@ -10,8 +10,12 @@ export const Human = ({ date }) => {
 
 export const Ago = ({ date }) => {
   const text = getText(date, inAgoFormat);
+
   return (
-    <span className='display-date display-date--ago'>{text}</span>
+    <span
+      className='display-date display-date--ago'
+      title={getText(date, inHumanFormat)}
+    >{text}</span>
   );
 };
 

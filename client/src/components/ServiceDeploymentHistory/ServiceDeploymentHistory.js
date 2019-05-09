@@ -10,7 +10,7 @@ import {
   CardFooter,
 } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import {
   DeploymentLink,
   CreateDeploymentLink,
@@ -31,7 +31,7 @@ class ServiceDeploymentHistory extends Component {
             <Col sm="8" className="p-0">
               <Card className="m-1">
                 <CardHeader className="d-flex justify-content-between px-2 py-1">
-                  <div><Human date={item.createdOn} /> (<Ago date={item.createdOn} />)</div>
+                  <div><Ago date={item.createdOn} /></div>
                   <span><DeploymentStatus deployment={item}/></span>
                 </CardHeader>
                 <CardBody className="p-1">

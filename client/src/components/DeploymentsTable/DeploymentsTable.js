@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import { isEqual, curry } from 'lodash';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink, ServiceLink, ReleaseLink, NamespaceLink, DeploymentLink } from '../Links';
 import TableFilter, { CreateQuickFilters } from '../TableFilter';
 import DeploymentStatus from '../DeploymentStatus';
@@ -85,7 +85,6 @@ class DeploymentsTable extends Component {
                   <QuickFilters value={deployment.release.version} column='version' />
                 </td> }
                 { omitCreated ? null : <td>
-                  <span className="mr-4"><Human date={deployment.createdOn} /></span>
                   <span className="font-italic"><Ago date={deployment.createdOn} /></span>
                 </td> }
                 { omitWhere ? null : <td className="cellFilterActionsParent">

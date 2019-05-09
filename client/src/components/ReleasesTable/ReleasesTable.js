@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink, ReleaseLink, CreateDeploymentLink } from '../Links';
 import TableFilter, { CreateQuickFilters } from '../TableFilter';
 
@@ -51,7 +51,6 @@ class ReleasesTable extends Component {
         releases.items.map(release => {
           return <tr key={release.id} id={release.id} >
             <td>
-              <span className="mr-4"><Human date={release.createdOn} /></span>
               <span className="font-italic"><Ago date={release.createdOn} /></span>
             </td>
             <td className="cellFilterActionsParent">

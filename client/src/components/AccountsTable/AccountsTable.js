@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink } from '../Links';
 import TableFilter from '../TableFilter';
 
@@ -52,7 +52,6 @@ class AccountsTable extends Component {
               <AccountLink account={account} />
             </td>
             <td>
-              <span className="mr-4"><Human date={account.createdOn} /></span>
               <span className="font-italic"><Ago date={account.createdOn} /></span>
             </td>
             <td>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink } from '../Links';
 
 class RegistriesTable extends Component {
@@ -41,7 +41,6 @@ class RegistriesTable extends Component {
           return <tr key={registry.id} id={registry.id} >
             <td><RegistryLink registry={registry} /></td>
             <td>
-              <span className="mr-4"><Human date={registry.createdOn} /></span>
               <span className="font-italic"><Ago date={registry.createdOn} /></span>
             </td>
             <td><AccountLink account={registry.createdBy} /></td>

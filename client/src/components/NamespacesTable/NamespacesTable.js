@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human, Ago } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink, NamespaceLink, ClusterLink } from '../Links';
 
 class NamespacesTable extends Component {
@@ -42,7 +42,6 @@ class NamespacesTable extends Component {
             <td><NamespaceLink namespace={namespace} /></td>
             <td><ClusterLink cluster={namespace.cluster} /></td>
             <td>
-              <span className="mr-4"><Human date={namespace.createdOn} /></span>
               <span className="font-italic"><Ago date={namespace.createdOn} /></span>
             </td>
             <td><AccountLink account={namespace.createdBy} /></td>

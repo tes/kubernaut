@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { Human } from '../DisplayDate';
+import { Ago } from '../DisplayDate';
 import { AccountLink, RegistryLink, ServiceLink } from '../Links';
 import TableFilter, { CreateQuickFilters } from '../TableFilter';
 
@@ -58,7 +58,7 @@ class ServicesTable extends Component {
               <RegistryLink registry={service.registry} />
               <QuickFilters value={service.registry.name} column='registry' />
             </td>
-            <td><span><Human date={service.createdOn} /></span></td>
+            <td><span><Ago date={service.createdOn} /></span></td>
             <td className="cellFilterActionsParent">
               <AccountLink account={service.createdBy} />
               <QuickFilters value={service.createdBy.displayName} column='createdBy' />
