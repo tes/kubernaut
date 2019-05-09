@@ -149,7 +149,7 @@ class SecretOverviewPage extends Component {
             </Row>
             <Form onSubmit={this.props.handleSubmit(this.props.saveVersion)}>
               <FormGroup row>
-                <Label sm="3" className="text-right" for="comment">Comment:</Label>
+                <Label sm="3" className="text-right" for="comment">A comment to reference by:</Label>
                 <Col sm="6">
                   <Field
                     className="form-control"
@@ -159,7 +159,7 @@ class SecretOverviewPage extends Component {
                     autoComplete="foo-no-really"
                   />
                 </Col>
-                <Col><Button disabled={!this.props.canSave} type="submit">Save</Button></Col>
+                <Col><Button color="success" disabled={!this.props.canSave} type="submit">Save</Button></Col>
               </FormGroup>
               <Row>
                 <Col>
@@ -168,6 +168,14 @@ class SecretOverviewPage extends Component {
                       <Row>
                         <Col sm="3" className="border-right pr-0">
                           <ListGroup flush className="min-vh-75 max-vh-75 overflow-auto">
+                            <ListGroupItem className="p-1">
+                              <h6 className="mb-1">Secret keys:</h6>
+                              {
+                                this.props.formSecrets.length === 0 ?
+                                <small>There are no keys in this secret.</small>
+                                : null
+                              }
+                            </ListGroupItem>
                             {this.props.formSecrets.map((secret, index) => (
                               <ListGroupItem
                                 action
@@ -202,22 +210,23 @@ class SecretOverviewPage extends Component {
                 </Col>
               </Row>
               <FormSection name="newSecretSection">
-                <Row form>
+                <Row form className="mt-2">
                   <Col>
                     <FormGroup>
-                      <Label className="text-right" for="newsecret">New Secret name</Label>
+                      <Label className="text-right" for="newsecret">New Secret (key) name:</Label>
                       <Field
                         name="newSecretName"
                         type="text"
                         component={RenderInput}
                         autoComplete="foo-no-really"
                         className="form-control"
+                        placeholder="Example: config.json"
                       />
                     </FormGroup>
                   </Col>
                   <Col>
                     <FormGroup>
-                      <Label className="text-right" for="newsecret">Editor</Label>
+                      <Label className="text-right" for="newsecret">Editor:</Label>
                       <Field
                         name="newSecretType"
                         type="text"

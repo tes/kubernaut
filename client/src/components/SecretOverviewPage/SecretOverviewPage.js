@@ -8,11 +8,13 @@ import {
   CardHeader,
   CardBody,
   Progress,
+  Button
 } from 'reactstrap';
 import { ServicesSubNav } from '../SubNavs';
 import { AccountLink, SecretVersionLink, NewSecretVersionLink } from '../Links';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
+import { Ago } from '../DisplayDate';
 
 class SecretOverviewPage extends Component {
 
@@ -73,8 +75,11 @@ class SecretOverviewPage extends Component {
                       <Col>
                         <Card>
                           <CardHeader className="d-flex justify-content-between px-2 py-1">
-                            <div>{version.createdOn}</div>
-                            <AccountLink account={version.createdBy} />
+                            <Ago date={version.createdOn} />
+                            <div>
+                              <span>Created by: </span>
+                              <AccountLink account={version.createdBy} />
+                            </div>
                             <SecretVersionLink secretVersion={version} />
                           </CardHeader>
                           <CardBody className="py-1 px-2">
@@ -84,6 +89,15 @@ class SecretOverviewPage extends Component {
                       </Col>
                     </Row>
                   ))
+                }
+                {
+                  versions.items.length === 0 ?
+                  <Row>
+                    <Col>
+                      <span>There are no versions to display.</span>
+                    </Col>
+                  </Row>
+                  : null
                 }
               </Col>
             </Row>
@@ -105,7 +119,15 @@ class SecretOverviewPage extends Component {
           </Col>
           <Col>
             <Row>
-              <NewSecretVersionLink registryName={this.props.registryName} serviceName={this.props.serviceName} namespace={this.props.namespace}/>
+              <NewSecretVersionLink
+                registryName={this.props.registryName}
+                serviceName={this.props.serviceName}
+                namespace={this.props.namespace}
+              >
+                <Button color="success">
+                  Create new version
+                </Button>
+              </NewSecretVersionLink>
             </Row>
           </Col>
         </Row>

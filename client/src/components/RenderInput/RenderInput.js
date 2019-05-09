@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const RenderInput = ({ input, label, type, meta: { error, asyncValidating }, className, disabled, autoComplete }) => (
+const RenderInput = ({ input, label, type, meta: { error, asyncValidating }, className, disabled, autoComplete, placeholder }) => (
   <div className="row">
     <div className="col-sm-11">
       <input
@@ -11,6 +11,7 @@ const RenderInput = ({ input, label, type, meta: { error, asyncValidating }, cla
         className={className}
         disabled={disabled}
         autoComplete={autoComplete}
+        placeholder={placeholder}
       />
       {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
     </div>
