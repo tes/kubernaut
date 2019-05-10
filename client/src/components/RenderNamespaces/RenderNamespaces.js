@@ -11,7 +11,7 @@ import { NamespacePill } from '../Links';
 
 const outlinedDropDownToggle = (props) => <Button outline color="secondary" {...props} />;
 
-class RenderSecretVersions extends Component {
+class RenderNamespaces extends Component {
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
@@ -73,10 +73,10 @@ class RenderSecretVersions extends Component {
   }
 }
 
-RenderSecretVersions.propTypes = {
+RenderNamespaces.propTypes = {
   input: PropTypes.object.isRequired,
   options: PropTypes.array.isRequired,
   className: PropTypes.string,
 };
 
-export default RenderSecretVersions;
+export default RenderNamespaces;

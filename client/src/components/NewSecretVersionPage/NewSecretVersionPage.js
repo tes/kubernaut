@@ -160,7 +160,7 @@ class SecretOverviewPage extends Component {
                     placeholder="Like a git commit message"
                   />
                 </Col>
-                <Col><Button color="success" disabled={!this.props.canSave} type="submit">Save</Button></Col>
+                <Col><Button color="dark" disabled={!this.props.canSave} type="submit">Save</Button></Col>
               </FormGroup>
               <Row>
                 <Col>
@@ -241,9 +241,10 @@ class SecretOverviewPage extends Component {
                   <Col className="d-flex align-items-end">
                     <FormGroup>
                       <Button
+                        color="light"
                         disabled={!this.props.canAddNewSecret}
                         onClick={() => this.props.addSecret()}
-                      >Add</Button>
+                      >Add to secret</Button>
                     </FormGroup>
                   </Col>
                 </Row>

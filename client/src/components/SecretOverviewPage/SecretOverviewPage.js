@@ -124,7 +124,7 @@ class SecretOverviewPage extends Component {
                 serviceName={this.props.serviceName}
                 namespace={this.props.namespace}
               >
-                <Button color="success">
+                <Button color="dark">
                   Create new version
                 </Button>
               </NewSecretVersionLink>

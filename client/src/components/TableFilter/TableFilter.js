@@ -14,7 +14,7 @@ class TableFilter extends Component {
           <Row className="mb-2">
             <Col sm={{ size: 1, offset: 11 }}>
               <Button
-                outline
+                color="light"
                 onClick={() => this.props.showFilters()}
               >Filter
               </Button>
@@ -67,8 +67,7 @@ class TableFilter extends Component {
                   />
                 </FormGroup>
                 <Button
-                  outline
-                  color="primary"
+                  color="dark"
                   type="submit"
                   className="mr-2 mb-sm-1"
                   onClick={this.props.handleSubmit((values) => {
@@ -79,14 +78,13 @@ class TableFilter extends Component {
                 <Button
                   outline
                   className="mr-2 mb-sm-1"
-                  color="secondary"
+                  color="dark"
                   onClick={this.props.handleSubmit((values) => this.props.addFilter({
                     form: values,
                   }))}
                 ><i className='fa fa-plus' aria-hidden='true'></i> Add to filters</Button>
                 <Button
-                  outline
-                  color="secondary"
+                  color="light"
                   type="submit"
                   className="mr-2 mb-sm-1"
                   onClick={(e) => { e.preventDefault(); this.props.clearSearch(); }}
@@ -95,12 +93,12 @@ class TableFilter extends Component {
             </Col>
             <Col xs="1">
               <Button
-                outline
+                color="light"
                 onClick={(e) => {e.preventDefault(); this.props.hideFilters(); }}
                 className="d-none d-md-block"
               >Hide</Button>
               <Button
-                outline
+                color="light"
                 onClick={(e) => {e.preventDefault(); this.props.hideFilters(); }}
                 className="d-block d-md-none"
               ><i className='fa fa-times' aria-hidden='true'></i></Button>

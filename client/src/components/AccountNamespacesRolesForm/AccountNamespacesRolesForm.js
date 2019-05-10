@@ -179,8 +179,7 @@ class AccountNamespacesRolesForm extends Component {
                   </Col>
                   <Col sm="1">
                     <Button
-                      outline
-                      color="secondary"
+                      color="light"
                       disabled={!(currentValues.newNamespace && currentValues.roleForNewNamespace)}
                       onClick={() => {
                         addNewNamespace();

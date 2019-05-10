@@ -19,6 +19,15 @@ const renderAttributes = (props) => {
   return (
     <Row>
       <Col>
+        {
+          props.fields.length === 0 ?
+          <Row>
+            <Col>
+              <p>There are no attributes yet.</p>
+            </Col>
+          </Row>
+          : null
+        }
         {props.fields.map((attribute, index) => (
           <Row form key={props.fields.get(index).tempKey}>
             <Col>
@@ -30,6 +39,7 @@ const renderAttributes = (props) => {
                     component={RenderInput}
                     type="text"
                     autocomplete="foo-no-really"
+                    placeholder="name"
                   />
                 <span>:</span>
                 </Col>
@@ -40,6 +50,7 @@ const renderAttributes = (props) => {
                     component={RenderInput}
                     type="text"
                     autoComplete="foo-no-really"
+                    placeholder="value"
                     />
                 </Col>
                 <Col sm="1">
@@ -53,8 +64,7 @@ const renderAttributes = (props) => {
                 { index + 1 === props.fields.length ?
                   <Col sm="3">
                     <Button
-                      outline
-                      color="info"
+                      color="light"
                       onClick={(e) => { e.preventDefault(); props.fields.push({ tempKey: Math.random() }); }}
                       >Add new attribute
                     </Button>
@@ -68,8 +78,7 @@ const renderAttributes = (props) => {
           { props.fields.length === 0 ?
             <Col sm="3">
               <Button
-                outline
-                color="info"
+                color="light"
                 onClick={(e) => { e.preventDefault(); props.fields.push({ tempKey: Math.random() }); }}
                 >Add new attribute
               </Button>
@@ -125,9 +134,9 @@ class ServiceNamespaceAttrsPage extends Component {
                 <Col sm="2">
                   <Button
                     outline
-                    color="info"
+                    color="dark"
                     onClick={this.props.handleSubmit(this.props.submitForm)}
-                  >Save
+                  >Save attributes
                   </Button>
                 </Col>
               </Row>

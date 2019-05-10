@@ -32,6 +32,7 @@ const renderAttributes = (props) => {
                     component={RenderInput}
                     type="text"
                     autocomplete="foo-no-really"
+                    placeholder="key"
                   />
                 <span>:</span>
                 </Col>
@@ -42,6 +43,7 @@ const renderAttributes = (props) => {
                     component={RenderInput}
                     type="text"
                     autoComplete="foo-no-really"
+                    placeholder="value"
                     />
                 </Col>
                 <Col sm="1">
@@ -55,8 +57,7 @@ const renderAttributes = (props) => {
                 { index + 1 === props.fields.length ?
                   <Col sm="3">
                     <Button
-                      outline
-                      color="info"
+                      color="light"
                       onClick={(e) => { e.preventDefault(); props.fields.push({ tempKey: Math.random() }); }}
                       >Add new attribute
                     </Button>
@@ -70,8 +71,7 @@ const renderAttributes = (props) => {
           { props.fields.length === 0 ?
             <Col sm="3">
               <Button
-                outline
-                color="info"
+                color="light"
                 onClick={(e) => { e.preventDefault(); props.fields.push({ tempKey: Math.random() }); }}
                 >Add new attribute
               </Button>
@@ -168,8 +168,7 @@ class NamespaceEditPage extends Component {
                 <Row className="mt-2">
                   <Col sm="2">
                     <Button
-                      outline
-                      color="info"
+                      color="dark"
                       onClick={this.props.handleSubmit(this.props.submitForm)}
                       >Save
                     </Button>

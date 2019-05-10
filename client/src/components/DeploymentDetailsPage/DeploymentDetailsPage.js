@@ -100,7 +100,7 @@ class DeploymentDetailsPage extends Component {
                           canEdit ? (
                             <Row>
                               <Col>
-                                <Button onClick={() => this.props.openModal()} color="link">Edit note</Button>
+                                <Button onClick={() => this.props.openModal()} color="dark" outline>Edit note</Button>
                               </Col>
                             </Row>
                           ) : null
@@ -110,7 +110,7 @@ class DeploymentDetailsPage extends Component {
                   ) : canEdit ? (
                       <Row>
                         <Col>
-                          <Button onClick={() => this.props.openModal()} color="link">Add note</Button>
+                          <Button onClick={() => this.props.openModal()} color="dark">Add note</Button>
                         </Col>
                       </Row>
                     ) : null
@@ -173,6 +173,7 @@ class DeploymentDetailsPage extends Component {
             <Col sm="12" className="d-flex mb-2">
               <h4 className="mr-2">Kubernetes Manifest</h4>
               <Button
+                color="light"
                 onClick={() => this.props.toggleManifestOpen()}
               >{manifestOpen ? 'Hide' : 'Show'}</Button>
             </Col>
@@ -213,6 +214,7 @@ class DeploymentDetailsPage extends Component {
               </ModalBody>
               <ModalFooter>
                 <Button
+                  color="dark"
                   type="submit"
                 >Save</Button>
               </ModalFooter>
