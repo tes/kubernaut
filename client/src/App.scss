@@ -41,3 +41,16 @@
 .clickable {
   cursor: pointer;
 }
+
+.bread-nav {
+  &:before {
+    display: inline-block;
+    content: ">";
+    position:absolute;
+    top: 0.5em;
+    left: -1em;
+  }
+
+  position: relative;
+  margin-left: 1.5em;
+}

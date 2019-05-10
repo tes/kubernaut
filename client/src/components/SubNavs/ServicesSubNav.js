@@ -41,7 +41,7 @@ class ServicesSubNav extends Component {
               </NavItem>
               : null }
             { canManage && namespace && secrets ?
-              <NavItem>
+              <NavItem className="bread-nav">
                 <ServiceSecretsForNamespaceLink
                   container
                   registryName={registryName}
@@ -54,7 +54,7 @@ class ServicesSubNav extends Component {
               : null }
             {
               canManage && version ?
-              <NavItem>
+              <NavItem className="bread-nav">
                 <SecretVersionLink
                   container
                   secretVersion={version}
@@ -65,7 +65,7 @@ class ServicesSubNav extends Component {
               : null }
             {
               canManage && newVersion ?
-              <NavItem>
+              <NavItem className="bread-nav">
                 <NewSecretVersionLink
                   container
                   registryName={registryName}
@@ -78,7 +78,7 @@ class ServicesSubNav extends Component {
               : null }
             {
               canManage && attributes ?
-              <NavItem>
+              <NavItem className="bread-nav">
                 <ServiceAttributesForNamespaceLink
                   container
                   registryName={registryName}
