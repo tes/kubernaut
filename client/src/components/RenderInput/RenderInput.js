@@ -6,12 +6,11 @@ const RenderInput = ({ input, label, type, meta: { error, asyncValidating }, cla
     <div className="col-sm-11">
       <input
         {...input}
-        placeholder={label}
+        placeholder={placeholder || label}
         type={type}
         className={className}
         disabled={disabled}
         autoComplete={autoComplete}
-        placeholder={placeholder}
       />
       {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
     </div>
