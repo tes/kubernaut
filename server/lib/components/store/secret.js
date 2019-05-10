@@ -87,6 +87,7 @@ export default function(options) {
         if (!releaseResult.rowCount && !deploymentsResult.rowCount) return undefined;
 
         const { value: id } = releaseResult.rowCount ? releaseResult.rows[0] : deploymentsResult.rows[0];
+        if (!id) return undefined;
         return await _getVersionOfSecretById(connection, id, meta);
       });
     }
