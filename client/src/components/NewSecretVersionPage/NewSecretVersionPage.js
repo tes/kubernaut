@@ -157,6 +157,7 @@ class SecretOverviewPage extends Component {
                     component={RenderInput}
                     type="text"
                     autoComplete="foo-no-really"
+                    placeholder="Like a git commit message"
                   />
                 </Col>
                 <Col><Button color="success" disabled={!this.props.canSave} type="submit">Save</Button></Col>
