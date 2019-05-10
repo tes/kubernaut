@@ -30,6 +30,7 @@ const mapStateToProps = (state, props) => {
     meta: deploy.meta,
     registrySelected: !!currentFormValues.registry,
     serviceSelected: (!!currentFormValues.service && !currentFormAsyncErrors.service),
+    versionSelected: (!!currentFormValues.version && !currentFormAsyncErrors.version),
     namespaceSelected: !!currentFormValues.namespace,
     submitForm,
     serviceSuggestions: deploy.serviceSuggestions,

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from 'react';
 import { Row, Col, Button } from 'reactstrap';
 import PropTypes from 'prop-types';

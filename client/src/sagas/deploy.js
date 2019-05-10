@@ -252,6 +252,7 @@ export function* initSaga({ payload = {} }) {
   }));
   yield call(fetchRegistriesSaga, {});
   yield call(validateServiceSaga, {});
+  yield call(validateVersionSaga, validateVersion({ newValue: version }));
   yield call(fetchSecretsInitProxySaga, {});
 }
 

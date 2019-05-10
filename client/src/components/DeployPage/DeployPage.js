@@ -29,6 +29,7 @@ class DeployPage extends Component {
       asyncValidating,
       registrySelected,
       serviceSelected,
+      versionSelected,
       namespaceSelected,
       clearFormFields,
       validateService,
@@ -37,6 +38,7 @@ class DeployPage extends Component {
     } = this.props;
 
     const validRegistryAndService = (registrySelected && serviceSelected);
+    const validRegistryAndServiceAndVersion = (validRegistryAndService && versionSelected);
     const validNamespace = namespaceSelected;
 
     const {
@@ -110,14 +112,14 @@ class DeployPage extends Component {
                 </Col>
               </FormGroup>
               <FormGroup row>
-                <Label sm="3" className="text-right" for="secret">Where:</Label>
+                <Label sm="3" className="text-right" for="namespace">Where:</Label>
                 <Col sm="9">
                   <Field
                     className=""
                     name="namespace"
                     component={RenderNamespaces}
                     options={this.props.namespacesRich}
-                    disabled={!validRegistryAndService}
+                    disabled={!validRegistryAndServiceAndVersion}
                     onChange={(evt, newValue) => {
                       clearFormFields({ source: 'namespace' });
                       fetchSecretVersions(this.props.namespacesRich.find(({ id }) => (newValue === id)));
