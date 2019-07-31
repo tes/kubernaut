@@ -69,7 +69,7 @@
     "confabulous": "^1.5.3",
     "connect-pg-simple": "^5.0.0",
     "cryptus": "^1.2.0",
-    "elastic-apm-node": "^2.7.1",
+    "elastic-apm-node": "^2.13.0",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",
     "highwayhash": "^2.5.0",
