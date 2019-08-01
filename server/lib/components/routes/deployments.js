@@ -239,6 +239,9 @@ export default function(options = {}) {
         await broadcast({
           type: 'deployment',
           id: deployment.id,
+          cluster: deployment.namespace.cluster.id,
+          release: deployment.release.id,
+          service: deployment.release.service.id,
           message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
         });
         const code = await kubernetes.rolloutStatus(
@@ -254,12 +257,18 @@ export default function(options = {}) {
           await broadcast({
             type: 'deployment-failed',
             id: deployment.id,
+            cluster: deployment.namespace.cluster.id,
+            release: deployment.release.id,
+            service: deployment.release.service.id,
             message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
           });
         } else {
           await broadcast({
             type: 'deployment-success',
             id: deployment.id,
+            cluster: deployment.namespace.cluster.id,
+            release: deployment.release.id,
+            service: deployment.release.service.id,
             message: broadcast.format.deployment(await store.getDeployment(deployment.id)),
           });
         }
