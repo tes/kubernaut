@@ -1,4 +1,4 @@
-from node:10-alpine
+from node:12-alpine
 
 ENV TZ=UTC
 RUN apk --update add tzdata \
