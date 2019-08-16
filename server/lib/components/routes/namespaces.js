@@ -133,7 +133,7 @@ export default function(options = {}) {
         if (!registryOk) return next(Boom.forbidden());
 
         const namespaces = await store.namespacesForService({
-          user: { id: req.user.id, permission: 'namespaces-read' },
+          user: { id: req.user.id, permission: 'deployments-write' },
           service,
         });
         const meta = { date: new Date(), account: { id: req.user.id } };
