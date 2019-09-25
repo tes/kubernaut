@@ -67,7 +67,7 @@
     "bunyan": "^1.8.12",
     "chalk": "^2.1.0",
     "confabulous": "^1.5.3",
-    "connect-pg-simple": "^5.0.0",
+    "connect-pg-simple": "^6.0.1",
     "cryptus": "^1.2.0",
     "elastic-apm-node": "^2.13.0",
     "express-session": "^1.15.6",
