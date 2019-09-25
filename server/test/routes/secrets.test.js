@@ -1,4 +1,5 @@
 import expect from 'expect';
+import errors from 'request-promise/errors';
 import createSystem from '../test-system';
 import human from '../../lib/components/logger/human';
 import {
@@ -164,8 +165,35 @@ describe('Secrets API', () => {
         });
       });
 
-      it('responds with 404 for a missing service');
-      it('responds with 404 for a missing namespace');
+      it('responds with 404 for a missing service', async () => {
+        loggerOptions.suppress = true;
+        const cluster = await saveCluster();
+        const namespace = await saveNamespace(makeNamespace({ cluster }));
+        await request({
+          url: `/api/secrets/default/does-not-exist/${namespace.id}`,
+          method: 'GET',
+          resolveWithFullResponse: true,
+        }).then(() => {
+          throw new Error('Should have failed with 404');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(404);
+        });
+      });
+
+      it('responds with 404 for a missing namespace', async () => {
+        loggerOptions.suppress = true;
+        const service = await saveService();
+        const nonExistantNamespaceId = 'e71e2746-d93b-41d6-919e-4ec91c321222';
+        await request({
+          url: `/api/secrets/${service.registry.name}/${service.name}/${nonExistantNamespaceId}`,
+          method: 'GET',
+          resolveWithFullResponse: true,
+        }).then(() => {
+          throw new Error('Should have failed with 404');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(404);
+        });
+      });
 
     });
 
@@ -218,7 +246,20 @@ describe('Secrets API', () => {
         expect(response.namespace.id).toBe(namespace.id);
       });
 
-      it('returns 404 for a missing version');
+      it('returns 404 for a missing version', async () => {
+        loggerOptions.suppress = true;
+        const nonExistantSecretId = 'e71e2746-d93b-41d6-919e-4ec91c321221';
+
+        await request({
+          url: `/api/secrets/${nonExistantSecretId}`,
+          method: 'GET',
+          resolveWithFullResponse: true,
+        }).then(() => {
+          throw new Error('Should have failed with 404');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(404);
+        });
+      });
     });
 
 
@@ -247,7 +288,20 @@ describe('Secrets API', () => {
         expect(response.secrets).toMatchObject(newVersion.secrets);
       });
 
-      it('returns 404 for a missing version');
+      it('returns 404 for a missing version', async () => {
+        loggerOptions.suppress = true;
+        const nonExistantSecretId = 'e71e2746-d93b-41d6-919e-4ec91c321221';
+
+        await request({
+          url: `/api/secrets/${nonExistantSecretId}/with-data`,
+          method: 'GET',
+          resolveWithFullResponse: true,
+        }).then(() => {
+          throw new Error('Should have failed with 404');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(404);
+        });
+      });
     });
 
   });
