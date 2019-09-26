@@ -21,6 +21,7 @@ import Cluster from '../../lib/domain/Cluster';
 import Namespace from '../../lib/domain/Namespace';
 import Deployment from '../../lib/domain/Deployment';
 import DeploymentLogEntry from '../../lib/domain/DeploymentLogEntry';
+import Team from '../../lib/domain/Team';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -178,6 +179,12 @@ function makeDeploymentLogEntry(overrides = {}) {
   }, overrides));
 }
 
+function makeTeam(overrides = {}) {
+  return new Team(merge({
+    name: chance.word(),
+  }, overrides));
+}
+
 function makeMeta(overrides = {}) {
   return merge({
     date: createPastDate(),
@@ -256,4 +263,5 @@ export {
   makeRequestWithDefaults,
   makeRequestFilter,
   stringifyRequestFilter,
+  makeTeam,
 };

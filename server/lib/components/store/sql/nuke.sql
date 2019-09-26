@@ -2,6 +2,9 @@ START TRANSACTION;
 
 -- DELETE appears faster than truncate on small tables
 DELETE FROM audit;
+DELETE FROM team_attribute;
+DELETE FROM team_service;
+DELETE FROM team;
 DELETE FROM deployment_attribute;
 DELETE FROM deployment_log_entry;
 DELETE FROM deployment;
