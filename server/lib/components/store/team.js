@@ -12,7 +12,15 @@ const { Op, raw, innerJoin } = sqb;
 export default function(options) {
   function start({ config, logger, db, authz }, cb) {
 
-    async function getTeam(id) {
+    function getTeam(id) {
+      logger.debug(`Getting team by id ${id}`);
+
+      return db.withTransaction(connection => {
+        return _getTeam(connection, id);
+      });
+    }
+
+    async function _getTeam(connection, id) {
       logger.debug(`Getting team by id ${id}`);
 
       const teamBuilder = sqb
@@ -37,16 +45,29 @@ export default function(options) {
         .where(Op.eq('t.id', id))
         .orderBy('s.name');
 
+      const [teamResult, attrsResult, servicesResult] = await Promise.all([
+        connection.query(db.serialize(teamBuilder, {}).sql),
+        connection.query(db.serialize(attributeBuilder, {}).sql),
+        connection.query(db.serialize(servicesBuilder, {}).sql),
+      ]);
+
+      logger.debug(`Found ${teamResult.rowCount} teams with id: ${id}`);
+      return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows, servicesResult.rows) : undefined;
+    }
+
+    function getTeamForService(service) {
+      logger.debug(`Getting team for service ${service.name} ${service.id}`);
+
+      const builder = sqb
+        .select('ts.team')
+        .from('team_service ts')
+        .where(Op.eq('ts.service', service.id));
 
       return db.withTransaction(async connection => {
-        const [teamResult, attrsResult, servicesResult] = await Promise.all([
-          connection.query(db.serialize(teamBuilder, {}).sql),
-          connection.query(db.serialize(attributeBuilder, {}).sql),
-          connection.query(db.serialize(servicesBuilder, {}).sql),
-        ]);
+        const teamResult = await connection.query(db.serialize(builder, {}).sql);
+        if (!teamResult.rowCount) return undefined;
 
-        logger.debug(`Found ${teamResult.rowCount} teams with id: ${id}`);
-        return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows, servicesResult.rows) : undefined;
+        return _getTeam(connection, teamResult.rows[0].team);
       });
     }
 
@@ -121,11 +142,6 @@ export default function(options) {
           db.applyFilter(criteria.filters.createdBy, 'a.display_name', findTeamsBuilder, countTeamsBuilder);
         }
       }
-
-      // if (criteria.user) {
-      //   const idsQuery = authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.permission);
-      //   [findTeamsBuilder, countTeamsBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
-      // }
 
       return db.withTransaction(async connection => {
         const findStatement = db.serialize(findTeamsBuilder, bindVariables);
@@ -246,6 +262,7 @@ export default function(options) {
       saveTeam,
       associateServiceWithTeam,
       disassociateService,
+      getTeamForService,
     });
   }
 

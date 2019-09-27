@@ -133,6 +133,17 @@ describe('Team store', () => {
       await store.disassociateService(service);
       expect((await store.getTeam(team.id)).services.length).toBe(0);
     });
+
+    it('retrieves a team for a given service that it is associated with it', async () => {
+      const service = await saveService();
+      const team = await store.getTeam(await saveTeam());
+
+      await associateServiceWithTeam(service, team);
+
+      const result = await store.getTeamForService(service);
+      expect(result).toBeDefined();
+      expect(result.id).toBe(team.id);
+    });
   });
 
   function saveTeam(team = makeTeam(), meta = makeRootMeta()) {
