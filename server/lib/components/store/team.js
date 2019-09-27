@@ -2,6 +2,8 @@ import sqb from 'sqb';
 import { v4 as uuid } from 'uuid';
 import Promise from 'bluebird';
 import Team from '../../domain/Team';
+import Service from '../../domain/Service';
+import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
 
 
@@ -26,14 +28,25 @@ export default function(options) {
         .where(Op.eq('ta.team', id));
 
 
+      const servicesBuilder = sqb
+        .select('s.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name')
+        .from('active_team__vw t', 'team_service ts', 'active_service__vw s', 'active_registry__vw sr')
+        .where(Op.eq('t.id', raw('ts.team')))
+        .where(Op.eq('ts.service', raw('s.id')))
+        .where(Op.eq('s.registry', raw('sr.id')))
+        .where(Op.eq('t.id', id))
+        .orderBy('s.name');
+
+
       return db.withTransaction(async connection => {
-        const [teamResult, attrsResult] = await Promise.all([
+        const [teamResult, attrsResult, servicesResult] = await Promise.all([
           connection.query(db.serialize(teamBuilder, {}).sql),
           connection.query(db.serialize(attributeBuilder, {}).sql),
+          connection.query(db.serialize(servicesBuilder, {}).sql),
         ]);
 
         logger.debug(`Found ${teamResult.rowCount} teams with id: ${id}`);
-        return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows) : undefined;
+        return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows, servicesResult.rows) : undefined;
       });
     }
 
@@ -168,10 +181,41 @@ export default function(options) {
         logger.debug(`Saved new team with id ${newTeamId}`);
         return newTeamId;
       });
-
     }
 
-    function toTeam(row, attributes = []) {
+    async function associateServiceWithTeam(service, team) {
+      logger.debug(`Associating service with id ${service.id} with team id ${team.id}`);
+
+      const deleteBuilder = sqb
+        .delete('team_service ts')
+        .where(Op.eq('ts.service', service.id));
+
+      const insertBuilder = sqb
+        .insert('team_service', {
+          team: team.id,
+          service: service.id,
+        });
+
+      await db.withTransaction(async connection => {
+        await connection.query(db.serialize(deleteBuilder, {}).sql);
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+      });
+
+      logger.debug(`Associated service ${service.id} with team ${team.id}`);
+    }
+
+    async function disassociateService(service) {
+      logger.debug(`Disassociating service with id ${service.id}`);
+
+      const deleteBuilder = sqb
+        .delete('team_service ts')
+        .where(Op.eq('ts.service', service.id));
+
+      await db.query(db.serialize(deleteBuilder, {}).sql);
+      logger.debug(`Disassociated service ${service.id}`);
+    }
+
+    function toTeam(row, attributes = [], services = []) {
       return new Team({
         id: row.id,
         name: row.name,
@@ -183,6 +227,14 @@ export default function(options) {
         attributes: attributes.reduce((attrs, row) => {
           return { ...attrs, [row.name]: row.value };
         }, {}),
+        services: services.map(row => (new Service({
+          id: row.service_id,
+          name: row.service_name,
+          registry: new Registry({
+            id: row.registry_id,
+            name: row.registry_name,
+          })
+        }))),
       });
     }
 
@@ -192,6 +244,8 @@ export default function(options) {
       findTeams,
       findTeam,
       saveTeam,
+      associateServiceWithTeam,
+      disassociateService,
     });
   }
 

@@ -33,7 +33,7 @@ module.exports = {
   },
   transports: {
     human: {
-      level: 'debug',
+      level: 'error',
     },
   },
 };
