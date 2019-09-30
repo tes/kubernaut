@@ -12,15 +12,15 @@ const { Op, raw, innerJoin } = sqb;
 export default function(options) {
   function start({ config, logger, db, authz }, cb) {
 
-    function getTeam(id) {
+    function getTeam(id, user) {
       logger.debug(`Getting team by id ${id}`);
 
       return db.withTransaction(connection => {
-        return _getTeam(connection, id);
+        return _getTeam(connection, id, user);
       });
     }
 
-    async function _getTeam(connection, id) {
+    async function _getTeam(connection, id, user) {
       logger.debug(`Getting team by id ${id}`);
 
       const teamBuilder = sqb
@@ -44,6 +44,11 @@ export default function(options) {
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('t.id', id))
         .orderBy('s.name');
+
+      if (user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('registry', user.id, user.permission);
+        servicesBuilder.where(Op.in('sr.id', idsQuery));
+      }
 
       const [teamResult, attrsResult, servicesResult] = await Promise.all([
         connection.query(db.serialize(teamBuilder, {}).sql),

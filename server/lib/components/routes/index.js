@@ -8,6 +8,7 @@ import namespaces from './namespaces';
 import deployments from './deployments';
 import services from './services';
 import secrets from './secrets';
+import teams from './teams';
 import audit from './audit';
 import app from './app';
 
@@ -43,6 +44,8 @@ export default () => systemic({
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.secrets', secrets())
     .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.teams', teams())
+    .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.audit', audit())
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.app', app())
@@ -58,6 +61,7 @@ export default () => systemic({
       'routes.deployments',
       'routes.services',
       'routes.secrets',
+      'routes.teams',
       'routes.audit',
       'routes.app'
     );

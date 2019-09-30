@@ -6,7 +6,8 @@ export const idTypes = [
   'deployment',
   'account',
   'cluster',
-  'registry'
+  'registry',
+  'team',
 ];
 
 export default class AuditEntry {

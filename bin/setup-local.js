@@ -12,9 +12,10 @@ import {
 } from '../server/test/factories';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 try {
+  console.error('>>> Checking/creating local env data. This might take a few minutes.'); // eslint-disable-line no-console
   (async () => {
     const scriptSystem = system()
-      // .set('kubernetes', kubernetes()).dependsOn('config', 'logger')
+      .set('config.overrides', { transports: { human: { level: 'error' } } })
       .remove('server');
     const { store } = await scriptSystem.start();
 
@@ -128,6 +129,7 @@ try {
       );
     })();
 
+    console.error('>>> Local env data setup completed.'); // eslint-disable-line no-console
     process.exit(0);
   })();
 } catch (e) {

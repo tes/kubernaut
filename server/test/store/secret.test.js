@@ -22,7 +22,7 @@ describe('Secret store', () => {
   });
 
   after(async () => {
-    // await store.nuke();
+    await store.nuke();
     await system.stop();
   });
 
