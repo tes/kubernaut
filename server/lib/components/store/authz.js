@@ -16,10 +16,15 @@ export default {
         .where(Op.eq('p.name', permission));
     }
 
+    const subjectTypeViewLookup = {
+      registry: 'active_registry__vw',
+      namespace: 'active_namespace__vw',
+      team: 'active_team__vw',
+    };
     function querySubjectIdsWithPermission(subjectType, userId, permission) {
       const builder = sqb
         .select('sub.id')
-        .from(`${subjectType === 'registry' ? 'active_registry__vw' : 'active_namespace__vw'} sub`)
+        .from(`${subjectTypeViewLookup[subjectType]} sub`)
         .where(
           Op.or(
             Op.eq(
@@ -67,6 +72,19 @@ export default {
         .where(Op.eq('arr.subject_type', 'registry'))
         .where(Op.eq('arr.account', targetUserId))
         .where(Op.in('sr.id', querySubjectIdsWithPermission('registry', currentUserId, 'registries-read')))
+        .groupBy('sr.id', 'sr.name')
+        .orderBy('sr.name');
+    }
+
+    function queryTeamsWithAppliedRolesForUserAsSeenBy(targetUserId, currentUserId) {
+      return sqb
+        .select('t.id team_id', 't.name team_name', raw('array_agg(r.name) roles'))
+        .from('active_account_roles__vw arr')
+        .join(sqb.join('active_team__vw t').on(Op.eq('arr.subject', raw('t.id'))))
+        .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+        .where(Op.eq('arr.subject_type', 'registry'))
+        .where(Op.eq('arr.account', targetUserId))
+        .where(Op.in('sr.id', querySubjectIdsWithPermission('team', currentUserId, 'teams-read')))
         .groupBy('sr.id', 'sr.name')
         .orderBy('sr.name');
     }
@@ -159,15 +177,37 @@ export default {
       ));
     }
 
+    function queryTeamRolesGrantableAsSeenBy(currentUserId, teamId) {
+      return sqb
+        .select('r.id')
+        .from('role r')
+        .where(Op.lte('r.priority', sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('teams-grant')))
+          .where(Op.or(
+            Op.eq('ar.subject_type', 'global'),
+            Op.and(
+              Op.eq('ar.subject_type', 'team'),
+              Op.eq('ar.subject', teamId)
+            )
+          ))
+      ));
+    }
+
     return {
       querySubjectIdsWithPermission,
       queryRoleIdsWithPermission,
       queryNamespacesWithAppliedRolesForUserAsSeenBy,
       queryRegistriesWithAppliedRolesForUserAsSeenBy,
+      queryTeamsWithAppliedRolesForUserAsSeenBy,
       querySystemAppliedRolesForUser,
       querySystemRolesGrantableAsSeenBy,
       queryNamespaceRolesGrantableAsSeenBy,
       queryRegistryRolesGrantableAsSeenBy,
+      queryTeamRolesGrantableAsSeenBy,
       queryGlobalRolesGrantableAsSeenBy,
     };
   }

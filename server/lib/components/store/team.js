@@ -60,7 +60,7 @@ export default function(options) {
       return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows, servicesResult.rows) : undefined;
     }
 
-    function getTeamForService(service) {
+    function getTeamForService(service, user) {
       logger.debug(`Getting team for service ${service.name} ${service.id}`);
 
       const builder = sqb
@@ -72,7 +72,7 @@ export default function(options) {
         const teamResult = await connection.query(db.serialize(builder, {}).sql);
         if (!teamResult.rowCount) return undefined;
 
-        return _getTeam(connection, teamResult.rows[0].team);
+        return _getTeam(connection, teamResult.rows[0].team, user);
       });
     }
 
@@ -133,9 +133,9 @@ export default function(options) {
 
       const countTeamsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_team__vw s')
+        .from('active_team__vw t')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('s.created_by', raw('a.id')))
+          innerJoin('active_account__vw a').on(Op.eq('t.created_by', raw('a.id')))
         );
 
       if (criteria.filters) {
@@ -146,6 +146,11 @@ export default function(options) {
         if (criteria.filters.createdBy) {
           db.applyFilter(criteria.filters.createdBy, 'a.display_name', findTeamsBuilder, countTeamsBuilder);
         }
+      }
+
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('team', criteria.user.id, criteria.user.permission);
+        [findTeamsBuilder, countTeamsBuilder].forEach(builder => builder.where(Op.in('t.id', idsQuery)));
       }
 
       return db.withTransaction(async connection => {

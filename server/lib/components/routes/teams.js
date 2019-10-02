@@ -12,6 +12,7 @@ export default function(options = {}) {
         await store.audit(meta, 'viewed teams');
         const filters = parseFilters(req.query, ['name', 'createdBy']);
         const criteria = {
+          user: { id: req.user.id, permission: 'teams-read' },
           filters,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -28,8 +29,9 @@ export default function(options = {}) {
       try {
         const { id } = req.params;
         const team = await store.getTeam(id, { id: req.user.id, permission: 'registries-read'});
-
         if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed team', { team });
         return res.json(team);
@@ -49,8 +51,9 @@ export default function(options = {}) {
         }) });
         if (!service) return next(Boom.notFound());
 
-        const team = await store.getTeamForService(service);
+        const team = await store.getTeamForService(service, { id: req.user.id, permission: 'registries-read'});
         if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed team for service', { team, service });
