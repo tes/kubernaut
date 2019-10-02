@@ -53,7 +53,7 @@ export default function(options = {}) {
         if (!team) return next(Boom.notFound());
 
         const meta = { date: new Date(), account: req.user };
-        await store.audit(meta, 'viewed team', { team });
+        await store.audit(meta, 'viewed team for service', { team, service });
         return res.json(team);
       } catch (err) {
         next(err);
