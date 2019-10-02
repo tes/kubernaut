@@ -9,6 +9,7 @@ import {
   makeService,
   makeDeployment,
   makeRegistry,
+  makeTeam,
 } from '../server/test/factories';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 try {
@@ -81,6 +82,24 @@ try {
       return newServices;
     })();
 
+    const numberOfTeams = 10;
+    const teams = await (async () => {
+      const existing = await store.findTeams();
+      if (existing.count) return existing.items;
+
+      const newTeams = [];
+      while(newTeams.length < numberOfTeams) {
+        try {
+          const newId = await store.saveTeam(makeTeam(), makeRootMeta());
+          newTeams.push(await store.getTeam(newId));
+        } catch (e) {
+          if (e.code !== '23505') throw e; // only throw when its not a unique violation
+        }
+      }
+
+      return newTeams;
+    })();
+
     const releasesPerService = 20;
     await (async () => {
       const existing = await store.findReleases({}, 20, 0, 'created', 'asc');
@@ -94,10 +113,22 @@ try {
         }
       });
 
-      await Promise.map(newReleases, release =>
-        store.saveRelease(release, makeRootMeta()).catch(() => {}),
+      await Promise.map(newReleases, async release => {
+        const savedRelease = await store.saveRelease(release, makeRootMeta());
+        const index = services.findIndex(service => service.name === savedRelease.service.name && service.registry.id === savedRelease.service.registry.id);
+        services[index].id = savedRelease.service.id;
+      },
         { concurrency: 1 }
       );
+    })();
+
+    await (async () => {
+      for (const service of services) {
+        if (await store.getTeamForService(service)) continue;
+
+        const team = teams[Math.floor(Math.random() * teams.length)];
+        await store.associateServiceWithTeam(service, team);
+      }
     })();
 
     await (async () => {
