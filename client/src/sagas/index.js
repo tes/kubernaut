@@ -22,6 +22,7 @@ import secretVersionSagas from './secretVersion';
 import serviceManageSagas from './serviceManage';
 import serviceNamespaceAttrsSagas from './serviceNamespaceAttrs';
 import servicesSagas from './services';
+import teamSagas from './team';
 import teamsSagas from './teams';
 import viewAccountSagas from './viewAccount';
 import { routesSaga } from '../paths';
@@ -49,6 +50,7 @@ export default function* rootSaga() {
     ...serviceManageSagas,
     ...serviceNamespaceAttrsSagas,
     ...servicesSagas,
+    ...teamSagas,
     ...teamsSagas,
     ...viewAccountSagas,
     takeLatest(LOCATION_CHANGE, routesSaga),

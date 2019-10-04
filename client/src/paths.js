@@ -21,6 +21,7 @@ import { fetchVersion } from './modules/secretVersion';
 import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
+import { initialiseTeamPage } from './modules/team';
 import { fetchTeamsPagination } from './modules/teams';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
@@ -110,6 +111,10 @@ const paths = {
   serviceManage: {
     route: '/services/:registry/:name/manage',
     action: initServiceManage,
+  },
+  team: {
+    route: '/teams/:team',
+    action: initialiseTeamPage,
   },
   teams: {
     route: '/teams',

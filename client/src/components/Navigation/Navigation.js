@@ -50,8 +50,8 @@ class Navigation extends Component {
             <NavItem tag={LinkContainer} to="/namespaces">
               <NavLink>Namespaces</NavLink>
             </NavItem>
-            <NavItem tag={LinkContainer} to="/registries">
-              <NavLink>Registries</NavLink>
+            <NavItem tag={LinkContainer} to="/teams">
+              <NavLink>Teams</NavLink>
             </NavItem>
             <NavItem tag={LinkContainer} to="/accounts">
               <NavLink>Accounts</NavLink>

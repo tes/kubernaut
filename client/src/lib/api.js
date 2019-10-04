@@ -131,6 +131,8 @@ export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
 
 export const getService = ({ registry, service }) => makeRequest(`/api/services/${registry}/${service}`);
 
+export const getTeamByName = (name) => makeRequest(`/api/teams/by-name/${name}`);
+
 export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
   .then(computePagination);
 

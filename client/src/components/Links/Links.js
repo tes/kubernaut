@@ -35,11 +35,14 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
-export const TeamLink = ({ team }) => {
-  // TODO Replace with Link when page availalbe
-  return (
-    <span>{team.name}</span>
-  );
+export const TeamLink = ({ team, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/teams/${team.name}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>{team.name}</span>}</Tag>;
 };
 
 export const NamespacePill = ({ namespace }) => <Badge

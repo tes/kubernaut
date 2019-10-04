@@ -25,6 +25,7 @@ import ServiceManagePage from './components/ServiceManagePage';
 import ServiceNamespaceAttrsPage from './components/ServiceNamespaceAttrsPage';
 import SecretOverviewPage from './components/SecretOverviewPage';
 import SecretVersionViewPage from './components/SecretVersionViewPage';
+import TeamPage from './components/TeamPage';
 import TeamsPage from './components/TeamsPage';
 
 import paths from './paths';
@@ -195,6 +196,15 @@ export default () => <Switch>
         <SecretVersionViewPage
           version={match.params.version}
         />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.team.route}
+    render={({ match }) =>
+      <Wrapper title="Team">
+        <TeamPage />
       </Wrapper>
     }
   />
