@@ -1,0 +1,24 @@
+{
+  "parser": "babel-eslint",
+  "extends": "imperative-es6",
+  "plugins": [
+    "react",
+    "react-hooks"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "ecmaFeatures": {
+       "jsx": true
+    }
+  },
+  "env": {
+    "mocha": true,
+    "jest": true
+  },
+  "rules": {
+    "semi": [2, "always"],
+    "comma-dangle": [2, "only-multiline"],
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+  }
+}
