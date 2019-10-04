@@ -35,6 +35,13 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
+export const TeamLink = ({ team }) => {
+  // TODO Replace with Link when page availalbe
+  return (
+    <span>{team.name}</span>
+  );
+};
+
 export const NamespacePill = ({ namespace }) => <Badge
     style={{
       backgroundColor: namespace.color || namespace.cluster.color

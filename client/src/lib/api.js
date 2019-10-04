@@ -115,6 +115,8 @@ export const getServices = ({ offset, limit, sort, order, filters = {} }) =>
 
 export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
 
+export const getTeams = ({ offset, limit }) => makeRequest(`/api/teams?${makeQueryString({ offset, limit })}`).then(computePagination);
+
 export const getNamespacesForService = (serviceId) => makeRequest(`/api/namespaces/can-deploy-to-for/${serviceId}`).then(computePagination);
 
 export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
