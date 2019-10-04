@@ -40,6 +40,26 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/teams/by-name/:name', async (req, res, next) => {
+      try {
+        const { name } = req.params;
+        const criteria = {
+          user: { id: req.user.id, permission: 'teams-read' },
+          filters: parseFilters({ name }, ['name']),
+        };
+        const team = await store.findTeam(criteria);
+        if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+        const teamWithServices = await store.getTeam(team.id, { id: req.user.id, permission: 'registries-read'});
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed team', { team });
+        return res.json(teamWithServices);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/teams/for/:registry/:service', async (req, res, next) => {
       try {
         const registry = await store.findRegistry({ name: req.params.registry });

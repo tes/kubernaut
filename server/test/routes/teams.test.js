@@ -125,6 +125,36 @@ describe('Teams API', () => {
       });
     });
 
+
+    describe('/api/teams/by-name/:name', () => {
+      it('retrieves a team by name', async () => {
+        const team = await store.getTeam(await saveTeam(makeTeam({ attributes: { a: 'bc' } })));
+
+        const response = await request({
+          url: `/api/teams/by-name/${team.name}`,
+          method: 'GET',
+        });
+
+        expect(response.id).toBe(team.id);
+        expect(response.name).toBe(team.name);
+        expect(response.attributes).toMatchObject(team.attributes);
+      });
+
+      it('404s for nonexistent team name', async () => {
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/by-name/bob`,
+          method: 'GET',
+          resolveWithFullResponse: true,
+        }).then(() => {
+          throw new Error('Should have failed with 404');
+        }).catch(errors.StatusCodeError, reason => {
+          expect(reason.response.statusCode).toBe(404);
+        });
+      });
+    });
+
     describe('/api/teams/for/:registry/:service', () => {
       it('retrieves a team for a service it is associated with', async () => {
         const team = await store.getTeam(await saveTeam(makeTeam({ attributes: { a: 'bc' } })));
