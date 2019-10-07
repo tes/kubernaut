@@ -9,6 +9,7 @@ import {
   SecretVersionLink,
   NewSecretVersionLink,
   ServiceAttributesForNamespaceLink,
+  TeamLink,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -22,6 +23,7 @@ class ServicesSubNav extends Component {
       version,
       newVersion,
       attributes,
+      team,
     } = this.props;
 
     return (
@@ -89,6 +91,16 @@ class ServicesSubNav extends Component {
                 </ServiceAttributesForNamespaceLink>
               </NavItem>
               : null }
+
+              {
+                team && team.name ?
+                <NavItem className="ml-auto">
+                  <TeamLink container team={team}>
+                    <NavLink><i className="fa fa-users" aria-hidden='true'></i> {team.name}</NavLink>
+                  </TeamLink>
+                </NavItem>
+                : null
+              }
             </Nav>
           </Col>
         </Row>

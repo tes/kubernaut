@@ -1,4 +1,4 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 import {
@@ -24,6 +24,9 @@ import {
   FETCH_SERVICE_NAMESPACES_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  fetchTeamForService,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
 } from '../modules/serviceManage';
 import {
   getService,
@@ -31,6 +34,7 @@ import {
   enableServiceForNamespace,
   disableServiceForNamespace,
   getCanManageAnyNamespace,
+  getTeamForService,
 } from '../lib/api';
 
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
@@ -106,6 +110,18 @@ export function* locationChangeSaga({ payload = {} }) {
   const pagination = parseQueryString(extractFromQuery(location.search, 'pagination') || '');
   yield put(setPagination(pagination));
   yield put(fetchServices(match.params));
+  yield put(fetchTeamForService({ registry: match.params.registry, service: match.params.name }));
+}
+
+export function* fetchTeamForServiceSaga({ payload = {} }) {
+  const { registry, service } = payload;
+  try {
+    yield put(FETCH_TEAM_REQUEST());
+    const data = yield call(getTeamForService, { registry, service });
+    yield put(FETCH_TEAM_SUCCESS({ data }));
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
 }
 
 export default [
@@ -115,4 +131,5 @@ export default [
   takeEvery(fetchServices, fetchServiceNamespacesStatusSaga),
   takeEvery(fetchNamespacesPagination, paginationSaga),
   takeEvery(initServiceManage, locationChangeSaga),
+  takeLatest(fetchTeamForService, fetchTeamForServiceSaga),
 ];

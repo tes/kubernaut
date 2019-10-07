@@ -16,6 +16,11 @@ export const FETCH_SERVICE_NAMESPACES_STATUS_REQUEST = createAction(`${actionsPr
 export const FETCH_SERVICE_NAMESPACES_STATUS_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICE_NAMESPACES_STATUS_SUCCESS`);
 export const FETCH_SERVICE_NAMESPACES_STATUS_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICE_NAMESPACES_STATUS_ERROR`);
 
+export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQUEST`);
+export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
+
+export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR_SERVICE`);
+
 export const selectNamespaces = (state) => (state.serviceManage.namespaces);
 export const selectPaginationState = (state) => (state.serviceManage.pagination);
 
@@ -44,6 +49,9 @@ const defaultState = {
   canManage: false,
   initialValues: {},
   id: '',
+  team: {
+    name: '',
+  },
 };
 
 export default handleActions({
@@ -128,5 +136,13 @@ export default handleActions({
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'canManage', false),
     },
+  }),
+  [FETCH_TEAM_REQUEST]: (state) => ({
+    ...state,
+    team: defaultState.team,
+  }),
+  [FETCH_TEAM_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    team: payload.data,
   }),
 }, defaultState);

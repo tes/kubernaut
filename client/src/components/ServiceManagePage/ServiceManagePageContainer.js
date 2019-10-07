@@ -11,7 +11,8 @@ export default connect(({ serviceManage, account }, { registryName, serviceName 
   registryName,
   serviceName,
   serviceId: serviceManage.id,
-  namespaces: serviceManage.namespaces
+  namespaces: serviceManage.namespaces,
+  team: serviceManage.team,
 }),{
   updateServiceStatusForNamespace,
   fetchNamespacesPagination,

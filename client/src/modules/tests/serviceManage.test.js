@@ -9,6 +9,8 @@ import reduce, {
   FETCH_SERVICE_NAMESPACES_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
 } from '../serviceManage';
 
 describe('ServiceManage reducer', () => {
@@ -100,5 +102,32 @@ describe('ServiceManage reducer', () => {
   it('should set canManage in state', () => {
     const state = reduce(undefined, setCanManage(true));
     expect(state.canManage).toBe(true);
+  });
+
+  it('should initialise team state', () => {
+    const initialState = {
+      team: {
+        name: 'bob',
+      }
+    };
+
+    const state = reduce(initialState, FETCH_TEAM_REQUEST());
+    expect(state.team).toMatchObject({
+      name: '',
+    });
+  });
+
+  it('should set team state', () => {
+    const initialState = reduce({}, FETCH_TEAM_REQUEST());
+    const team = {
+      name: 'abc',
+      services: [{ a: 1 }],
+    };
+
+    const state = reduce(initialState, FETCH_TEAM_SUCCESS({ data: team }));
+    expect(state.team).toMatchObject({
+      name: team.name,
+      services: team.services,
+    });
   });
 });

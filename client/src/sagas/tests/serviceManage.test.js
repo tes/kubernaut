@@ -8,6 +8,7 @@ import {
   paginationSaga,
   locationChangeSaga,
   checkPermissionSaga,
+  fetchTeamForServiceSaga,
 } from '../serviceManage';
 
 import {
@@ -27,6 +28,9 @@ import {
   FETCH_SERVICE_NAMESPACES_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
+  fetchTeamForService,
 } from '../../modules/serviceManage';
 
 import {
@@ -35,6 +39,7 @@ import {
   enableServiceForNamespace,
   disableServiceForNamespace,
   getCanManageAnyNamespace,
+  getTeamForService,
 } from '../../lib/api';
 
 describe('ServiceManageSagas', () => {
@@ -134,7 +139,8 @@ describe('ServiceManageSagas', () => {
         page: '1',
         limit: '20',
       })));
-      expect(gen.next().value).toMatchObject(put(fetchServices()));
+      expect(gen.next().value).toMatchObject(put(fetchServices({ registry: 'default', name: 'bob' })));
+      expect(gen.next().value).toMatchObject(put(fetchTeamForService({ registry: 'default', service: 'bob'})));
       expect(gen.next().done).toBe(true);
     });
   });
@@ -187,6 +193,19 @@ describe('ServiceManageSagas', () => {
       expect(gen.next().value).toMatchObject(call(enableServiceForNamespace, namespaceId, payload.serviceId, 0, 10, true));
       expect(gen.throw(err).value).toMatchObject(put(stopSubmit('serviceManage')));
       expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('Team', () => {
+    it('should fetch team info for a service', () => {
+      const registry = 'default';
+      const service = 'bob';
+      const team = { name: 'abc', services: [{ name: service }]};
+
+      const gen = fetchTeamForServiceSaga(fetchTeamForService({ registry, service }));
+      expect(gen.next().value).toMatchObject(put(FETCH_TEAM_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getTeamForService, { registry, service}));
+      expect(gen.next(team).value).toMatchObject(put(FETCH_TEAM_SUCCESS({ data: team })));
     });
   });
 });

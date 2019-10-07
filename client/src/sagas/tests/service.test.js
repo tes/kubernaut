@@ -8,6 +8,7 @@ import {
   fetchHasDeploymentNotesSaga,
   paginationSaga,
   canManageSaga,
+  fetchTeamForServiceSaga,
 } from '../service';
 
 import {
@@ -33,6 +34,9 @@ import {
   setCurrentService,
   clearCurrentService,
   selectCurrentService,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
+  fetchTeamForService,
 } from '../../modules/service';
 
 import {
@@ -40,6 +44,7 @@ import {
   getDeployments,
   getLatestDeploymentsByNamespaceForService,
   getCanManageAnyNamespace,
+  getTeamForService,
 } from '../../lib/api';
 
 describe('Service sagas', () => {
@@ -208,6 +213,7 @@ describe('Service sagas', () => {
       expect(gen.next().value).toMatchObject(select(selectDeploymentsPaginationState));
       expect(gen.next({ page: '1', limit: '10' }).value).toMatchObject(put(setDeploymentsPagination({ page: '1', limit: '10' })));
       expect(gen.next().value).toMatchObject(put(fetchDeployments(requestPayload)));
+      expect(gen.next().value).toMatchObject(put(fetchTeamForService(requestPayload)));
       expect(gen.next().value).toMatchObject(put(setCurrentService(requestPayload)));
       expect(gen.next().done).toBe(true);
     });
@@ -288,6 +294,19 @@ describe('Service sagas', () => {
       const gen = canManageSaga(initServiceDetailPage());
       expect(gen.next().value).toMatchObject(call(getCanManageAnyNamespace));
       expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
+    });
+  });
+
+  describe('Team', () => {
+    it('should fetch team info for a service', () => {
+      const registry = 'default';
+      const service = 'bob';
+      const team = { name: 'abc', services: [{ name: service }]};
+
+      const gen = fetchTeamForServiceSaga(fetchTeamForService({ registry, service }));
+      expect(gen.next().value).toMatchObject(put(FETCH_TEAM_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getTeamForService, { registry, service}));
+      expect(gen.next(team).value).toMatchObject(put(FETCH_TEAM_SUCCESS({ data: team })));
     });
   });
 });

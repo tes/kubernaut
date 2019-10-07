@@ -17,7 +17,7 @@ class TeamSubNav extends Component {
           <Nav tabs>
             <NavItem>
               <TeamLink container team={team}>
-                <NavLink>{`${team.name}`}</NavLink>
+                <NavLink><i className="fa fa-users" aria-hidden='true'></i> {`${team.name}`}</NavLink>
               </TeamLink>
             </NavItem>
             </Nav>

@@ -24,6 +24,11 @@ export const FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR = createAction(`${actio
 export const FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS = createAction(`${actionsPrefix}/FETCH_HAS_DEPLOYMENT_NOTES_SUCCESS`);
 export const FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS = createAction(`${actionsPrefix}/FETCH_RELEASE_NAMESPACE_HISTORY_SUCCESS`);
 
+export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQUEST`);
+export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
+
+export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR_SERVICE`);
+
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
 export const setCurrentService = createAction(`${actionsPrefix}/SET_CURRENT_SERVICE`);
@@ -78,6 +83,9 @@ const defaultState = {
   canManage: false,
   service: {
     registryName: '',
+    name: '',
+  },
+  team: {
     name: '',
   },
 };
@@ -223,5 +231,13 @@ export default handleActions({
   [setCanManage]: (state, { payload }) => ({
     ...state,
     canManage: payload,
-  })
+  }),
+  [FETCH_TEAM_REQUEST]: (state) => ({
+    ...state,
+    team: defaultState.team,
+  }),
+  [FETCH_TEAM_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    team: payload.data,
+  }),
 }, defaultState);

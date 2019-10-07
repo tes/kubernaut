@@ -34,6 +34,9 @@ import {
   selectDeploymentsPaginationState,
   releasesDefaultPagination,
   deploymentsDefaultPagination,
+  fetchTeamForService,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
 } from '../modules/service';
 
 import {
@@ -42,6 +45,7 @@ import {
   getLatestDeploymentsByNamespaceForService,
   getCanManageAnyNamespace,
   getNamespaceHistoryForRelease,
+  getTeamForService,
 } from '../lib/api';
 
 export function* initServiceDetailPageSaga({ payload = {} }) {
@@ -84,6 +88,7 @@ export function* initServiceDetailPageSaga({ payload = {} }) {
     yield put(fetchDeployments({ registry, service }));
   }
 
+  if (!urlMatchesStateService) yield put(fetchTeamForService({ registry, service }));
   if (!urlMatchesStateService) yield put(setCurrentService({ registry, service }));
 }
 
@@ -200,6 +205,17 @@ export function* canManageSaga() {
   }
 }
 
+export function* fetchTeamForServiceSaga({ payload = {} }) {
+  const { registry, service } = payload;
+  try {
+    yield put(FETCH_TEAM_REQUEST());
+    const data = yield call(getTeamForService, { registry, service });
+    yield put(FETCH_TEAM_SUCCESS({ data }));
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(initServiceDetailPage, initServiceDetailPageSaga),
   takeLatest(initServiceDetailPage, canManageSaga),
@@ -210,4 +226,5 @@ export default [
   takeLatest(fetchReleases, fetchLatestDeploymentsByNamespaceForServiceSaga),
   takeLatest(FETCH_RELEASES_SUCCESS, fetchHasDeploymentNotesSaga),
   takeLatest(FETCH_RELEASES_SUCCESS, fetchReleaseNamespaceHistorySaga),
+  takeLatest(fetchTeamForService, fetchTeamForServiceSaga),
 ];
