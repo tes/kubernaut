@@ -20,6 +20,7 @@ import {
   ReleaseLink,
   SecretVersionLink,
   ServiceLink,
+  TeamLink,
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
 import { Ago } from '../DisplayDate';
@@ -34,6 +35,7 @@ const filterDisplayNameLookup = {
   release: 'Release',
   secret: 'Secret',
   service: 'Service',
+  team: 'Team',
 };
 class AuditPage extends Component {
 
@@ -151,6 +153,12 @@ class AuditPage extends Component {
                             audit.service ? <div className="mr-1 cellFilterActionsParent">
                               Service: <ServiceLink service={audit.service} />
                             <QuickFilters value={audit.service.id} column='service' displayValue={audit.service.name} />
+                            </div> : null
+                          }
+                          {
+                            audit.team ? <div className="mr-1 cellFilterActionsParent">
+                              Team: <TeamLink team={audit.team} />
+                            <QuickFilters value={audit.team.id} column='team' displayValue={audit.team.name} />
                             </div> : null
                           }
                         </CardFooter>
