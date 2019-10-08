@@ -107,9 +107,9 @@ export default {
         .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
         .where(Op.eq('arr.subject_type', 'registry'))
         .where(Op.eq('arr.account', targetUserId))
-        .where(Op.in('sr.id', querySubjectIdsWithPermission('team', currentUserId, 'teams-read')))
-        .groupBy('sr.id', 'sr.name')
-        .orderBy('sr.name');
+        .where(Op.in('t.id', querySubjectIdsWithPermission('team', currentUserId, 'teams-read')))
+        .groupBy('t.id', 't.name')
+        .orderBy('t.name');
     }
 
     function querySystemAppliedRolesForUser(targetUserId) {
@@ -252,23 +252,39 @@ export default {
     }
 
     function queryTeamRolesGrantableAsSeenBy(currentUserId, teamId) {
+      const accountBuilder = sqb
+        .select(raw('max(applied.priority)'))
+        .from('active_account_roles__vw ar')
+        .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+        .where(Op.eq('ar.account', currentUserId))
+        .where(Op.in('ar.role', queryRoleIdsWithPermission('teams-manage')))
+        .where(Op.or(
+          Op.eq('ar.subject_type', 'global'),
+          Op.and(
+            Op.eq('ar.subject_type', 'team'),
+            Op.eq('ar.subject', teamId)
+          )
+        ));
+
+      const teamBuilder = sqb
+        .select(raw('max(applied.priority)'))
+        .from('active_team_roles__vw tr')
+        .join(sqb.join('role applied').on(Op.eq('tr.role', raw('applied.id'))))
+        .where(Op.in('tr.team', queryTeamsForAccount(currentUserId)))
+        .where(Op.in('tr.role', queryRoleIdsWithPermission('teams-manage')))
+        .where(Op.or(
+          Op.eq('tr.subject_type', 'global'),
+          Op.and(
+            Op.eq('tr.subject_type', 'team'),
+            Op.eq('tr.subject', teamId)
+          )
+        ));
+
       return sqb
         .select('r.id')
         .from('role r')
-        .where(Op.lte('r.priority', sqb
-          .select(raw('max(applied.priority)'))
-          .from('active_account_roles__vw ar')
-          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
-          .where(Op.eq('ar.account', currentUserId))
-          .where(Op.in('ar.role', queryRoleIdsWithPermission('teams-grant')))
-          .where(Op.or(
-            Op.eq('ar.subject_type', 'global'),
-            Op.and(
-              Op.eq('ar.subject_type', 'team'),
-              Op.eq('ar.subject', teamId)
-            )
-          ))
-      ));
+        .where(Op.lte('r.priority', raw(`GREATEST((${db.serialize(accountBuilder).sql}), (${db.serialize(teamBuilder).sql}))`)))
+        .orderBy('r.priority desc');
     }
 
     return {

@@ -4,6 +4,7 @@ import Account from '../../domain/Account';
 import Namespace from '../../domain/Namespace';
 import Registry from '../../domain/Registry';
 import Cluster from '../../domain/Cluster';
+import Team from '../../domain/Team';
 import sqb from 'sqb';
 
 export default function(options = {}) {
@@ -477,6 +478,112 @@ export default function(options = {}) {
       });
 
       logger.debug(`Revoked system role: ${roleName} from account: ${accountId}`);
+    }
+
+    async function grantRoleOnTeam(accountId, roleName, teamId, meta) {
+      await db.withTransaction(async connection => {
+        return _grantRoleOnTeam(connection, accountId, roleName, teamId, meta);
+      });
+
+      return getAccount(accountId);
+    }
+
+    async function _grantRoleOnTeam(connection, accountId, roleName, teamId, meta) {
+      logger.debug(`Granting role: ${roleName} on team: ${teamId} to account: ${accountId}`);
+
+      const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+      const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+      if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+      const { role_id } = roleIdResult.rows[0];
+
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.queryTeamRolesGrantableAsSeenBy(meta.account.id, teamId).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer: canGrantAnswer } = canGrantResult.rows[0];
+      if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant team role ${roleName}.`);
+
+      const existsBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_account_roles__vw ar')
+        .where(Op.eq('ar.account', accountId))
+        .where(Op.eq('ar.subject_type', 'team'))
+        .where(Op.eq('ar.subject', teamId))
+        .where(Op.eq('ar.role', role_id));
+
+      const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+      const { answer } = existsResult.rows[0];
+      if (answer) return;
+
+      const insertBuilder = sqb
+        .insert('account_roles', {
+          id: uuid(),
+          account: accountId,
+          role: role_id,
+          subject: teamId,
+          subject_type: 'team',
+          created_by: meta.account.id,
+          created_on: meta.date,
+        });
+
+      await connection.query(db.serialize(insertBuilder, {}).sql);
+
+      logger.debug(`Granted role: ${roleName} on team: ${teamId} to account: ${accountId}`);
+    }
+
+    async function revokeRoleOnTeam(accountId, roleName, teamId, meta) {
+      logger.debug(`Revoking role: ${roleName} on team: ${teamId} to account: ${accountId}`);
+
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.queryTeamRolesGrantableAsSeenBy(meta.account.id, teamId).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke team role ${roleName}.`);
+
+        const builder = sqb
+        .update('account_roles', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('account', accountId))
+        .where(Op.eq('subject_type', 'team'))
+        .where(Op.eq('subject', teamId))
+        .where(Op.eq('role', role_id))
+        .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked role: ${roleName} on team: ${teamId} to account: ${accountId}`);
+
+      return getAccount(accountId);
     }
 
     async function grantRoleOnRegistry(accountId, roleName, registryId, meta) {
@@ -1117,6 +1224,103 @@ export default function(options = {}) {
       });
     }
 
+    async function rolesForTeams(targetUserId, currentUser) {
+      logger.debug(`Collecting team role information for user ${targetUserId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.queryTeamsWithAppliedRolesForUserAsSeenBy(targetUserId, currentUser.id);
+
+        const teamsWithoutRolesBuilder = sqb
+          .select('t.id team_id', 't.name team_name')
+          .from('active_team__vw t')
+          .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
+          .where(Op.notIn('t.id', sqb
+            .select('team_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('t.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('art.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw art')
+          .join(sqb.join('active_team__vw t').on(Op.eq('t.id', raw('art.subject'))))
+          .join(sqb.join('role r').on(Op.eq('art.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('art.subject_type', 'team'))
+          .where(Op.eq('art.account', currentUser.id))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('art.subject');
+
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trt.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trt')
+          .join(sqb.join('active_team__vw t').on(Op.eq('t.id', raw('trt.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trt.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trt.subject_type', 'team'))
+          .where(Op.in('trt.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('trt.subject');
+
+        const rolesGrantableFromGlobal = sqb
+          .select('t.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw art')
+          .join(sqb.join('active_team__vw t').on(Op.eq('art.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('art.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('art.account', currentUser.id))
+          .where(Op.is('art.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('t.id');
+
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('t.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trt')
+          .join(sqb.join('active_team__vw t').on(Op.eq('trt.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trt.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trt.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.is('trt.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('t.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || ts.roles || g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the tables together with a fullOuterJoin so as to work for having empty from any.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const teamsWithoutRolesResult = await connection.query(db.serialize(teamsWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            team: new Team({
+              id: row.team_id,
+              name: row.team_name,
+            }),
+            roles: row.roles,
+          })),
+          teamsWithoutRoles: teamsWithoutRolesResult.rows.map(row => (
+            new Team({
+              id: row.team_id,
+              name: row.team_name,
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
+    }
+
     async function rolesForSystem(targetUserId, currentUser) {
       logger.debug(`Collection system role information for user ${targetUserId} as seen by ${currentUser.id}`);
 
@@ -1171,11 +1375,14 @@ export default function(options = {}) {
       hasPermission,
       rolesForNamespaces,
       rolesForRegistries,
+      rolesForTeams,
       rolesForSystem,
       grantGlobalRole,
       grantSystemRole,
       revokeGlobalRole,
       revokeSystemRole,
+      grantRoleOnTeam,
+      revokeRoleOnTeam,
       checkCanGrantSystem,
       checkCanRevokeSystem,
       checkCanGrantGlobal,

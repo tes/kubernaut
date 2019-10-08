@@ -327,6 +327,52 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/roles/team', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantRoleOnTeam(req.body.account, req.body.role, req.body.team, meta);
+        const data = await store.rolesForTeams(req.body.account, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for team to account`, {
+          account,
+          team: { id: req.body.team },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/team', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeRoleOnTeam(req.body.account, req.body.role, req.body.team, meta);
+        const data = await store.rolesForTeams(req.body.account, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for team from account`, {
+          account,
+          team: { id: req.body.team },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/accounts/:id/namespaces', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
@@ -351,6 +397,16 @@ export default function(options = {}) {
       try {
         if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
         const data = await store.rolesForSystem(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/accounts/:id/teams', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const data = await store.rolesForTeams(req.params.id, req.user);
         res.json(data);
       } catch (error) {
         next(error);
