@@ -523,6 +523,7 @@ export default function(options = {}) {
 
       const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
       const { answer } = existsResult.rows[0];
+
       if (answer) return;
 
       const insertBuilder = sqb

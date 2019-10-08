@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col, Progress } from 'reactstrap';
 import Title from '../Title';
 import { AccountsSubNav } from '../SubNavs';
+import AccountTeamsRolesForm from '../AccountTeamsRolesForm';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
 import AccountSystemRolesForm from '../AccountSystemRolesForm';
@@ -46,6 +47,12 @@ class AccountEditPage extends Component {
             <Col sm="12">
               <h5>System Roles:</h5>
               <AccountSystemRolesForm account={account} />
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm="12">
+              <h5>Teams:</h5>
+              <AccountTeamsRolesForm />
             </Col>
           </Row>
           <Row className="mt-3">

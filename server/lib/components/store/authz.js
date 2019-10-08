@@ -105,7 +105,7 @@ export default {
         .from('active_account_roles__vw arr')
         .join(sqb.join('active_team__vw t').on(Op.eq('arr.subject', raw('t.id'))))
         .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
-        .where(Op.eq('arr.subject_type', 'registry'))
+        .where(Op.eq('arr.subject_type', 'team'))
         .where(Op.eq('arr.account', targetUserId))
         .where(Op.in('t.id', querySubjectIdsWithPermission('team', currentUserId, 'teams-read')))
         .groupBy('t.id', 't.name')

@@ -5,10 +5,13 @@ const actionsPrefix = `KUBERNAUT/EDIT_ACCOUNT`;
 export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INFO`);
 export const updateRolesForNamespace = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_NAMESPACE`);
 export const addNewNamespace = createAction(`${actionsPrefix}/ADD_NEW_NAMESPACE`);
-export const deleteRolesForRegistry = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_REGISTRY`);
+export const deleteRolesForNamespace = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_NAMESPACE`);
 export const updateRolesForRegistry = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_REGISTRY`);
 export const addNewRegistry = createAction(`${actionsPrefix}/ADD_NEW_REGISTRY`);
-export const deleteRolesForNamespace = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_NAMESPACE`);
+export const deleteRolesForRegistry = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_REGISTRY`);
+export const updateRolesForTeam = createAction(`${actionsPrefix}/UPDATE_ROLES_FOR_TEAM`);
+export const addNewTeam = createAction(`${actionsPrefix}/ADD_NEW_TEAM`);
+export const deleteRolesForTeam = createAction(`${actionsPrefix}/DELETE_ROLES_FOR_TEAM`);
 export const updateSystemRole = createAction(`${actionsPrefix}/UPDATE_SYSTEM_ROLE`);
 export const updateGlobalRole = createAction(`${actionsPrefix}/UPDATE_GLOBAL_ROLE`);
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
@@ -20,12 +23,16 @@ export const FETCH_NAMESPACES_ERROR = createAction(`${actionsPrefix}/FETCH_NAMES
 export const FETCH_REGISTRIES_REQUEST = createAction(`${actionsPrefix}/FETCH_REGISTRIES_REQUEST`);
 export const FETCH_REGISTRIES_SUCCESS = createAction(`${actionsPrefix}/FETCH_REGISTRIES_SUCCESS`);
 export const FETCH_REGISTRIES_ERROR = createAction(`${actionsPrefix}/FETCH_REGISTRIES_ERROR`);
+export const FETCH_TEAMS_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAMS_REQUEST`);
+export const FETCH_TEAMS_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAMS_SUCCESS`);
+export const FETCH_TEAMS_ERROR = createAction(`${actionsPrefix}/FETCH_TEAMS_ERROR`);
 export const FETCH_SYSTEM_ROLES_REQUEST = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_REQUEST`);
 export const FETCH_SYSTEM_ROLES_SUCCESS = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_SUCCESS`);
 export const FETCH_SYSTEM_ROLES_ERROR = createAction(`${actionsPrefix}/FETCH_SYSTEM_ROLES_ERROR`);
 export const UPDATE_ROLE_FOR_NAMESPACE_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_NAMESPACE_SUCCESS`);
 export const UPDATE_ROLE_FOR_REGISTRY_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_REGISTRY_SUCCESS`);
 export const UPDATE_ROLE_FOR_SYSTEM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_SYSTEM_SUCCESS`);
+export const UPDATE_ROLE_FOR_TEAM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_TEAM_SUCCESS`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 export const selectAccount = (state) => (state.editAccount.account);
@@ -40,6 +47,7 @@ const defaultState = {
         namespaces: false,
         registries: false,
         system: false,
+        teams: false,
       },
       loadingPercent: 100,
     },
@@ -54,6 +62,12 @@ const defaultState = {
     initialValues: {},
     currentRoles: [],
     availableRegistries: [],
+    rolesGrantable: [],
+  },
+  teamsRoles: {
+    initialValues: {},
+    currentRoles: [],
+    availableTeams: [],
     rolesGrantable: [],
   },
   systemRoles: {
@@ -154,6 +168,40 @@ export default handleActions({
     ...state,
     meta: {
       loading: computeLoading(state.meta.loading, 'registries', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_TEAMS_REQUEST]: (state) => ({
+    ...state,
+    teams: defaultState.teams,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'teams', true),
+    },
+  }),
+  [combineActions(FETCH_TEAMS_SUCCESS, UPDATE_ROLE_FOR_TEAM_SUCCESS)]: (state, { payload }) => {
+    const data = payload.rolesData || payload.data;
+    const initialValues = {};
+    data.currentRoles.forEach(({ team, roles }) => {
+      initialValues[team.id] = roles.reduce((acc, r) => ({ ...acc, [r]: true }), {});
+    });
+    return {
+      ...state,
+      teamsRoles: {
+        ...defaultState.teamsRoles,
+        initialValues,
+        currentRoles: data.currentRoles,
+        availableTeams: data.teamsWithoutRoles,
+        rolesGrantable: data.rolesGrantable,
+      },
+      meta: {
+        loading: computeLoading(state.meta.loading, 'teams', false),
+      },
+    };
+  },
+  [FETCH_TEAMS_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'teams', false),
       error: payload.error,
     },
   }),

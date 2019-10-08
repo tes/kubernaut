@@ -6,6 +6,9 @@ import {
   updateRolesForNamespace,
   addNewNamespace,
   deleteRolesForNamespace,
+  updateRolesForTeam,
+  addNewTeam,
+  deleteRolesForTeam,
   deleteRolesForRegistry,
   updateRolesForRegistry,
   updateSystemRole,
@@ -22,12 +25,16 @@ import {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  FETCH_TEAMS_REQUEST,
+  FETCH_TEAMS_SUCCESS,
+  FETCH_TEAMS_ERROR,
   FETCH_SYSTEM_ROLES_REQUEST,
   FETCH_SYSTEM_ROLES_SUCCESS,
   FETCH_SYSTEM_ROLES_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
+  UPDATE_ROLE_FOR_TEAM_SUCCESS,
 } from '../modules/editAccount';
 
 import {
@@ -36,9 +43,12 @@ import {
   removeRoleForNamespace,
   addRoleForRegistry,
   removeRoleForRegistry,
+  addRoleForTeam,
+  removeRoleForTeam,
   hasPermission,
   getAccountRolesForNamesaces,
   getAccountRolesForRegistries,
+  getAccountRolesForTeams,
   getSystemRoles,
   addRoleForSystem,
   removeRoleForSystem,
@@ -91,6 +101,22 @@ export function* fetchRegistriesSaga({ payload = {} }) {
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_REGISTRIES_ERROR({ error: error.message }));
+  }
+}
+
+export function* fetchTeamsSaga({ payload = {} }) {
+  const { match, ...options } = payload;
+  if (!match) return;
+  const { accountId } = match.params;
+  if (!accountId) return;
+
+  yield put(FETCH_TEAMS_REQUEST());
+  try {
+    const rolesData = yield call(getAccountRolesForTeams, accountId);
+    yield put(FETCH_TEAMS_SUCCESS({ rolesData }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_TEAMS_ERROR({ error: error.message }));
   }
 }
 
@@ -236,6 +262,52 @@ export function* deleteRolesForRegistrySaga({ payload }) {
   }
 }
 
+export function* updateRolesForTeamSaga({ payload }) {
+  const { teamId, role, newValue, ...options } = payload;
+  const { id: accountId } = yield select(selectAccount);
+  yield put(startSubmit('accountTeamsRoles'));
+  try {
+    let data;
+    if (newValue) data = yield call(addRoleForTeam, accountId, teamId, role, options);
+    else data = yield call(removeRoleForTeam, accountId, teamId, role, options);
+    yield put(UPDATE_ROLE_FOR_TEAM_SUCCESS({ data }));
+    yield put(stopSubmit('accountTeamsRoles'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(stopSubmit('accountTeamsRoles'));
+    yield put(reset('accountTeamsRoles'));
+  }
+}
+
+export function* addNewTeamSaga({ payload = {} }) {
+  const {
+    newTeam,
+    roleForNewTeam,
+  } = yield select(formValueSelector('accountTeamsRoles'), 'newTeam', 'roleForNewTeam');
+
+  if (!newTeam || !roleForNewTeam) return;
+
+  yield put(updateRolesForTeam({
+    teamId: newTeam,
+    role: roleForNewTeam,
+    newValue: true,
+    ...payload,
+  }));
+}
+
+export function* deleteRolesForTeamSaga({ payload }) {
+  const { teamId, ...options } = payload;
+  const roles = yield select(formValueSelector('accountTeamsRoles'), teamId);
+  for (const role in roles) {
+    yield call(updateRolesForTeamSaga, { payload : {
+      teamId,
+      role,
+      newValue: false,
+      ...options,
+    } });
+  }
+}
+
 export function* checkPermissionSaga({ payload = {}}) {
   try {
     const result = yield call(hasPermission, 'accounts-write');
@@ -249,6 +321,7 @@ export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
   takeLatest(fetchAccountInfo, fetchNamespacesSaga),
   takeLatest(fetchAccountInfo, fetchRegistriesSaga),
+  takeLatest(fetchAccountInfo, fetchTeamsSaga),
   takeLatest(fetchAccountInfo, fetchSystemRolesSaga),
   takeLatest(fetchAccountInfo, checkPermissionSaga),
   takeEvery(updateRolesForNamespace, updateRolesForNamespaceSaga),
@@ -257,6 +330,9 @@ export default [
   takeEvery(updateRolesForRegistry, updateRolesForRegistrySaga),
   takeEvery(addNewRegistry, addNewRegistrySaga),
   takeEvery(deleteRolesForRegistry, deleteRolesForRegistrySaga),
+  takeEvery(updateRolesForTeam, updateRolesForTeamSaga),
+  takeEvery(addNewTeam, addNewTeamSaga),
+  takeEvery(deleteRolesForTeam, deleteRolesForTeamSaga),
   takeEvery(updateSystemRole, updateSystemRoleSaga),
   takeEvery(updateGlobalRole, updateGlobalRoleSaga),
 ];

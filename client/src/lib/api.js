@@ -205,6 +205,30 @@ export const removeRoleForRegistry = (accountId, registryId, role, options = {})
   });
 };
 
+export const addRoleForTeam = (accountId, teamId, role, options = {}) => {
+  const url = '/api/roles/team';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      team: teamId,
+    }),
+  });
+};
+
+export const removeRoleForTeam = (accountId, teamId, role, options = {}) => {
+  const url = '/api/roles/team';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      team: teamId,
+    }),
+  });
+};
+
 export const addRoleForSystem = (accountId, role, options = {}) => {
   const url = '/api/roles/system';
   return makeRequest(url, {
@@ -304,6 +328,11 @@ export const getAccountRolesForNamesaces = (accountId) => {
 
 export const getAccountRolesForRegistries = (accountId) => {
   const url = `/api/accounts/${accountId}/registries`;
+  return makeRequest(url);
+};
+
+export const getAccountRolesForTeams = (accountId) => {
+  const url = `/api/accounts/${accountId}/teams`;
   return makeRequest(url);
 };
 
