@@ -723,14 +723,30 @@ export default function(options = {}) {
           Op.eq('ar.subject_type', 'system')
         ));
 
-        return db.withTransaction(async connection => {
-          const result = await connection.query(db.serialize(accountRoleBuilder, {}).sql);
-          const { answer } =  result.rows[0];
+      const teamRoleBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_team_roles__vw tr')
+        .where(Op.in('tr.team', authz.queryTeamsForAccount(user.id)))
+        .where(Op.in('tr.role', authz.queryRoleIdsWithPermission(permission)))
+        .where(Op.or(
+          Op.eq('tr.subject_type', 'global'),
+          Op.eq('tr.subject_type', 'system')
+        ));
 
-          logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission}`);
+      return db.withTransaction(async connection => {
+        const [result, teamResult] = await Promise.all([
+          connection.query(db.serialize(accountRoleBuilder, {}).sql),
+          connection.query(db.serialize(teamRoleBuilder, {}).sql)
+        ]);
 
-          return answer;
-        });
+        const { answer: accountAnswer } =  result.rows[0];
+        const { answer: teamAnswer } =  teamResult.rows[0];
+        const answer = accountAnswer || teamAnswer;
+
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission}`);
+
+        return answer;
+      });
     }
 
     async function hasPermissionOnNamespace(user, namespaceId, permission) {
@@ -749,10 +765,32 @@ export default function(options = {}) {
         ))
         .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
-      const result = await db.query(db.serialize(builder, {}).sql);
-      const { answer } = result.rows[0];
-      logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on namespace ${namespaceId}`);
-      return answer;
+      const teamBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_team_roles__vw tr')
+        .where(Op.in('tr.team', authz.queryTeamsForAccount(user.id)))
+        .where(Op.or(
+          Op.and(
+            Op.eq('tr.subject', namespaceId),
+            Op.eq('tr.subject_type', 'namespace'),
+          ),
+          Op.eq('tr.subject_type', 'global')
+        ))
+        .where(Op.in('tr.role', authz.queryRoleIdsWithPermission(permission)));
+
+      return db.withTransaction(async connection => {
+        const [result, teamResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(teamBuilder, {}).sql)
+        ]);
+
+        const { answer: accountAnswer } =  result.rows[0];
+        const { answer: teamAnswer } =  teamResult.rows[0];
+        const answer = accountAnswer || teamAnswer;
+
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on namespace ${namespaceId}`);
+        return answer;
+      });
     }
 
     async function hasPermissionOnRegistry(user, registryId, permission) {
@@ -771,10 +809,33 @@ export default function(options = {}) {
         ))
         .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
-      const result = await db.query(db.serialize(builder, {}).sql);
-      const { answer } = result.rows[0];
-      logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${registryId}`);
-      return answer;
+      const teamBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_team_roles__vw tr')
+        .where(Op.in('tr.team', authz.queryTeamsForAccount(user.id)))
+        .where(Op.or(
+          Op.and(
+            Op.eq('tr.subject', registryId),
+            Op.eq('tr.subject_type', 'registry'),
+          ),
+          Op.eq('tr.subject_type', 'global')
+        ))
+        .where(Op.in('tr.role', authz.queryRoleIdsWithPermission(permission)));
+
+      return db.withTransaction(async connection => {
+        const [result, teamResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(teamBuilder, {}).sql)
+        ]);
+
+        const { answer: accountAnswer } =  result.rows[0];
+        const { answer: teamAnswer } =  teamResult.rows[0];
+
+        const answer = accountAnswer || teamAnswer;
+
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${registryId}`);
+        return answer;
+      });
     }
 
     async function hasPermissionOnTeam(user, teamId, permission) {
@@ -793,10 +854,33 @@ export default function(options = {}) {
         ))
         .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
-      const result = await db.query(db.serialize(builder, {}).sql);
-      const { answer } = result.rows[0];
-      logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${teamId}`);
-      return answer;
+      const teamBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from('active_team_roles__vw tr')
+        .where(Op.in('tr.team', authz.queryTeamsForAccount(user.id)))
+        .where(Op.or(
+          Op.and(
+            Op.eq('tr.subject', teamId),
+            Op.eq('tr.subject_type', 'team'),
+          ),
+          Op.eq('tr.subject_type', 'global')
+        ))
+        .where(Op.in('tr.role', authz.queryRoleIdsWithPermission(permission)));
+
+      return db.withTransaction(async connection => {
+        const [result, teamResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(teamBuilder, {}).sql)
+        ]);
+
+        const { answer: accountAnswer } =  result.rows[0];
+        const { answer: teamAnswer } =  teamResult.rows[0];
+
+        const answer = accountAnswer || teamAnswer;
+
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${teamId}`);
+        return answer;
+      });
     }
 
     async function hasPermissionOnAnyOfSubjectType(user, subjectType, permission) {
@@ -812,10 +896,30 @@ export default function(options = {}) {
         ))
         .where(Op.in('ar.role', authz.queryRoleIdsWithPermission(permission)));
 
-        const result = await db.query(db.serialize(builder, {}).sql);
-        const { answer } = result.rows[0];
+    const teamBuilder = sqb
+      .select(raw('count(1) > 0 answer'))
+      .from('active_team_roles__vw tr')
+      .where(Op.in('tr.team', authz.queryTeamsForAccount(user.id)))
+      .where(Op.or(
+        Op.eq('tr.subject_type', subjectType),
+        Op.eq('tr.subject_type', 'global')
+      ))
+      .where(Op.in('tr.role', authz.queryRoleIdsWithPermission(permission)));
+
+      return db.withTransaction(async connection => {
+        const [result, teamResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(teamBuilder, {}).sql)
+        ]);
+
+        const { answer: accountAnswer } =  result.rows[0];
+        const { answer: teamAnswer } =  teamResult.rows[0];
+
+        const answer = accountAnswer || teamAnswer;
+
         logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on any subjects of type ${subjectType}`);
         return answer;
+      });
     }
 
     async function rolesForRegistries(targetUserId, currentUser) {
@@ -844,6 +948,17 @@ export default function(options = {}) {
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
           .groupBy('arr.subject');
 
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trr.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('sr.id', raw('trr.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trr.subject_type', 'registry'))
+          .where(Op.in('trr.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('trr.subject');
+
         const rolesGrantableFromGlobal = sqb
           .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
           .from('active_account_roles__vw arr')
@@ -854,18 +969,30 @@ export default function(options = {}) {
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
           .groupBy('sr.id');
 
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('trr.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trr.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('sr.id');
+
         const rolesGrantableBuilder = sqb
           .select(
-            raw('COALESCE (s.id, g.id) id'),
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
             sqb
               .select(raw('array_agg(distinct role)'))
               .from(
-                sqb.select(raw('UNNEST (s.roles || g.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+                sqb.select(raw('UNNEST (s.roles || ts.roles|| g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
               ).as('roles')
           )
           // Join the two together with a fullOuterJoin so as to work for having empty from either.
           .from(rolesGrantablePerSubject.as('s'))
-          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))));
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
 
         const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
         const registriesWithoutRolesResult = await connection.query(db.serialize(registriesWithoutRolesBuilder, {}).sql);
@@ -917,6 +1044,17 @@ export default function(options = {}) {
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
           .groupBy('arn.subject');
 
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trn.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('n.id', raw('trn.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trn.subject_type', 'namespace'))
+          .where(Op.in('trn.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('trn.subject');
+
         const rolesGrantableFromGlobal = sqb
           .select('n.id id', raw('array_agg(distinct r2.name) roles'))
           .from('active_account_roles__vw arn')
@@ -928,18 +1066,31 @@ export default function(options = {}) {
           .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
           .groupBy('n.id');
 
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('n.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('trn.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trn.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.is('trn.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('n.id');
+
         const rolesGrantableBuilder = sqb
           .select(
-            raw('COALESCE (s.id, g.id) id'),
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
             sqb
               .select(raw('array_agg(distinct role)'))
               .from(
-                sqb.select(raw('UNNEST (s.roles || g.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+                sqb.select(raw('UNNEST (s.roles || ts.roles || g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
               ).as('roles')
           )
-          // Join the two together with a fullOuterJoin so as to work for having empty from either.
+          // Join the tables together with a fullOuterJoin so as to work for having empty from any.
           .from(rolesGrantablePerSubject.as('s'))
-          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))));
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
 
         const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
         const namespacesWithoutRolesResult = await connection.query(db.serialize(namespacesWithoutRolesBuilder, {}).sql);
