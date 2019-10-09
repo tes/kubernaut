@@ -47,6 +47,7 @@ module.exports = function() {
       /^\/releases(?:\/.)*/,
       /^\/services(?:\/.)*/,
       /^\/audit(?:\/.)*/,
+      /^\/teams(?:\/.)*/,
     ], clientApp(200));
 
     // Serve other static resources with logging disabled

@@ -57,8 +57,8 @@ class Roles extends Component {
       <tr>
         <th scope="row">{team.name}</th>
         {
-          [null, 'maintainer', null,'observer'].map((name) => {
-            if (!name) return (<td></td>);
+          ['admin', 'maintainer', 'developer', 'observer'].map((name) => {
+            if (name === 'admin' || name === 'developer') return (<td key={name}></td>);
             return (<td key={name} className="text-center">
               <Field
                 name={name}
