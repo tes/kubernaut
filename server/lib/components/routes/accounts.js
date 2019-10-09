@@ -50,8 +50,12 @@ export default function(options = {}) {
     app.get('/api/account/hasPermission/:permission/on/:type/:id', async (req, res, next) => {
       try {
           const { permission, type, id } = req.params;
-          if (!['namespace', 'registry'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
-          const func = (type === 'namespace' ? store.hasPermissionOnNamespace : store.hasPermissionOnRegistry);
+          if (!['namespace', 'registry', 'team'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
+          const func = ({
+            namespace: store.hasPermissionOnNamespace,
+            registry: store.hasPermissionOnRegistry,
+            team: store.hasPermissionOnTeam,
+          })[type];
 
           const answer = await func(req.user, id, permission);
           return res.json({ answer });
@@ -63,7 +67,7 @@ export default function(options = {}) {
     app.get('/api/account/hasPermission/:permission/on-any/:type', async(req, res, next) => {
       try {
           const { permission, type } = req.params;
-          if (!['namespace', 'registry'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
+          if (!['namespace', 'registry', 'team'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
 
           const answer = await store.hasPermissionOnAnyOfSubjectType(req.user, type, permission);
           return res.json({ answer });
@@ -410,6 +414,64 @@ export default function(options = {}) {
         res.json(data);
       } catch (error) {
         next(error);
+      }
+    });
+
+    app.get('/api/accounts/:id/team-membership', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const data = await store.membershipToTeams(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.post('/api/roles/team-membership', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.associateAccountWithTeam(account, team, meta);
+        const data = await store.membershipToTeams(req.body.account, req.user);
+        await store.audit(meta, `added account to team`, {
+          account,
+          team,
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/roles/team-membership', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.account) return next(Boom.badRequest('account is required'));
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        const account = await store.getAccount(req.body.account);
+        if (!account) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.disassociateAccount(account, team, meta);
+        const data = await store.membershipToTeams(req.body.account, req.user);
+        await store.audit(meta, `removed account from team`, {
+          account,
+          team,
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
       }
     });
 

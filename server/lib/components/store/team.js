@@ -241,6 +241,80 @@ export default function(options) {
       logger.debug(`Disassociated service ${service.id}`);
     }
 
+    async function associateAccountWithTeam(account, team, meta) {
+      const selectBuilder = sqb
+        .select('active_team_account__vw ta')
+        .where(Op.eq('ta.account', account.id))
+        .where(Op.eq('ta.team', team.id));
+
+      const insertBuilder = sqb
+        .insert('team_account', {
+          id: uuid(),
+          account: account.id,
+          team: team.id,
+          created_on: meta.date,
+          created_by: meta.account.id,
+        });
+
+      await db.withTransaction(async connection => {
+        const existsResult = await connection.query(db.serialize(selectBuilder).sql);
+        if (existsResult.rowCount) return;
+
+        return connection.query(db.serialize(insertBuilder).sql);
+      });
+    }
+
+    async function disassociateAccount(account, team, meta) {
+      logger.debug(`Disassociating account ${account.id} from team ${team.id}`);
+
+      const updateBuilder = sqb
+        .update('team_account ta', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        }).where(Op.eq('ta.team', team.id))
+        .where(Op.eq('ta.account', account.id))
+        .where(Op.is('ta.deleted_on', null));
+
+      await db.query(db.serialize(updateBuilder).sql);
+      logger.debug(`Disassociated account ${account.id} from team ${team.id}`);
+    }
+
+    async function membershipToTeams(targetUserId, currentUser) {
+      logger.debug(`Collecting team membership information for user ${targetUserId} as seen by ${currentUser.id}`);
+
+      const membershipBuilder = sqb
+        .select('t.id', 't.name')
+        .from('active_team__vw t')
+        .where(Op.in('t.id', authz.queryTeamsForAccount(targetUserId)))
+        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
+        .orderBy('t.name');
+
+      const noMembershipBuilder = sqb
+        .select('t.id', 't.name')
+        .from('active_team__vw t')
+        .where(Op.notIn('t.id', authz.queryTeamsForAccount(targetUserId)))
+        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
+        .orderBy('t.name');
+
+      const grantableBuilder = sqb
+        .select('t.id', 't.name')
+        .from('active_team__vw t')
+        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
+        .orderBy('t.name');
+
+      return await db.withTransaction(async connection => {
+        const membershipResult = await connection.query(db.serialize(membershipBuilder).sql);
+        const noMemeberResult = await connection.query(db.serialize(noMembershipBuilder).sql);
+        const grantableResult = await connection.query(db.serialize(grantableBuilder).sql);
+
+        return {
+          currentMembership: membershipResult.rows.map((row) => toTeam(row)),
+          noMembership: noMemeberResult.rows.map((row) => toTeam(row)),
+          membershipGrantable: grantableResult.rows.map((row) => toTeam(row)),
+        };
+      });
+    }
+
     function toTeam(row, attributes = [], services = []) {
       return new Team({
         id: row.id,
@@ -273,6 +347,9 @@ export default function(options) {
       associateServiceWithTeam,
       disassociateService,
       getTeamForService,
+      membershipToTeams,
+      associateAccountWithTeam,
+      disassociateAccount,
     });
   }
 
