@@ -82,7 +82,7 @@ export const createFilterSelectors = (statePath) => ({
 });
 
 export const createDefaultFilterState = ({ defaultColumn }) => ({
-  show: false,
+  show: true,
   filters: [],
   search: {
     key: '',
