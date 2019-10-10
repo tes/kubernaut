@@ -7,6 +7,7 @@ import Title from './components/Title';
 import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
+import AccountTeamPage from './components/AccountTeamPage';
 import AuditPage from './components/AuditPage';
 import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
@@ -101,6 +102,17 @@ export default () => <Switch>
     render={({ match }) =>
       <Wrapper title="Edit account">
         <AccountEditPage
+          accountId={match.params.accountId}
+          />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.editAccountTeams.route}
+    render={({ match }) =>
+      <Wrapper title="Edit account team membership">
+        <AccountTeamPage
           accountId={match.params.accountId}
           />
       </Wrapper>

@@ -4,6 +4,7 @@ import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   AccountLink,
   EditAccountLink,
+  AccountMembershipLink,
 } from '../Links';
 
 class AccountsSubNav extends Component {
@@ -11,6 +12,7 @@ class AccountsSubNav extends Component {
     const {
       account,
       canEdit,
+      canManageTeam,
     } = this.props;
 
     return (
@@ -29,6 +31,13 @@ class AccountsSubNav extends Component {
                 </EditAccountLink>
               </NavItem>
               : null }
+            { canManageTeam ?
+              <NavItem>
+                <AccountMembershipLink container account={account}>
+                  <NavLink><i className="fa fa-users" aria-hidden='true'></i> Team Membership</NavLink>
+                </AccountMembershipLink>
+              </NavItem>
+              : null }
             </Nav>
           </Col>
         </Row>
@@ -39,6 +48,7 @@ class AccountsSubNav extends Component {
 AccountsSubNav.propTypes = {
   account: PropTypes.object.isRequired,
   canEdit: PropTypes.bool,
+  canManageTeam: PropTypes.bool,
 };
 
 export default AccountsSubNav;

@@ -34,12 +34,14 @@ export const UPDATE_ROLE_FOR_REGISTRY_SUCCESS = createAction(`${actionsPrefix}/U
 export const UPDATE_ROLE_FOR_SYSTEM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_SYSTEM_SUCCESS`);
 export const UPDATE_ROLE_FOR_TEAM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_TEAM_SUCCESS`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+export const setCanManageTeam = createAction(`${actionsPrefix}/SET_CAN_MANAGE_TEAM`);
 
 export const selectAccount = (state) => (state.editAccount.account);
 
 const defaultState = {
   account: {},
   canEdit: false,
+  canManageTeam: false,
   meta: {
     loading: {
       sections: {
@@ -246,5 +248,9 @@ export default handleActions({
   [setCanEdit]: (state, { payload }) => ({
     ...state,
     canEdit: payload,
+  }),
+  [setCanManageTeam]: (state, { payload }) => ({
+    ...state,
+    canManageTeam: payload,
   }),
 }, defaultState);

@@ -9,6 +9,7 @@ import deploy from './deploy';
 import deployment from './deployment';
 import deployments from './deployments';
 import editAccount from './editAccount';
+import editAccountTeams from './editAccountTeams';
 import home from './home';
 import namespace from './namespace';
 import namespaceEdit from './namespaceEdit';
@@ -37,6 +38,7 @@ export default (history) => combineReducers({
   deployment,
   deployments,
   editAccount,
+  editAccountTeams,
   home,
   namespace,
   namespaceEdit,

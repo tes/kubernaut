@@ -16,6 +16,7 @@ import {
   addNewRegistry,
   selectAccount,
   setCanEdit,
+  setCanManageTeam,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
@@ -54,6 +55,7 @@ import {
   removeRoleForSystem,
   addGlobalRole,
   removeGlobalRole,
+  getCanManageAnyTeam,
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -310,8 +312,10 @@ export function* deleteRolesForTeamSaga({ payload }) {
 
 export function* checkPermissionSaga({ payload = {}}) {
   try {
-    const result = yield call(hasPermission, 'accounts-write');
-    yield put(setCanEdit(result.answer));
+    const editResult = yield call(hasPermission, 'accounts-write');
+    yield put(setCanEdit(editResult.answer));
+    const manageTeamResult = yield call(getCanManageAnyTeam);
+    yield put(setCanManageTeam(manageTeamResult.answer));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
   }

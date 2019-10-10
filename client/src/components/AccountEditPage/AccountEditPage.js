@@ -37,7 +37,7 @@ class AccountEditPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Edit account: ${account.displayName}`} />
-          <AccountsSubNav account={account} canEdit={this.props.canEdit} />
+          <AccountsSubNav account={account} canEdit={this.props.canEdit} canManageTeam={this.props.canManageTeam} />
           <Row>
             <Col>
               <p><strong>Created:</strong> {account.createdOn}</p>

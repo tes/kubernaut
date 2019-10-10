@@ -6,6 +6,7 @@ import { selectAccount, FETCH_ACCOUNT_SUCCESS } from './modules/account';
 import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
+import { fetchAccountInfo as fetchEditAccountTeamsInfo } from './modules/editAccountTeams';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseDeploymentsPage } from './modules/deployments';
@@ -21,11 +22,11 @@ import { fetchVersion } from './modules/secretVersion';
 import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
+import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 import { initialiseTeamPage } from './modules/team';
 import { fetchTeamsPagination } from './modules/teams';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
-import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 
 const paths = {
   account: {
@@ -39,6 +40,10 @@ const paths = {
   accounts: {
     route: '/accounts',
     action: initialiseAccountsPage,
+  },
+  editAccountTeams: {
+    route: '/accounts/:accountId/teams',
+    action: fetchEditAccountTeamsInfo,
   },
   audit: {
     route: '/audit',

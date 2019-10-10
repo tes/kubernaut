@@ -1,7 +1,7 @@
 import { createAction, handleActions } from 'redux-actions';
 import computeLoading from './lib/computeLoading';
 
-const actionsPrefix = `KUBERNAUT/VIEW_ACCOUNT`;
+const actionsPrefix = `KUBERNAUT/EDIT_ACCOUNT_TEAMS`;
 export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INFO`);
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);

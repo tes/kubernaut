@@ -120,7 +120,7 @@ export const ManageNamespaceLink = ({ namespace = {}, container, namespaceId, ch
   return <Tag {...props}>{children || <span>Manage</span>}</Tag>;
 };
 
-export const EditAccountLink = ({ account = {}, container, accountId, children}) => {
+export const EditAccountLink = ({ account = {}, container, accountId, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
     to: `/accounts/${account.id || accountId}/edit`,
@@ -188,4 +188,14 @@ export const ServiceAttributesForNamespaceLink = ({ namespace, registryName, ser
   };
 
   return <Tag {...props}>{children || <span><i className="fa fa-tags" aria-hidden='true'></i> Attributes</span>}</Tag>;
+};
+
+export const AccountMembershipLink = ({ account = {}, container, accountId, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/accounts/${account.id || accountId}/teams`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-users" aria-hidden='true'></i> Team Membership</span>}</Tag>;
 };

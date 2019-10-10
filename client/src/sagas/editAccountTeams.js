@@ -7,7 +7,7 @@ import {
   FETCH_ACCOUNT_ERROR,
   setCanEdit,
   setCanManageTeam,
-} from '../modules/viewAccount';
+} from '../modules/editAccountTeams';
 
 import {
   getAccountById,

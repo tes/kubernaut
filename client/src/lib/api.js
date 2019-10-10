@@ -321,6 +321,11 @@ export const getCanManageAnyNamespace = () => {
   return makeRequest(url);
 };
 
+export const getCanManageAnyTeam = () => {
+  const url = '/api/account/hasPermission/teams-manage/on-any/team';
+  return makeRequest(url);
+};
+
 export const getAccountRolesForNamesaces = (accountId) => {
   const url = `/api/accounts/${accountId}/namespaces`;
   return makeRequest(url);
