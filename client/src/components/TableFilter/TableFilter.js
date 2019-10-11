@@ -6,6 +6,16 @@ import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 
 class TableFilter extends Component {
+  constructor(props) {
+    super(props);
+
+    this.filterSearchInput = React.createRef();
+  }
+
+  componentDidMount() {
+    this.filterSearchInput.current.getRenderedComponent().focusInput();
+  }
+
 
   render() {
     if (!this.props.show) return (
@@ -38,6 +48,8 @@ class TableFilter extends Component {
                     autoComplete="foo-no-really"
                     label="Search"
                     type="text"
+                    forwardRef
+                    ref={this.filterSearchInput}
                   />
                 </FormGroup>
                 <FormGroup className="mr-2 mb-sm-1">
