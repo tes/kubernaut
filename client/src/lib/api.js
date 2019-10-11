@@ -47,35 +47,34 @@ const computePagination = result => ({
   page: result.limit ? Math.floor(result.offset / result.limit) + 1 : 0,
 });
 
-export const getReleases = ({ limit = 20, offset = 0, service, registry, version, filters = {}, sort, order }) => {
-  const qs = makeQueryString({
-    limit,
-    offset,
-    service,
-    registry,
-    version,
-    sort,
-    order,
-    ...stringifyFilters(filters)
-  });
-  return makeRequest(`/api/releases?${qs}`).then(computePagination);
+export const hasPermission = (permission) => {
+  const url = `/api/account/hasPermission/${permission}`;
+  return makeRequest(url);
 };
 
-export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {}, hasNotes = null }) => {
-  const qs = makeQueryString({
-    limit,
-    offset,
-    service,
-    registry,
-    namespace,
-    cluster,
-    sort,
-    order,
-    hasNotes,
-    ...stringifyFilters(filters)
-  });
+export const hasPermissionOn = (permission, type, id) => {
+  const url = `/api/account/hasPermission/${permission}/on/${type}/${id}`;
+  return makeRequest(url);
+};
 
-  return makeRequest(`/api/deployments?${qs}`).then(computePagination);
+
+export const getAccount = () => makeRequest('/api/account');
+
+export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
+
+export const getAccountRolesForNamesaces = (accountId) => {
+  const url = `/api/accounts/${accountId}/namespaces`;
+  return makeRequest(url);
+};
+
+export const getAccountRolesForRegistries = (accountId) => {
+  const url = `/api/accounts/${accountId}/registries`;
+  return makeRequest(url);
+};
+
+export const getAccountRolesForTeams = (accountId) => {
+  const url = `/api/accounts/${accountId}/teams`;
+  return makeRequest(url);
 };
 
 export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} }) => {
@@ -100,6 +99,45 @@ export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   return makeRequest(`/api/audit?${qs}`).then(computePagination);
 };
 
+export const getCanManageAnyNamespace = () => {
+  const url = '/api/account/hasPermission/namespaces-manage/on-any/namespace';
+  return makeRequest(url);
+};
+
+export const getCanManageAnyTeam = () => {
+  const url = '/api/account/hasPermission/teams-manage/on-any/team';
+  return makeRequest(url);
+};
+
+export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
+
+export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);
+
+export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {}, hasNotes = null }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    service,
+    registry,
+    namespace,
+    cluster,
+    sort,
+    order,
+    hasNotes,
+    ...stringifyFilters(filters)
+  });
+
+  return makeRequest(`/api/deployments?${qs}`).then(computePagination);
+};
+
+export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
+
+export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
+
+export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
+
+export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
+
 export const getNamespaceHistoryForRelease = ({ filters = {} }) => {
   const qs = makeQueryString({
     ...stringifyFilters(filters),
@@ -108,52 +146,64 @@ export const getNamespaceHistoryForRelease = ({ filters = {} }) => {
   return makeRequest(`/api/deployments/namespaces-history-per-release?${qs}`);
 };
 
+export const getNamespacesForService = (serviceId) => makeRequest(`/api/namespaces/can-deploy-to-for/${serviceId}`).then(computePagination);
+
+export const getReleases = ({ limit = 20, offset = 0, service, registry, version, filters = {}, sort, order }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    service,
+    registry,
+    version,
+    sort,
+    order,
+    ...stringifyFilters(filters)
+  });
+  return makeRequest(`/api/releases?${qs}`).then(computePagination);
+};
+
 export const getRegistries = () => makeRequest('/api/registries').then(computePagination);
+
+export const getSecretVersions = (registry, service, namespaceId, offset, limit) => makeRequest(`/api/secrets/${registry}/${service}/${namespaceId}?${makeQueryString({ offset, limit })}`)
+.then(computePagination);
+
+export const getSecretVersionWithData = (version) => makeRequest(`/api/secrets/${version}/with-data`);
+
+export const getService = ({ registry, service }) => makeRequest(`/api/services/${registry}/${service}`);
 
 export const getServices = ({ offset, limit, sort, order, filters = {} }) =>
   makeRequest(`/api/services?${makeQueryString({ offset, limit, sort, order, ...stringifyFilters(filters) })}`).then(computePagination);
 
-export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
+export const getServiceAttributesForNamespace = (registry, service, namespaceId) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`);
+
+export const getServiceNamespacesStatus = (registry, service, offset, limit) => makeRequest(`/api/services/${registry}/${service}/namespace-status?${makeQueryString({ offset, limit })}`)
+  .then(computePagination);
+
+export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
+
+export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
+  .then(computePagination);
+
+export const getSystemRoles = (accountId) => {
+    const url = `/api/accounts/${accountId}/system`;
+    return makeRequest(url);
+  };
 
 export const getTeams = ({ offset, limit }) => makeRequest(`/api/teams?${makeQueryString({ offset, limit })}`).then(computePagination);
-
-export const getNamespacesForService = (serviceId) => makeRequest(`/api/namespaces/can-deploy-to-for/${serviceId}`).then(computePagination);
-
-export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
-
-export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
-
-export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);
-
-export const getAccount = () => makeRequest('/api/account');
-
-export const getAccountById = (id) => makeRequest(`/api/accounts/${id}`);
-
-export const getService = ({ registry, service }) => makeRequest(`/api/services/${registry}/${service}`);
 
 export const getTeamByName = (name) => makeRequest(`/api/teams/by-name/${name}`);
 
 export const getTeamForService = ({ registry, service }) => makeRequest(`/api/teams/for/${registry}/${service}`);
 
-export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
-  .then(computePagination);
 
-export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
-
-export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
-
-export const makeDeployment = (data, options = {}) => {
-  return makeRequest('/api/deployments', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-};
-
-export const editNamespace = (id, data, options = {}) => {
-  const url = `/api/namespaces/${id}`;
+export const addGlobalRole = (accountId, role, options = {}) => {
+  const url = '/api/roles/global';
   return makeRequest(url, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
   });
 };
 
@@ -161,18 +211,6 @@ export const addRoleForNamespace = (accountId, namespaceId, role, options = {}) 
   const url = '/api/roles/namespace';
   return makeRequest(url, {
     method: 'POST',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-      namespace: namespaceId,
-    }),
-  });
-};
-
-export const removeRoleForNamespace = (accountId, namespaceId, role, options = {}) => {
-  const url = '/api/roles/namespace';
-  return makeRequest(url, {
-    method: 'DELETE',
     body: JSON.stringify({
       account: accountId,
       role,
@@ -193,14 +231,13 @@ export const addRoleForRegistry = (accountId, registryId, role, options = {}) =>
   });
 };
 
-export const removeRoleForRegistry = (accountId, registryId, role, options = {}) => {
-  const url = '/api/roles/registry';
+export const addRoleForSystem = (accountId, role, options = {}) => {
+  const url = '/api/roles/system';
   return makeRequest(url, {
-    method: 'DELETE',
+    method: 'POST',
     body: JSON.stringify({
       account: accountId,
       role,
-      registry: registryId,
     }),
   });
 };
@@ -217,59 +254,23 @@ export const addRoleForTeam = (accountId, teamId, role, options = {}) => {
   });
 };
 
-export const removeRoleForTeam = (accountId, teamId, role, options = {}) => {
-  const url = '/api/roles/team';
+export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
+  const qs = makeQueryString({
+    offset,
+    limit,
+    fetchNamespaces,
+  });
+  const url = `/api/service/${serviceId}/disable-deployment/${namespaceId}?${qs}`;
   return makeRequest(url, {
     method: 'DELETE',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-      team: teamId,
-    }),
-  });
+  }).then(computePagination);
 };
 
-export const addRoleForSystem = (accountId, role, options = {}) => {
-  const url = '/api/roles/system';
+export const editNamespace = (id, data, options = {}) => {
+  const url = `/api/namespaces/${id}`;
   return makeRequest(url, {
     method: 'POST',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-    }),
-  });
-};
-
-export const removeRoleForSystem = (accountId, role, options = {}) => {
-  const url = '/api/roles/system';
-  return makeRequest(url, {
-    method: 'DELETE',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-    }),
-  });
-};
-
-export const addGlobalRole = (accountId, role, options = {}) => {
-  const url = '/api/roles/global';
-  return makeRequest(url, {
-    method: 'POST',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-    }),
-  });
-};
-
-export const removeGlobalRole = (accountId, role, options = {}) => {
-  const url = '/api/roles/global';
-  return makeRequest(url, {
-    method: 'DELETE',
-    body: JSON.stringify({
-      account: accountId,
-      role,
-    }),
+    body: JSON.stringify(data),
   });
 };
 
@@ -285,17 +286,82 @@ export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit,
   }).then(computePagination);
 };
 
-export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
-  const qs = makeQueryString({
-    offset,
-    limit,
-    fetchNamespaces,
+export const makeDeployment = (data, options = {}) => {
+  return makeRequest('/api/deployments', {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
-  const url = `/api/service/${serviceId}/disable-deployment/${namespaceId}?${qs}`;
+};
+
+export const removeGlobalRole = (accountId, role, options = {}) => {
+  const url = '/api/roles/global';
   return makeRequest(url, {
     method: 'DELETE',
-  }).then(computePagination);
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
 };
+
+export const removeRoleForNamespace = (accountId, namespaceId, role, options = {}) => {
+  const url = '/api/roles/namespace';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      namespace: namespaceId,
+    }),
+  });
+};
+
+export const removeRoleForRegistry = (accountId, registryId, role, options = {}) => {
+  const url = '/api/roles/registry';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      registry: registryId,
+    }),
+  });
+};
+
+export const removeRoleForSystem = (accountId, role, options = {}) => {
+  const url = '/api/roles/system';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+    }),
+  });
+};
+
+export const removeRoleForTeam = (accountId, teamId, role, options = {}) => {
+  const url = '/api/roles/team';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
+      role,
+      team: teamId,
+    }),
+  });
+};
+
+export const saveSecretVersion = (registry, service, namespace, data) => {
+  return makeRequest(`/api/secrets/${registry}/${service}/${namespace}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const setServiceAttributesForNamespace = (registry, service, namespaceId, data) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`, {
+  method: 'POST',
+  body: JSON.stringify(data),
+});
 
 export const updateDeploymentNote = (deploymentId, note) => {
   return makeRequest(`/api/deployments/${deploymentId}/note`, {
@@ -305,67 +371,3 @@ export const updateDeploymentNote = (deploymentId, note) => {
     }),
   });
 };
-
-export const hasPermission = (permission) => {
-  const url = `/api/account/hasPermission/${permission}`;
-  return makeRequest(url);
-};
-
-export const hasPermissionOn = (permission, type, id) => {
-  const url = `/api/account/hasPermission/${permission}/on/${type}/${id}`;
-  return makeRequest(url);
-};
-
-export const getCanManageAnyNamespace = () => {
-  const url = '/api/account/hasPermission/namespaces-manage/on-any/namespace';
-  return makeRequest(url);
-};
-
-export const getCanManageAnyTeam = () => {
-  const url = '/api/account/hasPermission/teams-manage/on-any/team';
-  return makeRequest(url);
-};
-
-export const getAccountRolesForNamesaces = (accountId) => {
-  const url = `/api/accounts/${accountId}/namespaces`;
-  return makeRequest(url);
-};
-
-export const getAccountRolesForRegistries = (accountId) => {
-  const url = `/api/accounts/${accountId}/registries`;
-  return makeRequest(url);
-};
-
-export const getAccountRolesForTeams = (accountId) => {
-  const url = `/api/accounts/${accountId}/teams`;
-  return makeRequest(url);
-};
-
-export const getSystemRoles = (accountId) => {
-  const url = `/api/accounts/${accountId}/system`;
-  return makeRequest(url);
-};
-
-export const getServiceNamespacesStatus = (registry, service, offset, limit) => makeRequest(`/api/services/${registry}/${service}/namespace-status?${makeQueryString({ offset, limit })}`)
-  .then(computePagination);
-
-export const getSecretVersions = (registry, service, namespaceId, offset, limit) => makeRequest(`/api/secrets/${registry}/${service}/${namespaceId}?${makeQueryString({ offset, limit })}`)
-  .then(computePagination);
-
-export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
-
-export const getSecretVersionWithData = (version) => makeRequest(`/api/secrets/${version}/with-data`);
-
-export const saveSecretVersion = (registry, service, namespace, data) => {
-  return makeRequest(`/api/secrets/${registry}/${service}/${namespace}`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-};
-
-export const getServiceAttributesForNamespace = (registry, service, namespaceId) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`);
-
-export const setServiceAttributesForNamespace = (registry, service, namespaceId, data) => makeRequest(`/api/service/${registry}/${service}/${namespaceId}/attributes`, {
-  method: 'POST',
-  body: JSON.stringify(data),
-});
