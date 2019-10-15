@@ -89,6 +89,8 @@ export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} 
   return makeRequest(`/api/accounts?${qs}`).then(computePagination);
 };
 
+export const getAccountTeamMembership = (accountId) => makeRequest(`/api/accounts/${accountId}/team-membership`);
+
 export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   const qs = makeQueryString({
     limit,
@@ -254,6 +256,17 @@ export const addRoleForTeam = (accountId, teamId, role, options = {}) => {
   });
 };
 
+export const addTeamMembershipToAccount = (accountId, teamId) => {
+  const url = '/api/roles/team-membership';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      account: accountId,
+      team: teamId,
+    }),
+  });
+};
+
 export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
   const qs = makeQueryString({
     offset,
@@ -346,6 +359,17 @@ export const removeRoleForTeam = (accountId, teamId, role, options = {}) => {
     body: JSON.stringify({
       account: accountId,
       role,
+      team: teamId,
+    }),
+  });
+};
+
+export const removeTeamMembershipFromAccount = (accountId, teamId) => {
+  const url = '/api/roles/team-membership';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      account: accountId,
       team: teamId,
     }),
   });

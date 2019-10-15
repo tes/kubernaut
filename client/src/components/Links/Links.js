@@ -42,7 +42,7 @@ export const TeamLink = ({ team, container, children }) => {
     ...container && { exact: true }
   };
 
-  return <Tag {...props}>{children || <span>{team.name}</span>}</Tag>;
+  return <Tag {...props}>{children || <span><i className="fa fa-users" aria-hidden='true'></i> {team.name}</span>}</Tag>;
 };
 
 export const NamespacePill = ({ namespace }) => <Badge

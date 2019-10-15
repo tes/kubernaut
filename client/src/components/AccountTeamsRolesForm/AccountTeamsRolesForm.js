@@ -116,7 +116,7 @@ class AccountTeamsRolesForm extends Component {
     }));
 
     const newTeamRoleOptions = currentValues.newTeam ?
-      roleForNewTeamOptions(rolesGrantable.find(({ id }) => id === currentValues.newTeam).roles)
+      roleForNewTeamOptions(rolesGrantable.find(({ id }) => id === currentValues.newTeam).roles).filter((o) => o.value === 'maintainer' || o.value === 'observer')
       : [];
 
     return (

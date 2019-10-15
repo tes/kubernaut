@@ -243,7 +243,8 @@ export default function(options) {
 
     async function associateAccountWithTeam(account, team, meta) {
       const selectBuilder = sqb
-        .select('active_team_account__vw ta')
+        .select('ta.id')
+        .from('active_team_account__vw ta')
         .where(Op.eq('ta.account', account.id))
         .where(Op.eq('ta.team', team.id));
 
@@ -296,21 +297,13 @@ export default function(options) {
         .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
         .orderBy('t.name');
 
-      const grantableBuilder = sqb
-        .select('t.id', 't.name')
-        .from('active_team__vw t')
-        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
-        .orderBy('t.name');
-
       return await db.withTransaction(async connection => {
         const membershipResult = await connection.query(db.serialize(membershipBuilder).sql);
         const noMemeberResult = await connection.query(db.serialize(noMembershipBuilder).sql);
-        const grantableResult = await connection.query(db.serialize(grantableBuilder).sql);
 
         return {
           currentMembership: membershipResult.rows.map((row) => toTeam(row)),
           noMembership: noMemeberResult.rows.map((row) => toTeam(row)),
-          membershipGrantable: grantableResult.rows.map((row) => toTeam(row)),
         };
       });
     }
