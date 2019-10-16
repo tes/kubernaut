@@ -1016,6 +1016,109 @@ export default function(options) {
       return getTeam(teamId);
     }
 
+    async function grantRoleOnTeamForTeam(teamId, roleName, subjectTeamId, meta) {
+      logger.debug(`Granting role: ${roleName} on team: ${subjectTeamId} to team: ${teamId}`);
+      await db.withTransaction(async connection => {
+
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canGrantBuilder = sqb
+          .select(raw('count(1) > 0 answer'))
+          .from(sqb
+            .select('id')
+              .from(authz.queryTeamRolesGrantableAsSeenBy(meta.account.id, subjectTeamId).as('roles'))
+              .where(Op.eq('id', role_id))
+              .as('contains')
+            );
+
+        const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+        const { answer: canGrantAnswer } = canGrantResult.rows[0];
+        if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant team role ${roleName}.`);
+
+        const existsBuilder = sqb
+          .select(raw('count(1) > 0 answer'))
+          .from('active_team_roles__vw tr')
+          .where(Op.eq('tr.team', teamId))
+          .where(Op.eq('tr.subject_type', 'team'))
+          .where(Op.eq('tr.subject', subjectTeamId))
+          .where(Op.eq('tr.role', role_id));
+
+        const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+        const { answer } = existsResult.rows[0];
+
+        if (answer) return;
+
+        const insertBuilder = sqb
+          .insert('team_roles', {
+            id: uuid(),
+            team: teamId,
+            role: role_id,
+            subject: subjectTeamId,
+            subject_type: 'team',
+            created_by: meta.account.id,
+            created_on: meta.date,
+          });
+
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+
+        logger.debug(`Granted role: ${roleName} on team: ${subjectTeamId} to team: ${teamId}`);
+      });
+
+      return getTeam(teamId);
+    }
+
+    async function revokeRoleOnTeamFromTeam(teamId, roleName, subjectTeamId, meta) {
+      logger.debug(`Revoking role: ${roleName} on team: ${subjectTeamId} from team: ${teamId}`);
+
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+          .from(authz.queryTeamRolesGrantableAsSeenBy(meta.account.id, subjectTeamId).as('roles'))
+          .where(Op.eq('id', role_id))
+          .as('contains')
+        );
+
+        const canRevokeResult = await connection.query(db.serialize(canRevokeBuilder, {}).sql);
+        const { answer: canRevokeAnswer } = canRevokeResult.rows[0];
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke team role ${roleName}.`);
+
+        const builder = sqb
+        .update('team_roles', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('team', teamId))
+        .where(Op.eq('subject_type', 'team'))
+        .where(Op.eq('subject', subjectTeamId))
+        .where(Op.eq('role', role_id))
+        .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked role: ${roleName} on team: ${subjectTeamId} from team: ${teamId}`);
+
+      return getTeam(teamId);
+    }
+
     function toTeam(row, attributes = [], services = []) {
       return new Team({
         id: row.id,
@@ -1064,6 +1167,8 @@ export default function(options) {
       revokeRoleOnRegistryFromTeam,
       grantRoleOnNamespaceOnTeam,
       revokeRoleOnNamespaceFromTeam,
+      grantRoleOnTeamForTeam,
+      revokeRoleOnTeamFromTeam,
     });
   }
 

@@ -294,6 +294,52 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/teams/roles/team', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.subjectTeam) return next(Boom.badRequest('subjectTeam is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.subjectTeam, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantRoleOnTeamForTeam(req.body.team, req.body.role, req.body.subjectTeam, meta);
+        const data = await store.teamRolesForTeams(req.body.team, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for team to team`, {
+          team: { id: req.body.team },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/teams/roles/team', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.subjectTeam) return next(Boom.badRequest('subjectTeam is required'));
+
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.subjectTeam, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeRoleOnTeamFromTeam(req.body.team, req.body.role, req.body.subjectTeam, meta);
+        const data = await store.teamRolesForTeams(req.body.team, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for team from team`, {
+          team: { id: req.body.team },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 
