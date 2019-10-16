@@ -83,6 +83,46 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/teams/:id/namespaces', async (req, res, next) => {
+      try {
+        if (! await store.hasPermissionOnTeam(req.user, req.params.id, 'teams-manage')) return next(Boom.forbidden());
+        const data = await store.teamRolesForNamespaces(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/teams/:id/registries', async (req, res, next) => {
+      try {
+        if (! await store.hasPermissionOnTeam(req.user, req.params.id, 'teams-manage')) return next(Boom.forbidden());
+        const data = await store.teamRolesForRegistries(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/teams/:id/system', async (req, res, next) => {
+      try {
+        if (! await store.hasPermissionOnTeam(req.user, req.params.id, 'teams-manage')) return next(Boom.forbidden());
+        const data = await store.teamRolesForSystem(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    app.get('/api/teams/:id/teams', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'teams-manage')) return next(Boom.forbidden());
+        const data = await store.teamRolesForTeams(req.params.id, req.user);
+        res.json(data);
+      } catch (error) {
+        next(error);
+      }
+    });
+
     cb();
   }
 

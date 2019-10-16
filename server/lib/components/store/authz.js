@@ -86,6 +86,20 @@ export default {
         .orderBy('c.priority', 'c.name', 'n.name');
     }
 
+    function queryNamespacesWithAppliedRolesForTeamAsSeenBy(teamId, currentUserId) {
+      return sqb
+        .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name', raw('array_agg(r.name) roles'))
+        .from('active_team_roles__vw atr')
+        .join(sqb.join('active_namespace__vw n').on(Op.eq('atr.subject', raw('n.id'))))
+        .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
+        .join(sqb.join('role r').on(Op.eq('atr.role', raw('r.id'))))
+        .where(Op.eq('atr.subject_type', 'namespace'))
+        .where(Op.eq('atr.team', teamId))
+        .where(Op.in('n.id', querySubjectIdsWithPermission('namespace', currentUserId, 'namespaces-read')))
+        .groupBy('n.id', 'c.priority', 'c.name', 'n.name')
+        .orderBy('c.priority', 'c.name', 'n.name');
+    }
+
     function queryRegistriesWithAppliedRolesForUserAsSeenBy(targetUserId, currentUserId) {
       return sqb
         .select('sr.id registry_id', 'sr.name registry_name', raw('array_agg(r.name) roles'))
@@ -94,6 +108,19 @@ export default {
         .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
         .where(Op.eq('arr.subject_type', 'registry'))
         .where(Op.eq('arr.account', targetUserId))
+        .where(Op.in('sr.id', querySubjectIdsWithPermission('registry', currentUserId, 'registries-read')))
+        .groupBy('sr.id', 'sr.name')
+        .orderBy('sr.name');
+    }
+
+    function queryRegistriesWithAppliedRolesForTeamAsSeenBy(teamId, currentUserId) {
+      return sqb
+        .select('sr.id registry_id', 'sr.name registry_name', raw('array_agg(r.name) roles'))
+        .from('active_team_roles__vw atr')
+        .join(sqb.join('active_registry__vw sr').on(Op.eq('atr.subject', raw('sr.id'))))
+        .join(sqb.join('role r').on(Op.eq('atr.role', raw('r.id'))))
+        .where(Op.eq('atr.subject_type', 'registry'))
+        .where(Op.eq('atr.team', teamId))
         .where(Op.in('sr.id', querySubjectIdsWithPermission('registry', currentUserId, 'registries-read')))
         .groupBy('sr.id', 'sr.name')
         .orderBy('sr.name');
@@ -112,6 +139,19 @@ export default {
         .orderBy('t.name');
     }
 
+    function queryTeamsWithAppliedRolesForTeamAsSeenBy(teamId, currentUserId) {
+      return sqb
+        .select('t.id team_id', 't.name team_name', raw('array_agg(r.name) roles'))
+        .from('active_team_roles__vw atr')
+        .join(sqb.join('active_team__vw t').on(Op.eq('atr.subject', raw('t.id'))))
+        .join(sqb.join('role r').on(Op.eq('atr.role', raw('r.id'))))
+        .where(Op.eq('atr.subject_type', 'team'))
+        .where(Op.eq('atr.team', teamId))
+        .where(Op.in('t.id', querySubjectIdsWithPermission('team', currentUserId, 'teams-read')))
+        .groupBy('t.id', 't.name')
+        .orderBy('t.name');
+    }
+
     function querySystemAppliedRolesForUser(targetUserId) {
       return sqb
         .select('r.name', raw('gar.id IS NOT NULL as global'))
@@ -125,6 +165,23 @@ export default {
         )
         .join(sqb.join('role r').on(Op.eq('r.id', raw('ar.role'))))
         .where(Op.eq('ar.account', targetUserId))
+        .where(Op.eq('ar.subject_type', 'system'))
+        .orderBy('r.priority desc');
+    }
+
+    function querySystemAppliedRolesForTeam(teamId) {
+      return sqb
+        .select('r.name', raw('gar.id IS NOT NULL as global'))
+        .from('active_team_roles__vw ar')
+        .join(
+          sqb.leftJoin('active_team_roles__vw gar')
+          .on(Op.eq('ar.team', raw('gar.team')))
+          .on(Op.eq('ar.subject_type', 'system'))
+          .on(Op.eq('gar.subject_type', 'global'))
+          .on(Op.eq('ar.role', raw('gar.role')))
+        )
+        .join(sqb.join('role r').on(Op.eq('r.id', raw('ar.role'))))
+        .where(Op.eq('ar.team', teamId))
         .where(Op.eq('ar.subject_type', 'system'))
         .orderBy('r.priority desc');
     }
@@ -153,6 +210,30 @@ export default {
         .orderBy('r.priority desc');
     }
 
+    function queryTeamSystemRolesGrantableAsSeenBy(currentUserId) {
+      const accountBuilder = sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_account_roles__vw ar')
+          .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+          .where(Op.eq('ar.account', currentUserId))
+          .where(Op.eq('ar.subject_type', 'system'))
+          .where(Op.in('ar.role', queryRoleIdsWithPermission('teams-manage')));
+
+      const teamBuilder = sqb
+          .select(raw('max(applied.priority)'))
+          .from('active_team_roles__vw tr')
+          .join(sqb.join('role applied').on(Op.eq('tr.role', raw('applied.id'))))
+          .where(Op.in('tr.team', queryTeamsForAccount(currentUserId)))
+          .where(Op.eq('tr.subject_type', 'system'))
+          .where(Op.in('tr.role', queryRoleIdsWithPermission('teams-manage')));
+
+      return sqb
+        .select('r.id', 'r.name')
+        .from('role r')
+        .where(Op.lte('r.priority', raw(`GREATEST((${db.serialize(accountBuilder).sql}), (${db.serialize(teamBuilder).sql}))`)))
+        .orderBy('r.priority desc');
+    }
+
     function queryGlobalRolesGrantableAsSeenBy(targetUserId, currentUserId) {
       const accountBuilder = sqb
         .select(raw('max(applied.priority)'))
@@ -171,6 +252,30 @@ export default {
         .where(Op.ne(raw(`'${currentUserId}'`), targetUserId))
         .where(Op.eq('tr.subject_type', 'global'))
         .where(Op.in('tr.role', queryRoleIdsWithPermission('accounts-write')));
+
+      return sqb
+        .select('r.id', 'r.name')
+        .from('role r')
+        .where(Op.lte('r.priority', raw(`GREATEST((${db.serialize(accountBuilder).sql}), (${db.serialize(teamBuilder).sql}))`)))
+        .orderBy('r.priority desc');
+    }
+
+    function queryTeamGlobalRolesGrantableAsSeenBy(teamId, currentUserId) {
+      const accountBuilder = sqb
+        .select(raw('max(applied.priority)'))
+        .from('active_account_roles__vw ar')
+        .join(sqb.join('role applied').on(Op.eq('ar.role', raw('applied.id'))))
+        .where(Op.eq('ar.account', currentUserId))
+        .where(Op.eq('ar.subject_type', 'global'))
+        .where(Op.in('ar.role', queryRoleIdsWithPermission('teams-manage')));
+
+      const teamBuilder = sqb
+        .select(raw('max(applied.priority)'))
+        .from('active_team_roles__vw tr')
+        .join(sqb.join('role applied').on(Op.eq('tr.role', raw('applied.id'))))
+        .where(Op.in('tr.team', queryTeamsForAccount(currentUserId)))
+        .where(Op.eq('tr.subject_type', 'global'))
+        .where(Op.in('tr.role', queryRoleIdsWithPermission('teams-manage')));
 
       return sqb
         .select('r.id', 'r.name')
@@ -300,6 +405,12 @@ export default {
       queryRegistryRolesGrantableAsSeenBy,
       queryTeamRolesGrantableAsSeenBy,
       queryGlobalRolesGrantableAsSeenBy,
+      queryNamespacesWithAppliedRolesForTeamAsSeenBy,
+      queryRegistriesWithAppliedRolesForTeamAsSeenBy,
+      queryTeamsWithAppliedRolesForTeamAsSeenBy,
+      querySystemAppliedRolesForTeam,
+      queryTeamSystemRolesGrantableAsSeenBy,
+      queryTeamGlobalRolesGrantableAsSeenBy,
     };
   }
 };

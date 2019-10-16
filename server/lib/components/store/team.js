@@ -5,6 +5,8 @@ import Team from '../../domain/Team';
 import Service from '../../domain/Service';
 import Registry from '../../domain/Registry';
 import Account from '../../domain/Account';
+import Namespace from '../../domain/Namespace';
+import Cluster from '../../domain/Cluster';
 
 
 const { Op, raw, innerJoin } = sqb;
@@ -308,6 +310,318 @@ export default function(options) {
       });
     }
 
+    async function teamRolesForNamespaces(teamId, currentUser) {
+      logger.debug(`Collecting namespace role information for team ${teamId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.queryNamespacesWithAppliedRolesForTeamAsSeenBy(teamId, currentUser.id);
+
+        const namespacesWithoutRolesBuilder = sqb
+          .select('n.id namespace_id', 'c.name cluster_name', 'n.name namespace_name')
+          .from('active_namespace__vw n')
+          .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
+          .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', currentUser.id, 'namespaces-grant')))
+          .where(Op.notIn('n.id', sqb
+            .select('namespace_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('c.priority', 'c.name', 'n.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('arn.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('n.id', raw('arn.subject'))))
+          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arn.subject_type', 'namespace'))
+          .where(Op.eq('arn.account', currentUser.id))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('arn.subject');
+
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trn.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('n.id', raw('trn.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trn.subject_type', 'namespace'))
+          .where(Op.in('trn.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('trn.subject');
+
+        const rolesGrantableFromGlobal = sqb
+          .select('n.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw arn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('arn.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('arn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arn.account', currentUser.id))
+          .where(Op.is('arn.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('n.id');
+
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('n.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trn')
+          .join(sqb.join('active_namespace__vw n').on(Op.eq('trn.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trn.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trn.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.is('trn.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('namespaces-grant')))
+          .groupBy('n.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || ts.roles || g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the tables together with a fullOuterJoin so as to work for having empty from any.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const namespacesWithoutRolesResult = await connection.query(db.serialize(namespacesWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            namespace: new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              cluster: new Cluster({ name: row.cluster_name }),
+            }),
+            roles: row.roles,
+          })),
+          namespacesWithoutRoles: namespacesWithoutRolesResult.rows.map(row => (
+            new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              cluster: new Cluster({ name: row.cluster_name }),
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
+    }
+
+    async function teamRolesForRegistries (teamId, currentUser) {
+      logger.debug(`Collecting registry role information for team ${teamId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.queryRegistriesWithAppliedRolesForTeamAsSeenBy(teamId, currentUser.id);
+
+        const registriesWithoutRolesBuilder = sqb
+          .select('sr.id registry_id', 'sr.name registry_name')
+          .from('active_registry__vw sr')
+          .where(Op.in('sr.id', authz.querySubjectIdsWithPermission('registry', currentUser.id, 'registries-grant')))
+          .where(Op.notIn('sr.id', sqb
+            .select('registry_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('sr.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('arr.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('sr.id', raw('arr.subject'))))
+          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arr.subject_type', 'registry'))
+          .where(Op.eq('arr.account', currentUser.id))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('arr.subject');
+
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trr.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('sr.id', raw('trr.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trr.subject_type', 'registry'))
+          .where(Op.in('trr.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('trr.subject');
+
+        const rolesGrantableFromGlobal = sqb
+          .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw arr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('arr.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('arr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('arr.account', currentUser.id))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('sr.id');
+
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('sr.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trr')
+          .join(sqb.join('active_registry__vw sr').on(Op.eq('trr.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trr.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trr.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('registries-grant')))
+          .groupBy('sr.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || ts.roles|| g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the two together with a fullOuterJoin so as to work for having empty from either.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const registriesWithoutRolesResult = await connection.query(db.serialize(registriesWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            registry: new Registry({
+              id: row.registry_id,
+              name: row.registry_name,
+            }),
+            roles: row.roles,
+          })),
+          registriesWithoutRoles: registriesWithoutRolesResult.rows.map(row => (
+            new Registry({
+              id: row.registry_id,
+              name: row.registry_name,
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
+    }
+
+    async function teamRolesForTeams (teamId, currentUser) {
+      logger.debug(`Collecting team role information for team ${teamId} as seen by ${currentUser.id}`);
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.queryTeamsWithAppliedRolesForTeamAsSeenBy(teamId, currentUser.id);
+
+        const teamsWithoutRolesBuilder = sqb
+          .select('t.id team_id', 't.name team_name')
+          .from('active_team__vw t')
+          .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', currentUser.id, 'teams-manage')))
+          .where(Op.notIn('t.id', sqb
+            .select('team_id')
+            .from(appliedRolesBuilder.as('applied'))
+          ))
+          .orderBy('t.name');
+
+        const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('art.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw art')
+          .join(sqb.join('active_team__vw t').on(Op.eq('t.id', raw('art.subject'))))
+          .join(sqb.join('role r').on(Op.eq('art.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('art.subject_type', 'team'))
+          .where(Op.eq('art.account', currentUser.id))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('art.subject');
+
+        const rolesGrantablePerSubjectFromTeam = sqb // Grab ids + roles-array of whats grantable per subject
+          .select('trt.subject id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trt')
+          .join(sqb.join('active_team__vw t').on(Op.eq('t.id', raw('trt.subject'))))
+          .join(sqb.join('role r').on(Op.eq('trt.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('trt.subject_type', 'team'))
+          .where(Op.in('trt.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('trt.subject');
+
+        const rolesGrantableFromGlobal = sqb
+          .select('t.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_account_roles__vw art')
+          .join(sqb.join('active_team__vw t').on(Op.eq('art.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('art.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.eq('art.account', currentUser.id))
+          .where(Op.is('art.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('t.id');
+
+        const rolesGrantableFromGlobalFromTeam = sqb
+          .select('t.id id', raw('array_agg(distinct r2.name) roles'))
+          .from('active_team_roles__vw trt')
+          .join(sqb.join('active_team__vw t').on(Op.eq('trt.subject_type', 'global')))
+          .join(sqb.join('role r').on(Op.eq('trt.role', raw('r.id'))))
+          .join(sqb.rightJoin('role r2').on(Op.lte('r2.priority', raw('r.priority'))))
+          .where(Op.in('trt.team', authz.queryTeamsForAccount(currentUser.id)))
+          .where(Op.is('trt.deleted_on', null))
+          .where(Op.in('r.id', authz.queryRoleIdsWithPermission('teams-manage')))
+          .groupBy('t.id');
+
+        const rolesGrantableBuilder = sqb
+          .select(
+            raw('COALESCE (s.id, ts.id, g.id, tg.id) id'),
+            sqb
+              .select(raw('array_agg(distinct role)'))
+              .from(
+                sqb.select(raw('UNNEST (s.roles || ts.roles || g.roles || tg.roles) as role')).as('concat') // postgres doesn't have unique for arrays
+              ).as('roles')
+          )
+          // Join the tables together with a fullOuterJoin so as to work for having empty from any.
+          .from(rolesGrantablePerSubject.as('s'))
+          .join(sqb.fullOuterJoin(rolesGrantablePerSubjectFromTeam.as('ts')).on(Op.eq('s.id', raw('ts.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobal.as('g')).on(Op.eq('s.id', raw('g.id'))))
+          .join(sqb.fullOuterJoin(rolesGrantableFromGlobalFromTeam.as('tg')).on(Op.eq('s.id', raw('tg.id'))));
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const teamsWithoutRolesResult = await connection.query(db.serialize(teamsWithoutRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows.map(row => ({
+            team: new Team({
+              id: row.team_id,
+              name: row.team_name,
+            }),
+            roles: row.roles,
+          })),
+          teamsWithoutRoles: teamsWithoutRolesResult.rows.map(row => (
+            new Team({
+              id: row.team_id,
+              name: row.team_name,
+            })
+          )),
+          rolesGrantable: rolesGrantable.rows,
+        };
+      });
+    }
+
+    async function teamRolesForSystem (teamId, currentUser) {
+      logger.debug(`Collecting system role information for team ${teamId} as seen by ${currentUser.id}`);
+
+      return db.withTransaction(async connection => {
+        const appliedRolesBuilder = authz.querySystemAppliedRolesForTeam(teamId);
+        const rolesGrantableBuilder = authz.queryTeamSystemRolesGrantableAsSeenBy(currentUser.id);
+        const globalGrantableBuilder = authz.queryTeamGlobalRolesGrantableAsSeenBy(teamId, currentUser.id);
+
+        const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
+        const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
+        const globalGrantable = await connection.query(db.serialize(globalGrantableBuilder, {}).sql);
+
+        return {
+          currentRoles: currentRolesResult.rows,
+          rolesGrantable: rolesGrantable.rows.map(({ name }) => (name)),
+          globalGrantable: globalGrantable.rows.map(({ name }) => (name)),
+        };
+      });
+    }
+
     function toTeam(row, attributes = [], services = []) {
       return new Team({
         id: row.id,
@@ -343,6 +657,10 @@ export default function(options) {
       membershipToTeams,
       associateAccountWithTeam,
       disassociateAccount,
+      teamRolesForNamespaces,
+      teamRolesForRegistries,
+      teamRolesForSystem,
+      teamRolesForTeams,
     });
   }
 
