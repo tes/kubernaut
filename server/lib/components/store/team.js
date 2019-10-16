@@ -410,7 +410,7 @@ export default function(options) {
       });
     }
 
-    async function teamRolesForRegistries (teamId, currentUser) {
+    async function teamRolesForRegistries(teamId, currentUser) {
       logger.debug(`Collecting registry role information for team ${teamId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
         const appliedRolesBuilder = authz.queryRegistriesWithAppliedRolesForTeamAsSeenBy(teamId, currentUser.id);
@@ -505,7 +505,7 @@ export default function(options) {
       });
     }
 
-    async function teamRolesForTeams (teamId, currentUser) {
+    async function teamRolesForTeams(teamId, currentUser) {
       logger.debug(`Collecting team role information for team ${teamId} as seen by ${currentUser.id}`);
       return db.withTransaction(async connection => {
         const appliedRolesBuilder = authz.queryTeamsWithAppliedRolesForTeamAsSeenBy(teamId, currentUser.id);
@@ -602,13 +602,13 @@ export default function(options) {
       });
     }
 
-    async function teamRolesForSystem (teamId, currentUser) {
+    async function teamRolesForSystem(teamId, currentUser) {
       logger.debug(`Collecting system role information for team ${teamId} as seen by ${currentUser.id}`);
 
       return db.withTransaction(async connection => {
         const appliedRolesBuilder = authz.querySystemAppliedRolesForTeam(teamId);
         const rolesGrantableBuilder = authz.queryTeamSystemRolesGrantableAsSeenBy(currentUser.id);
-        const globalGrantableBuilder = authz.queryTeamGlobalRolesGrantableAsSeenBy(teamId, currentUser.id);
+        const globalGrantableBuilder = authz.queryTeamGlobalRolesGrantableAsSeenBy(currentUser.id);
 
         const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
         const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
@@ -620,6 +620,196 @@ export default function(options) {
           globalGrantable: globalGrantable.rows.map(({ name }) => (name)),
         };
       });
+    }
+
+    async function _checkCanGrantSystemOnTeam(connection, viewingAccount, role_id) {
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.queryTeamSystemRolesGrantableAsSeenBy(viewingAccount.id).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer } = canGrantResult.rows[0];
+      return answer;
+    }
+
+    async function checkCanGrantSystemOnTeam(roleName, meta) {
+      return await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        return _checkCanGrantSystemOnTeam(connection, meta.account, role_id);
+      });
+    }
+
+    async function _checkCanGrantGlobalOnTeam(connection, viewingAccount, role_id) {
+      const canGrantBuilder = sqb
+        .select(raw('count(1) > 0 answer'))
+        .from(sqb
+          .select('id')
+            .from(authz.queryTeamGlobalRolesGrantableAsSeenBy(viewingAccount.id).as('roles'))
+            .where(Op.eq('id', role_id))
+            .as('contains')
+          );
+
+      const canGrantResult = await connection.query(db.serialize(canGrantBuilder, {}).sql);
+      const { answer } = canGrantResult.rows[0];
+      return answer;
+    }
+
+    async function checkCanGrantGlobalOnTeam(roleName, meta) {
+      return await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        return _checkCanGrantGlobalOnTeam(connection, meta.account, role_id);
+      });
+    }
+
+    async function grantSystemRoleOnTeam(teamId, roleName, meta) {
+      logger.debug(`Granting role: ${roleName} for system to team: ${teamId}`);
+
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canGrantAnswer = await _checkCanGrantSystemOnTeam(connection, meta.account, role_id);
+        if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant system role ${roleName}.`);
+
+        const existsBuilder = sqb
+          .select(raw('count(1) > 0 answer'))
+          .from('active_team_roles__vw tr')
+          .where(Op.eq('tr.team', teamId))
+          .where(Op.eq('tr.subject_type', 'system'))
+          .where(Op.eq('tr.role', role_id));
+
+        const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+        const { answer } = existsResult.rows[0];
+        if (answer) return;
+
+        const insertBuilder = sqb
+          .insert('team_roles', {
+            id: uuid(),
+            team: teamId,
+            role: role_id,
+            subject_type: 'system',
+            created_by: meta.account.id,
+            created_on: meta.date,
+          });
+
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+        logger.debug(`Granted role: ${roleName} for system to team: ${teamId}`);
+      });
+
+      return getTeam(teamId);
+    }
+
+    async function revokeSystemRoleFromTeam(teamId, roleName, meta) {
+      logger.debug(`Revoking system role: ${roleName} from team: ${teamId}`);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeAnswer = await _checkCanGrantSystemOnTeam(connection, meta.account, role_id);
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke system role ${roleName}.`);
+
+        const builder = sqb
+          .update('team_roles', {
+            deleted_on: meta.date,
+            deleted_by: meta.account.id,
+          })
+          .where(Op.eq('team', teamId))
+          .where(Op.in('subject_type', ['global', 'system']))
+          .where(Op.eq('role', role_id))
+          .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked system role: ${roleName} from team: ${teamId}`);
+    }
+
+    async function grantGlobalRoleOnTeam(teamId, roleName, meta) {
+      logger.debug(`Granting role: ${roleName} globally to team: ${teamId}`);
+      await db.withTransaction(async connection => {
+
+        const roleIdBuilder = sqb
+          .select('r.id role_id')
+          .from('role r')
+          .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canGrantAnswer = await _checkCanGrantGlobalOnTeam(connection, meta.account, role_id);
+        if (!canGrantAnswer) throw new Error(`User ${meta.account.id} cannot grant global role ${roleName}.`);
+
+        const hasSystemRoleBuilder = sqb
+          .select(raw('count(1) > 0 answer'))
+          .from('active_team_roles__vw tr')
+          .where(Op.eq('tr.team', teamId))
+          .where(Op.eq('tr.subject_type', 'system'))
+          .where(Op.eq('tr.role', role_id));
+
+          const systemRoleExistsResult = await connection.query(db.serialize(hasSystemRoleBuilder, {}).sql);
+          const { answer: systemAnswer } = systemRoleExistsResult.rows[0];
+          if (!systemAnswer) throw new Error(`Cannot grant global role ${roleName} to ${teamId} without having granted it for system.`);
+
+        const existsBuilder = sqb
+          .select(raw('count(1) > 0 answer'))
+          .from('active_team_roles__vw tr')
+          .where(Op.eq('tr.team', teamId))
+          .where(Op.eq('tr.subject_type', 'global'))
+          .where(Op.eq('tr.role', role_id));
+
+        const existsResult = await connection.query(db.serialize(existsBuilder, {}).sql);
+        const { answer } = existsResult.rows[0];
+        if (answer) return;
+
+        const insertBuilder = sqb
+          .insert('team_roles', {
+            id: uuid(),
+            team: teamId,
+            role: role_id,
+            subject_type: 'global',
+            created_by: meta.account.id,
+            created_on: meta.date,
+          });
+
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+        logger.debug(`Granted role: ${roleName} globally to team: ${teamId}`);
+      });
+
+      return getTeam(teamId);
     }
 
     function toTeam(row, attributes = [], services = []) {
@@ -661,6 +851,11 @@ export default function(options) {
       teamRolesForRegistries,
       teamRolesForSystem,
       teamRolesForTeams,
+      checkCanGrantSystemOnTeam,
+      checkCanGrantGlobalOnTeam,
+      grantSystemRoleOnTeam,
+      revokeSystemRoleFromTeam,
+      grantGlobalRoleOnTeam,
     });
   }
 

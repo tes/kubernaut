@@ -260,7 +260,7 @@ export default {
         .orderBy('r.priority desc');
     }
 
-    function queryTeamGlobalRolesGrantableAsSeenBy(teamId, currentUserId) {
+    function queryTeamGlobalRolesGrantableAsSeenBy(currentUserId) {
       const accountBuilder = sqb
         .select(raw('max(applied.priority)'))
         .from('active_account_roles__vw ar')

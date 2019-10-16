@@ -1,4 +1,4 @@
-// import bodyParser from 'body-parser';
+import bodyParser from 'body-parser';
 import Boom from 'boom';
 import parseFilters from './lib/parseFilters';
 
@@ -120,6 +120,81 @@ export default function(options = {}) {
         res.json(data);
       } catch (error) {
         next(error);
+      }
+    });
+
+    app.post('/api/teams/roles/system', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const canGrantSystem = await store.checkCanGrantSystemOnTeam(req.body.role, meta);
+        if (!canGrantSystem) return next(Boom.forbidden());
+
+        await store.grantSystemRoleOnTeam(req.body.team, req.body.role, meta);
+        await store.audit(meta, `added system role [${req.body.role}] to team`, { team });
+        const data = await store.teamRolesForSystem(req.body.team, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/teams/roles/global', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const canGrantGlobal = await store.checkCanGrantGlobalOnTeam(req.body.role, meta);
+        if (!canGrantGlobal) return next(Boom.forbidden());
+
+        await store.grantGlobalRoleOnTeam(req.body.team, req.body.role, meta);
+        const data = await store.teamRolesForSystem(req.body.team, req.user);
+        await store.audit(meta, `added global role [${req.body.role}] to team`, { team });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/teams/roles/system', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const canRevokeSystem = await store.checkCanGrantSystemOnTeam(req.body.role, meta);
+        if (!canRevokeSystem) return next(Boom.forbidden());
+
+        const currentRoles = await store.teamRolesForSystem(req.body.team, req.user);
+        const roleToRevoke = currentRoles.currentRoles.find(({ name }) => name === req.body.role);
+        if (!roleToRevoke) return next(Boom.badRequest());
+
+        if (roleToRevoke.global) {
+          const canRevokeGlobal = await store.checkCanGrantGlobalOnTeam(req.body.team, req.body.role, meta);
+          if (!canRevokeGlobal) return next(Boom.forbidden());
+        }
+
+        await store.revokeSystemRoleFromTeam(req.body.team, req.body.role, meta);
+        await store.audit(meta, `deleted system role [${req.body.role}] from team`, { team });
+        const data = await store.teamRolesForSystem(req.body.team, req.user);
+        res.json(data);
+      } catch (err) {
+        next(err);
       }
     });
 
