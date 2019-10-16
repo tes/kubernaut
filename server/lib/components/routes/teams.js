@@ -198,6 +198,54 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/teams/roles/registry', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.registry) return next(Boom.badRequest('registry is required'));
+
+        if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantRoleOnRegistryOnTeam(req.body.team, req.body.role, req.body.registry, meta);
+        const data = await store.teamRolesForRegistries(req.body.team, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for registry to team`, {
+          team,
+          registry: { id: req.body.registry },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/teams/roles/registry', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.registry) return next(Boom.badRequest('registry is required'));
+
+        if (! await store.hasPermissionOnRegistry(req.user, req.body.registry, 'registries-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeRoleOnRegistryForTeam(req.body.team, req.body.role, req.body.registry, meta);
+        const data = await store.teamRolesForRegistries(req.body.team, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for registry from team`, {
+          team,
+          registry: { id: req.body.registry },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 
