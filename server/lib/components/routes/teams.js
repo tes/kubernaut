@@ -234,11 +234,59 @@ export default function(options = {}) {
         if (!team) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        await store.revokeRoleOnRegistryForTeam(req.body.team, req.body.role, req.body.registry, meta);
+        await store.revokeRoleOnRegistryFromTeam(req.body.team, req.body.role, req.body.registry, meta);
         const data = await store.teamRolesForRegistries(req.body.team, req.user);
         await store.audit(meta, `deleted role [${req.body.role}] for registry from team`, {
           team,
           registry: { id: req.body.registry },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/teams/roles/namespace', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+
+        if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.grantRoleOnNamespaceToTeam(req.body.team, req.body.role, req.body.namespace, meta);
+        const data = await store.teamRolesForNamespaces(req.body.team, req.user);
+        await store.audit(meta, `added role [${req.body.role}] for namespace to team`, {
+          team,
+          namespace: { id: req.body.namespace },
+        });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/teams/roles/namespace', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+        if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+
+        if (! await store.hasPermissionOnNamespace(req.user, req.body.namespace, 'namespaces-grant')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        await store.revokeRoleOnNamespaceFromTeam(req.body.team, req.body.role, req.body.namespace, meta);
+        const data = await store.teamRolesForNamespaces(req.body.team, req.user);
+        await store.audit(meta, `deleted role [${req.body.role}] for namespace from team`, {
+          team,
+          namespace: { id: req.body.namespace },
         });
         res.json(data);
       } catch (err) {
