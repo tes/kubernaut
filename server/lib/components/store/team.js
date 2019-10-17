@@ -884,7 +884,7 @@ export default function(options) {
         const insertBuilder = sqb
           .insert('team_roles', {
             id: uuid(),
-            account: teamId,
+            team: teamId,
             role: role_id,
             subject: registryId,
             subject_type: 'registry',

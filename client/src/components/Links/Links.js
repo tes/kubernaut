@@ -45,6 +45,16 @@ export const TeamLink = ({ team, container, children }) => {
   return <Tag {...props}>{children || <span><i className="fa fa-users" aria-hidden='true'></i> {team.name}</span>}</Tag>;
 };
 
+export const TeamEditLink = ({ team, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/teams/${team.name}/edit`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Edit</span>}</Tag>;
+};
+
 export const NamespacePill = ({ namespace }) => <Badge
     style={{
       backgroundColor: namespace.color || namespace.cluster.color

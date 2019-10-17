@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   TeamLink,
+  TeamEditLink,
 } from '../Links';
 
 class TeamSubNav extends Component {
   render() {
     const {
       team,
+      canEdit,
     } = this.props;
 
     return (
@@ -20,6 +22,11 @@ class TeamSubNav extends Component {
                 <NavLink><i className="fa fa-users" aria-hidden='true'></i> {`${team.name}`}</NavLink>
               </TeamLink>
             </NavItem>
+            { canEdit ? <NavItem>
+              <TeamEditLink container team={team}>
+                <NavLink>Edit</NavLink>
+              </TeamEditLink>
+            </NavItem> : null }
             </Nav>
           </Col>
         </Row>

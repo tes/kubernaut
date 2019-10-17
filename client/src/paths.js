@@ -24,6 +24,7 @@ import { initServicesPage } from './modules/services';
 import { initServiceManage } from './modules/serviceManage';
 import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 import { initialiseTeamPage } from './modules/team';
+import { fetchTeamInfo } from './modules/editTeam';
 import { fetchTeamsPagination } from './modules/teams';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
@@ -120,6 +121,10 @@ const paths = {
   team: {
     route: '/teams/:team',
     action: initialiseTeamPage,
+  },
+  teamEdit: {
+    route: '/teams/:team/edit',
+    action: fetchTeamInfo,
   },
   teams: {
     route: '/teams',

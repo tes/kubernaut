@@ -197,6 +197,25 @@ export const getTeamByName = (name) => makeRequest(`/api/teams/by-name/${name}`)
 
 export const getTeamForService = ({ registry, service }) => makeRequest(`/api/teams/for/${registry}/${service}`);
 
+export const getTeamRolesForNamespaces = (teamId) => {
+  const url = `/api/teams/${teamId}/namespaces`;
+  return makeRequest(url);
+};
+
+export const getTeamRolesForRegistries = (teamId) => {
+  const url = `/api/teams/${teamId}/registries`;
+  return makeRequest(url);
+};
+
+export const getTeamRolesForTeams = (teamId) => {
+  const url = `/api/teams/${teamId}/teams`;
+  return makeRequest(url);
+};
+
+export const getTeamSystemRoles = (teamId) => {
+  const url = `/api/teams/${teamId}/system`;
+  return makeRequest(url);
+};
 
 export const addGlobalRole = (accountId, role, options = {}) => {
   const url = '/api/roles/global';
@@ -252,6 +271,64 @@ export const addRoleForTeam = (accountId, teamId, role, options = {}) => {
       account: accountId,
       role,
       team: teamId,
+    }),
+  });
+};
+
+export const addTeamRoleForNamespace = (teamId, namespaceId, role, options = {}) => {
+  const url = '/api/teams/roles/namespace';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      namespace: namespaceId,
+    }),
+  });
+};
+
+export const addTeamRoleForRegistry = (teamId, registryId, role, options = {}) => {
+  const url = '/api/teams/roles/registry';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      registry: registryId,
+    }),
+  });
+};
+
+export const addTeamRoleForSystem = (teamId, role, options = {}) => {
+  const url = '/api/teams/roles/system';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+    }),
+  });
+};
+
+export const addTeamRoleForTeam = (teamId, subjectTeamId, role, options = {}) => {
+  const url = '/api/teams/roles/team';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      subjectTeam: subjectTeamId,
+    }),
+  });
+};
+
+export const addTeamGlobalRole = (teamId, role, options = {}) => {
+  const url = '/api/teams/roles/global';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      team: teamId,
+      role,
     }),
   });
 };
@@ -364,6 +441,17 @@ export const removeRoleForTeam = (accountId, teamId, role, options = {}) => {
   });
 };
 
+export const removeTeamGlobalRole = (teamId, role, options = {}) => {
+  const url = '/api/teams/roles/global';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+    }),
+  });
+};
+
 export const removeTeamMembershipFromAccount = (accountId, teamId) => {
   const url = '/api/roles/team-membership';
   return makeRequest(url, {
@@ -371,6 +459,53 @@ export const removeTeamMembershipFromAccount = (accountId, teamId) => {
     body: JSON.stringify({
       account: accountId,
       team: teamId,
+    }),
+  });
+};
+
+export const removeTeamRoleForNamespace = (teamId, namespaceId, role, options = {}) => {
+  const url = '/api/teams/roles/namespace';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      namespace: namespaceId,
+    }),
+  });
+};
+
+export const removeTeamRoleForRegistry = (teamId, registryId, role, options = {}) => {
+  const url = '/api/teams/roles/registry';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      registry: registryId,
+    }),
+  });
+};
+
+export const removeTeamRoleForSystem = (teamId, role, options = {}) => {
+  const url = '/api/teams/roles/system';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+    }),
+  });
+};
+
+export const removeTeamRoleForTeam = (teamId, subjectTeamId, role, options = {}) => {
+  const url = '/api/teams/roles/team';
+  return makeRequest(url, {
+    method: 'DELETE',
+    body: JSON.stringify({
+      team: teamId,
+      role,
+      subjectTeam: subjectTeamId,
     }),
   });
 };

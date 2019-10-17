@@ -280,7 +280,7 @@ export default function(options = {}) {
         if (!team) return next();
 
         const meta = { date: new Date(), account: { id: req.user.id } };
-        await store.grantRoleOnNamespaceToTeam(req.body.team, req.body.role, req.body.namespace, meta);
+        await store.grantRoleOnNamespaceOnTeam(req.body.team, req.body.role, req.body.namespace, meta);
         const data = await store.teamRolesForNamespaces(req.body.team, req.user);
         await store.audit(meta, `added role [${req.body.role}] for namespace to team`, {
           team,

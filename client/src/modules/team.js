@@ -8,8 +8,7 @@ export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQU
 export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
 export const FETCH_TEAM_ERROR = createAction(`${actionsPrefix}/FETCH_TEAM_ERROR`);
 
-// export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
-// export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 
 export const selectTeam = (state) => (state.team.team.data);
 
@@ -22,8 +21,7 @@ const defaultState = {
       services: [],
     },
   },
-  // canManage: false,
-  // canEdit: false,
+  canEdit: false,
 };
 
 export default handleActions({
@@ -59,12 +57,8 @@ export default handleActions({
       },
     },
   }),
-  // [setCanEdit]: (state, { payload }) => ({
-  //   ...state,
-  //   canEdit: payload,
-  // }),
-  // [setCanManage]: (state, { payload }) => ({
-  //   ...state,
-  //   canManage: payload,
-  // }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
+  }),
 }, defaultState);

@@ -24,7 +24,7 @@ class TeamPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Team: ${team.name}`}/>
-          <TeamSubNav team={team} />
+          <TeamSubNav team={team} canEdit={this.props.canEdit} />
 
           <dl className="row">
             <dt className="col-md-3">Attributes:</dt>
