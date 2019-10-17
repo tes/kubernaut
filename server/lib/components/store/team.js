@@ -812,6 +812,37 @@ export default function(options) {
       return getTeam(teamId);
     }
 
+    async function revokeGlobalRoleFromTeam(teamId, roleName, meta) {
+      logger.debug(`Revoking global role: ${roleName} from team: ${teamId}`);
+      await db.withTransaction(async connection => {
+        const roleIdBuilder = sqb
+        .select('r.id role_id')
+        .from('role r')
+        .where(Op.eq('r.name', roleName));
+
+        const roleIdResult = await connection.query(db.serialize(roleIdBuilder, {}).sql);
+        if (!roleIdResult.rowCount) throw new Error(`Role name ${roleName} does not exist.`);
+        const { role_id } = roleIdResult.rows[0];
+
+        const canRevokeAnswer = await _checkCanGrantGlobalOnTeam(connection, meta.account, role_id);
+        if (!canRevokeAnswer) throw new Error(`User ${meta.account.id} cannot revoke global role ${roleName}.`);
+
+        const builder = sqb
+          .update('team_roles', {
+            deleted_on: meta.date,
+            deleted_by: meta.account.id,
+          })
+          .where(Op.eq('team', teamId))
+          .where(Op.eq('subject_type', 'global'))
+          .where(Op.eq('role', role_id))
+          .where(Op.is('deleted_on', null));
+
+        await connection.query(db.serialize(builder, {}).sql);
+      });
+
+      logger.debug(`Revoked global role: ${roleName} from team: ${teamId}`);
+    }
+
     async function grantRoleOnRegistryOnTeam(teamId, roleName, registryId, meta) {
       logger.debug(`Granting role: ${roleName} on registry: ${registryId} to team: ${teamId}`);
       await db.withTransaction(async connection => {
@@ -1163,6 +1194,7 @@ export default function(options) {
       grantSystemRoleOnTeam,
       revokeSystemRoleFromTeam,
       grantGlobalRoleOnTeam,
+      revokeGlobalRoleFromTeam,
       grantRoleOnRegistryOnTeam,
       revokeRoleOnRegistryFromTeam,
       grantRoleOnNamespaceOnTeam,

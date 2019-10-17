@@ -167,6 +167,28 @@ export default function(options = {}) {
       }
     });
 
+    app.delete('/api/teams/roles/global', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (!req.body.team) return next(Boom.badRequest('team is required'));
+        if (!req.body.role) return next(Boom.badRequest('role is required'));
+
+        const team = await store.getTeam(req.body.team);
+        if (!team) return next();
+        if (! await store.hasPermissionOnTeam(req.user, req.body.team, 'teams-manage')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const canRevokeGlobal = await store.checkCanGrantGlobalOnTeam(req.body.role, meta);
+        if (!canRevokeGlobal) return next(Boom.forbidden());
+
+        await store.revokeGlobalRoleFromTeam(req.body.team, req.body.role, meta);
+        const data = await store.teamRolesForSystem(req.body.team, req.user);
+        await store.audit(meta, `deleted global role [${req.body.role}] from team`, { team });
+        res.json(data);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.delete('/api/teams/roles/system', bodyParser.json(), async (req, res, next) => {
       try {
         if (!req.body.team) return next(Boom.badRequest('team is required'));

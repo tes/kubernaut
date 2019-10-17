@@ -986,7 +986,7 @@ export default function(options = {}) {
 
         const answer = accountAnswer || teamAnswer;
 
-        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on registry ${teamId}`);
+        logger.debug(`User ${user.id} ${answer ? 'does' : 'does not'} have permission ${permission} on team ${teamId}`);
         return answer;
       });
     }
