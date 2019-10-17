@@ -46,7 +46,7 @@ const helpGlobal = {
   },
 };
 
-class AccountSystemRolesForm extends Component {
+class SystemRolesForm extends Component {
   render() {
     const {
       rolesGrantable,
@@ -142,7 +142,7 @@ class AccountSystemRolesForm extends Component {
   }
 }
 
-AccountSystemRolesForm.propTypes = {
+SystemRolesForm.propTypes = {
   rolesGrantable: PropTypes.array.isRequired,
   globalGrantable: PropTypes.array.isRequired,
   submitting: PropTypes.bool.isRequired,
@@ -152,4 +152,4 @@ AccountSystemRolesForm.propTypes = {
   disableGlobals: PropTypes.bool,
 };
 
-export default AccountSystemRolesForm;
+export default SystemRolesForm;

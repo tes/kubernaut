@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { reduxForm, getFormValues } from 'redux-form';
-import AccountSystemRolesForm from './AccountSystemRolesForm';
+import SystemRolesForm from '../SystemRolesForm';
 import {
   updateSystemRole,
   updateGlobalRole,
@@ -25,4 +25,4 @@ export default connect((state, props) => {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(AccountSystemRolesForm));
+})(SystemRolesForm));
