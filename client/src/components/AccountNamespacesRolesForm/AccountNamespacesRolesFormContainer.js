@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { reduxForm, getFormValues } from 'redux-form';
-import AccountNamespacesRolesForm from './AccountNamespacesRolesForm';
+import NamespacesRolesForm from '../NamespacesRolesForm';
 import {
   updateRolesForNamespace,
   addNewNamespace,
@@ -27,4 +27,4 @@ export default connect((state) => {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(AccountNamespacesRolesForm));
+})(NamespacesRolesForm));

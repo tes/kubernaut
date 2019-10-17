@@ -97,7 +97,7 @@ class Roles extends Component {
   }
 }
 
-class AccountRegistriesRolesForm extends Component {
+class RegistriesRolesForm extends Component {
   render() {
     const {
       registriesPossibleToAdd,
@@ -197,10 +197,15 @@ class AccountRegistriesRolesForm extends Component {
   }
 }
 
-AccountRegistriesRolesForm.propTypes = {
+RegistriesRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
   registriesPossibleToAdd: PropTypes.array.isRequired,
   rolesGrantable: PropTypes.array.isRequired,
+  currentRoles: PropTypes.array.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  updateRolesForRegistry: PropTypes.func.isRequired,
+  addNewRegistry: PropTypes.func.isRequired,
+  deleteRolesForRegistry: PropTypes.func.isRequired,
 };
 
-export default AccountRegistriesRolesForm;
+export default RegistriesRolesForm;

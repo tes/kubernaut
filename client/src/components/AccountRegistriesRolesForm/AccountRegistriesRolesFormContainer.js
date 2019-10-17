@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { reduxForm, getFormValues } from 'redux-form';
-import AccountRegistriesRolesForm from './AccountRegistriesRolesForm';
+import RegistriesRolesForm from '../RegistriesRolesForm';
 import {
   updateRolesForRegistry,
   addNewRegistry,
@@ -27,4 +27,4 @@ export default connect((state) => {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(AccountRegistriesRolesForm));
+})(RegistriesRolesForm));

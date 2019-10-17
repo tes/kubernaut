@@ -20,33 +20,33 @@ const rolesDisplayMap = {
 
 const help = {
   admin: {
-    title: 'Namespace \'admin\' role',
-    body: 'Grants all actions for a namespace.',
+    title: 'Team \'admin\' role',
+    body: 'Grants all actions for a team. (no different to maintainer)',
   },
   maintainer: {
-    title: 'Namespace \'maintainer\' role',
-    body: 'Grants management capacity over a namespace. This includes granting services/accounts access to the namespace, as well as managing secrets.',
+    title: 'Team \'maintainer\' role',
+    body: 'Grants management capacity over a team.',
   },
   developer: {
-    title: 'Namespace \'developer\' role',
-    body: 'Grants the ability to deploy to a namespace.',
+    title: 'Team \'developer\' role',
+    body: 'Grants no different to observer',
   },
   observer: {
-    title: 'Namespace \'observer\' role',
-    body: 'Grants basic ability to see a namespace and any deployments to it at all.',
+    title: 'Team \'observer\' role',
+    body: 'Grants basic ability to see a team.',
   },
 };
 
-const roleForNewNamespaceOptions = (roles) => roles.reduce((acc, role) =>
+const roleForNewTeamOptions = (roles) => roles.reduce((acc, role) =>
   (acc.concat({ value: role, display: rolesDisplayMap[role] })), []);
 
 class Roles extends Component {
   render() {
     const {
-      namespace,
+      team,
       currentValues = {},
-      updateRolesForNamespace,
-      deleteRolesForNamespace,
+      updateRolesForTeam,
+      deleteRolesForTeam,
       rolesGrantable,
     } = this.props;
     const howManySet = Object.keys(currentValues).reduce((acc, role) => {
@@ -55,10 +55,11 @@ class Roles extends Component {
 
     return (
       <tr>
-        <th scope="row">{namespace.cluster.name}/{namespace.name}</th>
+        <th scope="row">{team.name}</th>
         {
-          ['admin', 'maintainer', 'developer', 'observer'].map((name) => (
-            <td key={name} className="text-center">
+          ['admin', 'maintainer', 'developer', 'observer'].map((name) => {
+            if (name === 'admin' || name === 'developer') return (<td key={name}></td>);
+            return (<td key={name} className="text-center">
               <Field
                 name={name}
                 component="input"
@@ -69,23 +70,23 @@ class Roles extends Component {
                     event.preventDefault();
                     return;
                   }
-                  updateRolesForNamespace({
-                    namespaceId: namespace.id,
+                  updateRolesForTeam({
+                    teamId: team.id,
                     role: name,
                     newValue,
                   });
                 }}
               />
-            </td>
-          ))
+            </td>);
+          })
         }
         <td>
           <Button
             outline
             color="danger"
             onClick={() => {
-              deleteRolesForNamespace({
-                namespaceId: namespace.id,
+              deleteRolesForTeam({
+                teamId: team.id,
               });
             }}
             ><i className={`fa fa-trash`} aria-hidden='true'></i>
@@ -96,26 +97,26 @@ class Roles extends Component {
   }
 }
 
-class AccountNamespacesRolesForm extends Component {
+class TeamsRolesForm extends Component {
   render() {
     const {
-      namespacesPossibleToAdd,
+      teamsPossibleToAdd,
       currentValues,
       currentRoles,
       rolesGrantable,
       submitting,
-      updateRolesForNamespace,
-      addNewNamespace,
-      deleteRolesForNamespace,
+      updateRolesForTeam,
+      addNewTeam,
+      deleteRolesForTeam,
     } = this.props;
 
-    const namespaceSelectOptions = namespacesPossibleToAdd.map((namespace) => ({
-      value: namespace.id,
-      display: `${namespace.cluster.name}/${namespace.name}`,
+    const teamSelectOptions = teamsPossibleToAdd.map((team) => ({
+      value: team.id,
+      display: team.name,
     }));
 
-    const newNamespaceRoleOptions = currentValues.newNamespace ?
-      roleForNewNamespaceOptions(rolesGrantable.find(({ id }) => id === currentValues.newNamespace).roles)
+    const newTeamRoleOptions = currentValues.newTeam ?
+      roleForNewTeamOptions(rolesGrantable.find(({ id }) => id === currentValues.newTeam).roles).filter((o) => o.value === 'maintainer' || o.value === 'observer')
       : [];
 
     return (
@@ -127,26 +128,26 @@ class AccountNamespacesRolesForm extends Component {
                   <thead>
                     <tr>
                       <th></th>
-                      <th className="text-center">Admin <Popover {...help['admin']} classNames="d-inline"/></th>
+                      <th className="text-center"></th>
                       <th className="text-center">Maintainer <Popover {...help['maintainer']} classNames="d-inline"/></th>
-                      <th className="text-center">Developer <Popover {...help['developer']} classNames="d-inline"/></th>
+                      <th className="text-center"></th>
                       <th className="text-center">Observer <Popover {...help['observer']} classNames="d-inline"/></th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {
-                      currentRoles.map(({ namespace }) => {
-                        const grantableForNamespace = rolesGrantable.find(({ id }) => id === namespace.id);
-                        const rolesGrantableForNamespace = grantableForNamespace ? grantableForNamespace.roles : [];
-                        return <FormSection name={namespace.id} key={namespace.id}>
+                      currentRoles.map(({ team }) => {
+                        const grantableForTeam = rolesGrantable.find(({ id }) => id === team.id);
+                        const rolesGrantableForTeam = grantableForTeam ? grantableForTeam.roles : [];
+                        return <FormSection name={team.id} key={team.id}>
                           <Roles
-                            namespace={namespace}
-                            currentValues={currentValues[namespace.id]}
-                            updateRolesForNamespace={updateRolesForNamespace}
-                            deleteRolesForNamespace={deleteRolesForNamespace}
+                            team={team}
+                            currentValues={currentValues[team.id]}
+                            updateRolesForTeam={updateRolesForTeam}
+                            deleteRolesForTeam={deleteRolesForTeam}
                             submitting={submitting}
-                            rolesGrantable={rolesGrantableForNamespace}
+                            rolesGrantable={rolesGrantableForTeam}
                             />
                         </FormSection>;
                       })
@@ -157,32 +158,32 @@ class AccountNamespacesRolesForm extends Component {
           </Row>
           <Row>
             <Col md="12">
-              <h6>Add a namespace:</h6>
+              <h6>Add a team:</h6>
               <FormGroup>
                 <Row>
                   <Col sm="4">
                     <Field
-                      name="newNamespace"
+                      name="newTeam"
                       className="form-control"
                       component={RenderSelect}
-                      options={namespaceSelectOptions}
+                      options={teamSelectOptions}
                     />
                   </Col>
                   <Col sm="4">
                     <Field
-                      name="roleForNewNamespace"
+                      name="roleForNewTeam"
                       className="form-control"
                       component={RenderSelect}
-                      options={newNamespaceRoleOptions}
-                      disabled={!currentValues.newNamespace}
+                      options={newTeamRoleOptions}
+                      disabled={!currentValues.newTeam}
                     />
                   </Col>
                   <Col sm="1">
                     <Button
                       color="light"
-                      disabled={!(currentValues.newNamespace && currentValues.roleForNewNamespace)}
+                      disabled={!(currentValues.newTeam && currentValues.roleForNewTeam)}
                       onClick={() => {
-                        addNewNamespace();
+                        addNewTeam();
                       }}
                     >Add</Button>
                   </Col>
@@ -196,10 +197,15 @@ class AccountNamespacesRolesForm extends Component {
   }
 }
 
-AccountNamespacesRolesForm.propTypes = {
+TeamsRolesForm.propTypes = {
   currentValues: PropTypes.object.isRequired,
-  namespacesPossibleToAdd: PropTypes.array.isRequired,
+  teamsPossibleToAdd: PropTypes.array.isRequired,
   rolesGrantable: PropTypes.array.isRequired,
+  currentRoles: PropTypes.array.isRequired,
+  submitting: PropTypes.bool.isRequired,
+  updateRolesForTeam: PropTypes.func.isRequired,
+  addNewTeam: PropTypes.func.isRequired,
+  deleteRolesForTeam: PropTypes.func.isRequired,
 };
 
-export default AccountNamespacesRolesForm;
+export default TeamsRolesForm;

@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { reduxForm, getFormValues } from 'redux-form';
-import AccountTeamsRolesForm from './AccountTeamsRolesForm';
+import TeamsRolesForm from '../TeamsRolesForm';
 import {
   updateRolesForTeam,
   addNewTeam,
@@ -27,4 +27,4 @@ export default connect((state) => {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(AccountTeamsRolesForm));
+})(TeamsRolesForm));
