@@ -62,7 +62,7 @@ export default handleActions({
   }),
   [FETCH_TEAMS_REQUEST]: (state) => ({
     ...state,
-    teams: defaultState.teams,
+    teamMembership: defaultState.teamMembership,
     meta: {
       loading: computeLoading(state.meta.loading, 'teams', true),
     },
