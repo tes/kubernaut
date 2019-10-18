@@ -1,4 +1,4 @@
-import { put, call, take } from 'redux-saga/effects';
+import { put, call } from 'redux-saga/effects';
 
 import {
   fetchTeamInfoSaga,
@@ -54,7 +54,6 @@ describe('Team sagas', () => {
 
       const gen = locationChangeSaga(initialiseTeamPage({ location, match }));
       expect(gen.next({}).value).toMatchObject(put(fetchTeamPageData({ name: 'bob' })));
-      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
       expect(gen.next().done).toBe(true);
     });
 
@@ -70,7 +69,6 @@ describe('Team sagas', () => {
 
       const gen = locationChangeSaga(initialiseTeamPage({ location, match }));
       expect(gen.next({ team: 'abc' }).value).toMatchObject(put(fetchTeamPageData({ name: 'bob' })));
-      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
       expect(gen.next().done).toBe(true);
     });
 

@@ -11,11 +11,13 @@ import {
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
   setCanEdit,
+  setCanManageTeam,
 } from '../../modules/viewAccount';
 
 import {
   getAccountById,
   hasPermission,
+  getCanManageAnyTeam,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -49,6 +51,8 @@ describe('viewAccount sagas', () => {
     const gen = checkPermissionSaga(fetchAccountInfo());
     expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-write'));
     expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().value).toMatchObject(call(getCanManageAnyTeam));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeam(true)));
     expect(gen.next().done).toBe(true);
   });
 });

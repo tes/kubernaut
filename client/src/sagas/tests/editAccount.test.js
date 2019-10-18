@@ -44,6 +44,7 @@ import {
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   setCanEdit,
+  setCanManageTeam,
 } from '../../modules/editAccount';
 
 import {
@@ -60,6 +61,7 @@ import {
   removeRoleForSystem,
   addGlobalRole,
   removeGlobalRole,
+  getCanManageAnyTeam,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -482,6 +484,8 @@ describe('editAccount sagas', () => {
     const gen = checkPermissionSaga(fetchAccountInfo());
     expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-write'));
     expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().value).toMatchObject(call(getCanManageAnyTeam));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeam(true)));
     expect(gen.next().done).toBe(true);
   });
 });
