@@ -6,6 +6,9 @@ import {
   makeRootMeta,
   makeService,
   makeRelease,
+  makeCluster,
+  makeNamespace,
+  makeRegistry,
   makeTeam,
   makeRequestWithDefaults,
 } from '../factories';
@@ -187,6 +190,269 @@ describe('Teams API', () => {
         });
       });
     });
+
+    describe('POST /api/teams/roles/namespace', () => {
+
+      it('should grant a role on a namespace to a team', async () => {
+
+        const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+        const namespace = await store.saveNamespace(makeNamespace({ cluster }), makeRootMeta());
+        const saved = await store.saveTeam(makeTeam(), makeRootMeta());
+
+        const response = await request({
+          url: `/api/teams/roles/namespace`,
+          method: 'POST',
+          json: {
+            team: saved,
+            role: 'admin',
+            namespace: namespace.id,
+          },
+        });
+
+        expect(response.currentRoles).toBeDefined();
+        expect(response.namespacesWithoutRoles).toBeDefined();
+        expect(response.rolesGrantable).toBeDefined();
+        expect(response.currentRoles.length).toBe(1);
+        const entry = response.currentRoles[0];
+        expect(entry.namespace.id).toBe(namespace.id);
+        expect(entry.roles).toMatchObject(['admin']);
+      });
+
+      it('should reject payloads without a team', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/namespace`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            role: 'admin',
+            namespace: 'ns',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('team is required');
+        });
+      });
+
+      it('should reject payloads without a role', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/namespace`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            namespace: 'ns',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('role is required');
+        });
+      });
+
+      it('should reject payloads without a namespace', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/namespace`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            role: 'admin',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('namespace is required');
+        });
+      });
+    });
+
+    describe('POST /api/teams/roles/registry', () => {
+
+      it('should grant a role on a registry to a team', async () => {
+
+        const registry = await store.saveRegistry(makeRegistry(), makeRootMeta());
+        const saved = await store.saveTeam(makeTeam(), makeRootMeta());
+
+        const response = await request({
+          url: `/api/teams/roles/registry`,
+          method: 'POST',
+          json: {
+            team: saved,
+            role: 'admin',
+            registry: registry.id,
+          },
+        });
+
+        expect(response.currentRoles).toBeDefined();
+        expect(response.registriesWithoutRoles).toBeDefined();
+        expect(response.rolesGrantable).toBeDefined();
+        expect(response.currentRoles.length).toBe(1);
+        const entry = response.currentRoles[0];
+        expect(entry.registry.id).toBe(registry.id);
+        expect(entry.roles).toMatchObject(['admin']);
+      });
+
+      it('should reject payloads without a team', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/registry`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            role: 'admin',
+            registry: 'reg',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('team is required');
+        });
+      });
+
+      it('should reject payloads without a role', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/registry`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            registry: 'reg',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('role is required');
+        });
+      });
+
+      it('should reject payloads without a registry', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/registry`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            role: 'admin',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('registry is required');
+        });
+      });
+    });
+
+    describe('POST /api/teams/roles/team', () => {
+
+      it('should grant a role on a team to a team', async () => {
+
+        const team = await store.saveTeam(makeTeam(), makeRootMeta());
+        const saved = await store.saveTeam(makeTeam(), makeRootMeta());
+
+        const response = await request({
+          url: `/api/teams/roles/team`,
+          method: 'POST',
+          json: {
+            team: saved,
+            role: 'admin',
+            subjectTeam: team,
+          },
+        });
+
+        expect(response.currentRoles).toBeDefined();
+        expect(response.teamsWithoutRoles).toBeDefined();
+        expect(response.rolesGrantable).toBeDefined();
+        expect(response.currentRoles.length).toBe(1);
+        const entry = response.currentRoles[0];
+        expect(entry.team.id).toBe(team);
+        expect(entry.roles).toMatchObject(['admin']);
+      });
+
+      it('should reject payloads without a team', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/team`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            role: 'admin',
+            subjectTeam: 'teamidabc',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('team is required');
+        });
+      });
+
+      it('should reject payloads without a role', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/team`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            subjectTeam: 'teamidabc',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('role is required');
+        });
+      });
+
+      it('should reject payloads without a subject team', async () => {
+
+        loggerOptions.suppress = true;
+
+        await request({
+          url: `/api/teams/roles/team`,
+          method: 'POST',
+          resolveWithFullResponse: true,
+          json: {
+            team: 'acc',
+            role: 'admin',
+          },
+        }).then(() => {
+          throw new Error('Should have failed with 400');
+        }).catch(errors.StatusCodeError, (reason) => {
+          expect(reason.response.statusCode).toBe(400);
+          expect(reason.response.body.message).toBe('subjectTeam is required');
+        });
+      });
+    });
+
   });
 
   function saveTeam(team = makeTeam(), meta = makeRootMeta()) {
