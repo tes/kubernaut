@@ -5,12 +5,16 @@ import {
   fetchAccountInfoSaga,
   fetchNamespacesSaga,
   fetchRegistriesSaga,
+  fetchTeamsSaga,
   updateRolesForNamespaceSaga,
   addNewNamespaceSaga,
   deleteRolesForNamespaceSaga,
   updateRolesForRegistrySaga,
   addNewRegistrySaga,
   deleteRolesForRegistrySaga,
+  updateRolesForTeamSaga,
+  addNewTeamSaga,
+  deleteRolesForTeamSaga,
   checkPermissionSaga,
   fetchSystemRolesSaga,
   updateSystemRoleSaga,
@@ -23,8 +27,11 @@ import {
   addNewNamespace,
   deleteRolesForNamespace,
   deleteRolesForRegistry,
+  deleteRolesForTeam,
   updateRolesForRegistry,
+  updateRolesForTeam,
   addNewRegistry,
+  addNewTeam,
   selectAccount,
   updateSystemRole,
   updateGlobalRole,
@@ -40,9 +47,13 @@ import {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  FETCH_TEAMS_REQUEST,
+  FETCH_TEAMS_SUCCESS,
+  FETCH_TEAMS_ERROR,
   UPDATE_ROLE_FOR_NAMESPACE_SUCCESS,
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
+  UPDATE_ROLE_FOR_TEAM_SUCCESS,
   setCanEdit,
   setCanManageTeam,
 } from '../../modules/editAccount';
@@ -62,6 +73,9 @@ import {
   addGlobalRole,
   removeGlobalRole,
   getCanManageAnyTeam,
+  getAccountRolesForTeams,
+  addRoleForTeam,
+  removeRoleForTeam,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -162,6 +176,31 @@ describe('editAccount sagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_REGISTRIES_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getAccountRolesForRegistries, accountId));
       expect(gen.throw(error).value).toMatchObject(put(FETCH_REGISTRIES_ERROR({ error: error.message })));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('fetchTeamsSaga', () => {
+    it('should fetch registries', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
+      const teamsData = { limit: 50, offset: 0, count: 3, items: [1, 2, 3] };
+
+      const gen = fetchTeamsSaga(fetchAccountInfo({ match }));
+      expect(gen.next().value).toMatchObject(put(FETCH_TEAMS_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForTeams, accountId));
+      expect(gen.next(teamsData).value).toMatchObject(put(FETCH_TEAMS_SUCCESS({ rolesData: teamsData } )));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should tolerate errors fetching registries', () => {
+      const accountId = '123';
+      const match = { params: { accountId } };
+      const error = new Error('ouch');
+      const gen = fetchTeamsSaga(fetchAccountInfo({ ...quietOptions, match }));
+      expect(gen.next().value).toMatchObject(put(FETCH_TEAMS_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getAccountRolesForTeams, accountId));
+      expect(gen.throw(error).value).toMatchObject(put(FETCH_TEAMS_ERROR({ error: error.message })));
       expect(gen.next().done).toBe(true);
     });
   });
@@ -288,6 +327,67 @@ describe('editAccount sagas', () => {
     });
   });
 
+  describe('updateRolesForTeamSaga', () => {
+    it('should add a role to a team', () => {
+      const teamId = 'abc';
+      const role = 'bob';
+      const accountId = '123';
+      const accountData = { a: 1 };
+      const gen = updateRolesForTeamSaga(updateRolesForTeam({
+        teamId,
+        accountId,
+        role,
+        newValue: true,
+        quiet: true,
+      }));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountTeamsRoles')));
+      expect(gen.next().value).toMatchObject(call(addRoleForTeam, accountId, teamId, role, { quiet: true}));
+      expect(gen.next(accountData).value).toMatchObject(put(UPDATE_ROLE_FOR_TEAM_SUCCESS({ data: accountData })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountTeamsRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should remove a role to a team', () => {
+      const teamId = 'abc';
+      const role = 'bob';
+      const accountId = '123';
+      const accountData = { a: 1 };
+      const gen = updateRolesForTeamSaga(updateRolesForTeam({
+        teamId,
+        accountId,
+        role,
+        newValue: false,
+        quiet: true,
+      }));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountTeamsRoles')));
+      expect(gen.next().value).toMatchObject(call(removeRoleForTeam, accountId, teamId, role, { quiet: true}));
+      expect(gen.next(accountData).value).toMatchObject(put(UPDATE_ROLE_FOR_TEAM_SUCCESS({ data: accountData })));
+      expect(gen.next().value).toMatchObject(put(stopSubmit('accountTeamsRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should handle an error', () => {
+      const teamId = 'abc';
+      const role = 'bob';
+      const accountId = '123';
+      const gen = updateRolesForTeamSaga(updateRolesForTeam({
+        teamId,
+        accountId,
+        role,
+        newValue: false,
+        quiet: true,
+      }));
+      expect(gen.next().value).toMatchObject(select(selectAccount));
+      expect(gen.next({ id: accountId }).value).toMatchObject(put(startSubmit('accountTeamsRoles')));
+      expect(gen.next().value).toMatchObject(call(removeRoleForTeam, accountId, teamId, role, { quiet: true}));
+      expect(gen.throw(new Error('ouch')).value).toMatchObject(put(stopSubmit('accountTeamsRoles')));
+      expect(gen.next().value).toMatchObject(put(reset('accountTeamsRoles')));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
   describe('addNewNamespaceSaga', () => {
     it('add a new namespace and role', () => {
       const namespaceId = 'abc';
@@ -344,6 +444,34 @@ describe('editAccount sagas', () => {
     });
   });
 
+  describe('addNewTeamSaga', () => {
+    it('add a new team and role', () => {
+      const teamId = 'abc';
+      const role = 'bob';
+
+      const gen = addNewTeamSaga(addNewTeam());
+      gen.next(); // form selector
+      expect(gen.next({ newTeam: teamId, roleForNewTeam: role }).value).toMatchObject(put(updateRolesForTeam({
+        teamId,
+        role,
+        newValue: true,
+      })));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('add returns when missing team', () => {
+      const gen = addNewTeamSaga(addNewTeam());
+      gen.next(); // form selector
+      expect(gen.next({ roleForNewTeam: 'bob' }).done).toBe(true);
+    });
+
+    it('add returns when missing role', () => {
+      const gen = addNewTeamSaga(addNewTeam());
+      gen.next(); // form selector
+      expect(gen.next({ newTeam: 'bob' }).done).toBe(true);
+    });
+  });
+
   describe('deleteRolesForNamespaceSaga', () => {
     it('deletes all roles for a namespace', () => {
       const namespaceId = 'abc';
@@ -375,6 +503,25 @@ describe('editAccount sagas', () => {
       } }));
       expect(gen.next().value).toMatchObject(call(updateRolesForRegistrySaga, { payload: {
         registryId,
+        role: 'b',
+        newValue: false,
+      } }));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('deleteRolesForTeamSaga', () => {
+    it('deletes all roles for a team', () => {
+      const teamId = 'abc';
+      const gen = deleteRolesForTeamSaga(deleteRolesForTeam({ teamId }));
+      gen.next(); //Form selector
+      expect(gen.next({ a: true, b: true }).value).toMatchObject(call(updateRolesForTeamSaga, { payload: {
+        teamId,
+        role: 'a',
+        newValue: false,
+      } }));
+      expect(gen.next().value).toMatchObject(call(updateRolesForTeamSaga, { payload: {
+        teamId,
         role: 'b',
         newValue: false,
       } }));

@@ -8,6 +8,9 @@ import reduce, {
   FETCH_REGISTRIES_REQUEST,
   FETCH_REGISTRIES_SUCCESS,
   FETCH_REGISTRIES_ERROR,
+  FETCH_TEAMS_REQUEST,
+  FETCH_TEAMS_SUCCESS,
+  FETCH_TEAMS_ERROR,
   FETCH_SYSTEM_ROLES_REQUEST,
   FETCH_SYSTEM_ROLES_SUCCESS,
   FETCH_SYSTEM_ROLES_ERROR,
@@ -90,6 +93,47 @@ describe('editAccount Reducer', () => {
     expect(state.registriesRoles).toMatchObject(expected);
     expect(state.meta).toMatchObject({ loading: { } });
     expect(state.meta.loading).toMatchObject({ sections: { registries: false } });
+    expect(state.meta.loading.loadingPercent).toBe(100);
+  });
+
+  it('should indicate when teams are loading', () => {
+    const state = reduce(createInitialState(), FETCH_TEAMS_REQUEST());
+    expect(state.teamsRoles).toMatchObject({
+      initialValues: {},
+      currentRoles: [],
+      availableTeams: [],
+      rolesGrantable: [],
+    });
+    expect(state.meta).toMatchObject({ loading: { } });
+    expect(state.meta.loading).toMatchObject({ sections: { teams: true } });
+    expect(state.meta.loading.loadingPercent).toBeLessThan(100);
+  });
+
+  it('should update state when teams have loaded', () => {
+    const rolesData = {
+      currentRoles: [{ team: { id: 'abc' }, roles: ['a']}],
+      teamsWithoutRoles: [1],
+      rolesGrantable: [2]
+    };
+    const expected = {
+      initialValues: { abc: { a: true } },
+      currentRoles: rolesData.currentRoles,
+      availableTeams: rolesData.teamsWithoutRoles,
+      rolesGrantable: rolesData.rolesGrantable,
+    };
+    const state = reduce(createInitialState(), FETCH_TEAMS_SUCCESS({ rolesData }));
+    expect(state.teamsRoles).toMatchObject(expected);
+    expect(state.meta).toMatchObject({ loading: { } });
+    expect(state.meta.loading).toMatchObject({ sections: { teams: false } });
+    expect(state.meta.loading.loadingPercent).toBe(100);
+  });
+
+  it('should update state when teams have errored', () => {
+    const initialState = createInitialState();
+    const state = reduce(initialState, FETCH_TEAMS_ERROR({ error: 'Oh Noes' }));
+    expect(state.teamsRoles).toBe(initialState.teamsRoles);
+    expect(state.meta).toMatchObject({ loading: { }, error: 'Oh Noes' });
+    expect(state.meta.loading).toMatchObject({ sections: { teams: false } });
     expect(state.meta.loading.loadingPercent).toBe(100);
   });
 
