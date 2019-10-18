@@ -98,21 +98,34 @@ export default function(options = {}) {
       };
     }
 
+    function toTeamRoles(row) {
+      return {
+        roles: row.roles,
+        team: new Team({
+          id: row.team_id,
+          name: row.team_name,
+        }),
+      };
+    }
+
     async function getRolesForAccount(id, currentUser) {
       logger.debug(`Getting account roles for id: ${id}`);
 
       const namespacesBuilder = authz.queryNamespacesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
       const registriesBuilder = authz.queryRegistriesWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
+      const teamsBuilder = authz.queryTeamsWithAppliedRolesForUserAsSeenBy(id, currentUser.id);
       const systemRolesBuilder = authz.querySystemAppliedRolesForUser(id);
 
       return await db.withTransaction(async connection => {
         const namespacesResults = await connection.query(db.serialize(namespacesBuilder, {}).sql);
         const registriesResults = await connection.query(db.serialize(registriesBuilder, {}).sql);
+        const teamsResults = await connection.query(db.serialize(teamsBuilder, {}).sql);
         const systemResults = await connection.query(db.serialize(systemRolesBuilder, {}).sql);
 
         return {
           namespaces: namespacesResults.rows.map(toNamespaceRoles),
           registries: registriesResults.rows.map(toRegistryRoles),
+          teams: teamsResults.rows.map(toTeamRoles),
           system: systemResults.rows,
         };
       });

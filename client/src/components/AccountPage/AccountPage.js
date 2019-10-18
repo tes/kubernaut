@@ -16,6 +16,12 @@ class AccountPage extends Component {
         </Row>
     );
 
+    const teamEls = [];
+    account.roles.teams.forEach(({ team, roles }) => {
+      const teamName = team.name;
+      teamEls.push(<dt key={team.id} className="col-sm-3">{teamName}</dt>);
+      teamEls.push(<dd key={`${team.id}-roles`} className="col-sm-9">{roles.join(', ')}</dd>);
+    });
 
     const registryEls = [];
     account.roles.registries.forEach(({ registry, roles }) => {
@@ -52,6 +58,14 @@ class AccountPage extends Component {
               <ul className="list-unstyled">
                 {systemEls}
               </ul>
+            </Col>
+          </Row>
+          <Row className="mt-3">
+            <Col sm="12">
+              <h5>Teams:</h5>
+              <dl className="row">
+                {teamEls}
+              </dl>
             </Col>
           </Row>
           <Row className="mt-3">

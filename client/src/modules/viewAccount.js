@@ -15,6 +15,7 @@ const defaultState = {
       registries: [],
       namespaces: [],
       system: [],
+      teams: [],
     }
   },
   canEdit: false,

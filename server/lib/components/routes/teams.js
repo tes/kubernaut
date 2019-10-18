@@ -115,7 +115,7 @@ export default function(options = {}) {
 
     app.get('/api/teams/:id/teams', async (req, res, next) => {
       try {
-        if (! await store.hasPermission(req.user, 'teams-manage')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnTeam(req.user, req.params.id, 'teams-manage')) return next(Boom.forbidden());
         const data = await store.teamRolesForTeams(req.params.id, req.user);
         res.json(data);
       } catch (error) {
