@@ -5,6 +5,7 @@ import {
   makeIdentity,
   makeAccount,
   makeRegistry,
+  makeTeam,
   makeCluster,
   makeNamespace,
   makeRootMeta,
@@ -645,6 +646,131 @@ describe('Account Store', () => {
     });
   });
 
+  describe('Grant Role On Team', () => {
+
+    it('should grant a role on all teams to an account', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+
+      await grantSystemRole(saved.id, 'admin');
+      const account = await grantGlobalRole(saved.id, 'admin');
+      expect(account.id).toBeDefined();
+      expect(await store.hasPermissionOnTeam(saved, team.id, 'teams-manage')).toBe(true);
+    });
+
+    it('should grant a role on a single team to an account', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+
+      const account = await grantRoleOnTeam(saved.id, 'admin', team.id);
+      expect(account.id).toBeDefined();
+      expect(await store.hasPermissionOnTeam(saved, team.id, 'teams-manage')).toBe(true);
+    });
+
+    it('should fail if account does not exist', async () => {
+      const team = await saveTeam();
+
+      await expect(
+        grantRoleOnTeam(uuid(), 'admin', team.id)
+      ).rejects.toHaveProperty('code', '23503');
+    });
+
+    it('should fail if role does not exist', async () => {
+      const saved = await saveAccount();
+      const team = await saveTeam();
+
+      await expect(
+        grantRoleOnTeam(saved.id, 'missing', team.id)
+      ).rejects.toHaveProperty('message', 'Role name missing does not exist.');
+    });
+
+    it('should fail if team does not exist', async () => {
+      const saved = await saveAccount();
+      await expect(
+        grantRoleOnTeam(saved.id, 'admin', 'missing')
+      ).rejects.toHaveProperty('code', '22P02');
+    });
+
+    it('should fail if granting user does not have permission to grant', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        grantRoleOnTeam(saved.id, 'developer', team.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant team role developer')
+      });
+    });
+
+    it('should fail if granting user does not have permission to grant that role', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnTeam(saved.id, 'admin', team.id);
+      await expect(
+        grantRoleOnTeam(saved.id, 'admin', team.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot grant team role admin')
+      });
+    });
+
+  });
+
+  describe('Revoke Role On Team', () => {
+
+    it('should revoke role from account', async () => {
+      const saved = await saveAccount();
+      const team = await saveTeam();
+      await grantRoleOnTeam(saved.id, 'admin', team.id);
+      await revokeRoleOnTeam(saved.id, 'admin', team.id);
+
+      const accountRoles = await store.getRolesForAccount(saved.id, saved);
+      expect(accountRoles).toBeDefined();
+      expect(accountRoles.teams).toBeDefined();
+      expect(accountRoles.teams.length).toBe(0);
+    });
+
+    it('should tolerate previously revoked role', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+
+      const role = await grantRoleOnTeam(account.id, 'admin', team.id);
+      await revokeRoleOnTeam(role.id, 'admin', team.id);
+      await revokeRoleOnTeam(role.id, 'admin', team.id);
+    });
+
+    it('should fail if revoking user does not have permission to grant', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantRoleOnTeam(saved.id, 'developer', team.id);
+      await grantSystemRole(granting.id, 'developer');
+      await grantGlobalRole(granting.id, 'developer');
+      await expect(
+        revokeRoleOnTeam(saved.id, 'developer', team.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke team role developer')
+      });
+    });
+
+    it('should fail if revoking user does not have permission to revoke/grant that role', async () => {
+      const team = await saveTeam();
+      const saved = await saveAccount();
+      const granting = await saveAccount();
+      await grantSystemRole(granting.id, 'maintainer');
+      await grantGlobalRole(granting.id, 'maintainer');
+      await grantRoleOnTeam(saved.id, 'admin', team.id);
+      await expect(
+        revokeRoleOnTeam(saved.id, 'admin', team.id, makeMeta({ account: granting }))
+      ).rejects.toMatchObject({
+        message: expect.stringMatching('cannot revoke team role admin')
+      });
+    });
+  });
 
   describe('Namespace roles for a user', () => {
     it('collects role data as seen by global admin', async () => {
@@ -1124,6 +1250,14 @@ describe('Account Store', () => {
     return store.revokeRoleOnRegistry(accountId, roleName, registryId, meta);
   }
 
+  function grantRoleOnTeam(id, name, team, meta = makeRootMeta(), ) {
+    return store.grantRoleOnTeam(id, name, team, meta);
+  }
+
+  function revokeRoleOnTeam(accountId, roleName, teamId, meta = makeRootMeta(), ) {
+    return store.revokeRoleOnTeam(accountId, roleName, teamId, meta);
+  }
+
   function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
     return store.grantRoleOnNamespace(id, name, namespace, meta);
   }
@@ -1150,5 +1284,9 @@ describe('Account Store', () => {
         const namespace = makeNamespace({ cluster });
         return store.saveNamespace(namespace, makeRootMeta());
       });
+  }
+
+  async function saveTeam(team = makeTeam(), meta = makeRootMeta()) {
+    return store.getTeam(await store.saveTeam(team, meta));
   }
 });
