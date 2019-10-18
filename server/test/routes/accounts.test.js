@@ -769,4 +769,62 @@ describe('Accounts API', () => {
     });
   });
 
+  describe('DELETE /api/roles/team-membership', () => {
+
+    it('should add an account to a team', async () => {
+      const team = await store.getTeam(await store.saveTeam(makeTeam(), makeRootMeta()));
+      const saved = await store.saveAccount(makeAccount(), makeRootMeta());
+      await store.associateAccountWithTeam(saved, team, makeRootMeta());
+
+      const response = await request({
+        url: `/api/roles/team-membership`,
+        method: 'DELETE',
+        json: {
+          account: saved.id,
+          team: team.id,
+        },
+      });
+
+      expect(response.currentMembership).toBeDefined();
+      expect(response.currentMembership.length).toBe(0);
+      expect(response.noMembership).toBeDefined();
+    });
+
+    it('should reject payloads without an account', async () => {
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `/api/roles/team-membership`,
+        method: 'DELETE',
+        resolveWithFullResponse: true,
+        json: {
+          team: 'teamidabc',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('account is required');
+      });
+    });
+
+    it('should reject payloads without an team', async () => {
+      loggerOptions.suppress = true;
+
+      await request({
+        url: `/api/roles/team-membership`,
+        method: 'DELETE',
+        resolveWithFullResponse: true,
+        json: {
+          account: 'abc',
+        },
+      }).then(() => {
+        throw new Error('Should have failed with 400');
+      }).catch(errors.StatusCodeError, (reason) => {
+        expect(reason.response.statusCode).toBe(400);
+        expect(reason.response.body.message).toBe('team is required');
+      });
+    });
+  });
+
 });
