@@ -959,6 +959,107 @@ describe('Team store', () => {
     });
   });
 
+  describe('Team membership', () => {
+
+    it('Associates an account with a team', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+
+      await associateAccountWithTeam(account, { id: team });
+      const results = await membershipToTeams(account.id);
+      expect(results).toBeDefined();
+      expect(results.currentMembership).toBeDefined();
+      expect(results.currentMembership.length).toBe(1);
+      expect(results.currentMembership[0]).toMatchObject({
+        id: team,
+      });
+    });
+
+    it('Disassociates an account with a team', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+
+      await associateAccountWithTeam(account, { id: team });
+      await disassociateAccount(account, { id: team });
+      const results = await membershipToTeams(account.id);
+      expect(results).toBeDefined();
+      expect(results.currentMembership).toBeDefined();
+      expect(results.currentMembership.length).toBe(0);
+    });
+
+    it('An account inherits team system permissions', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+
+      await associateAccountWithTeam(account, { id: team });
+      expect(await store.hasPermission(account, 'client')).toBe(false);
+      await grantSystemRoleOnTeam(team, 'maintainer');
+      expect(await store.hasPermission(account, 'client')).toBe(true);
+    });
+
+    it('An Account inherits team global permissions', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+      const namespace = await saveNamespace();
+
+      await associateAccountWithTeam(account, { id: team });
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(false);
+      await grantSystemRoleOnTeam(team, 'maintainer');
+      await grantGlobalRoleOnTeam(team, 'maintainer');
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(true);
+    });
+
+    it('An account inherits team namespace permissions', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+      const namespace = await saveNamespace();
+
+      await associateAccountWithTeam(account, { id: team });
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(false);
+      await grantRoleOnNamespaceOnTeam(team, 'maintainer', namespace.id);
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(true);
+    });
+
+    it('An account inherits team registry permissions', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+      const registry = await saveRegistry();
+
+      await associateAccountWithTeam(account, { id: team });
+      expect(await store.hasPermissionOnRegistry(account, registry.id, 'registries-read')).toBe(false);
+      await grantRoleOnRegistryOnTeam(team, 'maintainer', registry.id);
+      expect(await store.hasPermissionOnRegistry(account, registry.id, 'registries-read')).toBe(true);
+    });
+
+    it('An account ineherits team "team" permissions', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+      const subjectTeam = await saveTeam();
+
+      await associateAccountWithTeam(account, { id: team });
+      expect(await store.hasPermissionOnTeam(account, subjectTeam, 'teams-manage')).toBe(false);
+      await grantRoleOnTeamForTeam(team, 'maintainer', subjectTeam);
+      expect(await store.hasPermissionOnTeam(account, subjectTeam, 'teams-manage')).toBe(true);
+    });
+
+    it('An account inherits permissions from multiple team memberships', async () => {
+      const account = await saveAccount();
+      const team = await saveTeam();
+      const team2 = await saveTeam();
+      const namespace = await saveNamespace();
+      const registry = await saveRegistry();
+
+      await associateAccountWithTeam(account, { id: team });
+      await associateAccountWithTeam(account, { id: team2 });
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(false);
+      expect(await store.hasPermissionOnRegistry(account, registry.id, 'registries-read')).toBe(false);
+      await grantRoleOnNamespaceOnTeam(team, 'maintainer', namespace.id);
+      await grantRoleOnRegistryOnTeam(team2, 'maintainer', registry.id);
+      expect(await store.hasPermissionOnNamespace(account, namespace.id, 'namespaces-read')).toBe(true);
+      expect(await store.hasPermissionOnRegistry(account, registry.id, 'registries-read')).toBe(true);
+    });
+  });
+
   function getTeam(team, account) {
     return store.getTeam(team, account);
   }
@@ -973,6 +1074,10 @@ describe('Team store', () => {
 
   function associateAccountWithTeam(account, team = makeTeam(), meta = makeRootMeta()) {
     return store.associateAccountWithTeam(account, team, meta);
+  }
+
+  function disassociateAccount(account, team = makeTeam(), meta = makeRootMeta()) {
+    return store.disassociateAccount(account, team, meta);
   }
 
   async function saveService(service = makeService(), meta = makeRootMeta()) {
@@ -1046,5 +1151,9 @@ describe('Team store', () => {
 
   function grantGlobalRole(accountId, roleName, meta = makeRootMeta()) {
     return store.grantGlobalRole(accountId, roleName, meta);
+  }
+
+  function membershipToTeams(accountId, currentUser) {
+    return store.membershipToTeams(accountId, currentUser || makeRootMeta().account);
   }
 });
