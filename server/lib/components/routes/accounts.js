@@ -76,6 +76,21 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/account/withPermission/:permission/on/:type', async (req, res, next) => {
+      try {
+          const { permission, type } = req.params;
+          if (!['team'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
+          const func = ({
+            team: store.teamsWithPermission,
+          })[type];
+
+          const answer = await func(req.user, permission);
+          return res.json(answer);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/accounts/:id', async (req, res, next) => {
       try {
         if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-read'))) return next(Boom.forbidden());

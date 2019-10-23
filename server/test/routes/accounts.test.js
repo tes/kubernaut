@@ -827,4 +827,19 @@ describe('Accounts API', () => {
     });
   });
 
+  describe('GET /api/account/hasPermission/:permission/on-any/:type', () => {
+
+    it('should get teams', async () => {
+      const team = await store.saveTeam(makeTeam(), makeRootMeta());
+
+      const response = await request({
+        url: `/api/account/hasPermission/teams-manage/on-any/team`,
+      });
+
+      expect(response).toBeDefined();
+      expect(response.length).toBe(1);
+      expect(response[0].id).toBe(team);
+    });
+  });
+
 });

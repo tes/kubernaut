@@ -1355,6 +1355,21 @@ export default function(options = {}) {
       });
     }
 
+    async function teamsWithPermission(user, permission) {
+      const builder = sqb
+        .select('t.id team_id', 't.name team_name')
+        .from('active_team__vw t')
+        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', user.id, permission)));
+
+      const results = await db.query(db.serialize(builder).sql);
+      if (!results.rowCount) return [];
+
+      return results.rows.map((row) => new Team({
+        id: row.team_id,
+        name: row.team_name,
+      }));
+    }
+
     function toAccount(row) {
       return new Account({
         id: row.id,
@@ -1401,6 +1416,7 @@ export default function(options = {}) {
       checkCanRevokeSystem,
       checkCanGrantGlobal,
       checkCanRevokeGlobal,
+      teamsWithPermission,
     });
   }
 
