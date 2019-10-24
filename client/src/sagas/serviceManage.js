@@ -1,4 +1,4 @@
-import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, call, put, select, take } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 import {
@@ -6,7 +6,8 @@ import {
   alterQuery,
   makeQueryString,
   parseQueryString,
- } from './lib/query';
+} from './lib/query';
+
 import {
   initServiceManage,
   updateServiceStatusForNamespace,
@@ -27,7 +28,14 @@ import {
   fetchTeamForService,
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
+  FETCH_TEAM_ERROR,
+  selectTeam,
+  setCanManageTeamForService,
+  setManageableTeams,
+  updateTeamOwnership,
+  selectServiceInfo,
 } from '../modules/serviceManage';
+
 import {
   getService,
   getServiceNamespacesStatus,
@@ -35,6 +43,10 @@ import {
   disableServiceForNamespace,
   getCanManageAnyNamespace,
   getTeamForService,
+  hasPermissionOn,
+  withPermission,
+  associateServiceWithTeam,
+  disassociateService,
 } from '../lib/api';
 
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
@@ -121,7 +133,43 @@ export function* fetchTeamForServiceSaga({ payload = {} }) {
     yield put(FETCH_TEAM_SUCCESS({ data }));
   } catch (error) {
     console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_TEAM_ERROR());
   }
+}
+
+export function* fetchTeamPermissionsSaga() {
+  try {
+    yield take(FETCH_TEAM_SUCCESS);
+    const team = yield select(selectTeam);
+    if (!team || !team.id) return;
+    const { answer } = yield call(hasPermissionOn, 'teams-manage', 'team', team.id);
+    yield put(setCanManageTeamForService(answer));
+
+    if (!answer) return;
+
+    const manageableTeams = yield call(withPermission, 'teams-manage', 'team');
+    yield put(setManageableTeams(manageableTeams));
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* updateTeamOwnershipSaga({ payload = {} }) {
+  const { value, ...options } = payload;
+  const { id: serviceId, registry, service } = yield select(selectServiceInfo);
+
+  try {
+    if (value) {
+      yield call(associateServiceWithTeam, serviceId, value);
+      yield put(fetchTeamForService({ registry, service }));
+    } else {
+      yield call(disassociateService, serviceId);
+      yield put(fetchTeamForService({ registry, service }));
+    }
+  } catch (error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
+
 }
 
 export default [
@@ -132,4 +180,6 @@ export default [
   takeEvery(fetchNamespacesPagination, paginationSaga),
   takeEvery(initServiceManage, locationChangeSaga),
   takeLatest(fetchTeamForService, fetchTeamForServiceSaga),
+  takeLatest(FETCH_TEAM_REQUEST, fetchTeamPermissionsSaga),
+  takeLatest(updateTeamOwnership, updateTeamOwnershipSaga),
 ];

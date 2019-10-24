@@ -57,6 +57,11 @@ export const hasPermissionOn = (permission, type, id) => {
   return makeRequest(url);
 };
 
+export const withPermission = (permission, type) => {
+  const url = `/api/account/withPermission/${permission}/on/${type}`;
+  return makeRequest(url);
+};
+
 
 export const getAccount = () => makeRequest('/api/account');
 
@@ -344,6 +349,16 @@ export const addTeamMembershipToAccount = (accountId, teamId) => {
   });
 };
 
+export const associateServiceWithTeam = (serviceId, teamId) => {
+  return makeRequest('/api/teams/association/service', {
+    method: 'POST',
+    body: JSON.stringify({
+      service: serviceId,
+      team: teamId,
+    }),
+  });
+};
+
 export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
   const qs = makeQueryString({
     offset,
@@ -354,6 +369,15 @@ export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit
   return makeRequest(url, {
     method: 'DELETE',
   }).then(computePagination);
+};
+
+export const disassociateService = (serviceId) => {
+  return makeRequest('/api/teams/association/service', {
+    method: 'DELETE',
+    body: JSON.stringify({
+      service: serviceId,
+    }),
+  });
 };
 
 export const editNamespace = (id, data, options = {}) => {

@@ -15,14 +15,22 @@ export const FETCH_SERVICE_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICE_
 export const FETCH_SERVICE_NAMESPACES_STATUS_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICE_NAMESPACES_STATUS_REQUEST`);
 export const FETCH_SERVICE_NAMESPACES_STATUS_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICE_NAMESPACES_STATUS_SUCCESS`);
 export const FETCH_SERVICE_NAMESPACES_STATUS_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICE_NAMESPACES_STATUS_ERROR`);
-
 export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQUEST`);
 export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
-
+export const FETCH_TEAM_ERROR = createAction(`${actionsPrefix}/FETCH_TEAM_ERROR`);
 export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR_SERVICE`);
+export const setCanManageTeamForService = createAction(`${actionsPrefix}/SET_CAN_MANAGE_TEAM_FOR_SERVICE`);
+export const setManageableTeams = createAction(`${actionsPrefix}/SET_MANAGEABLE_TEAMS`);
+export const updateTeamOwnership = createAction(`${actionsPrefix}/UPDATE_TEAM_OWNERSHIP`);
 
 export const selectNamespaces = (state) => (state.serviceManage.namespaces);
 export const selectPaginationState = (state) => (state.serviceManage.pagination);
+export const selectTeam = (state) => (state.serviceManage.team);
+export const selectServiceInfo = (state) => ({
+  id: state.serviceManage.id,
+  registry: state.serviceManage.registry,
+  service: state.serviceManage.serviceName,
+});
 
 const defaultState = {
   meta: {
@@ -31,6 +39,7 @@ const defaultState = {
         service: false,
         namespaces: false,
         canManage: false,
+        team: false,
       },
       loadingPercent: 100,
     },
@@ -47,11 +56,15 @@ const defaultState = {
     limit: 20,
   },
   canManage: false,
+  canManageTeamForService: false,
   initialValues: {},
   id: '',
+  registry: '',
+  serviceName: '',
   team: {
     name: '',
   },
+  manageableTeams: [],
 };
 
 export default handleActions({
@@ -72,6 +85,8 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'service', false),
     },
     id: data.id,
+    registry: data.registry.name,
+    serviceName: data.name,
   }),
   [FETCH_SERVICE_ERROR]: (state, { payload }) => ({
     ...state,
@@ -93,6 +108,7 @@ export default handleActions({
     ...state,
     namespaces: payload.data,
     initialValues: {
+      ...state.initialValues,
       namespaces: payload.data.items,
     },
     meta: {
@@ -112,6 +128,7 @@ export default handleActions({
     ...state,
     namespaces: payload.data,
     initialValues: {
+      ...state.initialValues,
       namespaces: payload.data.items,
     },
   }),
@@ -140,9 +157,39 @@ export default handleActions({
   [FETCH_TEAM_REQUEST]: (state) => ({
     ...state,
     team: defaultState.team,
+    canManageTeamForService: defaultState.canManageTeamForService,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', true),
+    },
   }),
   [FETCH_TEAM_SUCCESS]: (state, { payload }) => ({
     ...state,
     team: payload.data,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', false),
+    },
+  }),
+  [FETCH_TEAM_ERROR]: (state, { payload }) => ({
+    ...state,
+    team: defaultState.team,
+    canManageTeamForService: defaultState.canManageTeamForService,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', false),
+    },
+  }),
+  [setCanManageTeamForService]: (state, { payload }) => ({
+    ...state,
+    canManageTeamForService: payload,
+  }),
+  [setManageableTeams]: (state, { payload }) => ({
+    ...state,
+    manageableTeams: payload,
+    initialValues: {
+      ...state.initialValues,
+      team: state.team.id,
+    }
   }),
 }, defaultState);

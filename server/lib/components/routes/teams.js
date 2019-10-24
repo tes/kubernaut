@@ -40,6 +40,57 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/teams/association/service', bodyParser.json(), async (req, res, next) => {
+      try {
+        const  {
+          team: teamId,
+          service: serviceId,
+        } = req.body;
+
+        if (!teamId) return next(Boom.badRequest('team is required'));
+        if (!serviceId) return next(Boom.badRequest('service is required'));
+
+        const team = await store.getTeam(teamId);
+        if (!team) return next(Boom.notFound('team does not exist'));
+        const service = await store.getService(serviceId);
+        if (!service) return next(Boom.notFound('service does not exist'));
+
+        const currentTeam = store.getTeamForService(service, req.user);
+        if (currentTeam) {
+          if (! await store.hasPermissionOnTeam(req.user, currentTeam.id, 'teams-manage')) return next(Boom.forbidden());
+        }
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-manage')) return next(Boom.forbidden());
+
+        await store.associateServiceWithTeam(service, team);
+        return res.json(await store.getTeam(teamId));
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.delete('/api/teams/association/service', bodyParser.json(), async (req, res, next) => {
+      try {
+        const  {
+          service: serviceId,
+        } = req.body;
+
+        if (!serviceId) return next(Boom.badRequest('service is required'));
+
+        const service = await store.getService(serviceId);
+        if (!service) return next(Boom.notFound('service does not exist'));
+
+        const currentTeam = store.getTeamForService(service, req.user);
+        if (currentTeam) {
+          if (! await store.hasPermissionOnTeam(req.user, currentTeam.id, 'teams-manage')) return next(Boom.forbidden());
+        }
+
+        await store.disassociateService(service);
+        return res.json({});
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/teams/by-name/:name', async (req, res, next) => {
       try {
         const { name } = req.params;

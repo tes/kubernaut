@@ -11,6 +11,7 @@ import {
 import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
 import TablePagination from '../TablePagination';
+import RenderSelect from '../RenderSelect';
 import { NamespaceLink, ServiceSecretsForNamespaceLink, ServiceAttributesForNamespaceLink } from '../Links';
 
 const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, serviceName, registryName }) => fields.map((member, index) => {
@@ -57,7 +58,7 @@ const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, s
 class ServiceManagePage extends Component {
 
   render() {
-    const { meta } = this.props;
+    const { meta, updateTeamOwnership } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Container className="page-frame">
         <Row className="d-flex justify-content-center">
@@ -136,6 +137,24 @@ class ServiceManagePage extends Component {
                     });
                   }}
                   />
+              </Col>
+            </Row>
+          </Col>
+          <Col md="4">
+            <Row>
+              <Col>
+                <h6>Team ownership:</h6>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Field
+                  name="team"
+                  className="form-control"
+                  component={RenderSelect}
+                  options={this.props.manageableTeams.map(t => ({ value: t.id, display: t.name }))}
+                  onChange={(evt, newValue) => updateTeamOwnership({ value: newValue }) }
+                />
               </Col>
             </Row>
           </Col>
