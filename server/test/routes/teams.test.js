@@ -453,6 +453,49 @@ describe('Teams API', () => {
       });
     });
 
+    describe('POST /api/teams/association/service', () => {
+
+      it('should associate a service with a team', async () => {
+        const service = await saveService();
+        const team = await saveTeam();
+
+        const response = await request({
+          url: `/api/teams/association/service`,
+          method: 'POST',
+          json: {
+            team,
+            service: service.id
+          },
+        });
+
+        expect(response).toBeDefined();
+        expect(response.id).toBe(team);
+
+        expect((await store.getTeamForService(service)).id).toBe(team);
+      });
+    });
+
+    describe('DELETE /api/teams/association/service', () => {
+
+      it('should disassociates a service from a team', async () => {
+        const service = await saveService();
+        const team = await saveTeam();
+        await associateServiceWithTeam(service, { id: team });
+
+        const response = await request({
+          url: `/api/teams/association/service`,
+          method: 'DELETE',
+          json: {
+            service: service.id
+          },
+        });
+
+        expect(response).toBeDefined();
+
+        expect(await store.getTeamForService(service)).toBe(undefined);
+      });
+    });
+
   });
 
   function saveTeam(team = makeTeam(), meta = makeRootMeta()) {
