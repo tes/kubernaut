@@ -827,13 +827,13 @@ describe('Accounts API', () => {
     });
   });
 
-  describe('GET /api/account/hasPermission/:permission/on-any/:type', () => {
+  describe('GET /api/account/withPermission/:permission/on/:type', () => {
 
     it('should get teams', async () => {
       const team = await store.saveTeam(makeTeam(), makeRootMeta());
 
       const response = await request({
-        url: `/api/account/hasPermission/teams-manage/on-any/team`,
+        url: `/api/account/withPermission/teams-manage/on/team`,
       });
 
       expect(response).toBeDefined();
