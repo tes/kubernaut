@@ -200,7 +200,7 @@ class NamespacesRolesForm extends Component {
                 </Col>
               </Row>
               <Row>
-                <Col className="d-inline-flex">
+                <Col className="d-inline-flex flex-wrap">
                   {suggestedNamespaces.map((n) => (
                     <div className="mr-2" key={n.id}>
                       <NamespaceLink namespace={n} pill showCluster/>
