@@ -8,7 +8,7 @@ import TeamNamespacesRolesForm from '../TeamNamespacesRolesForm';
 import TeamRegistriesRolesForm from '../TeamRegistriesRolesForm';
 import TeamSystemRolesForm from '../TeamSystemRolesForm';
 
-class AccountEditPage extends Component {
+class TeamEditPage extends Component {
 
   render() {
     const {
@@ -73,9 +73,9 @@ class AccountEditPage extends Component {
   }
 }
 
-AccountEditPage.propTypes = {
+TeamEditPage.propTypes = {
   team: PropTypes.object.isRequired,
   meta: PropTypes.object.isRequired,
 };
 
-export default AccountEditPage;
+export default TeamEditPage;

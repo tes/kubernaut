@@ -17,6 +17,7 @@ export default connect((state) => {
     currentValues: formCurrentValues,
     currentRoles: state.editTeam.namespacesRoles.currentRoles,
     namespacesPossibleToAdd: state.editTeam.namespacesRoles.availableNamespaces,
+    suggestedNamespaces: state.editTeam.namespacesRoles.suggestedNamespaces,
     rolesGrantable: state.editTeam.namespacesRoles.rolesGrantable,
   };
 }, {

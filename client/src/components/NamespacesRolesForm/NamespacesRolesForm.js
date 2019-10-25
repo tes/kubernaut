@@ -10,6 +10,7 @@ import {
 } from 'reactstrap';
 import RenderSelect from '../RenderSelect';
 import Popover from '../Popover';
+import { NamespaceLink } from '../Links';
 
 const rolesDisplayMap = {
   'admin': 'Admin',
@@ -107,6 +108,7 @@ class NamespacesRolesForm extends Component {
       updateRolesForNamespace,
       addNewNamespace,
       deleteRolesForNamespace,
+      suggestedNamespaces = [],
     } = this.props;
 
     const namespaceSelectOptions = namespacesPossibleToAdd.map((namespace) => ({
@@ -190,6 +192,24 @@ class NamespacesRolesForm extends Component {
               </FormGroup>
             </Col>
           </Row>
+          { suggestedNamespaces.length ? <Row>
+            <Col md="9">
+              <Row>
+                <Col>
+                  <h6>This team has services which deploy to the following namespaces, you may wish to add at least 'Developer' permissions to enable team members to deploy those services to:</h6>
+                </Col>
+              </Row>
+              <Row>
+                <Col className="d-inline-flex">
+                  {suggestedNamespaces.map((n) => (
+                    <div className="mr-2" key={n.id}>
+                      <NamespaceLink namespace={n} pill showCluster/>
+                    </div>
+                  ))}
+                </Col>
+              </Row>
+            </Col>
+          </Row> : null }
         </form>
       </div>
     );
@@ -205,6 +225,7 @@ NamespacesRolesForm.propTypes = {
   updateRolesForNamespace: PropTypes.func.isRequired,
   deleteRolesForNamespace: PropTypes.func.isRequired,
   addNewNamespace: PropTypes.func.isRequired,
+  suggestedNamespaces: PropTypes.array,
 };
 
 export default NamespacesRolesForm;

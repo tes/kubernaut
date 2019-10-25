@@ -326,6 +326,22 @@ export default function(options) {
           ))
           .orderBy('c.priority', 'c.name', 'n.name');
 
+        const suggestedNamespacesBuilder = sqb
+          .select('n.id namespace_id', 'c.name cluster_name', 'c.id cluster_id', 'n.name namespace_name', 'n.color', 'c.color cluster_color')
+          .from('active_namespace__vw n')
+          .join(sqb.join('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))))
+          .where(Op.in('n.id', sqb.select('w.namespace_id').from(namespacesWithoutRolesBuilder.as('w'))))
+          .where(Op.in('n.id', sqb
+            .select('sn.namespace')
+            .from('service_namespace sn')
+            .where(Op.in('sn.service', sqb
+              .select('ts.service')
+              .from('team_service ts')
+              .where(Op.eq('ts.team', teamId))
+            ))
+          ))
+          .orderBy('c.priority', 'c.name', 'n.name');
+
         const rolesGrantablePerSubject = sqb // Grab ids + roles-array of whats grantable per subject
           .select('arn.subject id', raw('array_agg(distinct r2.name) roles'))
           .from('active_account_roles__vw arn')
@@ -387,6 +403,7 @@ export default function(options) {
 
         const currentRolesResult = await connection.query(db.serialize(appliedRolesBuilder, {}).sql);
         const namespacesWithoutRolesResult = await connection.query(db.serialize(namespacesWithoutRolesBuilder, {}).sql);
+        const suggestedNamespacesResult = await connection.query(db.serialize(suggestedNamespacesBuilder).sql);
         const rolesGrantable = await connection.query(db.serialize(rolesGrantableBuilder, {}).sql);
 
         return {
@@ -403,6 +420,18 @@ export default function(options) {
               id: row.namespace_id,
               name: row.namespace_name,
               cluster: new Cluster({ name: row.cluster_name }),
+            })
+          )),
+          suggestedNamespaces: suggestedNamespacesResult.rows.map(row => (
+            new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              color: row.color,
+              cluster: new Cluster({
+                id: row.cluster_id,
+                name: row.cluster_name,
+                color: row.cluster_color,
+              }),
             })
           )),
           rolesGrantable: rolesGrantable.rows,

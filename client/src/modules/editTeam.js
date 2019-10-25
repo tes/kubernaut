@@ -58,6 +58,7 @@ const defaultState = {
     initialValues: {},
     currentRoles: [],
     availableNamespaces: [],
+    suggestedNamespaces: [],
     rolesGrantable: [],
   },
   registriesRoles: {
@@ -125,6 +126,7 @@ export default handleActions({
         initialValues,
         currentRoles: data.currentRoles,
         availableNamespaces: data.namespacesWithoutRoles,
+        suggestedNamespaces: data.suggestedNamespaces,
         rolesGrantable: data.rolesGrantable,
       },
       meta: {
