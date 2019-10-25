@@ -1,4 +1,4 @@
-import { call, put, select } from 'redux-saga/effects';
+import { call, put, select, take } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 import {
@@ -9,6 +9,8 @@ import {
   locationChangeSaga,
   checkPermissionSaga,
   fetchTeamForServiceSaga,
+  fetchTeamPermissionsSaga,
+  updateTeamOwnershipSaga,
 } from '../serviceManage';
 
 import {
@@ -31,6 +33,11 @@ import {
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
   fetchTeamForService,
+  selectTeam,
+  setCanManageTeamForService,
+  setManageableTeams,
+  updateTeamOwnership,
+  selectServiceInfo,
 } from '../../modules/serviceManage';
 
 import {
@@ -40,6 +47,10 @@ import {
   disableServiceForNamespace,
   getCanManageAnyNamespace,
   getTeamForService,
+  hasPermissionOn,
+  withPermission,
+  associateServiceWithTeam,
+  disassociateService,
 } from '../../lib/api';
 
 describe('ServiceManageSagas', () => {
@@ -206,6 +217,60 @@ describe('ServiceManageSagas', () => {
       expect(gen.next().value).toMatchObject(put(FETCH_TEAM_REQUEST()));
       expect(gen.next().value).toMatchObject(call(getTeamForService, { registry, service}));
       expect(gen.next(team).value).toMatchObject(put(FETCH_TEAM_SUCCESS({ data: team })));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should fetch team permission and other manageable teams', () => {
+      const team = { id: 'abc' };
+      const manageable = [1,2,3];
+
+      const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
+      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
+      expect(gen.next().value).toMatchObject(select(selectTeam));
+      expect(gen.next(team).value).toMatchObject(call(hasPermissionOn, 'teams-manage', 'team', team.id));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeamForService(true)));
+      expect(gen.next().value).toMatchObject(call(withPermission, 'teams-manage', 'team'));
+      expect(gen.next(manageable).value).toMatchObject(put(setManageableTeams(manageable)));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should fetch team permission & stop if lacking permission on current services\' team', () => {
+      const team = { id: 'abc' };
+
+      const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
+      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
+      expect(gen.next().value).toMatchObject(select(selectTeam));
+      expect(gen.next(team).value).toMatchObject(call(hasPermissionOn, 'teams-manage', 'team', team.id));
+      expect(gen.next({ answer: false }).value).toMatchObject(put(setCanManageTeamForService(false)));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should update team ownership with new team', () => {
+      const serviceId = 'abc';
+      const registry = 'default';
+      const service = 'bob';
+      const newTeam = 'team-123';
+      const payload = { value: newTeam };
+
+      const gen = updateTeamOwnershipSaga(updateTeamOwnership(payload));
+      expect(gen.next().value).toMatchObject(select(selectServiceInfo));
+      expect(gen.next({ id: serviceId, registry, service }).value).toMatchObject(call(associateServiceWithTeam, serviceId, newTeam));
+      expect(gen.next().value).toMatchObject(put(fetchTeamForService({ registry, service })));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should update team ownership with no team association', () => {
+      const serviceId = 'abc';
+      const registry = 'default';
+      const service = 'bob';
+      const newTeam = '';
+      const payload = { value: newTeam };
+
+      const gen = updateTeamOwnershipSaga(updateTeamOwnership(payload));
+      expect(gen.next().value).toMatchObject(select(selectServiceInfo));
+      expect(gen.next({ id: serviceId, registry, service }).value).toMatchObject(call(disassociateService, serviceId));
+      expect(gen.next().value).toMatchObject(put(fetchTeamForService({ registry, service })));
+      expect(gen.next().done).toBe(true);
     });
   });
 });

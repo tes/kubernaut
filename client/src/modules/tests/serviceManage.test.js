@@ -11,6 +11,8 @@ import reduce, {
   setCanManage,
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
+  setCanManageTeamForService,
+  setManageableTeams,
 } from '../serviceManage';
 
 describe('ServiceManage reducer', () => {
@@ -29,10 +31,14 @@ describe('ServiceManage reducer', () => {
     const initialState = reduce(undefined, {});
     const serviceData = {
       id: '123',
+      registry: { name: 'abc' },
+      name: 'def',
     };
 
     const state = reduce(initialState, FETCH_SERVICE_SUCCESS({ data: serviceData }));
     expect(state.id).toBe(serviceData.id);
+    expect(state.registry).toBe(serviceData.registry.name);
+    expect(state.serviceName).toBe(serviceData.name);
     expect(state.meta).toMatchObject({ loading: { sections: { service: false } } });
   });
 
@@ -108,17 +114,29 @@ describe('ServiceManage reducer', () => {
     const initialState = {
       team: {
         name: 'bob',
-      }
+      },
+      meta: {
+        loading: {
+          sections: { team: false },
+        },
+      },
     };
 
     const state = reduce(initialState, FETCH_TEAM_REQUEST());
     expect(state.team).toMatchObject({
       name: '',
     });
+    expect(state.meta).toMatchObject({
+      loading: {
+        sections: {
+          team: true,
+        },
+      },
+    });
   });
 
   it('should set team state', () => {
-    const initialState = reduce({}, FETCH_TEAM_REQUEST());
+    const initialState = reduce(reduce({}, initServiceManage()), FETCH_TEAM_REQUEST());
     const team = {
       name: 'abc',
       services: [{ a: 1 }],
@@ -129,5 +147,18 @@ describe('ServiceManage reducer', () => {
       name: team.name,
       services: team.services,
     });
+    expect(state.meta.loading.sections.team).toBe(false);
+  });
+
+  it('should set canManageTeamForService in state', () => {
+    const state = reduce(undefined, setCanManageTeamForService(true));
+    expect(state.canManageTeamForService).toBe(true);
+  });
+
+  it('should update when manageable teams are set', () => {
+    const data = [1,2,3];
+    const state = reduce({ team: { id: 'abc' } }, setManageableTeams(data));
+    expect(state.manageableTeams).toMatchObject(data);
+    expect(state.initialValues.team).toBe('abc');
   });
 });
