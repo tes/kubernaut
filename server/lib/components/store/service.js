@@ -104,6 +104,18 @@ export default function(options) {
         [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.in('sr.id', idsQuery)));
       }
 
+      if (criteria.team) {
+        const teamServicesBuilder = sqb
+          .select('s.id')
+          .from('active_team__vw t', 'team_service ts', 'active_service__vw s')
+          .where(Op.eq('t.id', raw('ts.team')))
+          .where(Op.eq('ts.service', raw('s.id')))
+          .where(Op.eq('t.id', criteria.team.id))
+          .orderBy('s.name');
+
+        [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.in('s.id', teamServicesBuilder)));
+      }
+
       return db.withTransaction(async connection => {
         const findStatement = db.serialize(findServicesBuilder, bindVariables);
         const countStatement = db.serialize(countServicesBuilder, bindVariables);

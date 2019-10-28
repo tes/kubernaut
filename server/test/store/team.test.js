@@ -73,16 +73,17 @@ describe('Team store', () => {
     it('associates a service with a team', async () => {
       const service = await saveService(makeService({ name: 'app-1' }));
       const service2 = await saveService(makeService({ name: 'app-2' }));
+      await saveService(makeService({ name: 'not-associated' }));
       const team = await store.getTeam(await saveTeam());
 
       await associateServiceWithTeam(service, team);
       await associateServiceWithTeam(service2, team);
 
-      const result = await store.getTeam(team.id);
+      const result = await store.findServices({ team });
+
       expect(result).toBeDefined();
-      expect(result.services).toBeDefined();
-      expect(result.services.length).toBe(2);
-      expect(result.services).toMatchObject([
+      expect(result.count).toBe(2);
+      expect(result.items).toMatchObject([
         {
           name: 'app-1'
         },
@@ -101,8 +102,8 @@ describe('Team store', () => {
       await associateServiceWithTeam(service, team);
       await associateServiceWithTeam(service2, team);
 
-      const result = await store.getTeam(team.id);
-      expect(result.services).toMatchObject([
+      const result = await store.findServices({ team });
+      expect(result.items).toMatchObject([
         {
           name: 'app-1'
         },
@@ -112,17 +113,17 @@ describe('Team store', () => {
       ]);
 
       await associateServiceWithTeam(service2, team2);
-      const results = [await store.getTeam(team.id), await store.getTeam(team2.id)];
+      const results = [await store.findServices({ team }), await store.findServices({ team: team2 })];
       expect(results[0]).toBeDefined();
-      expect(results[0].services.length).toBe(1);
-      expect(results[0].services).toMatchObject([
+      expect(results[0].count).toBe(1);
+      expect(results[0].items).toMatchObject([
         {
           name: 'app-1'
         }
       ]);
       expect(results[1]).toBeDefined();
-      expect(results[1].services.length).toBe(1);
-      expect(results[1].services).toMatchObject([
+      expect(results[1].count).toBe(1);
+      expect(results[1].items).toMatchObject([
         {
           name: 'app-2'
         }
@@ -134,10 +135,10 @@ describe('Team store', () => {
       const team = await store.getTeam(await saveTeam());
 
       await associateServiceWithTeam(service, team);
-      expect((await store.getTeam(team.id)).services.length).toBe(1);
+      expect((await store.findServices({ team })).count).toBe(1);
 
       await store.disassociateService(service);
-      expect((await store.getTeam(team.id)).services.length).toBe(0);
+      expect((await store.findServices({ team })).count).toBe(0);
     });
 
     it('retrieves a team for a given service that it is associated with it', async () => {
@@ -1060,8 +1061,8 @@ describe('Team store', () => {
     });
   });
 
-  function getTeam(team, account) {
-    return store.getTeam(team, account);
+  function getTeam(team) {
+    return store.getTeam(team);
   }
 
   function saveTeam(team = makeTeam(), meta = makeRootMeta()) {

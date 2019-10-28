@@ -14,15 +14,15 @@ const { Op, raw, innerJoin } = sqb;
 export default function(options) {
   function start({ config, logger, db, authz }, cb) {
 
-    function getTeam(id, user) {
+    function getTeam(id) {
       logger.debug(`Getting team by id ${id}`);
 
       return db.withTransaction(connection => {
-        return _getTeam(connection, id, user);
+        return _getTeam(connection, id);
       });
     }
 
-    async function _getTeam(connection, id, user) {
+    async function _getTeam(connection, id) {
       logger.debug(`Getting team by id ${id}`);
 
       const teamBuilder = sqb
@@ -37,32 +37,16 @@ export default function(options) {
         .where(Op.eq('ta.team', raw('t.id')))
         .where(Op.eq('ta.team', id));
 
-
-      const servicesBuilder = sqb
-        .select('s.id service_id', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name')
-        .from('active_team__vw t', 'team_service ts', 'active_service__vw s', 'active_registry__vw sr')
-        .where(Op.eq('t.id', raw('ts.team')))
-        .where(Op.eq('ts.service', raw('s.id')))
-        .where(Op.eq('s.registry', raw('sr.id')))
-        .where(Op.eq('t.id', id))
-        .orderBy('s.name');
-
-      if (user) {
-        const idsQuery = authz.querySubjectIdsWithPermission('registry', user.id, user.permission);
-        servicesBuilder.where(Op.in('sr.id', idsQuery));
-      }
-
-      const [teamResult, attrsResult, servicesResult] = await Promise.all([
+      const [teamResult, attrsResult] = await Promise.all([
         connection.query(db.serialize(teamBuilder, {}).sql),
         connection.query(db.serialize(attributeBuilder, {}).sql),
-        connection.query(db.serialize(servicesBuilder, {}).sql),
       ]);
 
       logger.debug(`Found ${teamResult.rowCount} teams with id: ${id}`);
-      return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows, servicesResult.rows) : undefined;
+      return teamResult.rowCount ? toTeam(teamResult.rows[0], attrsResult.rows) : undefined;
     }
 
-    function getTeamForService(service, user) {
+    function getTeamForService(service) {
       logger.debug(`Getting team for service ${service.name} ${service.id}`);
 
       const builder = sqb
@@ -74,7 +58,7 @@ export default function(options) {
         const teamResult = await connection.query(db.serialize(builder, {}).sql);
         if (!teamResult.rowCount) return undefined;
 
-        return _getTeam(connection, teamResult.rows[0].team, user);
+        return _getTeam(connection, teamResult.rows[0].team);
       });
     }
 

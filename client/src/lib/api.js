@@ -217,6 +217,9 @@ export const getTeamRolesForTeams = (teamId) => {
   return makeRequest(url);
 };
 
+export const getTeamServices = ({ offset, limit, teamId }) =>
+  makeRequest(`/api/teams/${teamId}/services?${makeQueryString({ offset, limit })}`).then(computePagination);
+
 export const getTeamSystemRoles = (teamId) => {
   const url = `/api/teams/${teamId}/system`;
   return makeRequest(url);

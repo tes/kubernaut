@@ -28,13 +28,37 @@ export default function(options = {}) {
     app.get('/api/teams/:id', async (req, res, next) => {
       try {
         const { id } = req.params;
-        const team = await store.getTeam(id, { id: req.user.id, permission: 'registries-read'});
+        const team = await store.getTeam(id);
         if (!team) return next(Boom.notFound());
         if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed team', { team });
         return res.json(team);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/teams/:id/services', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const team = await store.getTeam(id);
+        if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+
+        const criteria = {
+          user: { id: req.user.id, permission: 'registries-read' },
+          team
+        };
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findServices(criteria, limit, offset);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed team services', { team });
+        return res.json(result);
       } catch (err) {
         next(err);
       }
@@ -55,7 +79,7 @@ export default function(options = {}) {
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound('service does not exist'));
 
-        const currentTeam = store.getTeamForService(service, req.user);
+        const currentTeam = store.getTeamForService(service);
         if (currentTeam) {
           if (! await store.hasPermissionOnTeam(req.user, currentTeam.id, 'teams-manage')) return next(Boom.forbidden());
         }
@@ -79,7 +103,7 @@ export default function(options = {}) {
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound('service does not exist'));
 
-        const currentTeam = store.getTeamForService(service, req.user);
+        const currentTeam = store.getTeamForService(service);
         if (currentTeam) {
           if (! await store.hasPermissionOnTeam(req.user, currentTeam.id, 'teams-manage')) return next(Boom.forbidden());
         }
@@ -101,11 +125,10 @@ export default function(options = {}) {
         const team = await store.findTeam(criteria);
         if (!team) return next(Boom.notFound());
         if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
-        const teamWithServices = await store.getTeam(team.id, { id: req.user.id, permission: 'registries-read'});
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed team', { team });
-        return res.json(teamWithServices);
+        return res.json(team);
       } catch (err) {
         next(err);
       }

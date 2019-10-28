@@ -15,11 +15,10 @@ export default function(options = {}) {
       account: store.getAccount, // getAccount(id)
       cluster: store.getCluster, // getCluster
       registry: store.getRegistry, // getRegistry(id)
-      team: store.getTeam, // getTeam(id, user)
+      team: store.getTeam, // getTeam(id)
     };
     const getAuditTypeStoreFunc = (type, id, meta) => {
       if (type === 'secretVersion') return auditTypeStoreLookup[type](id, meta);
-      if (type === 'team') return auditTypeStoreLookup[type](id, { user: meta.account, permission: 'registries-read'});
       return auditTypeStoreLookup[type](id);
     };
     async function tagAudits(audits, meta) {
