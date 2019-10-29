@@ -202,6 +202,9 @@ export const getTeamByName = (name) => makeRequest(`/api/teams/by-name/${name}`)
 
 export const getTeamForService = ({ registry, service }) => makeRequest(`/api/teams/for/${registry}/${service}`);
 
+export const getTeamMembers = ({ offset, limit, teamId }) =>
+  makeRequest(`/api/teams/${teamId}/members?${makeQueryString({ offset, limit })}`).then(computePagination);
+
 export const getTeamRolesForNamespaces = (teamId) => {
   const url = `/api/teams/${teamId}/namespaces`;
   return makeRequest(url);

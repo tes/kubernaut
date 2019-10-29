@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Table, Progress } from 'reactstrap';
 import Title from '../Title';
-import { RegistryLink, ServiceLink } from '../Links';
+import { RegistryLink, ServiceLink, AccountLink } from '../Links';
 import { TeamSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 
@@ -10,7 +10,7 @@ class TeamPage extends Component {
 
   render() {
     const team = this.props.team.data;
-    const { services, meta } = this.props;
+    const { services, members, meta } = this.props;
 
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -76,6 +76,39 @@ class TeamPage extends Component {
                     page={services.data.page}
                     limit={services.data.limit}
                     fetchContent={this.props.fetchServicesPagination}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col md="6">
+              <Row>
+                <Col>
+                  <h5>Members:</h5>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Table hover size="sm">
+                    <thead>
+                      <tr>
+                      <th>Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {
+                      members.data.items.map(account => (
+                        <tr key={account.id}>
+                          <td><AccountLink account={account} /></td>
+                        </tr>
+                      ))
+                    }
+                    </tbody>
+                  </Table>
+                  <TablePagination
+                    pages={members.data.pages}
+                    page={members.data.page}
+                    limit={members.data.limit}
+                    fetchContent={this.props.fetchMembersPagination}
                   />
                 </Col>
               </Row>

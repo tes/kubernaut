@@ -180,6 +180,18 @@ export default function(options = {}) {
         }
       }
 
+      if (criteria.team) {
+        const teamAccountsBuilder = sqb
+          .select('a.id')
+          .from('active_team__vw t', 'active_team_account__vw ta', 'active_account__vw a')
+          .where(Op.eq('t.id', raw('ta.team')))
+          .where(Op.eq('ta.account', raw('a.id')))
+          .where(Op.eq('t.id', criteria.team.id))
+          .orderBy('a.display_name');
+
+        [findAccountsBuilder, countAccountsBuilder].forEach(builder => builder.where(Op.in('a.id', teamAccountsBuilder)));
+      }
+
       const findAccountsStatement = db.serialize(findAccountsBuilder, bindVariables);
       const countAccountsStatement = db.serialize(countAccountsBuilder, bindVariables);
 

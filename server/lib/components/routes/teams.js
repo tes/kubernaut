@@ -64,6 +64,30 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/teams/:id/members', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+        const { id } = req.params;
+        const team = await store.getTeam(id);
+        if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+
+        const criteria = {
+          team
+        };
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findAccounts(criteria, limit, offset);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed team members', { team });
+        return res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/teams/association/service', bodyParser.json(), async (req, res, next) => {
       try {
         const  {
