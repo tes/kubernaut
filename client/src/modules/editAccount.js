@@ -35,13 +35,19 @@ export const UPDATE_ROLE_FOR_SYSTEM_SUCCESS = createAction(`${actionsPrefix}/UPD
 export const UPDATE_ROLE_FOR_TEAM_SUCCESS = createAction(`${actionsPrefix}/UPDATE_ROLE_FOR_TEAM_SUCCESS`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const setCanManageTeam = createAction(`${actionsPrefix}/SET_CAN_MANAGE_TEAM`);
+export const setCanDelete = createAction(`${actionsPrefix}/SET_CAN_DELETE`);
+export const openDeleteModal = createAction(`${actionsPrefix}/OPEN_DELETE_MODAL`);
+export const closeDeleteModal = createAction(`${actionsPrefix}/CLOSE_DELETE_MODAL`);
+export const deleteAccount = createAction(`${actionsPrefix}/DELETE_ACCOUNT`);
 
 export const selectAccount = (state) => (state.editAccount.account);
 
 const defaultState = {
   account: {},
   canEdit: false,
+  canDelete: false,
   canManageTeam: false,
+  deleteModalOpen: false,
   meta: {
     loading: {
       sections: {
@@ -252,5 +258,17 @@ export default handleActions({
   [setCanManageTeam]: (state, { payload }) => ({
     ...state,
     canManageTeam: payload,
+  }),
+  [setCanDelete]: (state, { payload }) => ({
+    ...state,
+    canDelete: payload,
+  }),
+  [openDeleteModal]: (state) => ({
+    ...state,
+    deleteModalOpen: true,
+  }),
+  [closeDeleteModal]: (state) => ({
+    ...state,
+    deleteModalOpen: false,
   }),
 }, defaultState);

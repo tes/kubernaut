@@ -38,6 +38,7 @@ const makeRequest = async (url, options = {}) => {
     if (serverError) toThrow.data = serverError;
     throw toThrow;
   }
+  if (res.status === 204) return;
   return await res.json();
 };
 
@@ -228,6 +229,7 @@ export const getTeamSystemRoles = (teamId) => {
   return makeRequest(url);
 };
 
+
 export const addGlobalRole = (accountId, role, options = {}) => {
   const url = '/api/roles/global';
   return makeRequest(url, {
@@ -362,6 +364,12 @@ export const associateServiceWithTeam = (serviceId, teamId) => {
       service: serviceId,
       team: teamId,
     }),
+  });
+};
+
+export const deleteAccount = (accountId) => {
+  return makeRequest(`/api/accounts/${accountId}`, {
+    method: 'DELETE'
   });
 };
 

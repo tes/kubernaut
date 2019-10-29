@@ -121,7 +121,7 @@ export default function(options = {}) {
 
     app.delete('/api/accounts/:id', async (req, res, next) => {
       try {
-        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-write'))) return next(Boom.forbidden());
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-delete'))) return next(Boom.forbidden());
         const account = await store.getAccount(req.params.id);
         if (!account) return next();
         const meta = { date: new Date(), account: { id: req.user.id } };

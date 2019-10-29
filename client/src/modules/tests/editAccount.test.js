@@ -18,6 +18,7 @@ import reduce, {
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   setCanEdit,
+  setCanDelete,
 } from '../editAccount';
 
 describe('editAccount Reducer', () => {
@@ -261,5 +262,10 @@ describe('editAccount Reducer', () => {
   it('should set canEdit state', () => {
     const state = reduce(undefined, setCanEdit(true));
     expect(state.canEdit).toBe(true);
+  });
+
+  it('should set canDelete state', () => {
+    const state = reduce(undefined, setCanDelete(true));
+    expect(state.canDelete).toBe(true);
   });
 });

@@ -1,8 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Progress } from 'reactstrap';
+import {
+  Row,
+  Col,
+  Progress,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+} from 'reactstrap';
 import Title from '../Title';
-import { AccountsSubNav } from '../SubNavs';
+import {
+  AccountsSubNav,
+} from '../SubNavs';
 import AccountTeamsRolesForm from '../AccountTeamsRolesForm';
 import AccountNamespacesRolesForm from '../AccountNamespacesRolesForm';
 import AccountRegistriesRolesForm from '../AccountRegistriesRolesForm';
@@ -39,8 +49,38 @@ class AccountEditPage extends Component {
           <Title title={`Edit account: ${account.displayName}`} />
           <AccountsSubNav account={account} canEdit={this.props.canEdit} canManageTeam={this.props.canManageTeam} />
           <Row>
-            <Col>
+            <Col xs={{ size: 'auto' }} className="mr-auto">
               <p><strong>Created:</strong> {account.createdOn}</p>
+            </Col>
+            <Col xs={{ size: 'auto' }}>
+              {
+                this.props.canDelete ? (
+                  <Button onClick={() => this.props.openDeleteModal()} color="danger" outline>Delete account</Button>
+                ) : null
+              }
+              {
+                this.props.canDelete ? (
+                  <Modal
+                    isOpen={this.props.deleteModalOpen}
+                    toggle={this.props.closeDeleteModal}
+                    size="md"
+                  >
+                    <ModalHeader>
+                      Delete account: {account.displayName}
+                    </ModalHeader>
+                    <ModalBody>
+                      <Row>
+                        <Col>
+                          <p>Are your sure you want to delete this account?</p>
+                        </Col>
+                        <Col>
+                          <Button onClick={() => this.props.deleteAccount({ id: account.id })} color="danger" outline>Delete</Button>
+                        </Col>
+                      </Row>
+                    </ModalBody>
+                  </Modal>
+                ) : null
+              }
             </Col>
           </Row>
           <Row className="mt-1">

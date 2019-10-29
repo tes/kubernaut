@@ -1,5 +1,6 @@
 import { call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit, reset } from 'redux-form';
+import { push } from 'connected-react-router';
 
 import {
   fetchAccountInfoSaga,
@@ -19,6 +20,7 @@ import {
   fetchSystemRolesSaga,
   updateSystemRoleSaga,
   updateGlobalRoleSaga,
+  deleteAccountSaga,
 } from '../editAccount';
 
 import {
@@ -55,7 +57,9 @@ import {
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   UPDATE_ROLE_FOR_TEAM_SUCCESS,
   setCanEdit,
+  setCanDelete,
   setCanManageTeam,
+  deleteAccount,
 } from '../../modules/editAccount';
 
 import {
@@ -76,6 +80,7 @@ import {
   getAccountRolesForTeams,
   addRoleForTeam,
   removeRoleForTeam,
+  deleteAccount as deleteAccountRequest,
 } from '../../lib/api';
 
 const quietOptions = { quiet: true };
@@ -627,10 +632,21 @@ describe('editAccount sagas', () => {
     });
   });
 
+  describe('deleteAccountSaga', () => {
+    it('should delete an account', () => {
+      const gen = deleteAccountSaga(deleteAccount({ id: 'abc' }));
+      expect(gen.next().value).toMatchObject(call(deleteAccountRequest, 'abc'));
+      expect(gen.next().value).toMatchObject(put(push('/accounts')));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
   it('should check permission', () => {
     const gen = checkPermissionSaga(fetchAccountInfo());
     expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-write'));
     expect(gen.next({ answer: true }).value).toMatchObject(put(setCanEdit(true)));
+    expect(gen.next().value).toMatchObject(call(hasPermission, 'accounts-delete'));
+    expect(gen.next({ answer: true }).value).toMatchObject(put(setCanDelete(true)));
     expect(gen.next().value).toMatchObject(call(getCanManageAnyTeam));
     expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeam(true)));
     expect(gen.next().done).toBe(true);

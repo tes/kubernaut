@@ -1,5 +1,6 @@
 import { takeEvery, takeLatest, call, put, select } from 'redux-saga/effects';
 import { startSubmit, stopSubmit, reset, formValueSelector } from 'redux-form';
+import { push } from 'connected-react-router';
 
 import {
   fetchAccountInfo,
@@ -16,7 +17,9 @@ import {
   addNewRegistry,
   selectAccount,
   setCanEdit,
+  setCanDelete,
   setCanManageTeam,
+  deleteAccount,
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
@@ -56,6 +59,7 @@ import {
   addGlobalRole,
   removeGlobalRole,
   getCanManageAnyTeam,
+  deleteAccount as deleteAccountRequest
 } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
@@ -314,10 +318,23 @@ export function* checkPermissionSaga({ payload = {}}) {
   try {
     const editResult = yield call(hasPermission, 'accounts-write');
     yield put(setCanEdit(editResult.answer));
+    const deleteResult = yield call(hasPermission, 'accounts-delete');
+    yield put(setCanDelete(deleteResult.answer));
     const manageTeamResult = yield call(getCanManageAnyTeam);
     yield put(setCanManageTeam(manageTeamResult.answer));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* deleteAccountSaga({ payload = {} }) {
+  const { id, ...options } = payload;
+  try {
+    if (!id) return;
+    yield call(deleteAccountRequest, id);
+    yield put(push('/accounts'));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }
 }
 
@@ -339,4 +356,5 @@ export default [
   takeEvery(deleteRolesForTeam, deleteRolesForTeamSaga),
   takeEvery(updateSystemRole, updateSystemRoleSaga),
   takeEvery(updateGlobalRole, updateGlobalRoleSaga),
+  takeLatest(deleteAccount, deleteAccountSaga),
 ];
