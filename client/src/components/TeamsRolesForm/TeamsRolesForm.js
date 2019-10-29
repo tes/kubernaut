@@ -25,7 +25,7 @@ const help = {
   },
   maintainer: {
     title: 'Team \'maintainer\' role',
-    body: 'Grants management capacity over a team.',
+    body: 'Grants management capacity over a team. (Service association & account membership)',
   },
   developer: {
     title: 'Team \'developer\' role',
