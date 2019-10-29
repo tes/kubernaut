@@ -60,6 +60,7 @@ import {
   setCanDelete,
   setCanManageTeam,
   deleteAccount,
+  closeDeleteModal,
 } from '../../modules/editAccount';
 
 import {
@@ -636,6 +637,7 @@ describe('editAccount sagas', () => {
     it('should delete an account', () => {
       const gen = deleteAccountSaga(deleteAccount({ id: 'abc' }));
       expect(gen.next().value).toMatchObject(call(deleteAccountRequest, 'abc'));
+      expect(gen.next().value).toMatchObject(put(closeDeleteModal()));
       expect(gen.next().value).toMatchObject(put(push('/accounts')));
       expect(gen.next().done).toBe(true);
     });

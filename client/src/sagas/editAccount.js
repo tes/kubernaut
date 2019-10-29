@@ -39,6 +39,7 @@ import {
   UPDATE_ROLE_FOR_REGISTRY_SUCCESS,
   UPDATE_ROLE_FOR_SYSTEM_SUCCESS,
   UPDATE_ROLE_FOR_TEAM_SUCCESS,
+  closeDeleteModal,
 } from '../modules/editAccount';
 
 import {
@@ -332,6 +333,7 @@ export function* deleteAccountSaga({ payload = {} }) {
   try {
     if (!id) return;
     yield call(deleteAccountRequest, id);
+    yield put(closeDeleteModal());
     yield put(push('/accounts'));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
