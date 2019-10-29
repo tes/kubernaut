@@ -10,6 +10,7 @@ import ServiceManagePage from './ServiceManagePage';
 
 export default connect(({ serviceManage, account }, { registryName, serviceName }) => ({
   canManage: serviceManage.canManage,
+  canManageTeamForService: serviceManage.canManageTeamForService,
   meta: serviceManage.meta,
   initialValues: serviceManage.initialValues,
   registryName,

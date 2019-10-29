@@ -140,24 +140,26 @@ class ServiceManagePage extends Component {
               </Col>
             </Row>
           </Col>
-          <Col md="4">
-            <Row>
-              <Col>
-                <h6>Team ownership:</h6>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <Field
-                  name="team"
-                  className="form-control"
-                  component={RenderSelect}
-                  options={this.props.manageableTeams.map(t => ({ value: t.id, display: t.name }))}
-                  onChange={(evt, newValue) => updateTeamOwnership({ value: newValue }) }
-                />
-              </Col>
-            </Row>
-          </Col>
+          { this.props.canManageTeamForService ? (
+            <Col md="4">
+              <Row>
+                <Col>
+                  <h6>Team ownership:</h6>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Field
+                    name="team"
+                    className="form-control"
+                    component={RenderSelect}
+                    options={this.props.manageableTeams.map(t => ({ value: t.id, display: t.name }))}
+                    onChange={(evt, newValue) => updateTeamOwnership({ value: newValue }) }
+                  />
+                </Col>
+              </Row>
+            </Col>
+          ) : null}
         </Row>
       </Container>
     );

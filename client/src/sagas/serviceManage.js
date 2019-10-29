@@ -1,4 +1,4 @@
-import { takeEvery, takeLatest, call, put, select, take } from 'redux-saga/effects';
+import { takeEvery, takeLatest, call, put, select, take, race } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 import {
@@ -47,6 +47,7 @@ import {
   withPermission,
   associateServiceWithTeam,
   disassociateService,
+  getCanManageAnyTeam,
 } from '../lib/api';
 
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
@@ -139,16 +140,29 @@ export function* fetchTeamForServiceSaga({ payload = {} }) {
 
 export function* fetchTeamPermissionsSaga() {
   try {
-    yield take(FETCH_TEAM_SUCCESS);
-    const team = yield select(selectTeam);
-    if (!team || !team.id) return;
-    const { answer } = yield call(hasPermissionOn, 'teams-manage', 'team', team.id);
-    yield put(setCanManageTeamForService(answer));
+    const result = yield race({
+      success: take(FETCH_TEAM_SUCCESS),
+      failure: take(FETCH_TEAM_ERROR),
+    });
 
-    if (!answer) return;
+    if (result.success) {
+      // Service has a team: check user can manage _that_ team, if not, no point providing options.
+      const team = yield select(selectTeam);
+      const { answer } = yield call(hasPermissionOn, 'teams-manage', 'team', team.id);
+      yield put(setCanManageTeamForService(answer));
+      if (!answer) return;
 
-    const manageableTeams = yield call(withPermission, 'teams-manage', 'team');
-    yield put(setManageableTeams(manageableTeams));
+      const manageableTeams = yield call(withPermission, 'teams-manage', 'team');
+      yield put(setManageableTeams(manageableTeams));
+    } else if (result.failure) {
+      // Service has _no_ team, therefore it only matters if the user can manage _any_ team.
+      const { answer } = yield call(getCanManageAnyTeam);
+      yield put(setCanManageTeamForService(answer));
+      if (!answer) return;
+
+      const manageableTeams = yield call(withPermission, 'teams-manage', 'team');
+      yield put(setManageableTeams(manageableTeams));
+    }
   } catch (error) {
     console.error(error); // eslint-disable-line no-console
   }

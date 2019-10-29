@@ -1,4 +1,4 @@
-import { call, put, select, take } from 'redux-saga/effects';
+import { call, put, select, take, race } from 'redux-saga/effects';
 import { startSubmit, stopSubmit } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 import {
@@ -32,6 +32,7 @@ import {
   setCanManage,
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
+  FETCH_TEAM_ERROR,
   fetchTeamForService,
   selectTeam,
   setCanManageTeamForService,
@@ -51,6 +52,7 @@ import {
   withPermission,
   associateServiceWithTeam,
   disassociateService,
+  getCanManageAnyTeam,
 } from '../../lib/api';
 
 describe('ServiceManageSagas', () => {
@@ -220,13 +222,16 @@ describe('ServiceManageSagas', () => {
       expect(gen.next().done).toBe(true);
     });
 
-    it('should fetch team permission and other manageable teams', () => {
+    it('should fetch team permission and other manageable teams (when service has a team)', () => {
       const team = { id: 'abc' };
       const manageable = [1,2,3];
 
       const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
-      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
-      expect(gen.next().value).toMatchObject(select(selectTeam));
+      expect(gen.next().value).toMatchObject(race({
+        success: take(FETCH_TEAM_SUCCESS),
+        failure: take(FETCH_TEAM_ERROR),
+      }));
+      expect(gen.next({ success: {} }).value).toMatchObject(select(selectTeam));
       expect(gen.next(team).value).toMatchObject(call(hasPermissionOn, 'teams-manage', 'team', team.id));
       expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeamForService(true)));
       expect(gen.next().value).toMatchObject(call(withPermission, 'teams-manage', 'team'));
@@ -234,13 +239,42 @@ describe('ServiceManageSagas', () => {
       expect(gen.next().done).toBe(true);
     });
 
-    it('should fetch team permission & stop if lacking permission on current services\' team', () => {
+    it('should fetch team permission & stop if lacking permission on current services\' team (when service has a team)', () => {
       const team = { id: 'abc' };
 
       const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
-      expect(gen.next().value).toMatchObject(take(FETCH_TEAM_SUCCESS));
-      expect(gen.next().value).toMatchObject(select(selectTeam));
+      expect(gen.next().value).toMatchObject(race({
+        success: take(FETCH_TEAM_SUCCESS),
+        failure: take(FETCH_TEAM_ERROR),
+      }));
+      expect(gen.next({ success: {} }).value).toMatchObject(select(selectTeam));
       expect(gen.next(team).value).toMatchObject(call(hasPermissionOn, 'teams-manage', 'team', team.id));
+      expect(gen.next({ answer: false }).value).toMatchObject(put(setCanManageTeamForService(false)));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should fetch team permission and other manageable teams (when service has no team)', () => {
+      const manageable = [1,2,3];
+
+      const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
+      expect(gen.next().value).toMatchObject(race({
+        success: take(FETCH_TEAM_SUCCESS),
+        failure: take(FETCH_TEAM_ERROR),
+      }));
+      expect(gen.next({ failure: {} }).value).toMatchObject(call(getCanManageAnyTeam));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManageTeamForService(true)));
+      expect(gen.next().value).toMatchObject(call(withPermission, 'teams-manage', 'team'));
+      expect(gen.next(manageable).value).toMatchObject(put(setManageableTeams(manageable)));
+      expect(gen.next().done).toBe(true);
+    });
+
+    it('should fetch team permission & stop if lacking permission on current services\' team (when service has no team)', () => {
+      const gen = fetchTeamPermissionsSaga(FETCH_TEAM_REQUEST());
+      expect(gen.next().value).toMatchObject(race({
+        success: take(FETCH_TEAM_SUCCESS),
+        failure: take(FETCH_TEAM_ERROR),
+      }));
+      expect(gen.next({ failure: {} }).value).toMatchObject(call(getCanManageAnyTeam));
       expect(gen.next({ answer: false }).value).toMatchObject(put(setCanManageTeamForService(false)));
       expect(gen.next().done).toBe(true);
     });
