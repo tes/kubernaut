@@ -103,7 +103,7 @@ export default function(options = {}) {
         const service = await store.getService(serviceId);
         if (!service) return next(Boom.notFound('service does not exist'));
 
-        const currentTeam = store.getTeamForService(service);
+        const currentTeam = await store.getTeamForService(service);
         if (currentTeam) {
           if (! await store.hasPermissionOnTeam(req.user, currentTeam.id, 'teams-manage')) return next(Boom.forbidden());
         }
