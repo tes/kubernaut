@@ -110,6 +110,8 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-manage')) return next(Boom.forbidden());
 
         await store.associateServiceWithTeam(service, team);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'Associated service with team', { service, team });
         return res.json(await store.getTeam(teamId));
       } catch (err) {
         next(err);
@@ -133,6 +135,8 @@ export default function(options = {}) {
         }
 
         await store.disassociateService(service);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'Disassociated service from team', { service });
         return res.json({});
       } catch (err) {
         next(err);
