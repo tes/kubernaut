@@ -1371,7 +1371,8 @@ export default function(options = {}) {
       const builder = sqb
         .select('t.id team_id', 't.name team_name')
         .from('active_team__vw t')
-        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', user.id, permission)));
+        .where(Op.in('t.id', authz.querySubjectIdsWithPermission('team', user.id, permission)))
+        .orderBy('t.name');
 
       const results = await db.query(db.serialize(builder).sql);
       if (!results.rowCount) return [];
