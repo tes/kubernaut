@@ -562,6 +562,11 @@ export const setServiceAttributesForNamespace = (registry, service, namespaceId,
   body: JSON.stringify(data),
 });
 
+export const setTeamAttributes = (teamId, data) => makeRequest(`/api/teams/${teamId}/attributes`, {
+  method: 'POST',
+  body: JSON.stringify(data),
+});
+
 export const updateDeploymentNote = (deploymentId, note) => {
   return makeRequest(`/api/deployments/${deploymentId}/note`, {
     method: 'POST',

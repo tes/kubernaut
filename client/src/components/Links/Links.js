@@ -52,7 +52,17 @@ export const TeamEditLink = ({ team, container, children }) => {
     ...container && { exact: true }
   };
 
-  return <Tag {...props}>{children || <span>Edit</span>}</Tag>;
+  return <Tag {...props}>{children || <span>Edit Permissions</span>}</Tag>;
+};
+
+export const TeamAttributesLink = ({ team, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/teams/${team.name}/attributes`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-tags" aria-hidden='true'></i> Attributes</span>}</Tag>;
 };
 
 export const NamespacePill = ({ namespace }) => <Badge

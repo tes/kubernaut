@@ -88,6 +88,23 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/teams/:id/attributes', bodyParser.json(), async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const team = await store.getTeam(id);
+        if (!team) return next(Boom.notFound());
+        if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-manage')) return next(Boom.forbidden());
+
+        const attributes = req.body || {};
+        const updatedTeam = await store.saveTeamAttributes(team, attributes);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'updated team attributes', { team });
+        res.json(updatedTeam);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/teams/association/service', bodyParser.json(), async (req, res, next) => {
       try {
         const  {

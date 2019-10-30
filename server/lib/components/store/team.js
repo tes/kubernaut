@@ -195,6 +195,34 @@ export default function(options) {
       });
     }
 
+    async function saveTeamAttributes(team, attributes) {
+      logger.debug(`Updating attributes for team ${team.id}`);
+
+      const deleteBuilder = sqb
+        .delete('team_attribute')
+        .where(Op.eq('team', team.id));
+
+        const insertBuilders = [];
+        for (const name in attributes) {
+          insertBuilders.push(sqb
+          .insert('team_attribute', {
+            team: team.id,
+            name,
+            value: attributes[name],
+          }));
+        }
+
+        await db.withTransaction(async connection => {
+          await connection.query(db.serialize(deleteBuilder, {}).sql);
+
+          await Promise.mapSeries(insertBuilders, async (insertBuilder) => {
+            await connection.query(db.serialize(insertBuilder, {}).sql);
+          });
+        });
+
+        return getTeam(team.id);
+    }
+
     async function associateServiceWithTeam(service, team) {
       logger.debug(`Associating service with id ${service.id} with team id ${team.id}`);
 
@@ -1192,6 +1220,7 @@ export default function(options) {
       findTeams,
       findTeam,
       saveTeam,
+      saveTeamAttributes,
       associateServiceWithTeam,
       disassociateService,
       getTeamForService,

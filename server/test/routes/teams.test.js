@@ -99,7 +99,7 @@ describe('Teams API', () => {
       });
     });
 
-    describe('/api/teams/:id', () => {
+    describe('GET /api/teams/:id', () => {
       it('retrieves a team', async () => {
         const team = await store.getTeam(await saveTeam(makeTeam({ attributes: { a: 'bc' } })));
 
@@ -124,6 +124,27 @@ describe('Teams API', () => {
           throw new Error('Should have failed with 404');
         }).catch(errors.StatusCodeError, reason => {
           expect(reason.response.statusCode).toBe(404);
+        });
+      });
+    });
+
+    describe('POST /api/teams/:id/attributes', () => {
+      it('updates a teams attributes', async () => {
+        const team = await store.getTeam(await saveTeam(makeTeam({ attributes: { a: 'bc' } })));
+
+        const response = await request({
+          url: `/api/teams/${team.id}/attributes`,
+          method: 'POST',
+          json: {
+            a: 'bc',
+            d: 'ef',
+          }
+        });
+
+        expect(response.id).toBe(team.id);
+        expect(response.attributes).toMatchObject({
+          a: 'bc',
+          d: 'ef',
         });
       });
     });

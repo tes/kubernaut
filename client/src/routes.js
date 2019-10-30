@@ -27,6 +27,7 @@ import ServiceNamespaceAttrsPage from './components/ServiceNamespaceAttrsPage';
 import SecretOverviewPage from './components/SecretOverviewPage';
 import SecretVersionViewPage from './components/SecretVersionViewPage';
 import TeamPage from './components/TeamPage';
+import TeamAttrsPage from './components/TeamAttrsPage';
 import TeamEditPage from './components/TeamEditPage';
 import TeamsPage from './components/TeamsPage';
 
@@ -218,6 +219,15 @@ export default () => <Switch>
     render={({ match }) =>
       <Wrapper title="Team">
         <TeamPage />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.teamAttrs.route}
+    render={({ match }) =>
+      <Wrapper title="Edit team">
+        <TeamAttrsPage />
       </Wrapper>
     }
   />

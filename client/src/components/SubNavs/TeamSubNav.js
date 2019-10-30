@@ -4,6 +4,7 @@ import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   TeamLink,
   TeamEditLink,
+  TeamAttributesLink,
 } from '../Links';
 
 class TeamSubNav extends Component {
@@ -24,8 +25,13 @@ class TeamSubNav extends Component {
             </NavItem>
             { canEdit ? <NavItem>
               <TeamEditLink container team={team}>
-                <NavLink>Edit</NavLink>
+                <NavLink>Edit Permissions</NavLink>
               </TeamEditLink>
+            </NavItem> : null }
+            { canEdit ? <NavItem>
+              <TeamAttributesLink container team={team}>
+                <NavLink><i className="fa fa-tags" aria-hidden='true'></i> Edit Attributes</NavLink>
+              </TeamAttributesLink>
             </NavItem> : null }
             </Nav>
           </Col>

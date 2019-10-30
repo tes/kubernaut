@@ -25,6 +25,7 @@ import serviceManageSagas from './serviceManage';
 import serviceNamespaceAttrsSagas from './serviceNamespaceAttrs';
 import servicesSagas from './services';
 import teamSagas from './team';
+import teamAttrsSagas from './teamAttrs';
 import teamsSagas from './teams';
 import viewAccountSagas from './viewAccount';
 import { routesSaga } from '../paths';
@@ -55,6 +56,7 @@ export default function* rootSaga() {
     ...serviceNamespaceAttrsSagas,
     ...servicesSagas,
     ...teamSagas,
+    ...teamAttrsSagas,
     ...teamsSagas,
     ...viewAccountSagas,
     takeLatest(LOCATION_CHANGE, routesSaga),
