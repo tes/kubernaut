@@ -107,6 +107,8 @@ export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   return makeRequest(`/api/audit?${qs}`).then(computePagination);
 };
 
+export const getBearerTokenForAccount = (accountId) => makeRequest(`/api/accounts/${accountId}/bearer`);
+
 export const getCanManageAnyNamespace = () => {
   const url = '/api/account/hasPermission/namespaces-manage/on-any/namespace';
   return makeRequest(url);

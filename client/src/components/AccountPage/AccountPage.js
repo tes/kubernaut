@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Progress } from 'reactstrap';
+import {
+  Row,
+  Col,
+  Progress,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+} from 'reactstrap';
 import Title from '../Title';
 import { AccountsSubNav } from '../SubNavs';
 
@@ -48,8 +56,35 @@ class AccountPage extends Component {
           <Title title={`Account: ${account.displayName}`} />
           <AccountsSubNav account={account} canEdit={this.props.canEdit} canManageTeam={this.props.canManageTeam} />
           <Row>
-            <Col>
+            <Col xs={{ size: 'auto' }} className="mr-auto">
               <p><strong>Created:</strong> {account.createdOn}</p>
+            </Col>
+            <Col xs={{ size: 'auto' }}>
+              {
+                this.props.canGenerate ? (
+                  <Button onClick={() => this.props.generateBearer({ id: account.id })} color="info" outline>Generate bearer token</Button>
+                ) : null
+              }
+              {
+                this.props.canGenerate ? (
+                  <Modal
+                    isOpen={this.props.generateModalOpen}
+                    toggle={this.props.closeBearerModal}
+                    size="lg"
+                  >
+                    <ModalHeader>
+                      Bearer token
+                    </ModalHeader>
+                    <ModalBody>
+                      <Row>
+                        <Col>
+                          <code>{this.props.bearerToken}</code>
+                        </Col>
+                      </Row>
+                    </ModalBody>
+                  </Modal>
+                ) : null
+              }
             </Col>
           </Row>
           <Row className="mt-1">

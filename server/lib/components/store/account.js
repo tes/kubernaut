@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import { promiseApi as initCryptus } from 'cryptus';
 import SQL from './sql';
 import Account from '../../domain/Account';
 import Namespace from '../../domain/Namespace';
@@ -8,7 +9,9 @@ import Team from '../../domain/Team';
 import sqb from 'sqb';
 
 export default function(options = {}) {
-  function start({ config, logger, db, authz }, cb) {
+  function start({ config, authConfig, logger, db, authz }, cb) {
+  const cryptus = initCryptus();
+  const bearerConfig = authConfig.find(c => (c.id === 'bearer'));
 
   const { Op, raw } = sqb;
 
@@ -216,6 +219,35 @@ export default function(options = {}) {
         meta.account.id,
       ]);
       logger.debug(`Deleted account id: ${id}`);
+    }
+
+    async function getBearerTokenForAccount(account, meta) {
+      logger.debug(`Retrieving bearer token for account ${account.id}`);
+
+      const builder = sqb
+        .select('i.name')
+        .from('active_identity__vw i')
+        .where(Op.eq('i.provider', 'kubernaut'))
+        .where(Op.eq('i.type', 'bearer'))
+        .where(Op.eq('i.account', account.id));
+
+      const bearer = await db.withTransaction(async connection => {
+        let token;
+        const result = await connection.query(db.serialize(builder).sql);
+        if (result.rowCount) {
+          logger.debug(`Found existing token for account ${account.id}`);
+          token = result.rows[0].name;
+        } else {
+          token = uuid();
+          const data = { name: token, provider: 'kubernaut', type: 'bearer' };
+          await _saveIdentity(connection, account.id, data, meta);
+        }
+
+        const encrypted = await cryptus.encrypt(bearerConfig.key, token);
+        return Buffer.from(encrypted).toString('base64');
+      });
+
+      return bearer;
     }
 
     async function saveIdentity(id, data, meta) {
@@ -1430,6 +1462,7 @@ export default function(options = {}) {
       checkCanGrantGlobal,
       checkCanRevokeGlobal,
       teamsWithPermission,
+      getBearerTokenForAccount,
     });
   }
 

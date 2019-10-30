@@ -133,6 +133,23 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/accounts/:id/bearer', async (req, res, next) => {
+      try {
+        if (! (req.user.hasPermissionOnAccount(req.params.id) || await store.hasPermission(req.user, 'accounts-bearer'))) return next(Boom.forbidden());
+        const account = await store.getAccount(req.params.id);
+        if (!account) return next();
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const bearer = await store.getBearerTokenForAccount(account, meta);
+        await store.audit(meta, 'viewed bearer token for', { account });
+        if (!bearer) return next(Boom.notFound());
+        res.json({
+          bearer,
+        });
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/identities', bodyParser.json(), async (req, res, next) => {
       try {
         if (!req.body.account) return next(Boom.badRequest('account is required'));

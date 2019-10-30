@@ -3,6 +3,10 @@ import reduce, {
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
   setCanEdit,
+  setCanManageTeam,
+  setCanGenerate,
+  setBearerToken,
+  closeBearerModal,
 } from '../viewAccount';
 
 describe('viewAccount Reducer', () => {
@@ -37,5 +41,26 @@ describe('viewAccount Reducer', () => {
   it('should set canEdit state', () => {
     const state = reduce(undefined, setCanEdit(true));
     expect(state.canEdit).toBe(true);
+  });
+
+  it('should set canManageTeam state', () => {
+    const state = reduce(undefined, setCanManageTeam(true));
+    expect(state.canManageTeam).toBe(true);
+  });
+
+  it('should set canGenerate state', () => {
+    const state = reduce(undefined, setCanGenerate(true));
+    expect(state.canGenerate).toBe(true);
+  });
+
+  it('should set bearerToken state (and set modal open state)', () => {
+    const state = reduce(undefined, setBearerToken('abc'));
+    expect(state.bearerToken).toBe('abc');
+    expect(state.generateModalOpen).toBe(true);
+  });
+
+  it('should set modal state to closed', () => {
+    const state = reduce({ generateModalOpen: true }, closeBearerModal());
+    expect(state.generateModalOpen).toBe(false);
   });
 });

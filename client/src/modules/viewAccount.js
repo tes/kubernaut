@@ -8,6 +8,10 @@ export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUN
 export const FETCH_ACCOUNT_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNT_ERROR`);
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const setCanManageTeam = createAction(`${actionsPrefix}/SET_CAN_MANAGE_TEAM`);
+export const setCanGenerate = createAction(`${actionsPrefix}/SET_CAN_GENERATE`);
+export const generateBearer = createAction(`${actionsPrefix}/GENERATE_BEARER`);
+export const setBearerToken = createAction(`${actionsPrefix}/SET_BEARER_TOKEN`);
+export const closeBearerModal = createAction(`${actionsPrefix}/CLOSE_BEARER_MODAL`);
 
 const defaultState = {
   account: {
@@ -20,6 +24,9 @@ const defaultState = {
   },
   canEdit: false,
   canManageTeam: false,
+  canGenerate: false,
+  bearerToken: '',
+  generateModalOpen: false,
   meta: {
     loading: {
       sections: {
@@ -42,8 +49,7 @@ const defaultState = {
 
 export default handleActions({
   [FETCH_ACCOUNT_REQUEST]: (state) => ({
-    ...state,
-    account: defaultState.account,
+    ...defaultState,
     meta: {
       loading: computeLoading(state.meta.loading, 'account', true),
     },
@@ -70,4 +76,17 @@ export default handleActions({
     ...state,
     canManageTeam: payload,
   }),
+  [setCanGenerate]: (state, { payload }) => ({
+    ...state,
+    canGenerate: payload,
+  }),
+  [setBearerToken]: (state, { payload }) => ({
+    ...state,
+    bearerToken: payload,
+    generateModalOpen: true,
+  }),
+  [closeBearerModal]: (state) => ({
+    ...state,
+    generateModalOpen: false,
+  })
 }, defaultState);
