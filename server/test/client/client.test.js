@@ -60,7 +60,7 @@ describe('kubernaut', () => {
         throw new Error('Should have failed with 302');
     }).catch(errors.StatusCodeError, (reason) => {
       expectStatus(reason.response, 302);
-      expectHeader(reason.response, 'location', '/login');
+      expectHeader(reason.response, 'location', '/login?return=%2f');
     });
   });
 
