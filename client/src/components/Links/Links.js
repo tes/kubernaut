@@ -153,7 +153,7 @@ export const EditAccountLink = ({ account = {}, container, accountId, children }
 export const ServiceLink = ({ service, serviceName, registryName, children, container }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/${registryName || (service && service.registry.name)}/${serviceName || (service && service.name)}`,
+    to: `/services/${registryName || (service && service.registry && service.registry.name)}/${serviceName || (service && service.name)}`,
     ...container && { exact: true }
   };
 

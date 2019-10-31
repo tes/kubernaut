@@ -375,6 +375,12 @@ export const deleteAccount = (accountId) => {
   });
 };
 
+export const deleteService = (registry, service) => {
+  return makeRequest(`/api/services/${registry}/${service}`, {
+    method: 'DELETE'
+  });
+};
+
 export const disableServiceForNamespace = (namespaceId, serviceId, offset, limit, fetchNamespaces = false) => {
   const qs = makeQueryString({
     offset,

@@ -8,6 +8,7 @@ export const fetchServices = createAction(`${actionsPrefix}/FETCH_SERVICES`);
 export const fetchNamespacesPagination = createAction(`${actionsPrefix}/FETCH_NAMESPACES_PAGINATION`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
+export const canDeleteRequest = createAction(`${actionsPrefix}/CAN_DELETE_REQUEST`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 export const FETCH_SERVICE_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICE_REQUEST`);
 export const FETCH_SERVICE_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICE_SUCCESS`);
@@ -22,6 +23,10 @@ export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR
 export const setCanManageTeamForService = createAction(`${actionsPrefix}/SET_CAN_MANAGE_TEAM_FOR_SERVICE`);
 export const setManageableTeams = createAction(`${actionsPrefix}/SET_MANAGEABLE_TEAMS`);
 export const updateTeamOwnership = createAction(`${actionsPrefix}/UPDATE_TEAM_OWNERSHIP`);
+export const setCanDelete = createAction(`${actionsPrefix}/SET_CAN_DELETE`);
+export const deleteService = createAction(`${actionsPrefix}/DELETE_SERVICE`);
+export const openDeleteModal = createAction(`${actionsPrefix}/OPEN_DELETE_MODAL`);
+export const closeDeleteModal = createAction(`${actionsPrefix}/CLOSE_DELETE_MODAL`);
 
 export const selectNamespaces = (state) => (state.serviceManage.namespaces);
 export const selectPaginationState = (state) => (state.serviceManage.pagination);
@@ -39,6 +44,7 @@ const defaultState = {
         service: false,
         namespaces: false,
         canManage: false,
+        canDelete: false,
         team: false,
       },
       loadingPercent: 100,
@@ -56,6 +62,7 @@ const defaultState = {
     limit: 20,
   },
   canManage: false,
+  canDelete: false,
   canManageTeamForService: false,
   initialValues: {},
   id: '',
@@ -65,6 +72,7 @@ const defaultState = {
     name: '',
   },
   manageableTeams: [],
+  deleteModalOpen: false,
 };
 
 export default handleActions({
@@ -154,6 +162,21 @@ export default handleActions({
       loading: computeLoading(state.meta.loading, 'canManage', false),
     },
   }),
+  [canDeleteRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canDelete', true),
+    }
+  }),
+  [setCanDelete]: (state, { payload }) => ({
+    ...state,
+    canDelete: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canDelete', false),
+    },
+  }),
   [FETCH_TEAM_REQUEST]: (state) => ({
     ...state,
     team: defaultState.team,
@@ -191,5 +214,13 @@ export default handleActions({
       ...state.initialValues,
       team: state.team.id,
     }
+  }),
+  [openDeleteModal]: (state) => ({
+    ...state,
+    deleteModalOpen: true,
+  }),
+  [closeDeleteModal]: (state) => ({
+    ...state,
+    deleteModalOpen: false,
   }),
 }, defaultState);

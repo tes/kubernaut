@@ -13,6 +13,8 @@ import reduce, {
   FETCH_TEAM_SUCCESS,
   setCanManageTeamForService,
   setManageableTeams,
+  canDeleteRequest,
+  setCanDelete,
 } from '../serviceManage';
 
 describe('ServiceManage reducer', () => {
@@ -108,6 +110,16 @@ describe('ServiceManage reducer', () => {
   it('should set canManage in state', () => {
     const state = reduce(undefined, setCanManage(true));
     expect(state.canManage).toBe(true);
+  });
+
+  it('should indicate when canDelete is loading', () => {
+    const state = reduce(undefined, canDeleteRequest());
+    expect(state.meta).toMatchObject({ loading: { sections: { canDelete: true } } });
+  });
+
+  it('should set canDelete in state', () => {
+    const state = reduce(undefined, setCanDelete(true));
+    expect(state.canDelete).toBe(true);
   });
 
   it('should initialise team state', () => {

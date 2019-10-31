@@ -140,6 +140,20 @@ describe('Services API', () => {
     });
   });
 
+  describe('DELETE /api/services/:registry/:service', () => {
+    it('deletes a service', async () => {
+      const release = await store.saveRelease(makeRelease(), makeRootMeta());
+      const response = await request({
+        url: `/api/services/${release.service.registry.name}/${release.service.name}`,
+        method: 'DELETE',
+        resolveWithFullResponse: true,
+      });
+
+      expect(response.statusCode).toBe(204);
+      expect(await store.getService(release.service.id)).toBe(undefined);
+    });
+  });
+
   describe('GET /api/services/:registry/:service/namespace-status', () => {
     it('returns a list of namespaces and the status for which the service has to deploy or not', async () => {
       const release = await store.saveRelease(makeRelease(), makeRootMeta());

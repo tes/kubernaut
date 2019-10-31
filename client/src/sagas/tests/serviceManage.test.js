@@ -11,6 +11,7 @@ import {
   fetchTeamForServiceSaga,
   fetchTeamPermissionsSaga,
   updateTeamOwnershipSaga,
+  deleteServiceSaga,
 } from '../serviceManage';
 
 import {
@@ -39,6 +40,10 @@ import {
   setManageableTeams,
   updateTeamOwnership,
   selectServiceInfo,
+  deleteService,
+  closeDeleteModal,
+  setCanDelete,
+  canDeleteRequest,
 } from '../../modules/serviceManage';
 
 import {
@@ -53,6 +58,7 @@ import {
   associateServiceWithTeam,
   disassociateService,
   getCanManageAnyTeam,
+  deleteService as deleteServiceRequest,
 } from '../../lib/api';
 
 describe('ServiceManageSagas', () => {
@@ -87,12 +93,33 @@ describe('ServiceManageSagas', () => {
 
     describe('check permission', () => {
       const initPayload = { match, quiet: true };
+      const service = { id: 'abc', registry: { id: '000' }};
 
       it('fetches and sets permission information', () => {
         const gen = checkPermissionSaga(initServiceManage(initPayload));
         expect(gen.next().value).toMatchObject(put(canManageRequest()));
-        expect(gen.next().value).toMatchObject(call(getCanManageAnyNamespace));
+        expect(gen.next().value).toMatchObject(put(canDeleteRequest()));
+        expect(gen.next().value).toMatchObject(race({
+          success: take(FETCH_SERVICE_SUCCESS),
+          failure: take(FETCH_SERVICE_ERROR),
+        }));
+        expect(gen.next({ success: { payload: { data: service } } }).value).toMatchObject(call(getCanManageAnyNamespace));
         expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
+        expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'registries-write', 'registry', '000'));
+        expect(gen.next({ answer: true }).value).toMatchObject(put(setCanDelete(true)));
+        expect(gen.next().done).toBe(true);
+      });
+
+      it('should bail accordingly if service fetch error occurs', () => {
+        const gen = checkPermissionSaga(initServiceManage(initPayload));
+        expect(gen.next().value).toMatchObject(put(canManageRequest()));
+        expect(gen.next().value).toMatchObject(put(canDeleteRequest()));
+        expect(gen.next().value).toMatchObject(race({
+          success: take(FETCH_SERVICE_SUCCESS),
+          failure: take(FETCH_SERVICE_ERROR),
+        }));
+        expect(gen.next({ failure: {}}).value).toMatchObject(put(setCanManage(false)));
+        expect(gen.next().value).toMatchObject(put(setCanDelete(false)));
         expect(gen.next().done).toBe(true);
       });
     });
@@ -304,6 +331,18 @@ describe('ServiceManageSagas', () => {
       expect(gen.next().value).toMatchObject(select(selectServiceInfo));
       expect(gen.next({ id: serviceId, registry, service }).value).toMatchObject(call(disassociateService, serviceId));
       expect(gen.next().value).toMatchObject(put(fetchTeamForService({ registry, service })));
+      expect(gen.next().done).toBe(true);
+    });
+  });
+
+  describe('deleteServiceSaga', () => {
+    it('should delete a service', () => {
+      const service = { registry: 'abc', service: 'def' };
+      const gen = deleteServiceSaga(deleteService);
+      expect(gen.next().value).toMatchObject(select(selectServiceInfo));
+      expect(gen.next(service).value).toMatchObject(call(deleteServiceRequest, 'abc', 'def'));
+      expect(gen.next().value).toMatchObject(put(closeDeleteModal()));
+      expect(gen.next().value).toMatchObject(put(push('/services')));
       expect(gen.next().done).toBe(true);
     });
   });

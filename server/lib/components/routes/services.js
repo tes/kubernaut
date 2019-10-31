@@ -48,6 +48,25 @@ export default function(options = {}) {
       }
     });
 
+    app.delete('/api/services/:registry/:service', async (req, res, next) => {
+      try {
+        const registry = await store.findRegistry({ name: req.params.registry });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-write')) return next(Boom.forbidden());
+
+        const service = await store.findService({ filters: parseFilters(req.params, ['service', 'registry'], {
+          service: 'name'
+        }) });
+        if (!service) return next(Boom.notFound());
+        const meta = { date: new Date(), account: req.user };
+        await store.deleteService(service.id, meta);
+        await store.audit(meta, 'deleted service', { service });
+        return res.status(204).send();
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/services-with-status-for-namespace/:namespaceId', async (req, res, next) => {
       try {
         const { namespaceId } = req.params;

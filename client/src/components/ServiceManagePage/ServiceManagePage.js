@@ -7,6 +7,10 @@ import {
   Col,
   Table,
   Progress,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
 } from 'reactstrap';
 import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
@@ -140,26 +144,64 @@ class ServiceManagePage extends Component {
               </Col>
             </Row>
           </Col>
-          { this.props.canManageTeamForService ? (
-            <Col md="4">
+          <Col md="4">
+            { this.props.canManageTeamForService ? (
               <Row>
                 <Col>
-                  <h6>Team ownership:</h6>
+                  <Row>
+                    <Col>
+                      <h6>Team ownership:</h6>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <Field
+                        name="team"
+                        className="form-control"
+                        component={RenderSelect}
+                        options={this.props.manageableTeams.map(t => ({ value: t.id, display: t.name }))}
+                        onChange={(evt, newValue) => updateTeamOwnership({ value: newValue }) }
+                        />
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
+            ) : null}
+            { this.props.canDelete && this.props.canManageTeamForService ? (
+              <hr />
+            ) : null }
+            { this.props.canDelete ? (
               <Row>
-                <Col>
-                  <Field
-                    name="team"
-                    className="form-control"
-                    component={RenderSelect}
-                    options={this.props.manageableTeams.map(t => ({ value: t.id, display: t.name }))}
-                    onChange={(evt, newValue) => updateTeamOwnership({ value: newValue }) }
-                  />
+                <Col className="d-flex">
+                  <Button className="ml-auto" onClick={() => this.props.openDeleteModal()} color="danger" outline>Delete Service</Button>
                 </Col>
               </Row>
-            </Col>
-          ) : null}
+            ) : null }
+            { this.props.canDelete ? (
+              <Modal
+                isOpen={this.props.deleteModalOpen}
+                toggle={this.props.closeDeleteModal}
+                size="lg"
+              >
+                <ModalHeader>
+                  Delete Service
+                </ModalHeader>
+                <ModalBody>
+                  <Row>
+                    <Col>
+                      <p>Please note: <strong>This does not remove the service from the environment(s). Please remove the service from kubernetes separately.</strong></p>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col className="d-flex justify-content-between">
+                      <p>Are you sure?</p>
+                      <Button onClick={() => this.props.deleteService()} color="danger" outline>Delete</Button>
+                    </Col>
+                  </Row>
+                </ModalBody>
+              </Modal>
+            ) : null }
+          </Col>
         </Row>
       </Container>
     );

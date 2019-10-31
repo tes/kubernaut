@@ -88,5 +88,5 @@ export default handleActions({
   [closeBearerModal]: (state) => ({
     ...state,
     generateModalOpen: false,
-  })
+  }),
 }, defaultState);

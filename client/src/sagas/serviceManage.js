@@ -31,9 +31,13 @@ import {
   FETCH_TEAM_ERROR,
   selectTeam,
   setCanManageTeamForService,
+  setCanDelete,
+  canDeleteRequest,
   setManageableTeams,
   updateTeamOwnership,
   selectServiceInfo,
+  deleteService,
+  closeDeleteModal,
 } from '../modules/serviceManage';
 
 import {
@@ -48,13 +52,30 @@ import {
   associateServiceWithTeam,
   disassociateService,
   getCanManageAnyTeam,
+  deleteService as deleteServiceRequest,
 } from '../lib/api';
 
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
   try {
     yield put(canManageRequest());
+    yield put(canDeleteRequest());
+    const raceResult = yield race({
+      success: take(FETCH_SERVICE_SUCCESS),
+      failure: take(FETCH_SERVICE_ERROR),
+    });
+    if (raceResult.failure) {
+      yield put(setCanManage(false));
+      yield put(setCanDelete(false));
+      return;
+    }
+
     const hasPermission = yield call(getCanManageAnyNamespace);
     yield put(setCanManage(hasPermission.answer));
+
+    const { payload: serviceResult } = raceResult.success;
+    const registryId = serviceResult.data.registry.id;
+    const canDelete = yield call(hasPermissionOn, 'registries-write', 'registry', registryId);
+    yield put(setCanDelete(canDelete.answer));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }
@@ -183,7 +204,18 @@ export function* updateTeamOwnershipSaga({ payload = {} }) {
   } catch (error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }
+}
 
+export function* deleteServiceSaga({ payload = {} }) {
+  const options = payload;
+  const { registry, service } = yield select(selectServiceInfo);
+  try {
+    yield call(deleteServiceRequest, registry, service);
+    yield put(closeDeleteModal());
+    yield put(push('/services'));
+  } catch (error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+  }
 }
 
 export default [
@@ -196,4 +228,5 @@ export default [
   takeLatest(fetchTeamForService, fetchTeamForServiceSaga),
   takeLatest(FETCH_TEAM_REQUEST, fetchTeamPermissionsSaga),
   takeLatest(updateTeamOwnership, updateTeamOwnershipSaga),
+  takeLatest(deleteService, deleteServiceSaga),
 ];
