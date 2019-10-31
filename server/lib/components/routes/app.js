@@ -2,12 +2,14 @@ import path from 'path';
 import express from 'systemic-express/express';
 
 const APP_ROUTES = /^(?!(?:\/auth\/|\/api\/|\/__\/|\/login)).*/;
+const ROUTES_TO_AUTHENTICATE = /^(?!(?:\/auth\/|\/api\/|\/__\/|\/login|\/manifest|\/favicon|\/.*\.png|\/.*\.svg)).*/; // A misnomer as this is regex actually parses as what 'not' to look for...
+
 
 module.exports = function() {
 
   function start({ app, config, loggerMiddleware, auth, passport }, cb) {
 
-    app.use(APP_ROUTES, auth('app'));
+    app.use(ROUTES_TO_AUTHENTICATE, auth('app'));
 
     const clientApp = function(status) {
       return (req, res, next) => {
@@ -22,9 +24,12 @@ module.exports = function() {
       if (req.isAuthenticated()) {
         return res.redirect('/');
       }
-      res.set('Cache-Control', 'public, max-age=600, must-revalidate');
-      res.status(200);
-      res.sendFile(path.join(process.cwd(), 'client', 'build', 'login.html'));
+      req.session.returnTo = req.query.return || '/';
+      req.session.save(() => { // Thanks express session for your race conditions, forcing me to have to do this.
+        res.set('Cache-Control', 'public, max-age=600, must-revalidate');
+        res.status(200);
+        res.sendFile(path.join(process.cwd(), 'client', 'build', 'login.html'));
+      });
     });
 
     // Disable logging for Kubernetes

@@ -34,7 +34,7 @@ export default function() {
             if (loginError) { return next(loginError); }
             req.session.save((sessionError) => { // Thanks express session for your race conditions, forcing me to have to do this.
               if (sessionError) { return next(sessionError); }
-              res.redirect(req.query.return || '/');
+              res.redirect(req.session.returnTo || '/');
             });
           });
         })(req, res, next);
@@ -55,7 +55,9 @@ export default function() {
       return function(method) {
         return function(req, res, next) {
           if (req.isAuthenticated()) return next();
-          if (method === 'app') return res.redirect('/login');
+          if (method === 'app') {
+            return res.redirect(`/login?return=${encodeURIComponent(req.originalUrl)}`);
+          }
           if (req.headers.bearer || req.headers.authorization) return passport.authenticate(authenticationMethods[method])(req, res, next);
 
           return res.location('/login').sendStatus(401);
