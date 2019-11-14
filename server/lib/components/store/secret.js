@@ -19,7 +19,7 @@ export default function(options) {
       const secretVersionBuilder = sqb
         .select('v.id', 'v.comment', 'v.created_on', 'v.created_by', 'a.display_name', 'v.service', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'v.namespace', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color')
         .from('secret_version v')
-        .join(sqb.join('active_account__vw a').on(Op.eq('v.created_by', raw('a.id'))))
+        .join(sqb.join('account a').on(Op.eq('v.created_by', raw('a.id'))))
         .join(sqb.join('active_service__vw s').on(Op.eq('v.service', raw('s.id'))))
         .join(sqb.join('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))))
         .join(sqb.join('active_namespace__vw n').on(Op.eq('v.namespace', raw('n.id'))))
@@ -98,7 +98,7 @@ export default function(options) {
       const versionsBuilder = sqb
         .select('v.id', 'v.comment', 'v.created_on', 'v.created_by', 'a.display_name', 'v.service', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name', 'v.namespace', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color')
         .from('secret_version v')
-        .join(sqb.join('active_account__vw a').on(Op.eq('v.created_by', raw('a.id'))))
+        .join(sqb.join('account a').on(Op.eq('v.created_by', raw('a.id'))))
         .join(sqb.join('active_service__vw s').on(Op.eq('v.service', raw('s.id'))))
         .join(sqb.join('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))))
         .join(sqb.join('active_namespace__vw n').on(Op.eq('v.namespace', raw('n.id'))))
