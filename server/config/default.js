@@ -37,7 +37,7 @@ module.exports = {
     },
   },
   postgres: {
-    connectionTimeoutMillis: 1000,
+    connectionTimeoutMillis: 5000,
     onConnect: [
       'SET client_min_messages = WARNING',
     ]
