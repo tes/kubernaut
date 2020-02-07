@@ -40,7 +40,8 @@ module.exports = {
     connectionTimeoutMillis: 5000,
     onConnect: [
       'SET client_min_messages = WARNING',
-    ]
+    ],
+    max: 20
   },
   routes: {
   },
