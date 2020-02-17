@@ -12,7 +12,9 @@ services:
     image: postgres:10-alpine
     container_name: postgres
     ports:
-     - '5432:5432'
+      - '5432:5432'
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
 
   build-kubernaut:
     build: ./
@@ -25,3 +27,5 @@ services:
 
   build-postgres:
     image: postgres:10-alpine
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
