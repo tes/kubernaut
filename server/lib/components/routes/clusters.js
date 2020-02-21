@@ -44,7 +44,7 @@ export default function(options = {}) {
         const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
         if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
 
-        const clusterOk = await kubernetes.checkCluster(req.body.config, res.locals.logger);
+        const clusterOk = await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
         if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster`));
 
         const colorOk = isCSSColorHex(req.body.color) || isCSSColorName(req.body.color);

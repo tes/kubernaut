@@ -208,10 +208,10 @@ export default function(options = {}) {
       return kc.getContextObject(context);
     }
 
-    function checkCluster(config, logger) {
+    function checkCluster(config, context, logger) {
       const kc = new KubeConfig();
       kc.loadFromFile(config);
-
+      kc.setCurrentContext(context);
       return kc.getCurrentCluster();
     }
 
