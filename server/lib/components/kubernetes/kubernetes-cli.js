@@ -128,18 +128,18 @@ function getStatus(deployment, emitter) {
       throw new Error(`deployment ${deployment.metadata.name} exceeded its progress deadline`);
     }
 
-    if (deployment.spec.replicas && deployment.status.updatedReplicas < deployment.spec.replicas) {
-      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${deployment.status.updatedReplicas} out of ${deployment.spec.replicas} new replicas have been updated...` });
+    if (deployment.spec.replicas && (deployment.status.updatedReplicas || 0) < deployment.spec.replicas) {
+      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${(deployment.status.updatedReplicas || 0)} out of ${deployment.spec.replicas} new replicas have been updated...` });
       return false;
     }
 
-    if (deployment.status.replicas > deployment.status.updatedReplicas) {
-      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${deployment.status.replicas - deployment.status.updatedReplicas} old replicas are pending termination...` });
+    if (deployment.status.replicas > (deployment.status.updatedReplicas || 0)) {
+      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${deployment.status.replicas - (deployment.status.updatedReplicas || 0)} old replicas are pending termination...` });
       return false;
 		}
 
-		if (deployment.status.availableReplicas < deployment.status.updatedReplicas) {
-      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${deployment.status.availableReplicas} of ${deployment.status.updatedReplicas} updated replicas are available...` });
+		if ((deployment.status.availableReplicas || 0) < (deployment.status.updatedReplicas || 0)) {
+      emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for deployment ${deployment.metadata.name} rollout to finish: ${(deployment.status.availableReplicas || 0)} of ${(deployment.status.updatedReplicas || 0)} updated replicas are available...` });
       return false;
 		}
 
