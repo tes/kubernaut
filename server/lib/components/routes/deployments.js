@@ -52,8 +52,9 @@ export default function(options = {}) {
         }) });
         if (!service) return next(Boom.notFound());
         const meta = { date: new Date(), account: { id: req.user.id } };
+        const includeFailed = Object.hasOwnProperty(req.query, 'includeFailed');
 
-        const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user);
+        const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user, includeFailed);
         await store.audit(meta, 'viewed latest deployments for service by namespace', { registry, service });
         res.json(deployments);
       } catch(err) {

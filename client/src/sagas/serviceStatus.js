@@ -60,6 +60,7 @@ export function* fetchLatestDeploymentsByNamespaceForServiceSaga({ payload = {} 
     const data = yield call(getLatestDeploymentsByNamespaceForService, {
       registry,
       service,
+      includeFailed: true,
     });
     yield put(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS({ data }));
   } catch(error) {

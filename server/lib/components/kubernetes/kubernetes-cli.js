@@ -228,10 +228,17 @@ export default function(options = {}) {
 
     async function getLastLogsForDeployment(config, context, namespace, deploymentName, logger) {
       const clients = createClients(config, context);
-
-      const scaleResult = await clients.k8sAppsApi.readNamespacedDeploymentScale(deploymentName, namespace);
-      const podSelector = scaleResult.body.status.selector;
-      const podResult = await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelector);
+      let podResult;
+      try {
+        logger.debug(`Fetching scale info for ${deploymentName} in namespace ${namespace} given context ${context}`);
+        const scaleResult = await clients.k8sAppsApi.readNamespacedDeploymentScale(deploymentName, namespace);
+        const podSelector = scaleResult.body.status.selector;
+        logger.debug(`Using pod selector [${podSelector}]`);
+        podResult = await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelector);
+      } catch (e) {
+        logger.error(e);
+        throw e;
+      }
 
       const logsPerPod = await Promise.mapSeries(podResult.body.items, async (pod) => {
         const containers = pod.spec.containers;

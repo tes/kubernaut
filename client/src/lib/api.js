@@ -142,7 +142,12 @@ export const getDeployments = ({ limit = 20, offset = 0, service, registry, name
 
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 
-export const getLatestDeploymentsByNamespaceForService = ({ registry, service }) => makeRequest(`/api/deployments/latest-by-namespace/${registry}/${service}`);
+export const getLatestDeploymentsByNamespaceForService = ({ registry, service, includeFailed }) => {
+  let url = `/api/deployments/latest-by-namespace/${registry}/${service}`;
+  if (includeFailed) url = `${url}?includeFailed=true`;
+
+  return makeRequest(url);
+};
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 

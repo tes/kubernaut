@@ -112,7 +112,7 @@ export default function(options) {
       });
     }
 
-    async function findLatestDeploymentsByNamespaceForService(registryId, service, user) {
+    async function findLatestDeploymentsByNamespaceForService(registryId, service, user, includeFailed) {
       logger.debug(`Getting latest deployment per namespace for service: ${service} for user ${user.id}`);
 
       const builder = sqb
@@ -135,18 +135,22 @@ export default function(options) {
         .join(join('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster'))))
         .where(Op.eq('sr.id', registryId))
         .where(Op.eq('s.name', service))
-        .where(Op.and(
-          Op.or(
-            Op.lte('d.apply_exit_code', 0),
-            Op.is('d.apply_exit_code', null)
-          ),
-          Op.or(
-            Op.lte('d.rollout_status_exit_code', 0),
-            Op.is('d.rollout_status_exit_code', null)
-          )
-        ))
         .where(Op.in('d.namespace', await authz.querySubjectIdsWithPermission('namespace', user.id, 'deployments-read')))
         .orderBy('c.priority asc');
+
+        if (!includeFailed) {
+          builder
+            .where(Op.and(
+              Op.or(
+                Op.lte('d.apply_exit_code', 0),
+                Op.is('d.apply_exit_code', null)
+              ),
+              Op.or(
+                Op.lte('d.rollout_status_exit_code', 0),
+                Op.is('d.rollout_status_exit_code', null)
+              )
+            ));
+        }
 
       return await db.withTransaction(async connection => {
         return await connection.query(db.serialize(builder, {}).sql);
