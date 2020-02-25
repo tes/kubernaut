@@ -48,11 +48,5 @@ RUN apk -U --no-cache add tzdata ca-certificates \
 ENV HOME=/config
 ENV NODE_ENV=production
 
-# Install the kubectl client
-RUN set -xe ; \
-    wget -O /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.17.1/bin/linux/amd64/kubectl ; \
-    chmod +x /usr/local/bin/kubectl ; \
-    kubectl version --client
-
 # Copy prebuilt application
 COPY --from=build /opt/kubernaut/ /opt/kubernaut/
