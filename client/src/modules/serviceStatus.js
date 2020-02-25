@@ -91,7 +91,7 @@ export default handleActions({
   }),
   [FETCH_STATUS_SUCCESS]: (state, { payload }) => ({
     ...state,
-    status: _sortBy(payload.data, 'createdAt').reverse(),
+    status: _sortBy(payload.data, (p) => (new Date(p.createdAt))).reverse(),
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'status', false),
