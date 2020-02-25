@@ -40,7 +40,7 @@ describe('ServiceStatus Reducer', () => {
   it('should update state when service status has loaded', () => {
     const data = [{ createdAt: 2 }, { createdAt: 1 }];
     const state = reduce(createInitialState(), FETCH_STATUS_SUCCESS({ data }));
-    expect(state.status).toMatchObject([{ createdAt: 1 }, { createdAt: 2 }]);
+    expect(state.status).toMatchObject([{ createdAt: 2 }, { createdAt: 1 }]);
     expect(state.meta.loading.sections.status).toBe(false);
   });
 

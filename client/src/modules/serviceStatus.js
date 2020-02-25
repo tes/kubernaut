@@ -1,4 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
+import { sortBy as _sortBy } from 'lodash';
 import computeLoading from './lib/computeLoading';
 const actionsPrefix = 'KUBERNAUT/SERVICE_STATUS';
 export const initServiceStatusPage = createAction(`${actionsPrefix}/INIT_SERVICE_STATUS_PAGE`);
@@ -90,7 +91,7 @@ export default handleActions({
   }),
   [FETCH_STATUS_SUCCESS]: (state, { payload }) => ({
     ...state,
-    status: payload.data.sort((a,b) => (b.createdAt - a.createdAt)).reverse(),
+    status: _sortBy(payload.data, 'createdAt').reverse(),
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'status', false),
