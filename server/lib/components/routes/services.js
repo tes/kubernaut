@@ -127,7 +127,7 @@ export default function(options = {}) {
 
         const namespace = await store.getNamespace(req.params.namespaceId);
         if (!namespace) return next(Boom.notFound());
-        if (! await store.hasPermissionOnNamespace(req.user, registry.id, 'deployments-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'deployments-read')) return next(Boom.forbidden());
         let result;
         try {
           result = await kubernetes.getLastLogsForDeployment(namespace.cluster.config, namespace.context, namespace.name, service.name, logger);

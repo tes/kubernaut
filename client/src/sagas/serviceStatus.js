@@ -54,7 +54,7 @@ export function* fetchLatestDeploymentsByNamespaceForServiceSaga({ payload = {} 
   if (!service) throw new Error('provide a service');
 
   const quiet = options.quiet;
-  yield put(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST({ loading: true }));
+  yield put(FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST());
 
   try {
     const data = yield call(getLatestDeploymentsByNamespaceForService, {
@@ -89,13 +89,13 @@ export function* fetchTeamForServiceSaga({ payload = {} }) {
 }
 
 export function* fetchStatusSaga({ payload = {} }) {
-  const { registry, service, namespaceId } = payload;
+  const { registry, service, namespaceId, quiet } = payload;
   try {
     yield put(FETCH_STATUS_REQUEST());
     const data = yield call(getStatusForService, { registry, service, namespaceId });
     yield put(FETCH_STATUS_SUCCESS({ data }));
   } catch (error) {
-    console.error(error); // eslint-disable-line no-console
+    if (!quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_STATUS_ERROR());
   }
 }
