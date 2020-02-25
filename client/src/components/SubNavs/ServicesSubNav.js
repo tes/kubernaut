@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   ServiceLink,
+  ServiceStatusLink,
   ManageServiceLink,
   ServiceSecretsForNamespaceLink,
   NamespacePill,
@@ -34,6 +35,11 @@ class ServicesSubNav extends Component {
               <ServiceLink container registryName={registryName} serviceName={serviceName}>
                 <NavLink>{`${registryName}/${serviceName}`}</NavLink>
               </ServiceLink>
+            </NavItem>
+            <NavItem>
+              <ServiceStatusLink container registryName={registryName} serviceName={serviceName}>
+                <NavLink>Status</NavLink>
+              </ServiceStatusLink>
             </NavItem>
             { canManage ?
               <NavItem>

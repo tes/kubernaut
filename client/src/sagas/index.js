@@ -24,6 +24,7 @@ import secretVersionSagas from './secretVersion';
 import serviceManageSagas from './serviceManage';
 import serviceNamespaceAttrsSagas from './serviceNamespaceAttrs';
 import servicesSagas from './services';
+import serviceStatusSagas from './serviceStatus';
 import teamSagas from './team';
 import teamAttrsSagas from './teamAttrs';
 import teamsSagas from './teams';
@@ -55,6 +56,7 @@ export default function* rootSaga() {
     ...serviceManageSagas,
     ...serviceNamespaceAttrsSagas,
     ...servicesSagas,
+    ...serviceStatusSagas,
     ...teamSagas,
     ...teamAttrsSagas,
     ...teamsSagas,

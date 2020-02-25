@@ -25,6 +25,7 @@ import secretVersion from './secretVersion';
 import serviceManage from './serviceManage';
 import serviceNamespaceAttrs from './serviceNamespaceAttrs';
 import services from './services';
+import serviceStatus from './serviceStatus';
 import team from './team';
 import teamAttrs from './teamAttrs';
 import teams from './teams';
@@ -56,6 +57,7 @@ export default (history) => combineReducers({
   serviceManage,
   serviceNamespaceAttrs,
   services,
+  serviceStatus,
   team,
   teamAttrs,
   teams,

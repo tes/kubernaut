@@ -41,7 +41,7 @@ export default () => systemic({
   .add('routes.deployments', deployments())
     .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
   .add('routes.services', services())
-    .dependsOn(...minimumRequirements, 'store', 'auth')
+    .dependsOn(...minimumRequirements, 'store', 'auth', 'kubernetes')
   .add('routes.secrets', secrets())
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.teams', teams())

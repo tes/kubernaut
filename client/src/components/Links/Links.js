@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
+import { matchPath } from 'react-router';
 import { stringify } from 'query-string';
 import { Badge } from 'reactstrap';
+import paths from '../../paths';
+
+const { serviceStatus } = paths;
 
 export const AccountLink = ({ account, children, container }) => {
   const Tag = container ? LinkContainer : Link;
@@ -218,4 +222,18 @@ export const AccountMembershipLink = ({ account = {}, container, accountId, chil
   };
 
   return <Tag {...props}>{children || <span><i className="fa fa-users" aria-hidden='true'></i> Team Membership</span>}</Tag>;
+};
+
+export const ServiceStatusLink = ({ registryName = '', serviceName = '', container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/services/${registryName}/${serviceName}/status`,
+    ...container && { exact: true },
+    isActive: (match, location) => (
+      matchPath(location.pathname, { path: serviceStatus.route, exact: true })
+      // "manual" because we optionally match on the namespace in the url as well
+    ),
+  };
+
+  return <Tag {...props}>{children || <span>Status</span>}</Tag>;
 };

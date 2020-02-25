@@ -3,7 +3,7 @@ import Boom from 'boom';
 import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
-  function start({ app, store, auth }, cb) {
+  function start({ app, store, auth, kubernetes, logger }, cb) {
     app.use('/api/services', auth('api'));
     app.use('/api/services-with-status-for-namespace/:namespaceId', auth('api'));
     app.use('/api/service/:serviceId/enable-deployment/:namespaceId', auth('api'));
@@ -108,6 +108,36 @@ export default function(options = {}) {
         const result = await store.serviceDeployStatusForNamespaces(service.id, req.user, limit, offset);
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed service status for namespaces', { registry, service });
+        return res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/services/:registry/:service/:namespaceId/snapshot', async (req, res, next) => {
+      try {
+        const registry = await store.findRegistry({ name: req.params.registry });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const service = await store.findService({ filters: parseFilters(req.params, ['service', 'registry'], {
+          service: 'name'
+        }) });
+        if (!service) return next(Boom.notFound());
+
+        const namespace = await store.getNamespace(req.params.namespaceId);
+        if (!namespace) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, registry.id, 'deployments-read')) return next(Boom.forbidden());
+        let result;
+        try {
+          result = await kubernetes.getLastLogsForDeployment(namespace.cluster.config, namespace.context, namespace.name, service.name, logger);
+        } catch (e) {
+          logger.error(e);
+          result = [];
+        }
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed service status for namespace', { registry, service, namespace });
         return res.json(result);
       } catch (err) {
         next(err);

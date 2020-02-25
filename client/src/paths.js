@@ -21,6 +21,7 @@ import { initSecretOverview } from './modules/secretOverview';
 import { fetchVersion } from './modules/secretVersion';
 import { initNewSecretVersion } from './modules/newSecretVersion';
 import { initServicesPage } from './modules/services';
+import { initServiceStatusPage } from './modules/serviceStatus';
 import { initServiceManage } from './modules/serviceManage';
 import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespaceAttrs';
 import { initialiseTeamPage } from './modules/team';
@@ -106,6 +107,10 @@ const paths = {
   service: {
     route: '/services/:registry/:name',
     action: initServiceDetailPage,
+  },
+  serviceStatus: {
+    route: '/services/:registry/:name/status/:namespaceId?',
+    action: initServiceStatusPage,
   },
   serviceNamespaceAttrs: {
     route: '/services/:registry/:name/manage/attributes/:namespaceId',

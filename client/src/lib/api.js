@@ -194,6 +194,8 @@ export const getServiceSuggestions = (registry, service) => makeRequest(`/api/re
 export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
   .then(computePagination);
 
+export const getStatusForService = ({ service, registry, namespaceId }) => makeRequest(`/api/services/${registry}/${service}/${namespaceId}/snapshot`);
+
 export const getSystemRoles = (accountId) => {
     const url = `/api/accounts/${accountId}/system`;
     return makeRequest(url);

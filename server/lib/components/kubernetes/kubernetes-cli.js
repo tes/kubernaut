@@ -9,6 +9,7 @@ import {
   loadAllYaml,
 } from '@kubernetes/client-node';
 import _ from 'lodash';
+import Promise from 'bluebird';
 
 const ssaHeaders = {
   'content-type': 'application/apply-patch+yaml'
@@ -225,6 +226,47 @@ export default function(options = {}) {
       }
     }
 
+    async function getLastLogsForDeployment(config, context, namespace, deploymentName, logger) {
+      const clients = createClients(config, context);
+
+      const scaleResult = await clients.k8sAppsApi.readNamespacedDeploymentScale(deploymentName, namespace);
+      const podSelector = scaleResult.body.status.selector;
+      const podResult = await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelector);
+
+      const logsPerPod = await Promise.mapSeries(podResult.body.items, async (pod) => {
+        const containers = pod.spec.containers;
+        const logsPerContainer = await Promise.mapSeries(containers, async (container) => {
+          let previous;
+          let current;
+          try {
+            previous = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, true, undefined, 30)).body;
+          } catch (e) {}
+          try {
+            current = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+          } catch (e) {}
+
+          const logs = {
+            current,
+            previous,
+          };
+
+          return {
+            name: container.name,
+            logs,
+          };
+        });
+
+        return {
+          name: pod.metadata.name,
+          status: pod.status.phase,
+          createdAt: pod.metadata.creationTimestamp,
+          logsPerContainer,
+        };
+      });
+
+      return logsPerPod;
+    }
+
     return cb(null, {
       apply,
       checkConfig,
@@ -232,6 +274,7 @@ export default function(options = {}) {
       checkCluster,
       checkNamespace,
       rolloutStatus,
+      getLastLogsForDeployment,
     });
   }
 
