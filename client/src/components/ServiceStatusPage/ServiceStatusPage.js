@@ -9,6 +9,7 @@ import {
   CardBody,
   FormGroup,
   Label,
+  Table,
 } from 'reactstrap';
 import { Field } from 'redux-form';
 import Title from '../Title';
@@ -56,6 +57,39 @@ class LogsContainer extends Component {
   }
 }
 
+class PodEvents extends Component {
+  render() {
+    if (!this.props.events || !this.props.events.length) return null;
+    return (
+      <Row>
+        <Col>
+          <div>Recent pod events:</div>
+          <Table hover responsive size="sm">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Reason</th>
+                <th>Age</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.props.events.map(e => (
+                <tr>
+                  <td>{e.type}</td>
+                  <td>{e.reason}</td>
+                  <td><Ago date={e.metadata.creationTimestamp} /></td>
+                  <td>{e.message}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
+    );
+  }
+}
+
 class Pod extends Component {
   render() {
     const {
@@ -63,6 +97,7 @@ class Pod extends Component {
       status,
       createdAt,
       logsPerContainer,
+      events,
     } = this.props;
 
     return (
@@ -75,6 +110,7 @@ class Pod extends Component {
               <span><strong>Created:</strong> <Ago date={createdAt} /></span>
             </CardHeader>
             <CardBody>
+              <PodEvents events={events} />
               {logsPerContainer.map((c) => (
                 <LogsContainer {...c} key={c.name} />
               ))}

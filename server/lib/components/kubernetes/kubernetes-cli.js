@@ -240,7 +240,9 @@ export default function(options = {}) {
         throw e;
       }
 
+
       const logsPerPod = await Promise.mapSeries(podResult.body.items, async (pod) => {
+        const podEvents = (await clients.k8sApi.listNamespacedEvent(namespace, undefined, undefined, undefined, `involvedObject.name=${pod.metadata.name}`)).body.items;
         const containers = pod.spec.containers;
         const logsPerContainer = await Promise.mapSeries(containers, async (container) => {
           let previous;
@@ -268,6 +270,7 @@ export default function(options = {}) {
           status: pod.status.phase,
           createdAt: pod.metadata.creationTimestamp,
           logsPerContainer,
+          events: podEvents,
         };
       });
 
