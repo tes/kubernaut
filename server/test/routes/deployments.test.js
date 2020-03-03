@@ -254,8 +254,8 @@ describe('Deployments API', () => {
       expect(deployment.namespace.id).toBe(namespace.id);
       expect(deployment.namespace.cluster.id).toBe(cluster.id);
       expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
-      expect(deployment.manifest.json[2].spec.replicas).toBe(3);
-      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(deployment.manifest.json[1].spec.replicas).toBe(3);
+      expect(deployment.manifest.json[1].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
       expect(deployment.release.service.name).toBe(release.service.name);
       expect(deployment.release.version).toBe(release.version);
       expect(deployment.applyExitCode).toBe(0);
@@ -305,8 +305,8 @@ describe('Deployments API', () => {
       expect(deployment.namespace.id).toBe(namespace.id);
       expect(deployment.namespace.cluster.id).toBe(cluster.id);
       expect(deployment.manifest.yaml).toMatch(/image: "registry\/repo\/release-1:22"/);
-      expect(deployment.manifest.json[2].spec.replicas).toBe(3);
-      expect(deployment.manifest.json[2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(deployment.manifest.json[1].spec.replicas).toBe(3);
+      expect(deployment.manifest.json[1].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
       expect(deployment.release.service.name).toBe(release.service.name);
       expect(deployment.release.version).toBe(release.version);
       expect(deployment.applyExitCode).toBe(0);
@@ -385,8 +385,8 @@ describe('Deployments API', () => {
       expect(response.id).toBeDefined();
 
       expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
-      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(3);
-      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][2].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(2);
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][1].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
     });
 
     it('should apply the kubernetes manifest (with secrets)', async () => {
@@ -426,13 +426,13 @@ describe('Deployments API', () => {
 
       expect(response.id).toBeDefined();
       expect(kubernetes.getContexts().test.namespaces.default.manifests.length).toBe(1);
-      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(5);
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0].length).toBe(4);
       const secretSpec = kubernetes.getContexts().test.namespaces.default.manifests[0][0];
       expect(secretSpec.kind).toBe('Secret');
       expect(secretSpec.metadata.name).toBe(release.service.name);
       expect(secretSpec.data['config.json']).toBeDefined();
       expect(secretSpec.data['config.json']).toBe(Buffer.from('{"a":1}').toString('base64'));
-      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][4].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
+      expect(kubernetes.getContexts().test.namespaces.default.manifests[0][3].spec.template.spec.containers[0].image).toBe('registry/repo/release-1:22');
     });
 
     it('should report apply failure', async () => {

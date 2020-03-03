@@ -285,6 +285,7 @@ export default function(options = {}) {
       checkNamespace,
       rolloutStatus,
       getLastLogsForDeployment,
+      createClients,
     });
   }
 

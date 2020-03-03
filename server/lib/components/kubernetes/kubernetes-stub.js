@@ -39,7 +39,7 @@ export default function(options = {}) {
         const manifestJson = safeLoadAll(manifest);
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} apply -f \${MANIFEST}\n` });
 
-        const name = manifestJson[2].metadata.name;
+        const name = manifestJson.find((doc) => (doc && doc.kind && doc.kind === 'Deployment')).metadata.name;
 
         if (/^z-/.test(name)) return resolve(99);
 

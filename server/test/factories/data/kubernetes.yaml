@@ -1,39 +1,26 @@
 ---
-apiVersion: voyager.appscode.com/v1beta1
-kind: Ingress
-metadata:
-  name: "{{service}}-ingress"
-  annotations:
-    kubernetes.io/ingress.class: voyager
-    ingress.appscode.com/type: LoadBalancer
-    ingress.appscode.com/replicas: '2'
-    ingress.appscode.com/stats: 'true'
-spec:
-  backend:
-    serviceName: "{{service}}"
-    servicePort: '80'
-
----
-apiVersion: v1
 kind: Service
-metadata:
-  name: "{{service}}"
-spec:
-  selector:
-    app: "{{service}}"
-  ports:
-    - port: 80
-      targetPort: web
-      protocol: TCP
-
----
-apiVersion: apps/v1beta1
-kind: Deployment
+apiVersion: v1
 metadata:
   name: "{{service}}"
   labels:
     app: "{{service}}"
-    version: "{{version}}"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: http
+  selector:
+    app: {{service}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{service}}"
+  labels:
+    service: "{{service}}"
 spec:
   replicas: {{replicas}}
   selector:
@@ -43,10 +30,33 @@ spec:
     metadata:
       labels:
         app: "{{service}}"
+        com.tescloud/service: "true"
     spec:
       containers:
-      - name: "{{service}}"
+      - name: service
         image: "{{image}}"
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024M
+          requests:
+            cpu: 50m
+            memory: 128M
+        livenessProbe:
+          httpGet:
+            port: http
+            path: /status
+          timeoutSeconds: 1
+          initialDelaySeconds: 30
+          failureThreshold: 4
+        readinessProbe:
+          httpGet:
+            port: http
+            path: /status
+          timeoutSeconds: 1
+          initialDelaySeconds: 5
+          failureThreshold: 2
         ports:
-        - containerPort: 3000
-          name: web
+        - name: http
+          containerPort: 3000
