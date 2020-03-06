@@ -230,6 +230,10 @@ export default function(options = {}) {
       const clients = createClients(config, context);
       let podResult;
       try {
+        logger.debug(`Checking deployment (${deploymentName} in namespace ${namespace} given context ${context}) actually exists - this prevents a memory explosion when checking non-existent scale`);
+        const deployments = (await clients.k8sAppsApi.listNamespacedDeployment(namespace, undefined, undefined, undefined, `metadata.name=${deploymentName}`)).body;
+        if (deployments.items.length === 0) return [];
+
         logger.debug(`Fetching scale info for ${deploymentName} in namespace ${namespace} given context ${context}`);
         const scaleResult = await clients.k8sAppsApi.readNamespacedDeploymentScale(deploymentName, namespace);
         const podSelector = scaleResult.body.status.selector;
