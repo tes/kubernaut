@@ -6,6 +6,7 @@ CREATE TABLE job_version
     version uuid NOT NULL,
     job uuid NOT NULL,
     yaml text NOT NULL,
+    created_by uuid NOT NULL,
     created_on timestamp with time zone NOT NULL,
 
     CONSTRAINT job_version_pkey PRIMARY KEY (id),
