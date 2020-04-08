@@ -31,6 +31,8 @@ import { fetchTeamsPagination } from './modules/teams';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 
+import { INITIALISE as initBuilderTest } from './modules/builderTest';
+
 const paths = {
   account: {
     route: '/accounts/:accountId',
@@ -67,6 +69,10 @@ const paths = {
   home: {
     route: '/',
     action: initHomePage,
+  },
+  jobsTest: {
+    route: '/jobs-builder',
+    action: initBuilderTest,
   },
   namespace: {
     route: '/namespaces/:namespaceId',

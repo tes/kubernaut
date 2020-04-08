@@ -31,6 +31,8 @@ import teamAttrs from './teamAttrs';
 import teams from './teams';
 import viewAccount from './viewAccount';
 
+import builderTest from './builderTest';
+
 export default (history) => combineReducers({
   form: formReducer,
   router: connectRouter(history),
@@ -62,4 +64,5 @@ export default (history) => combineReducers({
   teamAttrs,
   teams,
   viewAccount,
+  builderTest,
 });

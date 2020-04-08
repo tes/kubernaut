@@ -32,6 +32,8 @@ import TeamAttrsPage from './components/TeamAttrsPage';
 import TeamEditPage from './components/TeamEditPage';
 import TeamsPage from './components/TeamsPage';
 
+import BuilderTest from './components/BuilderTest';
+
 import paths from './paths';
 
 const Wrapper = ({ title, children }) => (
@@ -267,6 +269,13 @@ export default () => <Switch>
     path={paths.deploy.route}
     render={({ location }) => {
       return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
+    }}
+  />
+  <Route
+    exact
+    path={paths.jobsTest.route}
+    render={() => {
+      return <Wrapper title="bob"><BuilderTest /></Wrapper>
     }}
   />
   <Route
