@@ -140,7 +140,28 @@ export const getDeployments = ({ limit = 20, offset = 0, service, registry, name
   return makeRequest(`/api/deployments?${qs}`).then(computePagination);
 };
 
-export const getJobs = () => makeRequest('/api/jobs').then(computePagination);
+export const getJob = (id) => makeRequest(`/api/jobs/${id}`);
+
+export const getJobs = ({ limit = 20, offset = 0, filters = {}, sort, order }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    sort,
+    order,
+    ...stringifyFilters(filters)
+  });
+  return makeRequest(`/api/jobs?${qs}`).then(computePagination);
+};
+
+export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    sort,
+    order,
+  });
+  return makeRequest(`/api/jobs/${id}/versions?${qs}`).then(computePagination);
+};
 
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 

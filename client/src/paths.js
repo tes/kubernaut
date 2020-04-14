@@ -29,6 +29,7 @@ import { fetchTeamInfo } from './modules/editTeam';
 import { initForm as initTeamAttrs } from './modules/teamAttrs';
 import { fetchTeamsPagination } from './modules/teams';
 import { fetchJobsPagination } from './modules/jobs';
+import { initialiseJobPage } from './modules/job';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 
@@ -74,6 +75,10 @@ const paths = {
   jobs: {
     route: '/jobs',
     action: fetchJobsPagination,
+  },
+  job: {
+    route: '/jobs/:id',
+    action: initialiseJobPage,
   },
   jobsTest: {
     route: '/jobs-builder',

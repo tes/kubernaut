@@ -13,6 +13,7 @@ import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import HomePage from './components/HomePage';
+import JobPage from './components/JobPage';
 import JobsPage from './components/JobsPage';
 import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
@@ -140,6 +141,11 @@ export default () => <Switch>
     render={({ match }) => <Wrapper>
           <DeploymentDetailsPage />
         </Wrapper>}
+  />
+  <Route
+    exact
+    path={paths.job.route}
+    render={() => <Wrapper title="Job"><JobPage /></Wrapper> }
   />
   <Route
     exact

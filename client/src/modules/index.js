@@ -12,6 +12,7 @@ import editAccount from './editAccount';
 import editAccountTeams from './editAccountTeams';
 import editTeam from './editTeam';
 import home from './home';
+import job from './job';
 import jobs from './jobs';
 import namespace from './namespace';
 import namespaceEdit from './namespaceEdit';
@@ -47,6 +48,7 @@ export default (history) => combineReducers({
   editAccountTeams,
   editTeam,
   home,
+  job,
   jobs,
   namespace,
   namespaceEdit,
