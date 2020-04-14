@@ -140,6 +140,8 @@ export const getDeployments = ({ limit = 20, offset = 0, service, registry, name
   return makeRequest(`/api/deployments?${qs}`).then(computePagination);
 };
 
+export const getJobs = () => makeRequest('/api/jobs').then(computePagination);
+
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service, includeFailed }) => {

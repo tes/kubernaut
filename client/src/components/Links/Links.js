@@ -39,6 +39,16 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
+export const JobLink = ({ job, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/jobs/${job.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-cogs" aria-hidden='true'></i> {job.name}</span>}</Tag>;
+};
+
 export const TeamLink = ({ team, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {

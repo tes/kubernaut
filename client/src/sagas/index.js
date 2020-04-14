@@ -11,6 +11,7 @@ import editAccountSagas from './editAccount';
 import editAccountTeamsSagas from './editAccountTeams';
 import editTeamSagas from './editTeam';
 import homeSagas from './home';
+import jobsSagas from './jobs';
 import namespaceSagas from './namespace';
 import namespaceEditSagas from './namespaceEdit';
 import namespaceManageSagas from './namespaceManage';
@@ -43,6 +44,7 @@ export default function* rootSaga() {
     ...editAccountTeamsSagas,
     ...editTeamSagas,
     ...homeSagas,
+    ...jobsSagas,
     ...namespaceSagas,
     ...namespaceEditSagas,
     ...namespaceManageSagas,

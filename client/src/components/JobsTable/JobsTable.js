@@ -2,17 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
-import { TeamLink } from '../Links';
+import { JobLink, NamespaceLink } from '../Links';
 
-class TeamsTable extends Component {
+class JobsTable extends Component {
 
   render() {
-    const { error = null, loading = false, teams = {}, fetchTeams } = this.props;
+    const { error = null, loading = false, jobs = {}, fetchJobs } = this.props;
 
     const errorTableBody = () =>
       <tbody>
         <tr>
-          <td colSpan='4'>Error loading teams</td>
+          <td colSpan='4'>Error loading jobs</td>
         </tr>
       </tbody>
     ;
@@ -20,7 +20,7 @@ class TeamsTable extends Component {
     const loadingTableBody = () =>
       <tbody>
         <tr>
-          <td colSpan='4'>Loading teams…</td>
+          <td colSpan='4'>Loading jobs…</td>
         </tr>
       </tbody>
     ;
@@ -28,17 +28,18 @@ class TeamsTable extends Component {
     const emptyTableBody = () =>
       <tbody>
         <tr>
-          <td colSpan='4'>There are no teams</td>
+          <td colSpan='4'>There are no jobs</td>
         </tr>
       </tbody>
     ;
 
-    const TeamsTableBody = () =>
+    const JobsTableBody = () =>
       <tbody>
       {
-        teams.items.map(team => {
-          return <tr key={team.id} >
-            <td><TeamLink team={team} /></td>
+        jobs.items.map(job => {
+          return <tr key={job.id} >
+            <td><JobLink job={job} /></td>
+            <td><NamespaceLink namespace={job.namespace} pill /></td>
           </tr>;
         })
       }
@@ -51,32 +52,33 @@ class TeamsTable extends Component {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Namespace</th>
             </tr>
           </thead>
           {
             (() => {
               if (error) return errorTableBody();
               else if (loading) return loadingTableBody();
-              else if (!teams.count) return emptyTableBody();
-              else return TeamsTableBody();
+              else if (!jobs.count) return emptyTableBody();
+              else return JobsTableBody();
             })()
           }
         </Table>
         <TablePagination
-          pages={teams.pages}
-          page={teams.page}
-          limit={teams.limit}
-          fetchContent={fetchTeams}
+          pages={jobs.pages}
+          page={jobs.page}
+          limit={jobs.limit}
+          fetchContent={fetchJobs}
         />
       </div>
     );
   }
 }
 
-TeamsTable.propTypes = {
+JobsTable.propTypes = {
   error: PropTypes.object,
   loading: PropTypes.bool,
-  teams: PropTypes.shape({
+  jobs: PropTypes.shape({
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,
     pages: PropTypes.number.isRequired,
@@ -84,7 +86,7 @@ TeamsTable.propTypes = {
     count: PropTypes.number.isRequired,
     items: PropTypes.array.isRequired,
   }),
-  fetchTeams: PropTypes.func,
+  fetchJobs: PropTypes.func,
 };
 
-export default TeamsTable;
+export default JobsTable;

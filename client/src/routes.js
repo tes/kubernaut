@@ -13,6 +13,7 @@ import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import HomePage from './components/HomePage';
+import JobsPage from './components/JobsPage';
 import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
@@ -139,6 +140,11 @@ export default () => <Switch>
     render={({ match }) => <Wrapper>
           <DeploymentDetailsPage />
         </Wrapper>}
+  />
+  <Route
+    exact
+    path={paths.jobs.route}
+    render={() => <Wrapper title="Jobs"><JobsPage /></Wrapper> }
   />
   <Route
     exact
@@ -275,7 +281,7 @@ export default () => <Switch>
     exact
     path={paths.jobsTest.route}
     render={() => {
-      return <Wrapper title="bob"><BuilderTest /></Wrapper>
+      return <Wrapper title="bob"><BuilderTest /></Wrapper>;
     }}
   />
   <Route

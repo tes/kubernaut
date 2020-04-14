@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'reactstrap';
-import TeamsTable from '../TeamsTable';
+import JobsTable from '../JobsTable';
 
 class TeamsPage extends Component {
 
   render() {
-    const { teams, fetchTeamsPagination } = this.props;
+    const { jobs, fetchJobsPagination } = this.props;
 
     return (
       <div className='page-frame'>
         <Row>
           <Col md="6">
-            <TeamsTable teams={teams.data} loading={teams.meta.loading} error={teams.meta.error} fetchTeams={fetchTeamsPagination} />
+            <JobsTable jobs={jobs.data} loading={jobs.meta.loading} error={jobs.meta.error} fetchJobs={fetchJobsPagination} />
           </Col>
         </Row>
       </div>
@@ -21,7 +21,7 @@ class TeamsPage extends Component {
 }
 
 TeamsPage.propTypes = {
-  teams: PropTypes.object,
+  jobs: PropTypes.object,
 };
 
 export default TeamsPage;
