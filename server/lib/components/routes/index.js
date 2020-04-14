@@ -1,16 +1,17 @@
 import systemic from 'systemic';
 import system from './system';
+import app from './app';
 import accounts from './accounts';
+import audit from './audit';
+import clusters from './clusters';
+import deployments from './deployments';
+import jobs from './jobs';
+import namespaces from './namespaces';
 import registries from './registries';
 import releases from './releases';
-import clusters from './clusters';
-import namespaces from './namespaces';
-import deployments from './deployments';
-import services from './services';
 import secrets from './secrets';
+import services from './services';
 import teams from './teams';
-import audit from './audit';
-import app from './app';
 
 const minimumRequirements = [
   'config',
@@ -30,23 +31,25 @@ export default () => systemic({
     .dependsOn(...minimumRequirements, 'pkg')
   .add('routes.accounts', accounts())
     .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.audit', audit())
+    .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.clusters', clusters())
+    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
+  .add('routes.deployments', deployments())
+    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
+  .add('routes.jobs', jobs())
+    .dependsOn(...minimumRequirements, 'store', 'auth', 'kubernetes')
+  .add('routes.namespaces', namespaces())
+    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
   .add('routes.registries', registries())
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.releases', releases())
     .dependsOn(...minimumRequirements, 'store', 'checksum', 'kubernetes', 'auth')
-  .add('routes.clusters', clusters())
-    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
-  .add('routes.namespaces', namespaces())
-    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
-  .add('routes.deployments', deployments())
-    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
-  .add('routes.services', services())
-    .dependsOn(...minimumRequirements, 'store', 'auth', 'kubernetes')
   .add('routes.secrets', secrets())
     .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.services', services())
+    .dependsOn(...minimumRequirements, 'store', 'auth', 'kubernetes')
   .add('routes.teams', teams())
-    .dependsOn(...minimumRequirements, 'store', 'auth')
-  .add('routes.audit', audit())
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.app', app())
     .dependsOn(...minimumRequirements, 'auth', 'passport')
@@ -54,14 +57,15 @@ export default () => systemic({
     .dependsOn(
       'routes.system',
       'routes.accounts',
+      'routes.audit',
+      'routes.clusters',
+      'routes.deployments',
+      'routes.jobs',
+      'routes.namespaces',
       'routes.registries',
       'routes.releases',
-      'routes.clusters',
-      'routes.namespaces',
-      'routes.deployments',
-      'routes.services',
       'routes.secrets',
+      'routes.services',
       'routes.teams',
-      'routes.audit',
       'routes.app'
     );

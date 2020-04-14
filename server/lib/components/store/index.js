@@ -8,6 +8,7 @@ import namespace from './namespace';
 import account from './account';
 import release from './release';
 import deployment from './deployment';
+import job from './job';
 import service from './service';
 import secret from './secret';
 import audit from './audit';
@@ -28,6 +29,7 @@ export default () => systemic({ name: 'stores/postgres' })
   .add('store.account', account()).dependsOn('config', { component: 'config', source: 'auth', destination: 'authConfig' }, 'logger', 'db', authzDep)
   .add('store.release', release()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.deployment', deployment()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.job', job()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.service', service()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.secret', secret()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.team', team()).dependsOn('config', 'logger', 'db', authzDep)
@@ -44,4 +46,5 @@ export default () => systemic({ name: 'stores/postgres' })
     { component: 'store.secret', destination: 'secret' },
     { component: 'store.team', destination: 'team' },
     { component: 'store.audit', destination: 'audit' },
+    { component: 'store.job', destination: 'job' },
   );
