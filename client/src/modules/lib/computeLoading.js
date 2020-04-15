@@ -1,11 +1,23 @@
 export default (currentLoading, key, isLoading) => {
-  const newLoading = {
-    ...currentLoading,
-    sections: {
-      ...currentLoading.sections,
-      [key]: isLoading,
-    },
-  };
+  const newLoading = typeof key === 'object' ?
+    (
+      {
+        ...currentLoading,
+        sections: {
+          ...currentLoading.sections,
+          ...key,
+        },
+      }
+    )
+  : (
+    {
+      ...currentLoading,
+      sections: {
+        ...currentLoading.sections,
+        [key]: isLoading,
+      },
+    }
+  );
   const numberOfSections = Object.keys(newLoading.sections).length;
   const step = Math.floor(100 / numberOfSections);
   newLoading.loadingPercent = Object.keys(newLoading.sections).reduce((acc, section) => {

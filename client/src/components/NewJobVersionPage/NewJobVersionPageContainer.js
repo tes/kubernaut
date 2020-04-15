@@ -6,19 +6,20 @@ import {
 
 import {
   toggleCollapsed,
-} from '../../modules/builderTest';
-import BuilderTest from './BuilderTest';
+} from '../../modules/newJobVersion';
+import NewJobVersionPage from './NewJobVersionPage';
 
-const formName = 'BuilderTest';
+const formName = 'newJobVersion';
 
 const mapStateToProps = (state, props) => {
-  const { builderTest } = state;
+  const { newJobVersion } = state;
   const currentFormValues = getFormValues(formName)(state) || {};
 
   return {
-    initialValues: builderTest.initialValues,
+    initialValues: newJobVersion.initialValues,
     currentFormValues,
-    collapsed: builderTest.collapsed,
+    collapsed: newJobVersion.collapsed,
+    meta: newJobVersion.meta,
   };
 };
 
@@ -28,4 +29,4 @@ export default connect(mapStateToProps, {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(BuilderTest));
+})(NewJobVersionPage));

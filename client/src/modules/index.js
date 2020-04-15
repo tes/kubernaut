@@ -19,6 +19,7 @@ import namespace from './namespace';
 import namespaceEdit from './namespaceEdit';
 import namespaceManage from './namespaceManage';
 import namespaces from './namespaces';
+import newJobVersion from './newJobVersion';
 import newSecretVersion from './newSecretVersion';
 import registries from './registries';
 import releases from './releases';
@@ -34,7 +35,6 @@ import teamAttrs from './teamAttrs';
 import teams from './teams';
 import viewAccount from './viewAccount';
 
-import builderTest from './builderTest';
 
 export default (history) => combineReducers({
   form: formReducer,
@@ -56,6 +56,7 @@ export default (history) => combineReducers({
   namespaceEdit,
   namespaceManage,
   namespaces,
+  newJobVersion,
   newSecretVersion,
   registries,
   releases,
@@ -70,5 +71,4 @@ export default (history) => combineReducers({
   teamAttrs,
   teams,
   viewAccount,
-  builderTest,
 });

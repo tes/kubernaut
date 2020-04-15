@@ -31,10 +31,10 @@ import { fetchTeamsPagination } from './modules/teams';
 import { fetchJobsPagination } from './modules/jobs';
 import { initialiseJobPage } from './modules/job';
 import { initialiseJobVersionPage } from './modules/jobVersion';
+import { INITIALISE as initNewJobPage } from './modules/newJobVersion';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 
-import { INITIALISE as initBuilderTest } from './modules/builderTest';
 
 const paths = {
   account: {
@@ -85,10 +85,6 @@ const paths = {
     route: '/jobs/version/:id',
     action: initialiseJobVersionPage,
   },
-  jobsTest: {
-    route: '/jobs-builder',
-    action: initBuilderTest,
-  },
   namespace: {
     route: '/namespaces/:namespaceId',
     action: initialiseNamespacePage,
@@ -104,6 +100,10 @@ const paths = {
   namespaces: {
     route: '/namespaces',
     action: fetchNamespacesPagination,
+  },
+  newJobVersion: {
+    route: '/jobs/:id/new',
+    action: initNewJobPage,
   },
   newSecretVersion: {
     route: '/services/:registry/:name/manage/secrets/:namespaceId/new',

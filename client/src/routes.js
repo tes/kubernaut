@@ -20,6 +20,7 @@ import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
 import NamespaceManagePage from './components/NamespaceManagePage';
+import NewJobVersionPage from './components/NewJobVersionPage';
 import NewSecretVersionPage from './components/NewSecretVersionPage';
 import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
@@ -34,8 +35,6 @@ import TeamPage from './components/TeamPage';
 import TeamAttrsPage from './components/TeamAttrsPage';
 import TeamEditPage from './components/TeamEditPage';
 import TeamsPage from './components/TeamsPage';
-
-import BuilderTest from './components/BuilderTest';
 
 import paths from './paths';
 
@@ -157,6 +156,13 @@ export default () => <Switch>
     exact
     path={paths.jobVersion.route}
     render={() => <Wrapper title="Job Version"><JobVersionPage /></Wrapper> }
+  />
+  <Route
+    exact
+    path={paths.newJobVersion.route}
+    render={() => {
+      return <Wrapper title="New job version"><NewJobVersionPage /></Wrapper>;
+    }}
   />
   <Route
     exact
@@ -287,13 +293,6 @@ export default () => <Switch>
     path={paths.deploy.route}
     render={({ location }) => {
       return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
-    }}
-  />
-  <Route
-    exact
-    path={paths.jobsTest.route}
-    render={() => {
-      return <Wrapper title="bob"><BuilderTest /></Wrapper>;
     }}
   />
   <Route

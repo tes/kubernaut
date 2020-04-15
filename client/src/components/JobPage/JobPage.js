@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Table, Progress } from 'reactstrap';
+import { Row, Col, Table, Progress, Button } from 'reactstrap';
 import Title from '../Title';
-import { JobVersionLink } from '../Links';
+import { JobVersionLink, NewJobVersionLink } from '../Links';
 import { JobSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 
@@ -30,6 +30,17 @@ class JobPage extends Component {
             <Col md="8">
             </Col>
             <Col md="4">
+              <Row className="mb-2">
+                <Col>
+                  <NewJobVersionLink
+                    job={job}
+                  >
+                    <Button color="dark">
+                      Create new version
+                    </Button>
+                  </NewJobVersionLink>
+                </Col>
+              </Row>
               <Row>
                 <Col>
                   <h5>Versions:</h5>

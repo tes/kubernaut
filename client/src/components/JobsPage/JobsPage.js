@@ -11,7 +11,7 @@ class TeamsPage extends Component {
     return (
       <div className='page-frame'>
         <Row>
-          <Col md="6">
+          <Col md="8">
             <JobsTable jobs={jobs.data} loading={jobs.meta.loading} error={jobs.meta.error} fetchJobs={fetchJobsPagination} />
           </Col>
         </Row>

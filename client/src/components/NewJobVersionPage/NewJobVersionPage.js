@@ -14,6 +14,7 @@ import {
   CardBody,
   Collapse,
   Button,
+  Progress,
 } from 'reactstrap';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
@@ -411,6 +412,16 @@ class RenderVolumes extends Component {
 class BuilderTest extends Component {
 
   render() {
+    const { meta } = this.props;
+
+    if (meta.loading.loadingPercent !== 100) return (
+        <Row className="page-frame d-flex justify-content-center">
+          <Col sm="12" className="mt-5">
+            <Progress animated color="info" value={meta.loading.loadingPercent} />
+          </Col>
+        </Row>
+    );
+
     const availbleVolumes = this.props.currentFormValues.volumes || [];
 
     return (

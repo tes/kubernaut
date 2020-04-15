@@ -40,6 +40,16 @@ export const ClusterLink = ({ cluster }) => {
   );
 };
 
+export const NewJobVersionLink = ({ job, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/jobs/${job.id}/new`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>New version</span>}</Tag>;
+};
+
 export const JobLink = ({ job, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
