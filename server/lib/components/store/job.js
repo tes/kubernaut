@@ -37,6 +37,25 @@ export default function() {
       return result.rowCount ? toJob(result.rows[0]) : undefined;
     }
 
+    function getJobVersion(id) {
+      const versionBuilder = sqb
+        .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'a.display_name')
+        .from('active_job_version__vw jv')
+        .join(
+          innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
+        )
+        .where(Op.eq('jv.id', id));
+
+      return db.withTransaction(async connection => {
+        const versionResult = await connection.query(db.serialize(versionBuilder, {}).sql);
+
+        if (!versionResult.rowCount) return undefined;
+
+        const job = await _getJob(connection, versionResult.rows[0].job);
+        return toJobVersion(versionResult.rows[0], job);
+      });
+    }
+
 
     const sortMapping = {
       name: 'j.name',
@@ -95,12 +114,11 @@ export default function() {
       });
     }
 
-
     async function findJobVersions(job, limit = 50, offset = 0) {
       logger.debug(`Listing up to ${limit} job versions for job ${job.id} starting from offset: ${offset}`);
 
       const findVersionsBuilder = sqb
-        .select('jv.id', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'a.display_name')
+        .select('jv.id', 'jv.created_on', 'jv.created_by', 'a.display_name')
         .from('active_job_version__vw jv')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
@@ -185,9 +203,10 @@ export default function() {
       });
     }
 
-    function toJobVersion(row) {
+    function toJobVersion(row, job) {
       return new JobVersion({
         id: row.id,
+        job,
         yaml: row.yaml,
         createdOn: row.created_on,
         createdBy: new Account({
@@ -199,6 +218,7 @@ export default function() {
 
     cb(null, {
       getJob,
+      getJobVersion,
       findJobs,
       saveJob,
       findJobVersions,

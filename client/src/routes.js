@@ -15,6 +15,7 @@ import DeploymentDetailsPage from './components/DeploymentDetailsPage';
 import HomePage from './components/HomePage';
 import JobPage from './components/JobPage';
 import JobsPage from './components/JobsPage';
+import JobVersionPage from './components/JobVersionPage';
 import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
@@ -151,6 +152,11 @@ export default () => <Switch>
     exact
     path={paths.jobs.route}
     render={() => <Wrapper title="Jobs"><JobsPage /></Wrapper> }
+  />
+  <Route
+    exact
+    path={paths.jobVersion.route}
+    render={() => <Wrapper title="Job Version"><JobVersionPage /></Wrapper> }
   />
   <Route
     exact

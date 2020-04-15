@@ -30,6 +30,7 @@ import { initForm as initTeamAttrs } from './modules/teamAttrs';
 import { fetchTeamsPagination } from './modules/teams';
 import { fetchJobsPagination } from './modules/jobs';
 import { initialiseJobPage } from './modules/job';
+import { initialiseJobVersionPage } from './modules/jobVersion';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 
@@ -79,6 +80,10 @@ const paths = {
   job: {
     route: '/jobs/:id',
     action: initialiseJobPage,
+  },
+  jobVersion: {
+    route: '/jobs/version/:id',
+    action: initialiseJobVersionPage,
   },
   jobsTest: {
     route: '/jobs-builder',

@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Table, Progress } from 'reactstrap';
 import Title from '../Title';
-import { RegistryLink, ServiceLink, AccountLink } from '../Links';
-// import { TeamSubNav } from '../SubNavs';
+import { JobVersionLink } from '../Links';
+import { JobSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 
 class JobPage extends Component {
@@ -25,9 +25,11 @@ class JobPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Job: ${job.name}`}/>
-
+          <JobSubNav job={job} />
           <Row>
-            <Col md="6">
+            <Col md="8">
+            </Col>
+            <Col md="4">
               <Row>
                 <Col>
                   <h5>Versions:</h5>
@@ -45,7 +47,7 @@ class JobPage extends Component {
                     {
                       versions.data.items.map(version => (
                         <tr key={version.id}>
-                          <td>{version.createdOn}</td>
+                          <td><JobVersionLink version={version} /></td>
                         </tr>
                       ))
                     }

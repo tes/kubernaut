@@ -62,6 +62,21 @@ export default function() {
       }
     });
 
+    app.get('/api/jobs/version/:id', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const jobVersion = await store.getJobVersion(id);
+        if (!jobVersion) return next(Boom.notFound());
+        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed job version', { jobVersion });
+        return res.json(jobVersion);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 

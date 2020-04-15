@@ -153,6 +153,8 @@ export const getJobs = ({ limit = 20, offset = 0, filters = {}, sort, order }) =
   return makeRequest(`/api/jobs?${qs}`).then(computePagination);
 };
 
+export const getJobVersion = (id) => makeRequest(`/api/jobs/version/${id}`);
+
 export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
   const qs = makeQueryString({
     limit,

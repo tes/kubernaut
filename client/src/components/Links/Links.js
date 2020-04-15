@@ -5,6 +5,7 @@ import { matchPath } from 'react-router';
 import { stringify } from 'query-string';
 import { Badge } from 'reactstrap';
 import paths from '../../paths';
+import { Human } from '../DisplayDate';
 
 const { serviceStatus } = paths;
 
@@ -47,6 +48,16 @@ export const JobLink = ({ job, container, children }) => {
   };
 
   return <Tag {...props}>{children || <span><i className="fa fa-cogs" aria-hidden='true'></i> {job.name}</span>}</Tag>;
+};
+
+export const JobVersionLink = ({ version, container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/jobs/version/${version.id}`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span><i className="fa fa-file-text" aria-hidden='true'></i> <Human date={version.createdOn} /></span>}</Tag>;
 };
 
 export const TeamLink = ({ team, container, children }) => {
