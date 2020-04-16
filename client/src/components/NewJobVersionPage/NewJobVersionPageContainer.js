@@ -6,6 +6,7 @@ import {
 
 import {
   toggleCollapsed,
+  triggerPreview,
 } from '../../modules/newJobVersion';
 import NewJobVersionPage from './NewJobVersionPage';
 
@@ -20,11 +21,14 @@ const mapStateToProps = (state, props) => {
     currentFormValues,
     collapsed: newJobVersion.collapsed,
     meta: newJobVersion.meta,
+    job: newJobVersion.job.data,
+    preview: newJobVersion.preview,
   };
 };
 
 export default connect(mapStateToProps, {
-  toggleCollapsed
+  toggleCollapsed,
+  triggerPreview,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

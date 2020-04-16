@@ -1,5 +1,4 @@
-import { takeLatest, call, put } from 'redux-saga/effects';
-
+import { takeLatest, call, put, select } from 'redux-saga/effects';
 import {
   INITIALISE,
   FETCH_JOB_REQUEST,
@@ -8,11 +7,15 @@ import {
   FETCH_JOB_VERSIONS_REQUEST,
   FETCH_JOB_VERSIONS_SUCCESS,
   FETCH_JOB_VERSIONS_ERROR,
+  getFormValues,
+  triggerPreview,
+  updatePreview,
 } from '../modules/newJobVersion';
 import {
   getJob,
   getJobVersions,
   getJobVersion,
+  getPreviewOfJobVersion,
 } from '../lib/api';
 
 export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options } }) {
@@ -41,6 +44,18 @@ export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options }
   }
 }
 
+export function* previewValuesSaga() {
+  try {
+    const values = yield select(getFormValues);
+    const data = yield call(getPreviewOfJobVersion, values);
+    yield put(updatePreview(data));
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(INITIALISE, fetchNewJobVersionPageDataSaga),
+  takeLatest(triggerPreview, previewValuesSaga),
+  takeLatest(FETCH_JOB_VERSIONS_SUCCESS, previewValuesSaga),
 ];

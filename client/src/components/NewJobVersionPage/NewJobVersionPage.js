@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { Field, FieldArray } from 'redux-form';
-import PropTypes from 'prop-types';
-import { safeDump } from 'js-yaml';
+// import PropTypes from 'prop-types';
 import {
-  Container,
   Row,
   Col,
   Form,
@@ -16,6 +14,8 @@ import {
   Button,
   Progress,
 } from 'reactstrap';
+import Title from '../Title';
+import { JobSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 
@@ -108,12 +108,16 @@ class RenderCommands extends Component {
                         component={RenderInput}
                         type="text"
                         autoComplete="off"
+                        onChangeListener={this.props.onChangeListener}
                         />
                     </Col>
                     <Col>
                       <Button
                         close
-                        onClick={() => this.props.fields.remove(index)}
+                        onClick={() => {
+                          this.props.fields.remove(index);
+                          this.props.onChangeListener();
+                        }}
                         >
                           <i
                             className="fa fa-trash text-danger"
@@ -130,7 +134,10 @@ class RenderCommands extends Component {
             <Col>
               <Button
                 close
-                onClick={() => this.props.fields.push('')}
+                onClick={() => {
+                  this.props.fields.push('');
+                  this.props.onChangeListener();
+                }}
               >
                 <i
                   className="fa fa-plus"
@@ -159,7 +166,10 @@ class RenderVolumeMounts extends Component {
                     <span>Volume mount:</span>
                     <Button
                       close
-                      onClick={() => this.props.fields.remove(index)}
+                      onClick={() => {
+                        this.props.fields.remove(index);
+                        this.props.onChangeListener();
+                      }}
                       >
                       <i
                         className="fa fa-trash text-danger"
@@ -179,6 +189,7 @@ class RenderVolumeMounts extends Component {
                               component={RenderInput}
                               type="text"
                               autoComplete="off"
+                              onChangeListener={this.props.onChangeListener}
                             />
                           </Col>
                         </FormGroup>
@@ -190,7 +201,8 @@ class RenderVolumeMounts extends Component {
                               name={`${volumeMount}.name`}
                               component={RenderSelect}
                               autoComplete="off"
-                              options={this.props.availbleVolumes.map(v => v.name)}
+                              options={this.props.availbleVolumes.filter(v => v.name).map(v => v.name)}
+                              onChangeListener={this.props.onChangeListener}
                             />
                           </Col>
                         </FormGroup>
@@ -207,7 +219,10 @@ class RenderVolumeMounts extends Component {
             <Button
               outline
               className="pull-right"
-              onClick={() => this.props.fields.push({})}
+              onClick={() => {
+                this.props.fields.push({});
+                this.props.onChangeListener();
+              }}
               >Add volume mount</Button>
           </Col>
         </Row>
@@ -232,7 +247,10 @@ class RenderContainers extends Component {
                         <CardBody>
                           <Button
                             close
-                            onClick={() => this.props.fields.remove(index)}
+                            onClick={() => {
+                              this.props.fields.remove(index);
+                              this.props.onChangeListener();
+                            }}
                             >
                             <i
                               className="fa fa-trash text-danger"
@@ -251,6 +269,7 @@ class RenderContainers extends Component {
                                     component={RenderInput}
                                     type="text"
                                     autoComplete="off"
+                                    onChangeListener={this.props.onChangeListener}
                                   />
                                 </Col>
                               </FormGroup>
@@ -263,6 +282,7 @@ class RenderContainers extends Component {
                                     component={RenderInput}
                                     type="text"
                                     autoComplete="off"
+                                    onChangeListener={this.props.onChangeListener}
                                   />
                                 </Col>
                               </FormGroup>
@@ -275,6 +295,7 @@ class RenderContainers extends Component {
                                 name={`${container}.volumeMounts`}
                                 component={RenderVolumeMounts}
                                 availbleVolumes={this.props.availbleVolumes}
+                                onChangeListener={this.props.onChangeListener}
                               />
                             </Col>
                           </Row>
@@ -284,6 +305,7 @@ class RenderContainers extends Component {
                               <FieldArray
                                 name={`${container}.args`}
                                 component={RenderArgs}
+                                onChangeListener={this.props.onChangeListener}
                               />
                             </Col>
                           </Row>
@@ -293,6 +315,7 @@ class RenderContainers extends Component {
                               <FieldArray
                                 name={`${container}.command`}
                                 component={RenderCommands}
+                                onChangeListener={this.props.onChangeListener}
                               />
                             </Col>
                           </Row>
@@ -309,7 +332,10 @@ class RenderContainers extends Component {
               <Button
                 outline
                 className="pull-right"
-                onClick={() => this.props.fields.push({})}
+                onClick={() => {
+                  this.props.fields.push({});
+                  this.props.onChangeListener();
+                }}
                 >Add container</Button>
             </Col>
           </Row>
@@ -334,7 +360,10 @@ class RenderVolumes extends Component {
                         <CardBody>
                           <Button
                             close
-                            onClick={() => this.props.fields.remove(index)}
+                            onClick={() => {
+                              this.props.fields.remove(index);
+                              this.props.onChangeListener();
+                            }}
                             >
                             <i
                               className="fa fa-trash text-danger"
@@ -353,6 +382,7 @@ class RenderVolumes extends Component {
                                     component={RenderInput}
                                     type="text"
                                     autoComplete="off"
+                                    onChangeListener={this.props.onChangeListener}
                                     />
                                 </Col>
                               </FormGroup>
@@ -365,6 +395,7 @@ class RenderVolumes extends Component {
                                     component={RenderSelect}
                                     autoComplete="off"
                                     options={['emptyDir', 'configMap']}
+                                    onChangeListener={this.props.onChangeListener}
                                     />
                                 </Col>
                               </FormGroup>
@@ -379,6 +410,7 @@ class RenderVolumes extends Component {
                                         component={RenderInput}
                                         type="text"
                                         autoComplete="off"
+                                        onChangeListener={this.props.onChangeListener}
                                         />
                                     </Col>
                                   </FormGroup>
@@ -399,7 +431,10 @@ class RenderVolumes extends Component {
               <Button
                 outline
                 className="pull-right"
-                onClick={() => this.props.fields.push({})}
+                onClick={() => {
+                  this.props.fields.push({});
+                  this.props.onChangeListener();
+                }}
                 >Add volume</Button>
             </Col>
           </Row>
@@ -409,10 +444,10 @@ class RenderVolumes extends Component {
   }
 }
 
-class BuilderTest extends Component {
+class NewJobVersionPage extends Component {
 
   render() {
-    const { meta } = this.props;
+    const { meta, job } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -425,206 +460,149 @@ class BuilderTest extends Component {
     const availbleVolumes = this.props.currentFormValues.volumes || [];
 
     return (
-      <Container className="page-frame">
-        <Form>
-          <Row className="mb-2">
-            <Col md="6">
-              <FormGroup row>
-                <Label sm="3" className="text-right" for="schedule">Schedule:</Label>
-                <Col sm="9">
-                  <Field
-                    className="form-control"
-                    name="schedule"
-                    component={RenderInput}
-                    type="text"
-                    autoComplete="off"
-                  />
-                </Col>
-              </FormGroup>
-              <FormGroup row>
-                <Label sm="3" className="text-right" for="concurrencyPolicy">Concurrency Policy:</Label>
-                <Col sm="9">
-                  <Field
-                    className="form-control"
-                    name="concurrencyPolicy"
-                    component={RenderSelect}
-                    autoComplete="off"
-                    options={['Allow', 'Forbid', 'Replace']}
-                  />
-                </Col>
-              </FormGroup>
-            </Col>
-          </Row>
+      <Row className="page-frame">
+        <Col>
+          <Title title={`New version of job: ${job.name}`}/>
+          <JobSubNav job={job} newVersion />
 
-          <Row className="mb-2">
-            <Col>
-              <Card>
-                <CardHeader>
-                  <span>Init Containers:</span>
-                  <Button
-                    close
-                    onClick={() => this.props.toggleCollapsed('initContainers')}
-                  >
-                    <i
-                      className={`fa fa-${this.props.collapsed.initContainers ? 'plus' : 'minus'}`}
-                      aria-hidden='true'
-                    ></i>
-                  </Button>
-                </CardHeader>
-                <Collapse isOpen={!this.props.collapsed.initContainers}>
-                  <CardBody>
-                    <FieldArray
-                      name="initContainers"
-                      component={RenderContainers}
-                      availbleVolumes={availbleVolumes}
+          <Form>
+            <Row className="mb-2">
+              <Col md="6">
+                <FormGroup row>
+                  <Label sm="3" className="text-right" for="schedule">Schedule:</Label>
+                  <Col sm="9">
+                    <Field
+                      className="form-control"
+                      name="schedule"
+                      component={RenderInput}
+                      type="text"
+                      autoComplete="off"
+                      onChangeListener={() => this.props.triggerPreview()}
                       />
-                  </CardBody>
-                </Collapse>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row className="mb-2">
-            <Col>
-              <Card>
-                <CardHeader>
-                  <span>Containers:</span>
-                  <Button
-                    close
-                    onClick={() => this.props.toggleCollapsed('containers')}
-                  >
-                    <i
-                      className={`fa fa-${this.props.collapsed.containers ? 'plus' : 'minus'}`}
-                      aria-hidden='true'
-                    ></i>
-                  </Button>
-                </CardHeader>
-                <Collapse isOpen={!this.props.collapsed.containers}>
-                <CardBody>
-                    <FieldArray
-                      name="containers"
-                      component={RenderContainers}
-                      availbleVolumes={availbleVolumes}
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label sm="3" className="text-right" for="concurrencyPolicy">Concurrency Policy:</Label>
+                  <Col sm="9">
+                    <Field
+                      className="form-control"
+                      name="concurrencyPolicy"
+                      component={RenderSelect}
+                      autoComplete="off"
+                      options={['Allow', 'Forbid', 'Replace']}
+                      onChangeListener={() => this.props.triggerPreview()}
                       />
-                  </CardBody>
-                </Collapse>
-              </Card>
-            </Col>
-          </Row>
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
 
-          <Row className="mb-2">
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader>
+                    <span>Init Containers:</span>
+                    <Button
+                      close
+                      onClick={() => this.props.toggleCollapsed('initContainers')}
+                      >
+                      <i
+                        className={`fa fa-${this.props.collapsed.initContainers ? 'plus' : 'minus'}`}
+                        aria-hidden='true'
+                        ></i>
+                    </Button>
+                  </CardHeader>
+                  <Collapse isOpen={!this.props.collapsed.initContainers}>
+                    <CardBody>
+                      <FieldArray
+                        name="initContainers"
+                        component={RenderContainers}
+                        availbleVolumes={availbleVolumes}
+                        onChangeListener={() => this.props.triggerPreview()}
+                        />
+                    </CardBody>
+                  </Collapse>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader>
+                    <span>Containers:</span>
+                    <Button
+                      close
+                      onClick={() => this.props.toggleCollapsed('containers')}
+                      >
+                      <i
+                        className={`fa fa-${this.props.collapsed.containers ? 'plus' : 'minus'}`}
+                        aria-hidden='true'
+                        ></i>
+                    </Button>
+                  </CardHeader>
+                  <Collapse isOpen={!this.props.collapsed.containers}>
+                    <CardBody>
+                      <FieldArray
+                        name="containers"
+                        component={RenderContainers}
+                        availbleVolumes={availbleVolumes}
+                        onChangeListener={() => this.props.triggerPreview()}
+                        />
+                    </CardBody>
+                  </Collapse>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader>
+                    <span>Volumes:</span>
+                    <Button
+                      close
+                      onClick={() => this.props.toggleCollapsed('volumes')}
+                      >
+                      <i
+                        className={`fa fa-${this.props.collapsed.volumes ? 'plus' : 'minus'}`}
+                        aria-hidden='true'
+                        ></i>
+                    </Button>
+                  </CardHeader>
+                  <Collapse isOpen={!this.props.collapsed.volumes}>
+                    <CardBody>
+                      <FieldArray
+                        name="volumes"
+                        component={RenderVolumes}
+                        onChangeListener={() => this.props.triggerPreview()}
+                        />
+                    </CardBody>
+                  </Collapse>
+                </Card>
+              </Col>
+            </Row>
+
+          </Form>
+
+          <Row>
             <Col>
-              <Card>
-                <CardHeader>
-                  <span>Volumes:</span>
-                  <Button
-                    close
-                    onClick={() => this.props.toggleCollapsed('volumes')}
-                  >
-                    <i
-                      className={`fa fa-${this.props.collapsed.volumes ? 'plus' : 'minus'}`}
-                      aria-hidden='true'
-                    ></i>
-                  </Button>
-                </CardHeader>
-                <Collapse isOpen={!this.props.collapsed.volumes}>
-                <CardBody>
-                    <FieldArray
-                      name="volumes"
-                      component={RenderVolumes}
-                      />
-                  </CardBody>
-                </Collapse>
-              </Card>
+              <pre className="bg-light p-2">
+                <code>
+                  {this.props.preview}
+                </code>
+              </pre>
             </Col>
           </Row>
 
-        </Form>
-
-        <Row>
-          <Col>
-            <pre className="bg-light p-2">
-              <code>
-                {safeDump(buildSpec(this.props.currentFormValues), { lineWidth: 120 })}
-              </code>
-            </pre>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col>
-            <pre className="bg-light p-2">
-              <code>
-                {JSON.stringify(this.props.currentFormValues, null, 2)}
-              </code>
-            </pre>
-          </Col>
-        </Row>
-
-      </Container>
+        </Col>
+      </Row>
     );
   }
 }
 
-function buildSpec (values) {
-  function parseContainer (c) {
-    const toReturn = {
-      name: c.name || '',
-      image: c.image || '',
-    };
-    const filteredArgs = (c.args || []).filter(a => a); // Clean out empties
-    if (filteredArgs.length) toReturn.args = filteredArgs;
-    const filteredCommands = (c.command || []).filter(c => c); // Clean out empties
-    if (filteredCommands.length) toReturn.command = filteredCommands;
-
-    if (c.volumeMounts) toReturn.volumeMounts = c.volumeMounts;
-
-    return toReturn;
-  }
-
-  function parseVolume (v) {
-    const toReturn = {
-      name: v.name || '',
-    };
-
-    if (v.type === 'emptyDir') {
-      toReturn.emptyDir = {};
-    } else if (v.type === 'configMap') {
-      toReturn.configMap = {
-        name: v.configMap.name || '',
-      };
-    }
-
-    return toReturn;
-  }
-
-  return {
-    apiVersion: 'batch/v1beta1',
-    kind: 'CronJob',
-    metadata: {
-      name: 'builderTest',
-    },
-    spec: {
-      schedule: values.schedule || '',
-      concurrencyPolicy: values.concurrencyPolicy || '',
-      jobTemplate: {
-        spec: {
-          template: {
-            spec: {
-              initContainers: (values.initContainers || []).map(parseContainer),
-              containers: (values.containers || []).map(parseContainer),
-              volumes: (values.volumes || []).map(parseVolume),
-              restartPolicy: 'OnFailure',
-            }
-          }
-        }
-      }
-    }
-  };
-}
-
-BuilderTest.propTypes = {
+NewJobVersionPage.propTypes = {
 
 };
 
-export default BuilderTest;
+export default NewJobVersionPage;

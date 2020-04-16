@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const RenderSelect = ({ input, label, type, meta: { error }, className, options, disabled }) => {
+const RenderSelect = ({ input, label, type, meta: { error }, className, options, disabled, onChangeListener }) => {
   const optionEls = options.map((optionVal) => {
     if (({}).hasOwnProperty.call(optionVal, 'value')) {
       return <option key={optionVal.value} value={optionVal.value}>{optionVal.display}</option>;
@@ -11,7 +11,18 @@ const RenderSelect = ({ input, label, type, meta: { error }, className, options,
 
   return (
     <div>
-      <select {...input} placeholder={label} className={className} disabled={disabled}>
+      <select
+        {...input}
+        placeholder={label}
+        className={className}
+        disabled={disabled}
+        onChange={(evt) => {
+          input.onChange(evt); // do this first - else redux-form reducer won't have run before our func is run.
+          if (onChangeListener) {
+            onChangeListener();
+          }
+        }}
+      >
         <option />
         {optionEls}
       </select>

@@ -188,6 +188,14 @@ export const getNamespaceHistoryForRelease = ({ filters = {} }) => {
 
 export const getNamespacesForService = (serviceId) => makeRequest(`/api/namespaces/can-deploy-to-for/${serviceId}`).then(computePagination);
 
+export const getPreviewOfJobVersion = (values) => {
+  const url = '/api/jobs/preview-values';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(values),
+  });
+};
+
 export const getReleases = ({ limit = 20, offset = 0, service, registry, version, filters = {}, sort, order }) => {
   const qs = makeQueryString({
     limit,

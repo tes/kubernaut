@@ -4,6 +4,7 @@ import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
   JobLink,
   JobVersionLink,
+  NewJobVersionLink,
 } from '../Links';
 import { Human } from '../DisplayDate';
 
@@ -12,6 +13,7 @@ class JobSubNav extends Component {
     const {
       job,
       jobVersion,
+      newVersion,
     } = this.props;
 
     return (
@@ -29,6 +31,15 @@ class JobSubNav extends Component {
                 <JobVersionLink container version={jobVersion}>
                   <NavLink><i className="fa fa-file-text" aria-hidden='true'></i> <Human date={jobVersion.createdOn} /></NavLink>
                 </JobVersionLink>
+              </NavItem>
+              : null
+            }
+            {
+              newVersion ?
+              <NavItem className="bread-nav">
+                <NewJobVersionLink container job={job}>
+                  <NavLink>New version</NavLink>
+                </NewJobVersionLink>
               </NavItem>
               : null
             }

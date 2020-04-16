@@ -14,7 +14,20 @@ class RenderInput extends Component {
   }
 
   render() {
-    const { input, label, type, meta: { error, asyncValidating }, className, disabled, autoComplete, placeholder } = this.props;
+    const {
+      input,
+      label,
+      type,
+      meta: {
+        error,
+        asyncValidating
+      },
+      className,
+      disabled,
+      autoComplete,
+      placeholder,
+      onChangeListener, // onChange is great, unless you want to run a function/saga that fetches all form values which you expect to include the change performed in this event.
+    } = this.props;
 
     return (
       <div className="row">
@@ -27,6 +40,12 @@ class RenderInput extends Component {
             disabled={disabled}
             autoComplete={autoComplete}
             ref={this.textInput}
+            onChange={(evt) => {
+              input.onChange(evt); // do this first - else redux-form reducer won't have run before our func is run.
+              if (onChangeListener) {
+                onChangeListener();
+              }
+            }}
           />
           {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
         </div>
