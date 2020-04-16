@@ -53,7 +53,7 @@ function buildSpec (values) {
       toReturn.emptyDir = {};
     } else if (v.type === 'configMap') {
       toReturn.configMap = {
-        name: v.configMap.name || '',
+        name: _get(v, 'configMap.name', ''),
       };
     }
 

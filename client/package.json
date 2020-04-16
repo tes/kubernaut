@@ -7,6 +7,8 @@
     "bootstrap": "^4.3.1",
     "brace": "^0.11.1",
     "connected-react-router": "^6.5.2",
+    "cron-validator": "^1.1.1",
+    "cronstrue": "^1.92.0",
     "enzyme-adapter-react-16": "^1.0.2",
     "font-awesome": "^4.7.0",
     "history": "^4.7.2",

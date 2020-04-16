@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import {
   reduxForm,
   getFormValues,
+  getFormSyncErrors,
 } from 'redux-form';
 
 import {
@@ -15,10 +16,12 @@ const formName = 'newJobVersion';
 const mapStateToProps = (state, props) => {
   const { newJobVersion } = state;
   const currentFormValues = getFormValues(formName)(state) || {};
+  const currentFormSyncErrors = getFormSyncErrors(formName)(state) || {};
 
   return {
     initialValues: newJobVersion.initialValues,
     currentFormValues,
+    currentFormSyncErrors,
     collapsed: newJobVersion.collapsed,
     meta: newJobVersion.meta,
     job: newJobVersion.job.data,

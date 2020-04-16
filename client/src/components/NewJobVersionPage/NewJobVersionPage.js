@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { Field, FieldArray } from 'redux-form';
+import { toString as humanCron } from 'cronstrue';
+import { isValidCron } from 'cron-validator';
 // import PropTypes from 'prop-types';
 import {
   Row,
@@ -36,7 +38,7 @@ class RenderArgs extends Component {
             <Col>
               {this.props.fields.map((arg, index) => {
                 return (
-                  <FormGroup row key={`${index} - ${arg}`}>
+                  <FormGroup row key={arg}>
                     <Label sm="3" className="text-right" for={arg}>Argument:</Label>
                     <Col sm="8">
                       <Field
@@ -99,7 +101,7 @@ class RenderCommands extends Component {
             <Col>
               {this.props.fields.map((command, index) => {
                 return (
-                  <FormGroup row key={`${index} - ${command}`}>
+                  <FormGroup row key={command}>
                     <Label sm="3" className="text-right" for={command}>Argument:</Label>
                     <Col sm="8">
                       <Field
@@ -161,7 +163,7 @@ class RenderVolumeMounts extends Component {
             <Col>
               {this.props.fields.map((volumeMount, index) => {
                 return (
-                <Card key={`${index} - ${volumeMount}`}>
+                <Card key={volumeMount}>
                   <CardHeader>
                     <span>Volume mount:</span>
                     <Button
@@ -241,7 +243,7 @@ class RenderContainers extends Component {
             <Col>
               {this.props.fields.map((container, index) => {
                 return (
-                  <Row key={this.props.fields.get(index).name} className="mb-2">
+                  <Row key={container} className="mb-2">
                     <Col>
                       <Card>
                         <CardBody>
@@ -354,7 +356,7 @@ class RenderVolumes extends Component {
             <Col>
               {this.props.fields.map((volume, index) => {
                 return (
-                  <Row key={this.props.fields.get(index).name} className="mb-2">
+                  <Row key={volume} className="mb-2">
                     <Col>
                       <Card>
                         <CardBody>
@@ -459,6 +461,13 @@ class NewJobVersionPage extends Component {
 
     const availbleVolumes = this.props.currentFormValues.volumes || [];
 
+    let humanCronValue = '';
+    try {
+      if (!this.props.currentFormSyncErrors.schedule && this.props.currentFormValues.schedule) humanCronValue = humanCron(this.props.currentFormValues.schedule);
+    } catch (err) {
+      console.error(err); // eslint-disable-line no-console
+    }
+
     return (
       <Row className="page-frame">
         <Col>
@@ -478,7 +487,12 @@ class NewJobVersionPage extends Component {
                       type="text"
                       autoComplete="off"
                       onChangeListener={() => this.props.triggerPreview()}
+                      validate={(value) => {
+                        if (!value) return 'Invalid cron syntax';
+                        return isValidCron(value, { alias: true }) ? undefined : 'Invalid cron syntax';
+                      }}
                       />
+                    <span>{humanCronValue}</span>
                   </Col>
                 </FormGroup>
                 <FormGroup row>
