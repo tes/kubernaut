@@ -5,9 +5,10 @@ import {
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
+  setPermission,
 } from '../modules/account';
 
-import { getAccount } from '../lib/api';
+import { getAccount, hasPermission } from '../lib/api';
 
 export function* fetchAccountInfoSaga({ payload = {} }) {
   const { ...options } = payload;
@@ -22,6 +23,16 @@ export function* fetchAccountInfoSaga({ payload = {} }) {
   }
 }
 
+export function* checkPermissionSaga({ payload: { data, ...options } }) {
+  try {
+    const jobsRead = yield call(hasPermission, 'jobs-read');
+    yield put(setPermission({ permission: 'jobs-read', answer: jobsRead.answer }));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
+  takeLatest(FETCH_ACCOUNT_SUCCESS, checkPermissionSaga),
 ];

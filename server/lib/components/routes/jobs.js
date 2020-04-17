@@ -28,7 +28,7 @@ function valuesFromYaml(parsed) {
   };
 }
 
-function buildSpec (values) {
+function buildSpec (values, job) {
   function parseContainer (c) {
     const toReturn = {
       name: c.name || '',
@@ -69,7 +69,7 @@ function buildSpec (values) {
     apiVersion: 'batch/v1beta1',
     kind: 'CronJob',
     metadata: {
-      name: 'builderTest',
+      name: job.name,
     },
     spec: {
       schedule: values.schedule || '',
@@ -100,7 +100,7 @@ export default function() {
         await store.audit(meta, 'viewed jobs');
         const filters = parseFilters(req.query, ['name']);
         const criteria = {
-          // user: { id: req.user.id, permission: 'registries-read' },
+          user: { id: req.user.id, permission: 'jobs-read' },
           filters,
         };
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -120,7 +120,7 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
-        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job', { job });
@@ -135,7 +135,7 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
-        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -155,7 +155,7 @@ export default function() {
         const { id } = req.params;
         const jobVersion = await store.getJobVersion(id);
         if (!jobVersion) return next(Boom.notFound());
-        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job version', { jobVersion });
@@ -173,10 +173,10 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
-        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-write')) return next(Boom.forbidden());
 
         const values = req.body || {};
-        const spec = buildSpec(values);
+        const spec = buildSpec(values, job);
         const yaml = safeDump(spec, { lineWidth: 120 });
 
         const meta = { date: new Date(), account: req.user };
@@ -194,9 +194,10 @@ export default function() {
 
     app.post('/api/jobs/preview-values', bodyParser.json(), async (req, res, next) => {
       try {
+        if (! await store.hasPermission(req.user, 'jobs-read')) return next(Boom.forbidden());
         const values = req.body || {};
 
-        const spec = buildSpec(values);
+        const spec = buildSpec(values, { name: 'preview' });
         const yaml = safeDump(spec, { lineWidth: 120 });
 
         return res.json({ yaml });

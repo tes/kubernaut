@@ -4,6 +4,7 @@ export const fetchAccountInfo = createAction(`${actionsPrefix}/FETCH_ACCOUNT_INF
 export const FETCH_ACCOUNT_REQUEST = createAction(`${actionsPrefix}/FETCH_ACCOUNT_REQUEST`);
 export const FETCH_ACCOUNT_SUCCESS = createAction(`${actionsPrefix}/FETCH_ACCOUNT_SUCCESS`);
 export const FETCH_ACCOUNT_ERROR = createAction(`${actionsPrefix}/FETCH_ACCOUNT_ERROR`);
+export const setPermission = createAction(`${actionsPrefix}/SET_PERMISSION`);
 export const selectAccount = (state) => state.account.data;
 
 const defaultState = {
@@ -11,6 +12,9 @@ const defaultState = {
 
   },
   meta: {},
+  permissions: {
+    'jobs-read': false,
+  }
 };
 
 export default handleActions({
@@ -33,5 +37,12 @@ export default handleActions({
       error: payload.error,
       loading: false,
     },
+  }),
+  [setPermission]: (state, { payload }) => ({
+    ...state,
+    permissions: {
+      ...state.permissions,
+      [payload.permission]: [payload.answer],
+    }
   }),
 }, defaultState);

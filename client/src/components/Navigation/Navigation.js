@@ -44,6 +44,13 @@ class Navigation extends Component {
             <NavItem tag={LinkContainer} to="/deployments">
               <NavLink>Deployments</NavLink>
             </NavItem>
+            {
+              this.props.account.permissions['jobs-read'] ? (
+                <NavItem tag={LinkContainer} to="/jobs">
+                  <NavLink>Jobs</NavLink>
+                </NavItem>
+              ) : null
+            }
             <NavItem tag={LinkContainer} to="/releases">
               <NavLink>Releases</NavLink>
             </NavItem>

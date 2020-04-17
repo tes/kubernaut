@@ -83,13 +83,19 @@ export default function() {
         .select(raw('count(*) count'))
         .from('active_job__vw j')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id')))
+          innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
+          innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
         );
 
       if (criteria.filters) {
         if (criteria.filters.name) {
           db.applyFilter(criteria.filters.name, 'j.name', findJobsBuilder, countJobsBuilder);
         }
+      }
+
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('namespace', criteria.user.id, criteria.user.permission);
+        [findJobsBuilder, countJobsBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
       }
 
       return db.withTransaction(async connection => {
