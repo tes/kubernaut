@@ -165,7 +165,7 @@ export default function() {
         const newJobId = uuid();
 
         const teamBuilder = sqb
-          .insert('team', {
+          .insert('job', {
             id: newJobId,
             name: job.name,
             namespace: job.namespaceId,
@@ -177,6 +177,28 @@ export default function() {
 
         logger.debug(`Saved new job with id ${newJobId}`);
         return newJobId;
+      });
+    }
+
+    async function saveJobVersion(job, version, meta) {
+      logger.debug(`Saving new version for job with name ${job.name} by account ${meta.account.id}`);
+
+      return db.withTransaction(async connection => {
+        const newJobVersionId = uuid();
+
+        const teamBuilder = sqb
+          .insert('job_version', {
+            id: newJobVersionId,
+            job: job.id,
+            yaml: JSON.stringify(version.yaml),
+            created_on: meta.date,
+            created_by: meta.account.id,
+          });
+
+        await connection.query(db.serialize(teamBuilder, {}).sql);
+
+        logger.debug(`Saved new job version with id ${newJobVersionId}`);
+        return newJobVersionId;
       });
     }
 
@@ -207,7 +229,7 @@ export default function() {
       return new JobVersion({
         id: row.id,
         job,
-        yaml: row.yaml,
+        yaml: JSON.parse(row.yaml || '""'),
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by,
@@ -221,6 +243,7 @@ export default function() {
       getJobVersion,
       findJobs,
       saveJob,
+      saveJobVersion,
       findJobVersions,
     });
   }

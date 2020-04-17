@@ -34,9 +34,14 @@ function buildSpec (values) {
       name: c.name || '',
       image: c.image || '',
     };
-    const filteredArgs = (c.args || []).filter(a => a); // Clean out empties
+
+    const filteredArgs = [].concat(c.args)
+      .filter(a => typeof a === 'string')
+      .filter(a => a); // Clean out empties
     if (filteredArgs.length) toReturn.args = filteredArgs;
-    const filteredCommands = (c.command || []).filter(c => c); // Clean out empties
+    const filteredCommands = [].concat(c.command)
+      .filter(c => typeof c === 'string')
+      .filter(c => c); // Clean out empties
     if (filteredCommands.length) toReturn.command = filteredCommands;
 
     if (c.volumeMounts) toReturn.volumeMounts = c.volumeMounts;
@@ -158,6 +163,30 @@ export default function() {
         jobVersion.values = valuesFromYaml(safeLoad(jobVersion.yaml || ''));
 
         return res.json(jobVersion);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/jobs/:id/version', bodyParser.json(), async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        // if (! await store.hasPermissionOnTeam(req.user, team.id, 'teams-read')) return next(Boom.forbidden());
+
+        const values = req.body || {};
+        const spec = buildSpec(values);
+        const yaml = safeDump(spec, { lineWidth: 120 });
+
+        const meta = { date: new Date(), account: req.user };
+
+        const newVersionId = await store.saveJobVersion(job, { yaml }, meta);
+
+        await store.audit(meta, 'saved new job version', { jobVersion: { id: newVersionId} });
+
+
+        return res.json({ id: newVersionId });
       } catch (err) {
         next(err);
       }

@@ -47,6 +47,7 @@ class RenderArgs extends Component {
                         component={RenderInput}
                         type="text"
                         autoComplete="off"
+                        onChangeListener={this.props.onChangeListener}
                         />
                     </Col>
                     <Col>
@@ -69,7 +70,10 @@ class RenderArgs extends Component {
             <Col>
               <Button
                 close
-                onClick={() => this.props.fields.push('')}
+                onClick={() => {
+                  this.props.fields.push('');
+                  this.props.onChangeListener();
+                }}
               >
                 <i
                   className="fa fa-plus"
@@ -508,6 +512,13 @@ class NewJobVersionPage extends Component {
                       />
                   </Col>
                 </FormGroup>
+              </Col>
+              <Col>
+                <Button
+                  className="pull-right"
+                  color="dark"
+                  onClick={this.props.handleSubmit(this.props.submitForm)}
+                >Save</Button>
               </Col>
             </Row>
 

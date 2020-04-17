@@ -1,4 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
+import { createFormAction } from 'redux-form-saga';
 import computeLoading from './lib/computeLoading';
 import {
   getFormValues as rfGetFormValues,
@@ -10,6 +11,8 @@ export const toggleCollapsed = createAction(`${actionsPrefix}/TOGGLE_COLLAPSED`)
 export const triggerPreview = createAction(`${actionsPrefix}/TRIGGER_PREVIEW`);
 export const updatePreview = createAction(`${actionsPrefix}/UPDATE_PREVIEW`);
 
+export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
+
 export const FETCH_JOB_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_REQUEST`);
 export const FETCH_JOB_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_SUCCESS`);
 export const FETCH_JOB_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_ERROR`);
@@ -17,6 +20,7 @@ export const FETCH_JOB_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_J
 export const FETCH_JOB_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_SUCCESS`);
 export const FETCH_JOB_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_ERROR`);
 
+export const selectJob = (state) => (state.newJobVersion.job.data);
 export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
 
 const defaultState = {

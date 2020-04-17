@@ -8,6 +8,7 @@ import {
 import {
   toggleCollapsed,
   triggerPreview,
+  submitForm,
 } from '../../modules/newJobVersion';
 import NewJobVersionPage from './NewJobVersionPage';
 
@@ -26,6 +27,7 @@ const mapStateToProps = (state, props) => {
     meta: newJobVersion.meta,
     job: newJobVersion.job.data,
     preview: newJobVersion.preview,
+    submitForm,
   };
 };
 

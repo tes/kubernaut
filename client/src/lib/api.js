@@ -596,6 +596,13 @@ export const removeTeamRoleForTeam = (teamId, subjectTeamId, role, options = {})
   });
 };
 
+export const saveJobVersion = (job, data) => {
+  return makeRequest(`/api/jobs/${job.id}/version`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
 export const saveSecretVersion = (registry, service, namespace, data) => {
   return makeRequest(`/api/secrets/${registry}/${service}/${namespace}`, {
     method: 'POST',

@@ -1,4 +1,6 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { push } from 'connected-react-router';
+import { SubmissionError } from 'redux-form';
 import {
   INITIALISE,
   FETCH_JOB_REQUEST,
@@ -10,12 +12,15 @@ import {
   getFormValues,
   triggerPreview,
   updatePreview,
+  submitForm,
+  selectJob,
 } from '../modules/newJobVersion';
 import {
   getJob,
   getJobVersions,
   getJobVersion,
   getPreviewOfJobVersion,
+  saveJobVersion,
 } from '../lib/api';
 
 export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options } }) {
@@ -54,8 +59,23 @@ export function* previewValuesSaga() {
   }
 }
 
+export function* submitSaga() {
+  try {
+    const values = yield select(getFormValues);
+    const job = yield select(selectJob);
+    const data = yield call(saveJobVersion, job, values);
+    yield put(submitForm.success());
+    yield put(push(`/jobs/version/${data.id}`));
+    // yield put(updatePreview(data));
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+    yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));
+  }
+}
+
 export default [
   takeLatest(INITIALISE, fetchNewJobVersionPageDataSaga),
   takeLatest(triggerPreview, previewValuesSaga),
   takeLatest(FETCH_JOB_VERSIONS_SUCCESS, previewValuesSaga),
+  takeLatest(submitForm.REQUEST, submitSaga),
 ];
