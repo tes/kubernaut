@@ -5,6 +5,8 @@ import {
   JobLink,
   JobVersionLink,
   NewJobVersionLink,
+  NamespaceLink,
+  NamespacePill,
 } from '../Links';
 import { Human } from '../DisplayDate';
 
@@ -15,6 +17,8 @@ class JobSubNav extends Component {
       jobVersion,
       newVersion,
     } = this.props;
+
+    const namespace = (job || jobVersion.job).namespace;
 
     return (
       <Row className="mb-1">
@@ -40,6 +44,14 @@ class JobSubNav extends Component {
                 <NewJobVersionLink container job={job}>
                   <NavLink>New version</NavLink>
                 </NewJobVersionLink>
+              </NavItem>
+              : null
+            }
+            { namespace ?
+              <NavItem className="ml-auto">
+                <NamespaceLink container namespace={namespace}>
+                  <NavLink><NamespacePill namespace={namespace} /></NavLink>
+                </NamespaceLink>
               </NavItem>
               : null
             }

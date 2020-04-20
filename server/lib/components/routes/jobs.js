@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import Boom from 'boom';
 import { safeLoad, safeDump } from 'js-yaml';
 import { get as _get } from 'lodash';
+import EventEmitter from 'events';
 import parseFilters from './lib/parseFilters';
 
 function valuesFromYaml(parsed) {
@@ -221,6 +222,47 @@ export default function() {
         const yaml = safeDump(spec, { lineWidth: 120 });
 
         return res.json({ yaml });
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/jobs/version/:id/apply', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const jobVersion = await store.getJobVersion(id);
+        if (!jobVersion) return next(Boom.notFound());
+        // if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
+
+        const namespace = await store.getNamespace(jobVersion.job.namespace.id); // Need richer version
+        const meta = { date: new Date(), account: req.user };
+
+        const emitter = new EventEmitter();
+        const log = [];
+
+        emitter.on('data', async data => {
+          log.push(data);
+          res.locals.logger.info(data.content);
+        }).on('error', async data => {
+          log.push(data);
+          res.locals.logger.error(data.content);
+        });
+
+        const applyExitCode = await kubernetes.apply(
+          namespace.cluster.config,
+          namespace.context,
+          namespace.name,
+          jobVersion.yaml,
+          emitter,
+        );
+        await store.audit(meta, 'applied job version', { jobVersion });
+
+
+        if (applyExitCode === 0) {
+          return res.status(200).json({ log });
+        } else {
+          return res.status(500).json({ log });
+        }
       } catch (err) {
         next(err);
       }

@@ -7,6 +7,7 @@ export const initialiseJobVersionPage = createAction(`${actionsPrefix}/INITIALIS
 export const FETCH_JOB_VERSION_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_VERSION_REQUEST`);
 export const FETCH_JOB_VERSION_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSION_SUCCESS`);
 export const FETCH_JOB_VERSION_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSION_ERROR`);
+export const apply = createAction(`${actionsPrefix}/APPLY`);
 
 export const selectJobVersion = (state) => (state.jobVersion.jobVersion.data);
 

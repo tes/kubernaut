@@ -409,6 +409,12 @@ export const associateServiceWithTeam = (serviceId, teamId) => {
   });
 };
 
+export const applyJobVersion = (jobVersion) => {
+  return makeRequest(`/api/jobs/version/${jobVersion.id}/apply`, {
+    method: 'POST',
+  });
+};
+
 export const deleteAccount = (accountId) => {
   return makeRequest(`/api/accounts/${accountId}`, {
     method: 'DELETE'

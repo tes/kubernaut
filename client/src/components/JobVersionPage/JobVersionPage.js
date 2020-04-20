@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Progress } from 'reactstrap';
+import { Row, Col, Progress, Button } from 'reactstrap';
 import Title from '../Title';
 import { JobSubNav } from '../SubNavs';
 import { AccountLink } from '../Links';
@@ -37,6 +37,15 @@ class Version extends Component {
               </Row>
             </Col>
             <Col>
+              <Row>
+                <Col>
+                  <Button
+                    className="pull-right"
+                    color="dark"
+                    onClick={() => this.props.apply()}
+                  >Apply</Button>
+                </Col>
+              </Row>
               <Row>
                 <Col>
                   <span>Created by: <AccountLink account={jobVersion.createdBy} /></span>
