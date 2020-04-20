@@ -8,10 +8,15 @@ INSERT INTO permission (id, name, description) VALUES
   (uuid_generate_v4(), 'jobs-write', 'Grants write access to jobs api')
 ON CONFLICT(name) DO UPDATE SET description=EXCLUDED.description;
 
+INSERT INTO permission (id, name, description) VALUES
+  (uuid_generate_v4(), 'jobs-apply', 'Grants write access to jobs api')
+ON CONFLICT(name) DO UPDATE SET description=EXCLUDED.description;
+
 
 INSERT INTO role_permission (id, role, permission) VALUES
   ( uuid_generate_v4(), (SELECT id FROM role WHERE name = 'admin'), (SELECT id FROM permission WHERE name = 'jobs-write') ),
-  ( uuid_generate_v4(), (SELECT id FROM role WHERE name = 'admin'), (SELECT id FROM permission WHERE name = 'jobs-read') )
+  ( uuid_generate_v4(), (SELECT id FROM role WHERE name = 'admin'), (SELECT id FROM permission WHERE name = 'jobs-read') ),
+  ( uuid_generate_v4(), (SELECT id FROM role WHERE name = 'admin'), (SELECT id FROM permission WHERE name = 'jobs-apply') )
 ON CONFLICT(role, permission) DO NOTHING;
 
 COMMIT;

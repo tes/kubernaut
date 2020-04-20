@@ -232,7 +232,7 @@ export default function() {
         const { id } = req.params;
         const jobVersion = await store.getJobVersion(id);
         if (!jobVersion) return next(Boom.notFound());
-        // if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(jobVersion.job.namespace.id); // Need richer version
         const meta = { date: new Date(), account: req.user };
