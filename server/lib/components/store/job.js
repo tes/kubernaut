@@ -164,8 +164,8 @@ export default function() {
         });
     }
 
-    async function saveJob(job, meta) {
-      logger.debug(`Saving new job with name ${job.name} by account ${meta.account.id}`);
+    async function saveJob(name, namespace, meta) {
+      logger.debug(`Saving new job with name ${name} in namespace ${namespace.id} by account ${meta.account.id}`);
 
       return db.withTransaction(async connection => {
         const newJobId = uuid();
@@ -173,8 +173,8 @@ export default function() {
         const teamBuilder = sqb
           .insert('job', {
             id: newJobId,
-            name: job.name,
-            namespace: job.namespaceId,
+            name,
+            namespace: namespace.id,
             created_on: meta.date,
             created_by: meta.account.id,
           });

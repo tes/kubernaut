@@ -116,18 +116,23 @@ export default function(options) {
       return list.count === 1 ? list.items[0] : undefined;
     }
 
-    async function findNamespaces(criteria = {}, limit = 50, offset = 0) {
+
+    const sortMapping = {
+      name: ['n.name asc', 'c.name asc'],
+      byCluster: ['c.priority asc', 'c.name asc', 'n.name asc'],
+    };
+    async function findNamespaces(criteria = {}, limit = 50, offset = 0, sort = 'name') {
 
       logger.debug(`Finding up to ${limit} namespaces matching criteria: ${JSON.stringify(criteria)} starting from offset: ${offset}`);
 
       const bindVariables = {};
 
       const findNamespacesBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
         .from('active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
-        .orderBy('n.name asc', 'c.name asc')
+        .orderBy(...(sortMapping[sort] || sortMapping.name))
         .limit(limit)
         .offset(offset);
 

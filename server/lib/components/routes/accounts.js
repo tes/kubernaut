@@ -79,8 +79,11 @@ export default function(options = {}) {
     app.get('/api/account/withPermission/:permission/on/:type', async (req, res, next) => {
       try {
           const { permission, type } = req.params;
-          if (!['team'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
+          if (!['namespace', 'team'].includes(type)) return next(Boom.badRequest(`Type ${type} is not supported`));
           const func = ({
+            namespace: (user, permission) => store.findNamespaces({
+              user: { id: user.id, permission },
+            }, 50, 0, 'byCluster'), // Yes I know this returns a different shape response to the teams one.
             team: store.teamsWithPermission,
           })[type];
 

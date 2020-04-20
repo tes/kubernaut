@@ -1,6 +1,16 @@
 import { connect } from 'react-redux';
+import {
+  reduxForm,
+} from 'redux-form';
 import JobsPage from './JobsPage';
-import { fetchJobsPagination } from '../../modules/jobs';
+import {
+  fetchJobsPagination,
+  openModal,
+  closeModal,
+  submitForm,
+} from '../../modules/jobs';
+
+const formName = 'newJob';
 
 function mapStateToProps(state, props) {
   return {
@@ -8,7 +18,20 @@ function mapStateToProps(state, props) {
       data: state.jobs.data,
       meta: state.jobs.meta,
     },
+    newModalOpen: state.jobs.newModalOpen,
+    canCreate: state.jobs.canCreate,
+    namespaces: state.jobs.namespaces,
+    submitForm,
+    initialValues: state.jobs.initialValues,
   };
 }
 
-export default connect(mapStateToProps, { fetchJobsPagination })(JobsPage);
+export default connect(mapStateToProps, {
+  fetchJobsPagination,
+  openModal,
+  closeModal,
+})(reduxForm({
+  form: formName,
+  enableReinitialize: true,
+  destroyOnUnmount: false,
+})(JobsPage));

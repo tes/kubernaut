@@ -28,7 +28,7 @@ import { initialiseTeamPage } from './modules/team';
 import { fetchTeamInfo } from './modules/editTeam';
 import { initForm as initTeamAttrs } from './modules/teamAttrs';
 import { fetchTeamsPagination } from './modules/teams';
-import { fetchJobsPagination } from './modules/jobs';
+import { initialiseJobsPage } from './modules/jobs';
 import { initialiseJobPage } from './modules/job';
 import { initialiseJobVersionPage } from './modules/jobVersion';
 import { INITIALISE as initNewJobPage } from './modules/newJobVersion';
@@ -75,7 +75,7 @@ const paths = {
   },
   jobs: {
     route: '/jobs',
-    action: fetchJobsPagination,
+    action: initialiseJobsPage,
   },
   job: {
     route: '/jobs/:id',

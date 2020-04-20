@@ -115,6 +115,26 @@ export default function() {
       }
     });
 
+    app.post('/api/jobs', bodyParser.json(), async (req, res, next) => {
+      try {
+        const { name, namespace: namespaceId } = req.body;
+
+        const namespace = await store.getNamespace(namespaceId);
+        if (!namespace) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'jobs-write')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: req.user };
+
+        const newJobId = await store.saveJob(name, namespace, meta);
+
+        await store.audit(meta, 'saved new job', { job: { id: newJobId } });
+
+        return res.json({ id: newJobId });
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/jobs/:id', async (req, res, next) => {
       try {
         const { id } = req.params;
