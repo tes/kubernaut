@@ -39,7 +39,7 @@ export default function() {
 
     function getJobVersion(id) {
       const versionBuilder = sqb
-        .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'a.display_name')
+        .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
         .from('active_job_version__vw jv')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
@@ -124,7 +124,7 @@ export default function() {
       logger.debug(`Listing up to ${limit} job versions for job ${job.id} starting from offset: ${offset}`);
 
       const findVersionsBuilder = sqb
-        .select('jv.id', 'jv.created_on', 'jv.created_by', 'a.display_name')
+        .select('jv.id', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
         .from('active_job_version__vw jv')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
@@ -142,26 +142,37 @@ export default function() {
         )
         .where(Op.eq('jv.job', job.id));
 
-        return db.withTransaction(async connection => {
-          const findStatement = db.serialize(findVersionsBuilder, {});
-          const countStatement = db.serialize(countVersionsBuilder, {});
+      const latestAppliedBuilder = sqb
+        .select('jv.id')
+        .from('active_job_version__vw jv')
+        .where(Op.eq('jv.job', job.id))
+        .where(Op.not('jv.last_applied', null))
+        .orderBy('jv.last_applied desc')
+        .limit(1);
 
-          return Promise.all([
-            connection.query(findStatement.sql, findStatement.values),
-            connection.query(countStatement.sql, countStatement.values),
-          ]).then(([findResult, countResult]) => {
-            const items = findResult.rows.map(toJobVersion);
-            const count = parseInt(countResult.rows[0].count, 10);
-            logger.debug(`Returning ${items.length} of ${count} jobs`);
+      return db.withTransaction(async connection => {
+        const findStatement = db.serialize(findVersionsBuilder, {});
+        const countStatement = db.serialize(countVersionsBuilder, {});
+        const lastAppliedStatement = db.serialize(latestAppliedBuilder, {});
 
-            return {
-              limit,
-              offset,
-              count,
-              items,
-            };
-          });
+        return Promise.all([
+          connection.query(findStatement.sql, findStatement.values),
+          connection.query(countStatement.sql, countStatement.values),
+          connection.query(lastAppliedStatement.sql, lastAppliedStatement.values),
+        ]).then(([findResult, countResult, lastAppliedResult]) => {
+          const latestAppliedId = lastAppliedResult.rowCount ? lastAppliedResult.rows[0].id : null;
+          const items = findResult.rows.map((r) => toJobVersion(r, null, latestAppliedId));
+          const count = parseInt(countResult.rows[0].count, 10);
+          logger.debug(`Returning ${items.length} of ${count} jobs`);
+
+          return {
+            limit,
+            offset,
+            count,
+            items,
+          };
         });
+      });
     }
 
     async function saveJob(name, namespace, meta) {
@@ -170,7 +181,7 @@ export default function() {
       return db.withTransaction(async connection => {
         const newJobId = uuid();
 
-        const teamBuilder = sqb
+        const builder = sqb
           .insert('job', {
             id: newJobId,
             name,
@@ -179,7 +190,7 @@ export default function() {
             created_by: meta.account.id,
           });
 
-        await connection.query(db.serialize(teamBuilder, {}).sql);
+        await connection.query(db.serialize(builder, {}).sql);
 
         logger.debug(`Saved new job with id ${newJobId}`);
         return newJobId;
@@ -192,7 +203,7 @@ export default function() {
       return db.withTransaction(async connection => {
         const newJobVersionId = uuid();
 
-        const teamBuilder = sqb
+        const builder = sqb
           .insert('job_version', {
             id: newJobVersionId,
             job: job.id,
@@ -201,11 +212,24 @@ export default function() {
             created_by: meta.account.id,
           });
 
-        await connection.query(db.serialize(teamBuilder, {}).sql);
+        await connection.query(db.serialize(builder, {}).sql);
 
         logger.debug(`Saved new job version with id ${newJobVersionId}`);
         return newJobVersionId;
       });
+    }
+
+    async function setJobVersionLastApplied(jobVersion, meta) {
+      logger.debug(`Updating last applied for jobVersion ${jobVersion.id}`);
+
+      const builder = sqb
+        .update('job_version', {
+          last_applied: meta.date,
+        })
+        .where(Op.eq('id', jobVersion.id));
+
+      await db.query(db.serialize(builder, {}).sql);
+      logger.debug(`Updated job version last applied for id ${jobVersion.id}`);
     }
 
     function toJob(row) {
@@ -231,7 +255,7 @@ export default function() {
       });
     }
 
-    function toJobVersion(row, job) {
+    function toJobVersion(row, job, latestAppliedId) {
       return new JobVersion({
         id: row.id,
         job,
@@ -241,6 +265,8 @@ export default function() {
           id: row.created_by,
           displayName: row.display_name,
         }),
+        lastApplied: row.last_applied,
+        isLatestApplied: row.id === latestAppliedId,
       });
     }
 
@@ -251,6 +277,7 @@ export default function() {
       saveJob,
       saveJobVersion,
       findJobVersions,
+      setJobVersionLastApplied,
     });
   }
 

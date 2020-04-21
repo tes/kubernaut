@@ -248,6 +248,7 @@ export default function() {
           res.locals.logger.error(data.content);
         });
 
+        await store.setJobVersionLastApplied(jobVersion, meta);
         const applyExitCode = await kubernetes.apply(
           namespace.cluster.config,
           namespace.context,

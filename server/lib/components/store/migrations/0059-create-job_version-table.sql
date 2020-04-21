@@ -7,6 +7,7 @@ CREATE TABLE job_version
     yaml text NOT NULL,
     created_by uuid NOT NULL,
     created_on timestamp with time zone NOT NULL,
+    last_applied timestamp with time zone,
 
     CONSTRAINT job FOREIGN KEY (job)
         REFERENCES job (id) MATCH SIMPLE
