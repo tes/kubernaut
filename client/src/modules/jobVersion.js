@@ -8,6 +8,8 @@ export const FETCH_JOB_VERSION_REQUEST = createAction(`${actionsPrefix}/FETCH_JO
 export const FETCH_JOB_VERSION_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSION_SUCCESS`);
 export const FETCH_JOB_VERSION_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSION_ERROR`);
 export const apply = createAction(`${actionsPrefix}/APPLY`);
+export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
+export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
 
 export const selectJobVersion = (state) => (state.jobVersion.jobVersion.data);
 
@@ -32,6 +34,8 @@ const defaultState = {
       },
     },
   },
+  applyLog: [],
+  logOpen : false,
 };
 
 export default handleActions({
@@ -65,5 +69,14 @@ export default handleActions({
     job: {
       ...state.jobVersion,
     },
+  }),
+  [setLogOutput]: (state, { payload }) => ({
+    ...state,
+    logOpen: true,
+    applyLog: payload.log,
+  }),
+  [closeModal]: (state) => ({
+    ...state,
+    logOpen: false,
   }),
 }, defaultState);

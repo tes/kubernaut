@@ -52,7 +52,19 @@ export default function() {
         if (!versionResult.rowCount) return undefined;
 
         const job = await _getJob(connection, versionResult.rows[0].job);
-        return toJobVersion(versionResult.rows[0], job);
+
+        const latestAppliedBuilder = sqb
+        .select('jv.id')
+        .from('active_job_version__vw jv')
+        .where(Op.eq('jv.job', job.id))
+        .where(Op.not('jv.last_applied', null))
+        .orderBy('jv.last_applied desc')
+        .limit(1);
+
+        const latestAppliedResult = await connection.query(db.serialize(latestAppliedBuilder, {}).sql);
+        const latestAppliedId = latestAppliedResult.rowCount ? latestAppliedResult.rows[0].id : null;
+
+        return toJobVersion(versionResult.rows[0], job, latestAppliedId);
       });
     }
 

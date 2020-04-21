@@ -7,6 +7,7 @@ import {
   FETCH_JOB_VERSION_ERROR,
   apply,
   selectJobVersion,
+  setLogOutput,
 } from '../modules/jobVersion';
 import {
   getJobVersion,
@@ -30,7 +31,7 @@ export function* applySaga() {
   try {
     const jobVersion = yield select(selectJobVersion);
     const result = yield call(applyJobVersion, jobVersion);
-
+    yield put(setLogOutput(result));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
   }
