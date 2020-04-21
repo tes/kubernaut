@@ -120,9 +120,14 @@ export default function() {
 
     app.post('/api/jobs', bodyParser.json(), async (req, res, next) => {
       try {
-        const { name, namespace: namespaceId } = req.body;
+        const { name, namespace: namespaceId, registry: registryName } = req.body;
 
+        if (!name || !namespaceId || !registryName) return next(Boom.badRequest());
         if (!name.match(validName)) return next(Boom.badRequest());
+
+        const registry = await store.findRegistry({ name: registryName });
+        if (!registry) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'jobs-write')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(namespaceId);
         if (!namespace) return next(Boom.notFound());
@@ -130,7 +135,7 @@ export default function() {
 
         const meta = { date: new Date(), account: req.user };
 
-        const newJobId = await store.saveJob(name, namespace, meta);
+        const newJobId = await store.saveJob(name, registry, namespace, meta);
 
         await store.audit(meta, 'saved new job', { job: { id: newJobId } });
 
@@ -145,7 +150,7 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
-        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job', { job });
@@ -160,7 +165,7 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
-        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-read')) return next(Boom.forbidden());
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
@@ -180,7 +185,7 @@ export default function() {
         const { id } = req.params;
         const jobVersion = await store.getJobVersion(id);
         if (!jobVersion) return next(Boom.notFound());
-        if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnRegistry(req.user, jobVersion.job.registry.id, 'jobs-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job version', { jobVersion });
@@ -198,6 +203,7 @@ export default function() {
         const { id } = req.params;
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-write')) return next(Boom.forbidden());
         if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-write')) return next(Boom.forbidden());
 
         const values = req.body || {};
@@ -236,6 +242,7 @@ export default function() {
         const { id } = req.params;
         const jobVersion = await store.getJobVersion(id);
         if (!jobVersion) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, jobVersion.job.registry.id, 'jobs-read')) return next(Boom.forbidden());
         if (! await store.hasPermissionOnNamespace(req.user, jobVersion.job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(jobVersion.job.namespace.id); // Need richer version

@@ -10,6 +10,7 @@ export const FETCH_JOB_VERSION_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_
 export const apply = createAction(`${actionsPrefix}/APPLY`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
+export const setLogOutputError = createAction(`${actionsPrefix}/SET_LOG_OUTPUT_ERROR`);
 
 export const selectJobVersion = (state) => (state.jobVersion.jobVersion.data);
 
@@ -28,6 +29,9 @@ const defaultState = {
       job: {
         id: '',
         name: '',
+        registry: {
+          name: '',
+        },
       },
       createdBy: {
         id: '',
@@ -35,6 +39,7 @@ const defaultState = {
     },
   },
   applyLog: [],
+  applyError: '',
   logOpen : false,
 };
 
@@ -74,6 +79,11 @@ export default handleActions({
     ...state,
     logOpen: true,
     applyLog: payload.log,
+  }),
+  [setLogOutputError]: (state, { payload }) => ({
+    ...state,
+    logOpen: true,
+    applyError: payload,
   }),
   [closeModal]: (state) => ({
     ...state,

@@ -6,6 +6,7 @@ import JobVersion from '../../domain/JobVersion';
 import Account from '../../domain/Account';
 import Cluster from '../../domain/Cluster';
 import Namespace from '../../domain/Namespace';
+import Registry from '../../domain/Registry';
 
 
 const { Op, raw, innerJoin } = sqb;
@@ -23,12 +24,13 @@ export default function() {
 
     async function _getJob(connection, id) {
       const builder = sqb
-        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color')
+        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
+          innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
         )
         .where(Op.eq('j.id', id));
 
@@ -80,12 +82,13 @@ export default function() {
       const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findJobsBuilder = sqb
-        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color')
+        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
+          innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
         )
         .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
@@ -97,6 +100,7 @@ export default function() {
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
+          innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
         );
 
       if (criteria.filters) {
@@ -106,8 +110,8 @@ export default function() {
       }
 
       if (criteria.user) {
-        const idsQuery = authz.querySubjectIdsWithPermission('namespace', criteria.user.id, criteria.user.permission);
-        [findJobsBuilder, countJobsBuilder].forEach(builder => builder.where(Op.in('n.id', idsQuery)));
+        const idsQuery = authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.permission);
+        [findJobsBuilder, countJobsBuilder].forEach(builder => builder.where(Op.in('r.id', idsQuery)));
       }
 
       return db.withTransaction(async connection => {
@@ -187,7 +191,7 @@ export default function() {
       });
     }
 
-    async function saveJob(name, namespace, meta) {
+    async function saveJob(name, registry, namespace, meta) {
       logger.debug(`Saving new job with name ${name} in namespace ${namespace.id} by account ${meta.account.id}`);
 
       return db.withTransaction(async connection => {
@@ -197,6 +201,7 @@ export default function() {
           .insert('job', {
             id: newJobId,
             name,
+            registry: registry.id,
             namespace: namespace.id,
             created_on: meta.date,
             created_by: meta.account.id,
@@ -263,6 +268,10 @@ export default function() {
             name: row.cluster_name,
             color: row.cluster_color,
           }),
+        }),
+        registry: new Registry({
+          id: row.registry_id,
+          name: row.registry_name,
         }),
       });
     }

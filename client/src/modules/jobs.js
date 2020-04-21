@@ -14,6 +14,7 @@ export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const setNamespaces = createAction(`${actionsPrefix}/SET_NAMESPACES`);
+export const setRegistries = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const getFormValues = (state) => rfGetFormValues('newJob')(state);
 
 const defaultState = {
@@ -26,6 +27,14 @@ const defaultState = {
     items: [],
   },
   namespaces: {
+    limit: 0,
+    offset: 0,
+    count: 0,
+    pages: 0,
+    page: 0,
+    items: [],
+  },
+  registries: {
     limit: 0,
     offset: 0,
     count: 0,
@@ -77,6 +86,11 @@ export default handleActions({
   [setNamespaces]: (state, { payload }) => ({
     ...state,
     namespaces: payload.data,
-    canCreate: payload.data.count > 0,
+    canCreate: payload.data.count > 0 && state.registries.count > 0,
+  }),
+  [setRegistries]: (state, { payload }) => ({
+    ...state,
+    registries: payload.data,
+    canCreate: payload.data.count > 0 && state.namespaces.count > 0,
   }),
 }, defaultState);

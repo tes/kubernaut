@@ -602,12 +602,13 @@ export const removeTeamRoleForTeam = (teamId, subjectTeamId, role, options = {})
   });
 };
 
-export const saveJob = (name, namespace) => {
+export const saveJob = (name, namespace, registry) => {
   return makeRequest('/api/jobs', {
     method: 'POST',
     body: JSON.stringify({
       name,
       namespace,
+      registry,
     }),
   });
 };

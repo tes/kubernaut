@@ -26,7 +26,7 @@ class JobSubNav extends Component {
           <Nav tabs>
             <NavItem>
               <JobLink container job={job}>
-                <NavLink><i className="fa fa-cogs" aria-hidden='true'></i> {`${job.name}`}</NavLink>
+                <NavLink><i className="fa fa-cogs" aria-hidden='true'></i> {`${job.registry.name}/${job.name}`}</NavLink>
               </JobLink>
             </NavItem>
             {

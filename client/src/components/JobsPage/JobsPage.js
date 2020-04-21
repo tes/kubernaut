@@ -14,6 +14,7 @@ import {
 } from 'reactstrap';
 import JobsTable from '../JobsTable';
 import RenderInput from '../RenderInput';
+import RenderSelect from '../RenderSelect';
 import RenderNamespaces from '../RenderNamespaces';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
@@ -52,6 +53,18 @@ class TeamsPage extends Component {
             <Row>
               <Col>
                 <Form>
+                  <FormGroup row>
+                    <Label sm="3" className="text-right" for="registry">Registry:</Label>
+                    <Col sm="9">
+                      <Field
+                        className="form-control"
+                        name="registry"
+                        component={RenderSelect}
+                        autoComplete="off"
+                        options={this.props.registries.items.map(r => r.name)}
+                      />
+                    </Col>
+                  </FormGroup>
                   <FormGroup row>
                     <Label sm="3" className="text-right" for="name">Name:</Label>
                     <Col sm="9">

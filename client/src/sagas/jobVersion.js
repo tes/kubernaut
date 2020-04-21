@@ -8,6 +8,7 @@ import {
   apply,
   selectJobVersion,
   setLogOutput,
+  setLogOutputError,
 } from '../modules/jobVersion';
 import {
   getJobVersion,
@@ -34,6 +35,7 @@ export function* applySaga() {
     yield put(setLogOutput(result));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
+    yield put(setLogOutputError(error.message || error));
   }
 }
 

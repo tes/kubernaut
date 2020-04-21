@@ -21,6 +21,7 @@ function mapStateToProps(state, props) {
     newModalOpen: state.jobs.newModalOpen,
     canCreate: state.jobs.canCreate,
     namespaces: state.jobs.namespaces,
+    registries: state.jobs.registries,
     submitForm,
     initialValues: state.jobs.initialValues,
   };

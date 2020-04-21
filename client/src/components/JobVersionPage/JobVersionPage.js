@@ -95,6 +95,9 @@ class Version extends Component {
                 </code>
               ))
             }
+            {this.props.applyError ? (
+              <span>{this.props.applyError}</span>
+            ): null}
           </ModalBody>
         </Modal>
       </Row>

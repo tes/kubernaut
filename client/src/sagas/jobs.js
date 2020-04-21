@@ -10,6 +10,7 @@ import {
   FETCH_JOBS_ERROR,
   getFormValues,
   setNamespaces,
+  setRegistries,
   submitForm,
 } from '../modules/jobs';
 
@@ -21,8 +22,10 @@ import {
 
 export function* checkPermissionSaga({ payload: options }) {
   try {
-    const data = yield call(withPermission, 'jobs-write', 'namespace');
-    yield put(setNamespaces({ data }));
+    const namespaces = yield call(withPermission, 'jobs-write', 'namespace');
+    yield put(setNamespaces({ data: namespaces }));
+    const registries = yield call(withPermission, 'jobs-write', 'registry');
+    yield put(setRegistries({ data: registries }));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
   }
@@ -46,11 +49,11 @@ export function* submitSaga() {
   try {
     const values = yield select(getFormValues);
 
-    if (!values.name || !values.namespace) {
+    if (!values.name || !values.namespace || !values.registry) {
       yield put(submitForm.failure());
       return;
     }
-    const data = yield call(saveJob, values.name, values.namespace);
+    const data = yield call(saveJob, values.name, values.namespace, values.registry);
     yield put(submitForm.success());
     yield put(push(`/jobs/${data.id}/new`));
   } catch (err) {

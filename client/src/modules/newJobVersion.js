@@ -42,6 +42,9 @@ const defaultState = {
   job: {
     data: {
       name: '',
+      registry: {
+        name: '',
+      },
     },
   },
   preview: '',
