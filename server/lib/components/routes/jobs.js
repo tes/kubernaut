@@ -5,6 +5,8 @@ import { get as _get } from 'lodash';
 import EventEmitter from 'events';
 import parseFilters from './lib/parseFilters';
 
+const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
 function valuesFromYaml(parsed) {
   const { spec } = parsed || {};
   if (!spec) return {};
@@ -119,6 +121,8 @@ export default function() {
     app.post('/api/jobs', bodyParser.json(), async (req, res, next) => {
       try {
         const { name, namespace: namespaceId } = req.body;
+
+        if (!name.match(validName)) return next(Boom.badRequest());
 
         const namespace = await store.getNamespace(namespaceId);
         if (!namespace) return next(Boom.notFound());

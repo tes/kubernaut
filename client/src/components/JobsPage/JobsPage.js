@@ -16,6 +16,8 @@ import JobsTable from '../JobsTable';
 import RenderInput from '../RenderInput';
 import RenderNamespaces from '../RenderNamespaces';
 
+const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
 class TeamsPage extends Component {
 
   render() {
@@ -59,6 +61,10 @@ class TeamsPage extends Component {
                         component={RenderInput}
                         type="text"
                         autoComplete="off"
+                        validate={(value) => {
+                          if (value.match(validName)) return;
+                          return 'Invalid name';
+                        }}
                       />
                     </Col>
                   </FormGroup>
