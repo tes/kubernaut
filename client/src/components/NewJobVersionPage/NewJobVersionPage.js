@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Field, FieldArray } from 'redux-form';
+import { Field, FieldArray, FormSection } from 'redux-form';
 import { toString as humanCron } from 'cronstrue';
 import { isValidCron } from 'cron-validator';
 // import PropTypes from 'prop-types';
@@ -20,6 +20,7 @@ import Title from '../Title';
 import { JobSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
+import SecretEditor from '../SecretEditor';
 
 class RenderArgs extends Component {
   render() {
@@ -292,6 +293,19 @@ class RenderContainers extends Component {
                                   />
                                 </Col>
                               </FormGroup>
+                              <FormGroup row>
+                                <Label sm="3" className="text-right" for={`${container}.envFromSecret`}>envFrom (use secret):</Label>
+                                <Col sm="6">
+                                  <Field
+                                    className="form-control"
+                                    name={`${container}.envFromSecret`}
+                                    component={RenderInput}
+                                    type="checkbox"
+                                    autoComplete="off"
+                                    onChangeListener={this.props.onChangeListener}
+                                  />
+                                </Col>
+                              </FormGroup>
                             </Col>
                           </Row>
 
@@ -400,7 +414,7 @@ class RenderVolumes extends Component {
                                     name={`${volume}.type`}
                                     component={RenderSelect}
                                     autoComplete="off"
-                                    options={['emptyDir', 'configMap']}
+                                    options={['emptyDir', 'configMap', 'secret']}
                                     onChangeListener={this.props.onChangeListener}
                                     />
                                 </Col>
@@ -453,7 +467,7 @@ class RenderVolumes extends Component {
 class NewJobVersionPage extends Component {
 
   render() {
-    const { meta, job } = this.props;
+    const { meta, job, secretErrors } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -602,6 +616,41 @@ class NewJobVersionPage extends Component {
                         component={RenderVolumes}
                         onChangeListener={() => this.props.triggerPreview()}
                         />
+                    </CardBody>
+                  </Collapse>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader>
+                    <span>Secret:</span>
+                    <Button
+                      close
+                      onClick={() => this.props.toggleCollapsed('secret')}
+                      >
+                      <i
+                        className={`fa fa-${this.props.collapsed.secret ? 'plus' : 'minus'}`}
+                        aria-hidden='true'
+                        ></i>
+                    </Button>
+                  </CardHeader>
+                  <Collapse isOpen={!this.props.collapsed.secret}>
+                    <CardBody>
+                      <FormSection name="secret">
+                        <SecretEditor
+                          secretErrors={secretErrors}
+                          formSecrets={this.props.formSecrets}
+                          formValues={this.props.currentFormValues.secret || {}}
+                          addSecret={this.props.addSecret}
+                          saveVersion={this.props.saveVersion}
+                          removeSecret={this.props.removeSecret}
+                          validateAnnotations={this.props.validateAnnotations}
+                          height="small"
+                        />
+                      </FormSection>
                     </CardBody>
                   </Collapse>
                 </Card>

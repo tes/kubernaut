@@ -90,9 +90,11 @@ class Version extends Component {
           <ModalBody>
             {
               this.props.applyLog.map((line, idx) => (
-                <code key={`${idx}-${line.writtenOn}`}>
-                  {line.content}
-                </code>
+                <pre>
+                  <code key={`${idx}-${line.writtenOn}`}>
+                    {line.content}
+                  </code>
+                </pre>
               ))
             }
             {this.props.applyError ? (

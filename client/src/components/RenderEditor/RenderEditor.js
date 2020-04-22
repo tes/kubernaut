@@ -9,6 +9,7 @@ require('brace');
 
 class RenderEditor extends Component {
   render() {
+    const { height = 'normal' } = this.props;
     return (
       <AceEditor
         value={this.props.input.value}
@@ -29,7 +30,7 @@ class RenderEditor extends Component {
         enableLiveAutocompletion={this.props.mode !== 'plain_text'}
         tabSize={2}
         width="95%"
-        height="70vh"
+        height={height === 'normal' ? '70vh': '45vh'}
         showPrintMargin={false}
       />
     );
@@ -38,7 +39,8 @@ class RenderEditor extends Component {
 
 RenderEditor.propTypes = {
   input: PropTypes.object.isRequired,
-  mode: PropTypes.oneOf(['json', 'plain_text'])
+  mode: PropTypes.oneOf(['json', 'plain_text']),
+  height: PropTypes.oneOf(['normal', 'small']),
 };
 
 export default RenderEditor;

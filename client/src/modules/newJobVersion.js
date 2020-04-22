@@ -3,6 +3,7 @@ import { createFormAction } from 'redux-form-saga';
 import computeLoading from './lib/computeLoading';
 import {
   getFormValues as rfGetFormValues,
+  getFormAsyncErrors as rfGetFormAsyncErrors,
 } from 'redux-form';
 
 const actionsPrefix = 'KUBERNAUT/NEW_JOB_VERSION';
@@ -20,11 +21,31 @@ export const FETCH_JOB_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_J
 export const FETCH_JOB_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_SUCCESS`);
 export const FETCH_JOB_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_ERROR`);
 
+export const addSecret = createAction(`${actionsPrefix}/ADD_SECRET`);
+export const removeSecret = createAction(`${actionsPrefix}/REMOVE_SECRET`);
+export const saveVersion = createFormAction(`${actionsPrefix}/SAVE_VERSION`);
+export const validateAnnotations = createAction(`${actionsPrefix}/VALIDATE_ANNOTATIONS`);
+
 export const selectJob = (state) => (state.newJobVersion.job.data);
 export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
+export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
 
 const defaultState = {
-  initialValues: {},
+  initialValues: {
+    concurrencyPolicy: 'Replace',
+    secret: {
+      secrets: [],
+      newSecretSection: {
+        newSecretType: 'json',
+      },
+    },
+    volumes: [
+      {
+        name: 'job-secret',
+        type: 'secret',
+      }
+    ]
+  },
   meta: {
     loading: {
       sections: {
@@ -37,6 +58,7 @@ const defaultState = {
   collapsed: {
     initContainers: true,
     containers: false,
+    secret: true,
     volumes: true,
   },
   job: {
@@ -97,7 +119,10 @@ export default handleActions({
     };
 
     if (payload && payload.version ) {
-      newState.initialValues = payload.version.values;
+      newState.initialValues = {
+        ...defaultState.initialValues,
+        ...payload.version.values,
+      };
     }
     return newState;
   },

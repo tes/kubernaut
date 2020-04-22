@@ -11,12 +11,6 @@ export default connect((state, props) => {
   const secretErrors = asyncErrors.secrets || [];
   const doSecretsHaveErrors = secretErrors.filter(s => s && s.value).length > 0;
 
-  const canAddNewSecret = formValues
-    && formValues.newSecretSection
-    && formValues.newSecretSection.newSecretName
-    && formValues.newSecretSection.newSecretType
-    && (!(formValues.secrets || []).find(s => s.key === formValues.newSecretSection.newSecretName));
-
   const canSave = !doSecretsHaveErrors && formValues && formValues.comment;
 
   return {
@@ -27,7 +21,7 @@ export default connect((state, props) => {
     version: newSecretVersion.version,
     namespace: newSecretVersion.namespace,
     initialValues: newSecretVersion.initialValues,
-    canAddNewSecret,
+    formValues,
     canSave,
     saveVersion,
     formSecrets: (formValues && formValues.secrets) || [],

@@ -15,7 +15,16 @@ function valuesFromYaml(parsed) {
     schedule: spec.schedule,
     concurrencyPolicy: _get(spec, 'concurrencyPolicy', 'Allow'),
     initContainers: _get(spec, 'jobTemplate.spec.template.spec.initContainers', []),
-    containers: _get(spec, 'jobTemplate.spec.template.spec.containers', []),
+    containers: _get(spec, 'jobTemplate.spec.template.spec.containers', []).map(c => {
+      const toReturn = {
+        ...c,
+      };
+      if (_get(c, 'envFrom')) {
+        toReturn.envFromSecret = c.envFrom.filter((ef) => ef.secretRef).length > 0;
+      }
+
+      return toReturn;
+    }),
     volumes: _get(spec, 'jobTemplate.spec.template.spec.volumes', []).map(v => {
       const toReturn = {
         name: v.name,
@@ -49,6 +58,12 @@ function buildSpec (values, job) {
 
     if (c.volumeMounts) toReturn.volumeMounts = c.volumeMounts;
 
+    if (c.envFromSecret) toReturn.envFrom = [{
+      secretRef: {
+        name: `cronjob-${job.name}`,
+      }
+    }];
+
     return toReturn;
   }
 
@@ -62,6 +77,10 @@ function buildSpec (values, job) {
     } else if (v.type === 'configMap') {
       toReturn.configMap = {
         name: _get(v, 'configMap.name', ''),
+      };
+    } else if (v.type === 'secret') {
+      toReturn.secret = {
+        secretName: `cronjob-${job.name}`,
       };
     }
 
@@ -91,6 +110,25 @@ function buildSpec (values, job) {
       }
     }
   };
+}
+
+function generateJobSecretYaml(jobVersion, secretData) {
+  const doc = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: `cronjob-${jobVersion.job.name}`,
+    },
+    type: 'Opaque',
+    data: secretData.reduce((acc, secret) => {
+      return {
+        ...acc,
+        [secret.key]: secret.value,
+      };
+    }, {}),
+  };
+
+  return safeDump(doc, { lineWidth: 120 });
 }
 
 export default function() {
@@ -191,7 +229,9 @@ export default function() {
         await store.audit(meta, 'viewed job version', { jobVersion });
 
         jobVersion.values = valuesFromYaml(safeLoad(jobVersion.yaml || ''));
-
+        jobVersion.values.secret = {
+          secrets: await store.getJobVersionSecretWithData(jobVersion.id, meta),
+        };
         return res.json(jobVersion);
       } catch (err) {
         next(err);
@@ -209,10 +249,17 @@ export default function() {
         const values = req.body || {};
         const spec = buildSpec(values, job);
         const yaml = safeDump(spec, { lineWidth: 120 });
-
         const meta = { date: new Date(), account: req.user };
 
         const newVersionId = await store.saveJobVersion(job, { yaml }, meta);
+
+        const secretsFromBody = _get(values, 'secret.secrets');
+        if (secretsFromBody) {
+          if (!Array.isArray(secretsFromBody)) return next(Boom.badRequest('secrets must be an array'));
+          secretsFromBody.forEach(secret => { if (typeof secret !== 'object') return next(Boom.badRequest('secret must be an object'));});
+          const secrets = secretsFromBody.map(({ key, value, editor }) => ({ key, value, editor }));
+          await store.saveJobVersionOfSecret(newVersionId, { secrets }, meta);
+        }
 
         await store.audit(meta, 'saved new job version', { jobVersion: { id: newVersionId} });
 
@@ -248,6 +295,14 @@ export default function() {
         const namespace = await store.getNamespace(jobVersion.job.namespace.id); // Need richer version
         const meta = { date: new Date(), account: req.user };
 
+        const yamlDocs = [jobVersion.yaml];
+
+        const jobVersionSecrets = await store.getJobVersionSecretWithData(jobVersion.id, meta, { opaque: true });
+
+        if (jobVersionSecrets) {
+          yamlDocs.push(generateJobSecretYaml(jobVersion, jobVersionSecrets));
+        }
+
         const emitter = new EventEmitter();
         const log = [];
 
@@ -264,7 +319,7 @@ export default function() {
           namespace.cluster.config,
           namespace.context,
           namespace.name,
-          jobVersion.yaml,
+          yamlDocs.join('---\n'),
           emitter,
         );
         await store.audit(meta, 'applied job version', { jobVersion });

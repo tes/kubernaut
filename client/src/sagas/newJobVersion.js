@@ -1,6 +1,13 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { push } from 'connected-react-router';
-import { SubmissionError } from 'redux-form';
+import {
+  resetSection,
+  arrayPush,
+  SubmissionError,
+  arrayRemove,
+  startAsyncValidation,
+  stopAsyncValidation,
+} from 'redux-form';
 import {
   INITIALISE,
   FETCH_JOB_REQUEST,
@@ -14,6 +21,10 @@ import {
   updatePreview,
   submitForm,
   selectJob,
+  addSecret,
+  removeSecret,
+  validateAnnotations,
+  getFormAsyncErrors,
 } from '../modules/newJobVersion';
 import {
   getJob,
@@ -72,9 +83,48 @@ export function* submitSaga() {
   }
 }
 
+export function* validateAnnotationsSaga({ payload }) {
+  const { annotations, index } = payload;
+  yield put(startAsyncValidation('newJobVersion'));
+  const existingErrors = yield select(getFormAsyncErrors) || {};
+
+  if (annotations && annotations.length && annotations.filter(a => a.type === 'error').length) {
+    const newErrors = {
+      ...(existingErrors || {}),
+      secret: {
+        ...((existingErrors || {}).secret || {}),
+        secrets: (existingErrors || {}).secrets || [],
+      }
+    };
+    newErrors.secret.secrets[index] = { value: 'Invalid' };
+    yield put(stopAsyncValidation('newJobVersion', newErrors));
+  } else {
+    yield put(stopAsyncValidation('newJobVersion', existingErrors));
+  }
+}
+
+export function* addSecretSaga() {
+  const formValues = yield select(getFormValues);
+  if (!formValues.secret.newSecretSection) return;
+  if (!formValues.secret.newSecretSection.newSecretName || !formValues.secret.newSecretSection.newSecretType) return;
+  yield put(arrayPush('newJobVersion', 'secret.secrets', {
+    key: formValues.secret.newSecretSection.newSecretName,
+    value: '',
+    editor: formValues.secret.newSecretSection.newSecretType
+  }));
+  yield put(resetSection('newJobVersion', 'secret.newSecretSection'));
+}
+
+export function* removeSecretSaga({ payload }) {
+  yield put(arrayRemove('newJobVersion', 'secret.secrets', payload));
+}
+
 export default [
   takeLatest(INITIALISE, fetchNewJobVersionPageDataSaga),
   takeLatest(triggerPreview, previewValuesSaga),
   takeLatest(FETCH_JOB_VERSIONS_SUCCESS, previewValuesSaga),
   takeLatest(submitForm.REQUEST, submitSaga),
+  takeLatest(addSecret, addSecretSaga),
+  takeLatest(removeSecret, removeSecretSaga),
+  takeLatest(validateAnnotations, validateAnnotationsSaga),
 ];

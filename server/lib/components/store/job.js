@@ -1,5 +1,6 @@
 import sqb from 'sqb';
 import { v4 as uuid } from 'uuid';
+import Promise from 'bluebird';
 
 import Job from '../../domain/Job';
 import JobVersion from '../../domain/JobVersion';
@@ -249,6 +250,41 @@ export default function() {
       logger.debug(`Updated job version last applied for id ${jobVersion.id}`);
     }
 
+    async function getJobVersionSecretWithData(joVersionId, meta, options = { opaque: false }) {
+      logger.debug(`Retrieving jobVersion secret for ${joVersionId} for ${meta.account.id}`);
+      const secretDataBuilder = sqb
+        .select('jvd.key', 'jvd.value', 'jvd.editor')
+        .from('job_secret_version_data jvd')
+        .where(Op.eq('jvd.job_version', joVersionId))
+        .orderBy('jvd.key');
+
+      const data = await db.query(db.serialize(secretDataBuilder, {}).sql);
+
+      return data.rows.map(row => ({
+        ...row,
+        value: options.opaque ? Buffer.from(JSON.parse(row.value)).toString('base64') : JSON.parse(row.value)
+      }));
+    }
+
+    function saveJobVersionOfSecret(jobVersionId, versionData, meta) {
+      logger.debug(`Saving version of secret for jobVersion ${jobVersionId} by account ${meta.account.id}`);
+      return db.withTransaction(async connection => {
+        const versionDataBuilders = versionData.secrets.map(secret => sqb
+          .insert('job_secret_version_data', ({
+            id: uuid(),
+            job_version: jobVersionId,
+            key: secret.key,
+            value: JSON.stringify(secret.value),
+            editor: secret.editor,
+          })));
+        await Promise.mapSeries(versionDataBuilders, async (versionDataBuilder) => {
+          await connection.query(db.serialize(versionDataBuilder, {}).sql);
+        });
+
+        logger.debug(`Saved jobVersion secret for ${jobVersionId}`);
+      });
+    }
+
     function toJob(row) {
       return new Job({
         id: row.id,
@@ -299,6 +335,8 @@ export default function() {
       saveJobVersion,
       findJobVersions,
       setJobVersionLastApplied,
+      saveJobVersionOfSecret,
+      getJobVersionSecretWithData,
     });
   }
 

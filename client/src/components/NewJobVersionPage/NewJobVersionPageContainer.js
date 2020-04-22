@@ -3,12 +3,17 @@ import {
   reduxForm,
   getFormValues,
   getFormSyncErrors,
+  getFormAsyncErrors,
 } from 'redux-form';
 
 import {
   toggleCollapsed,
   triggerPreview,
   submitForm,
+  addSecret,
+  saveVersion,
+  removeSecret,
+  validateAnnotations,
 } from '../../modules/newJobVersion';
 import NewJobVersionPage from './NewJobVersionPage';
 
@@ -19,6 +24,9 @@ const mapStateToProps = (state, props) => {
   const currentFormValues = getFormValues(formName)(state) || {};
   const currentFormSyncErrors = getFormSyncErrors(formName)(state) || {};
 
+  const asyncErrors = getFormAsyncErrors(formName)(state) || {};
+  const secretErrors = (asyncErrors.secret && asyncErrors.secret.secrets) || [];
+
   return {
     initialValues: newJobVersion.initialValues,
     currentFormValues,
@@ -28,12 +36,19 @@ const mapStateToProps = (state, props) => {
     job: newJobVersion.job.data,
     preview: newJobVersion.preview,
     submitForm,
+
+    formSecrets: (currentFormValues && currentFormValues.secret && currentFormValues.secret.secrets) || [],
+    secretErrors,
   };
 };
 
 export default connect(mapStateToProps, {
   toggleCollapsed,
   triggerPreview,
+  addSecret,
+  saveVersion,
+  removeSecret,
+  validateAnnotations,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,
