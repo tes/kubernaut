@@ -31,7 +31,7 @@ class Version extends Component {
     return (
       <Row className="page-frame">
         <Col>
-          <Title title={`Job Version: ${jobVersion.job.name}`}/>
+          <Title title={`CronJob Version: ${jobVersion.job.name}`}/>
           <JobSubNav job={jobVersion.job} jobVersion={jobVersion} />
           <Row>
             <Col md="8">

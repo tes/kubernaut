@@ -489,7 +489,7 @@ class NewJobVersionPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
-          <Title title={`New version of job: ${job.name}`}/>
+          <Title title={`New version of cronjob: ${job.name}`}/>
           <JobSubNav job={job} newVersion />
 
           <Form>

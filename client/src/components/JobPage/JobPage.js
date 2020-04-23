@@ -24,7 +24,7 @@ class JobPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
-          <Title title={`Job: ${job.name}`}/>
+          <Title title={`CronJob: ${job.name}`}/>
           <JobSubNav job={job} />
           <Row>
             <Col md="8">

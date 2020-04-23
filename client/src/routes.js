@@ -145,23 +145,23 @@ export default () => <Switch>
   <Route
     exact
     path={paths.job.route}
-    render={() => <Wrapper title="Job"><JobPage /></Wrapper> }
+    render={() => <Wrapper title="CronJob"><JobPage /></Wrapper> }
   />
   <Route
     exact
     path={paths.jobs.route}
-    render={() => <Wrapper title="Jobs"><JobsPage /></Wrapper> }
+    render={() => <Wrapper title="CronJobs"><JobsPage /></Wrapper> }
   />
   <Route
     exact
     path={paths.jobVersion.route}
-    render={() => <Wrapper title="Job Version"><JobVersionPage /></Wrapper> }
+    render={() => <Wrapper title="CronJob Version"><JobVersionPage /></Wrapper> }
   />
   <Route
     exact
     path={paths.newJobVersion.route}
     render={() => {
-      return <Wrapper title="New job version"><NewJobVersionPage /></Wrapper>;
+      return <Wrapper title="New cronjob version"><NewJobVersionPage /></Wrapper>;
     }}
   />
   <Route
