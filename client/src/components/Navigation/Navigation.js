@@ -46,8 +46,8 @@ class Navigation extends Component {
             </NavItem>
             {
               this.props.account.permissions['jobs-read'] ? (
-                <NavItem tag={LinkContainer} to="/jobs">
-                  <NavLink>Jobs</NavLink>
+                <NavItem tag={LinkContainer} to="/cronjobs">
+                  <NavLink>CronJobs</NavLink>
                 </NavItem>
               ) : null
             }

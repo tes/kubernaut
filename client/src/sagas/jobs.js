@@ -42,7 +42,7 @@ import {
   saveJob,
 } from '../lib/api';
 
-const pageUrl = '/jobs';
+const pageUrl = '/cronjobs';
 
 
 export function* checkPermissionSaga({ payload: options }) {
@@ -117,7 +117,7 @@ export function* submitSaga() {
     }
     const data = yield call(saveJob, values.name, values.namespace, values.registry);
     yield put(submitForm.success());
-    yield put(push(`/jobs/${data.id}/new`));
+    yield put(push(`/cronjobs/${data.id}/new`));
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
     yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));

@@ -76,7 +76,7 @@ export function* submitSaga() {
     const job = yield select(selectJob);
     const data = yield call(saveJobVersion, job, values);
     yield put(submitForm.success());
-    yield put(push(`/jobs/version/${data.id}`));
+    yield put(push(`/cronjobs/version/${data.id}`));
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
     yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));

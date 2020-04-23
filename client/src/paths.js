@@ -74,15 +74,15 @@ const paths = {
     action: initHomePage,
   },
   jobs: {
-    route: '/jobs',
+    route: '/cronjobs',
     action: initialiseJobsPage,
   },
   job: {
-    route: '/jobs/:id',
+    route: '/cronjobs/:id',
     action: initialiseJobPage,
   },
   jobVersion: {
-    route: '/jobs/version/:id',
+    route: '/cronjobs/version/:id',
     action: initialiseJobVersionPage,
   },
   namespace: {
@@ -102,7 +102,7 @@ const paths = {
     action: fetchNamespacesPagination,
   },
   newJobVersion: {
-    route: '/jobs/:id/new',
+    route: '/cronjobs/:id/new',
     action: initNewJobPage,
   },
   newSecretVersion: {

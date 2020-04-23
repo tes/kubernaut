@@ -73,7 +73,7 @@ class TeamsPage extends Component {
                 <Button
                   color="dark"
                   onClick={() => openModal()}
-                  >Create new job</Button>
+                  >Create new cronjob</Button>
               ): null
             }
           </Col>

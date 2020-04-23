@@ -43,7 +43,7 @@ export const ClusterLink = ({ cluster }) => {
 export const NewJobVersionLink = ({ job, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/jobs/${job.id}/new`,
+    to: `/cronjobs/${job.id}/new`,
     ...container && { exact: true }
   };
 
@@ -53,7 +53,7 @@ export const NewJobVersionLink = ({ job, container, children }) => {
 export const JobLink = ({ job, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/jobs/${job.id}`,
+    to: `/cronjobs/${job.id}`,
     ...container && { exact: true }
   };
 
@@ -63,7 +63,7 @@ export const JobLink = ({ job, container, children }) => {
 export const JobVersionLink = ({ version, container, children }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/jobs/version/${version.id}`,
+    to: `/cronjobs/version/${version.id}`,
     ...container && { exact: true }
   };
 
