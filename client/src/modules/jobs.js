@@ -1,11 +1,18 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 import { createFormAction } from 'redux-form-saga';
 import {
   getFormValues as rfGetFormValues,
 } from 'redux-form';
-
+import {
+  createFilterActions,
+  createFilterSelectors,
+  createDefaultFilterState,
+  createFilterReducers,
+} from './lib/filter';
 const actionsPrefix = 'KUBERNAUT/JOBS';
+const filterActions = createFilterActions(actionsPrefix);
 export const initialiseJobsPage = createAction(`${actionsPrefix}/INITIALISE`);
+export const fetchJobs = createAction(`${actionsPrefix}/FETCH_JOBS`);
 export const fetchJobsPagination = createAction(`${actionsPrefix}/FETCH_JOBS_PAGINATION`);
 export const FETCH_JOBS_REQUEST = createAction(`${actionsPrefix}/FETCH_JOBS_REQUEST`);
 export const FETCH_JOBS_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOBS_SUCCESS`);
@@ -15,7 +22,26 @@ export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const setNamespaces = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 export const setRegistries = createAction(`${actionsPrefix}/SET_REGISTRIES`);
+export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const getFormValues = (state) => rfGetFormValues('newJob')(state);
+export const {
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
+  setFilters,
+  setSearch,
+} = filterActions;
+export const selectPaginationState = (state) => (state.jobs.pagination);
+export const {
+  selectTableFilters,
+  selectSearchFilter,
+} = createFilterSelectors('jobs.filter');
+const defaultFilterState = createDefaultFilterState({
+  defaultColumn: 'name',
+});
 
 const defaultState = {
   data: {
@@ -26,6 +52,11 @@ const defaultState = {
     page: 0,
     items: [],
   },
+  pagination: {
+    page: 1,
+    limit: 50,
+  },
+  filter: defaultFilterState,
   namespaces: {
     limit: 0,
     offset: 0,
@@ -93,4 +124,12 @@ export default handleActions({
     registries: payload.data,
     canCreate: payload.data.count > 0 && state.namespaces.count > 0,
   }),
+  [combineActions(fetchJobsPagination, setPagination)]: (state, { payload }) => ({
+    ...state,
+    pagination: {
+      page: payload.page || defaultState.pagination.page,
+      limit: payload.limit || defaultState.pagination.limit,
+    },
+  }),
+  ...createFilterReducers(filterActions, defaultFilterState),
 }, defaultState);

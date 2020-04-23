@@ -3,11 +3,18 @@ import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { JobLink, NamespaceLink } from '../Links';
+import { CreateQuickFilters } from '../TableFilter';
 
 class JobsTable extends Component {
 
   render() {
-    const { error = null, loading = false, jobs = {}, fetchJobs } = this.props;
+    const {
+      error = null,
+      loading = false,
+      jobs = {},
+      fetchJobs,
+      addFilter,
+    } = this.props;
 
     const errorTableBody = () =>
       <tbody>
@@ -33,13 +40,25 @@ class JobsTable extends Component {
       </tbody>
     ;
 
+    const { QuickFilters, MultiQuickFilters } = CreateQuickFilters(addFilter);
+
     const JobsTableBody = () =>
       <tbody>
       {
         jobs.items.map(job => {
           return <tr key={job.id} >
-            <td><JobLink job={job} /></td>
-            <td><NamespaceLink namespace={job.namespace} pill /></td>
+            <td className="cellFilterActionsParent">
+              <JobLink job={job} />
+              <QuickFilters value={job.name} column='name' />
+            </td>
+            <td className="cellFilterActionsParent">
+              <NamespaceLink namespace={job.namespace} pill />
+              <MultiQuickFilters filters={[
+                  { value: job.namespace.name, column: 'namespace' },
+                  { value: job.namespace.cluster.name, column: 'cluster' },
+                ]}
+              />
+            </td>
           </tr>;
         })
       }

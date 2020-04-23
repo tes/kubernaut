@@ -16,34 +16,71 @@ import JobsTable from '../JobsTable';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 import RenderNamespaces from '../RenderNamespaces';
+import TableFilter from '../TableFilter';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 
 class TeamsPage extends Component {
 
   render() {
-    const { jobs, fetchJobsPagination } = this.props;
+    const {
+      jobs,
+      newModalOpen,
+      canCreate,
+      namespaces,
+      registries,
+      submitForm,
+      fetchJobsPagination,
+      openModal,
+      closeModal,
+      handleSubmit,
+      addFilter,
+      removeFilter,
+      search,
+      clearSearch,
+      showFilters,
+      hideFilters,
+    } = this.props;
 
     return (
       <div className='page-frame'>
         <Row>
-          <Col md="8">
-            <JobsTable jobs={jobs.data} loading={jobs.meta.loading} error={jobs.meta.error} fetchJobs={fetchJobsPagination} />
+          <Col>
+            <TableFilter
+              formPrefix="jobs"
+              statePath="jobs.filter"
+              columns={[
+                { value: 'name', display: 'Name' },
+                { value: 'cluster', display: 'Cluster' },
+                { value: 'namespace', display: 'Namespace' },
+              ]}
+              addFilter={addFilter}
+              removeFilter={removeFilter}
+              search={search}
+              clearSearch={clearSearch}
+              showFilters={showFilters}
+              hideFilters={hideFilters}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col md="9">
+            <JobsTable jobs={jobs.data} loading={jobs.meta.loading} error={jobs.meta.error} fetchJobs={fetchJobsPagination} addFilter={addFilter} />
           </Col>
           <Col>
             {
-              this.props.canCreate ? (
+              canCreate ? (
                 <Button
                   color="dark"
-                  onClick={() => this.props.openModal()}
+                  onClick={() => openModal()}
                   >Create new job</Button>
               ): null
             }
           </Col>
         </Row>
         <Modal
-          isOpen={this.props.newModalOpen}
-          toggle={this.props.closeModal}
+          isOpen={newModalOpen}
+          toggle={closeModal}
           size="lg"
         >
           <ModalHeader>
@@ -61,7 +98,7 @@ class TeamsPage extends Component {
                         name="registry"
                         component={RenderSelect}
                         autoComplete="off"
-                        options={this.props.registries.items.map(r => r.name)}
+                        options={registries.items.map(r => r.name)}
                       />
                     </Col>
                   </FormGroup>
@@ -89,7 +126,7 @@ class TeamsPage extends Component {
                         name="namespace"
                         component={RenderNamespaces}
                         autoComplete="off"
-                        options={this.props.namespaces.items}
+                        options={namespaces.items}
                         />
                     </Col>
                   </FormGroup>
@@ -98,7 +135,7 @@ class TeamsPage extends Component {
                       <Button
                         className="pull-right"
                         color="dark"
-                        onClick={this.props.handleSubmit(this.props.submitForm)}
+                        onClick={handleSubmit(submitForm)}
                       >Create</Button>
                     </Col>
                   </FormGroup>

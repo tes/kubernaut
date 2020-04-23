@@ -12,7 +12,7 @@ import {
   alterQuery,
   makeQueryString,
   parseQueryString,
- } from './lib/query';
+} from './lib/query';
 import {
   initialiseDeploymentsPage,
   fetchDeployments,

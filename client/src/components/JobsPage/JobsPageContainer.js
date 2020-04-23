@@ -8,6 +8,12 @@ import {
   openModal,
   closeModal,
   submitForm,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 } from '../../modules/jobs';
 
 const formName = 'newJob';
@@ -31,6 +37,12 @@ export default connect(mapStateToProps, {
   fetchJobsPagination,
   openModal,
   closeModal,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

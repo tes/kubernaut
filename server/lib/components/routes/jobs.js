@@ -139,7 +139,7 @@ export default function() {
       try {
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed jobs');
-        const filters = parseFilters(req.query, ['name']);
+        const filters = parseFilters(req.query, ['name', 'namespace', 'cluster']);
         const criteria = {
           user: { id: req.user.id, permission: 'jobs-read' },
           filters,

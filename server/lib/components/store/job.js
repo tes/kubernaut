@@ -101,12 +101,20 @@ export default function() {
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
-          innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
+          innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id'))),
+          innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
         );
 
       if (criteria.filters) {
         if (criteria.filters.name) {
           db.applyFilter(criteria.filters.name, 'j.name', findJobsBuilder, countJobsBuilder);
+        }
+
+        if (criteria.filters.namespace) {
+          db.applyFilter(criteria.filters.namespace, 'n.name', findJobsBuilder, countJobsBuilder);
+        }
+        if (criteria.filters.cluster) {
+          db.applyFilter(criteria.filters.cluster, 'c.name', findJobsBuilder, countJobsBuilder);
         }
       }
 
