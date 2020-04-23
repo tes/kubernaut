@@ -32,6 +32,7 @@ export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion
 
 const defaultState = {
   initialValues: {
+    schedule: '0 * * * *',
     concurrencyPolicy: 'Replace',
     secret: {
       secrets: [],
@@ -39,6 +40,11 @@ const defaultState = {
         newSecretType: 'json',
       },
     },
+    containers: [
+      {
+        name: 'main'
+      }
+    ],
     volumes: [
       {
         name: 'job-secret',

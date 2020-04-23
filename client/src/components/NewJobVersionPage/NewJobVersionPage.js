@@ -225,7 +225,6 @@ class RenderVolumeMounts extends Component {
           <Col>
             <Button
               outline
-              className="pull-right"
               onClick={() => {
                 this.props.fields.push({});
                 this.props.onChangeListener();
@@ -312,17 +311,6 @@ class RenderContainers extends Component {
                           <Row className="mb-2">
                             <Col md="10">
                               <FieldArray
-                                name={`${container}.volumeMounts`}
-                                component={RenderVolumeMounts}
-                                availbleVolumes={this.props.availbleVolumes}
-                                onChangeListener={this.props.onChangeListener}
-                              />
-                            </Col>
-                          </Row>
-
-                          <Row className="mb-2">
-                            <Col md="10">
-                              <FieldArray
                                 name={`${container}.args`}
                                 component={RenderArgs}
                                 onChangeListener={this.props.onChangeListener}
@@ -339,6 +327,18 @@ class RenderContainers extends Component {
                               />
                             </Col>
                           </Row>
+
+                          <Row className="mb-2">
+                            <Col md="10">
+                              <FieldArray
+                                name={`${container}.volumeMounts`}
+                                component={RenderVolumeMounts}
+                                availbleVolumes={this.props.availbleVolumes}
+                                onChangeListener={this.props.onChangeListener}
+                              />
+                            </Col>
+                          </Row>
+
                         </CardBody>
                       </Card>
                     </Col>
