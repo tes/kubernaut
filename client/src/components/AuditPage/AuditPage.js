@@ -21,6 +21,8 @@ import {
   SecretVersionLink,
   ServiceLink,
   TeamLink,
+  JobLink,
+  JobVersionLink,
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
 import { Ago } from '../DisplayDate';
@@ -36,6 +38,8 @@ const filterDisplayNameLookup = {
   secret: 'Secret',
   service: 'Service',
   team: 'Team',
+  job: 'Cronjob',
+  jobVersion: 'Cronjob version',
 };
 class AuditPage extends Component {
 
@@ -159,6 +163,18 @@ class AuditPage extends Component {
                             audit.team ? <div className="mr-1 cellFilterActionsParent">
                               Team: <TeamLink team={audit.team} />
                             <QuickFilters value={audit.team.id} column='team' displayValue={audit.team.name} />
+                            </div> : null
+                          }
+                          {
+                            audit.job ? <div className="mr-1 cellFilterActionsParent">
+                              CronJob: <JobLink job={audit.job} />
+                            <QuickFilters value={audit.job.id} column='job' displayValue={audit.job.name} />
+                            </div> : null
+                          }
+                          {
+                            audit.jobVersion ? <div className="mr-1 cellFilterActionsParent">
+                              Cronjob version: <JobVersionLink version={audit.jobVersion} />
+                            <QuickFilters value={audit.jobVersion.id} column='jobVersion' displayValue={audit.jobVersion.createdOn} />
                             </div> : null
                           }
                         </CardFooter>

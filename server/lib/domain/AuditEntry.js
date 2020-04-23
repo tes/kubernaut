@@ -8,6 +8,8 @@ export const idTypes = [
   'cluster',
   'registry',
   'team',
+  'job',
+  'jobVersion',
 ];
 
 export default class AuditEntry {

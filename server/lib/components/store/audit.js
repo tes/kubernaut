@@ -20,6 +20,8 @@ export default function(options) {
         cluster,
         registry,
         team,
+        job,
+        jobVersion,
       } = subjects;
 
       const toInsert = {
@@ -38,6 +40,8 @@ export default function(options) {
       if (cluster) toInsert.action_cluster = cluster.id;
       if (registry) toInsert.action_registry = registry.id;
       if (team) toInsert.action_team = team.id;
+      if (job) toInsert.action_job = job.id;
+      if (jobVersion) toInsert.action_job_version = jobVersion.id;
 
       const builder = sqb.insert('audit', toInsert);
       await db.query(db.serialize(builder, {}).sql);
@@ -47,7 +51,7 @@ export default function(options) {
       logger.debug(`Listing up to ${limit} audit endtries from offset ${offset}`);
 
       const auditBuilder = sqb
-        .select('au.id', 'au.created_on', 'au.action', 'a.id account_id', 'a.display_name account_display_name', 'au.action_secret_version', 'au.action_namespace', 'au.action_service', 'au.action_release', 'au.action_deployment', 'au.action_account', 'au.action_cluster', 'au.action_registry', 'au.action_team')
+        .select('au.id', 'au.created_on', 'au.action', 'a.id account_id', 'a.display_name account_display_name', 'au.action_secret_version', 'au.action_namespace', 'au.action_service', 'au.action_release', 'au.action_deployment', 'au.action_account', 'au.action_cluster', 'au.action_registry', 'au.action_team', 'au.action_job', 'au.action_job_version')
         .from('audit au')
         .join(sqb.join('account a').on(Op.eq('a.id', raw('au.account'))))
         .orderBy('au.created_on desc')
@@ -99,6 +103,14 @@ export default function(options) {
           db.applyFilter(criteria.filters.team, 'au.action_team', auditBuilder, countBuilder);
         }
 
+        if (criteria.filters.job) {
+          db.applyFilter(criteria.filters.job, 'au.action_job', auditBuilder, countBuilder);
+        }
+
+        if (criteria.filters.jobVersion) {
+          db.applyFilter(criteria.filters.jobVersion, 'au.action_job_version', auditBuilder, countBuilder);
+        }
+
       }
 
       const [auditResults, countResults] = await db.withTransaction(connection => Promise.all([
@@ -132,6 +144,8 @@ export default function(options) {
           cluster: row.action_cluster,
           registry: row.action_registry,
           team: row.action_team,
+          job: row.action_job,
+          jobVersion: row.action_job_version,
         }
       });
     }

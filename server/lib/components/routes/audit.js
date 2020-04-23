@@ -16,6 +16,8 @@ export default function(options = {}) {
       cluster: store.getCluster, // getCluster
       registry: store.getRegistry, // getRegistry(id)
       team: store.getTeam, // getTeam(id)
+      job: store.getJob, // getJob(id)
+      jobVersion: store.getJobVersion, // getJobVersion(id)
     };
     const getAuditTypeStoreFunc = (type, id, meta) => {
       if (type === 'secretVersion') return auditTypeStoreLookup[type](id, meta);
@@ -58,7 +60,7 @@ export default function(options = {}) {
         const meta = { date: new Date(), account: req.user };
         // await store.audit(meta, 'viewed audit');
 
-        const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry', 'team']);
+        const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry', 'team', 'job', 'jobVersion']);
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
