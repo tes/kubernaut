@@ -35,7 +35,7 @@ const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, s
               newValue: !buttonActionIsDisable,
             });
           }}
-        >{buttonActionIsDisable ? 'Disable deployments' : 'Enable deployments' }</Button>
+        >{buttonActionIsDisable ? 'Disable' : 'Enable' }</Button>
       </td>
       <td>
         <NamespaceLink namespace={namespace} pill showCluster />
