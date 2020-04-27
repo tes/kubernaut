@@ -336,14 +336,14 @@ describe('Service store', () => {
 
       const results = await store.serviceDeployStatusForNamespaces(release.service.id, account);
       expect(results).toBeDefined();
-      expect(results.count).toBe(2);
+      expect(results.count).toBe(1);
       expect(results.items).toBeDefined();
-      const namespaceResult = results.items.find(status => status.namespace.id === namespace.id);
+      const namespaceResult = results.items.find(n => n.id === namespace.id);
       expect(namespaceResult).toBeDefined();
-      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+
+      expect(results.deployable).toBeDefined();
+      const namespace2Result = results.deployable.find(n => n.id === namespace2.id);
       expect(namespace2Result).toBeDefined();
-      expect(namespaceResult.canDeploy).toBe(false);
-      expect(namespace2Result.canDeploy).toBe(true);
     });
 
     it('should limit and offset', async () => {
@@ -351,6 +351,7 @@ describe('Service store', () => {
       const cluster = await saveCluster();
       await saveNamespace(await makeNamespace({ name: 'n1', cluster }));
       const namespace2 = await saveNamespace(await makeNamespace({ name: 'n2', cluster }));
+      await saveNamespace(await makeNamespace({ name: 'n3', cluster }));
       const release = await saveRelease(makeRelease({ service: { name: 'app-1', registry } }), makeRootMeta());
 
       const account = await saveAccount();
@@ -364,9 +365,9 @@ describe('Service store', () => {
       expect(results.offset).toBe(1);
       expect(results.limit).toBe(1);
       expect(results.items).toBeDefined();
-      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+      expect(results.deployable).toBeDefined();
+      const namespace2Result = results.deployable.find(n => n.id === namespace2.id);
       expect(namespace2Result).toBeDefined();
-      expect(namespace2Result.canDeploy).toBe(true);
     });
 
     it('should restrict to only namespaces a user can manage', async () => {
@@ -384,11 +385,11 @@ describe('Service store', () => {
 
       const results = await store.serviceDeployStatusForNamespaces(release.service.id, account);
       expect(results).toBeDefined();
-      expect(results.count).toBe(1);
+      expect(results.count).toBe(0);
       expect(results.items).toBeDefined();
-      const namespace2Result = results.items.find(status => status.namespace.id === namespace2.id);
+      expect(results.deployable).toBeDefined();
+      const namespace2Result = results.deployable.find(n => n.id === namespace2.id);
       expect(namespace2Result).toBeDefined();
-      expect(namespace2Result.canDeploy).toBe(true);
     });
   });
 
