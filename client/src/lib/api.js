@@ -620,6 +620,17 @@ export const saveJobVersion = (job, data) => {
   });
 };
 
+export const saveNamespace = (name, cluster, context) => {
+  return makeRequest('/api/namespaces', {
+    method: 'POST',
+    body: JSON.stringify({
+      name,
+      cluster,
+      context,
+    }),
+  });
+};
+
 export const saveSecretVersion = (registry, service, namespace, data) => {
   return makeRequest(`/api/secrets/${registry}/${service}/${namespace}`, {
     method: 'POST',
