@@ -60,7 +60,7 @@ const defaultState = {
   },
   pagination: {
     page: 1,
-    limit: 3,
+    limit: 10,
   },
   canManage: false,
   canDelete: false,
