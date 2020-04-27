@@ -67,6 +67,7 @@ export default function(options = {}) {
         await store.audit(meta, 'saved namespace', { namespace });
         res.json(namespace);
       } catch (err) {
+        if (err.code && err.code === '23505') return next(Boom.conflict(err.detail)); // unique_violation
         next(err);
       }
     });
