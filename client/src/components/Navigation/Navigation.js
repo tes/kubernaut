@@ -36,7 +36,7 @@ class Navigation extends Component {
           <NavbarBrand
             tag={LinkContainer}
             to="/"
-          ><span>kubernaut</span></NavbarBrand>
+          ><NavLink>kubernaut</NavLink></NavbarBrand>
           <Nav className="" navbar>
             <NavItem tag={LinkContainer} to="/services">
               <NavLink>Services</NavLink>
