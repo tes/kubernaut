@@ -172,14 +172,14 @@ describe('Services API', () => {
       });
 
       expect(response).toBeDefined();
-      expect(response.count).toBe(2);
+      expect(response.count).toBe(1);
       expect(response.items).toBeDefined();
-      const namespaceResult = response.items.find(status => status.namespace.id === namespace.id);
+      const namespaceResult = response.items.find(n => n.id === namespace.id);
       expect(namespaceResult).toBeDefined();
-      const namespace2Result = response.items.find(status => status.namespace.id === namespace2.id);
+
+      expect(response.deployable).toBeDefined();
+      const namespace2Result = response.deployable.find(n => n.id === namespace2.id);
       expect(namespace2Result).toBeDefined();
-      expect(namespaceResult.canDeploy).toBe(false);
-      expect(namespace2Result.canDeploy).toBe(true);
     });
   });
 
@@ -250,15 +250,13 @@ describe('Services API', () => {
         method: 'POST',
       });
 
-      expect(response.count).toBe(1);
+      expect(response.count).toBe(0);
       expect(response.offset).toBe(0);
       expect(response.limit).toBe(20);
-      expect(response.items.length).toBe(1);
-      expect(response.items[0]).toMatchObject({
-        canDeploy: true,
-        namespace: {
-          id: namespace.id,
-        },
+      expect(response.items.length).toBe(0);
+      expect(response.deployable.length).toBe(1);
+      expect(response.deployable[0]).toMatchObject({
+        id: namespace.id,
       });
     });
   });
@@ -268,7 +266,7 @@ describe('Services API', () => {
       await store.nuke();
     });
 
-    it('enables a service for a namespace', async () => {
+    it('disables a service for a namespace', async () => {
       const release = await store.saveRelease(makeRelease(), makeRootMeta());
       const cluster = await saveCluster();
       const namespace = await saveNamespace(await makeNamespace({
@@ -287,7 +285,6 @@ describe('Services API', () => {
       expect(response.limit).toBe(20);
       expect(response.items.length).toBe(1);
       expect(response.items[0]).toMatchObject({
-        enabled: false,
         service: {
           id: release.service.id,
         },
@@ -338,11 +335,9 @@ describe('Services API', () => {
       expect(response.offset).toBe(0);
       expect(response.limit).toBe(20);
       expect(response.items.length).toBe(1);
+      expect(response.deployable.length).toBe(0);
       expect(response.items[0]).toMatchObject({
-        canDeploy: false,
-        namespace: {
-          id: namespace.id,
-        },
+        id: namespace.id,
       });
     });
   });

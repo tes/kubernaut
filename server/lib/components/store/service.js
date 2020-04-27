@@ -243,6 +243,26 @@ export default function(options) {
     async function serviceDeployStatusForNamespaces(serviceId, user, limit = 20, offset = 0) {
       logger.debug(`Retrieving service ${serviceId} deployable status for namespaces for user ${user.id}. Limited to ${limit} starting from ${offset}.`);
 
+      const deployableBuilder = sqb
+        .select(
+          'n.id namespace_id',
+          'n.name namespace_name',
+          'n.color namespace_color',
+          'c.name cluster_name',
+          'c.color cluster_color',
+          'c.priority cluster_priority',
+        )
+        .from('active_namespace__vw n')
+        .join(sqb.join('cluster c').on(Op.eq('n.cluster', raw('c.id'))))
+        .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')))
+        .where(Op.in('n.id', sqb
+          .select('sn.namespace')
+          .from('service_namespace sn')
+          .where(Op.eq('sn.service', serviceId))
+          .where(Op.is('sn.deleted_on', null))
+        ))
+        .orderBy('namespace_name asc', 'cluster_priority asc', 'cluster_name asc');
+
       const findBuilder = sqb
         .select(
           'n.id namespace_id',
@@ -251,17 +271,16 @@ export default function(options) {
           'c.name cluster_name',
           'c.color cluster_color',
           'c.priority cluster_priority',
-          sqb
-            .select(raw('count(1) > 0'))
-            .from('service_namespace sn')
-            .where(Op.eq('sn.service', serviceId))
-            .where(Op.eq('sn.namespace', raw('n.id')))
-            .where(Op.is('sn.deleted_on', null))
-            .as('can_deploy')
         )
         .from('active_namespace__vw n')
         .join(sqb.join('cluster c').on(Op.eq('n.cluster', raw('c.id'))))
         .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')))
+        .where(Op.notIn('n.id', sqb
+          .select('sn.namespace')
+          .from('service_namespace sn')
+          .where(Op.eq('sn.service', serviceId))
+          .where(Op.is('sn.deleted_on', null))
+        ))
         .orderBy('namespace_name asc', 'cluster_priority asc', 'cluster_name asc')
         .limit(limit)
         .offset(offset);
@@ -269,27 +288,41 @@ export default function(options) {
       const countBuilder = sqb
         .select(raw('count(*) count'))
         .from('active_namespace__vw n')
-        .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')));
+        .where(Op.in('n.id', authz.querySubjectIdsWithPermission('namespace', user.id, 'namespaces-manage')))
+        .where(Op.notIn('n.id', sqb
+          .select('sn.namespace')
+          .from('service_namespace sn')
+          .where(Op.eq('sn.service', serviceId))
+          .where(Op.is('sn.deleted_on', null))
+        ));
 
         return db.withTransaction(async connection => {
           const findStatement = db.serialize(findBuilder, {});
+          const deployableStatement = db.serialize(deployableBuilder, {});
           const countStatement = db.serialize(countBuilder, {});
-
           return Promise.all([
             connection.query(findStatement.sql, findStatement.values),
             connection.query(countStatement.sql, countStatement.values),
-          ]).then(([findResult, countResult]) => {
-            const items = findResult.rows.map(row => ({
-              namespace: new Namespace({
-                id: row.namespace_id,
-                name: row.namespace_name,
-                color: row.namespace_color,
-                cluster: new Cluster({
-                  name: row.cluster_name,
-                  color: row.cluster_color,
-                }),
+            connection.query(deployableStatement.sql, deployableStatement.values),
+          ]).then(([findResult, countResult, deployableResult]) => {
+            const deployable = deployableResult.rows.map(row => new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              color: row.namespace_color,
+              cluster: new Cluster({
+                name: row.cluster_name,
+                color: row.cluster_color,
               }),
-              canDeploy: row.can_deploy
+            }));
+
+            const items = findResult.rows.map(row => new Namespace({
+              id: row.namespace_id,
+              name: row.namespace_name,
+              color: row.namespace_color,
+              cluster: new Cluster({
+                name: row.cluster_name,
+                color: row.cluster_color,
+              }),
             }));
             const count = parseInt(countResult.rows[0].count, 10);
             logger.debug(`Returning ${items.length} of ${count} namespaces service ${serviceId} can deploy to.`);
@@ -299,6 +332,7 @@ export default function(options) {
               offset,
               count,
               items,
+              deployable,
             };
           });
         });

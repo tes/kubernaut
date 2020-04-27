@@ -18,39 +18,38 @@ import TablePagination from '../TablePagination';
 import RenderSelect from '../RenderSelect';
 import { NamespaceLink, ServiceSecretsForNamespaceLink, ServiceAttributesForNamespaceLink } from '../Links';
 
-const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, serviceName, registryName }) => fields.map((member, index) => {
-  const status = namespaces[index];
+const renderNamespaces = ({ fields, namespaces, serviceId, onUpdate, disabled, serviceName, registryName, buttonActionIsDisable = false }) => fields.map((member, index) => {
+  const namespace = namespaces[index];
+  if (!namespace) return null; // Strange temporal bug that this seems to fix.
 
   return (
-    <tr key={status.namespace.id}>
+    <tr key={namespace.id}>
       <td className="text-center">
-        <Field
-          component="input"
-          type="checkbox"
-          name={`${member}.canDeploy`}
-          disabled={disabled}
-          onChange={(event, newValue) => {
+        <Button
+          outline
+          color={buttonActionIsDisable ? 'danger' : 'secondary'}
+          onClick={() => {
             onUpdate({
-              namespaceId: status.namespace.id,
+              namespaceId: namespace.id,
               serviceId,
-              newValue,
+              newValue: !buttonActionIsDisable,
             });
           }}
-          />
+        >{buttonActionIsDisable ? 'Disable deployments' : 'Enable deployments' }</Button>
       </td>
       <td>
-        <NamespaceLink namespace={status.namespace} pill showCluster />
+        <NamespaceLink namespace={namespace} pill showCluster />
       </td>
       <td>
         <ServiceSecretsForNamespaceLink
-          namespace={status.namespace}
+          namespace={namespace}
           registryName={registryName}
           serviceName={serviceName}
         />
       </td>
       <td>
         <ServiceAttributesForNamespaceLink
-          namespace={status.namespace}
+          namespace={namespace}
           registryName={registryName}
           serviceName={serviceName}
         />
@@ -101,10 +100,31 @@ class ServiceManagePage extends Component {
                   <Table>
                     <thead>
                       <tr>
-                        <th className="text-center border-top-0">Can deploy?</th>
-                        <th className="border-top-0">Namespace</th>
-                        <th className="border-top-0"></th>
-                        <th className="border-top-0"></th>
+                        <th className="border-top-0" colSpan="4">Namespaces this service deploys to:</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <FieldArray
+                        name="deployable"
+                        component={renderNamespaces}
+                        namespaces={namespaces.deployable}
+                        serviceId={serviceId}
+                        onUpdate={this.props.updateServiceStatusForNamespace}
+                        disabled={this.props.submitting}
+                        registryName={this.props.registryName}
+                        serviceName={this.props.serviceName}
+                        buttonActionIsDisable
+                      />
+                    </tbody>
+                  </Table>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th className="border-top-0" colSpan="4">Namespaces this service does not deploy to:</th>
                       </tr>
                     </thead>
                     <tbody>

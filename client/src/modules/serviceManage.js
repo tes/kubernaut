@@ -56,10 +56,11 @@ const defaultState = {
     pages: 0,
     page: 0,
     items: [],
+    deployable: [],
   },
   pagination: {
     page: 1,
-    limit: 20,
+    limit: 3,
   },
   canManage: false,
   canDelete: false,
@@ -117,6 +118,7 @@ export default handleActions({
     namespaces: payload.data,
     initialValues: {
       ...state.initialValues,
+      deployable: payload.data.deployable,
       namespaces: payload.data.items,
     },
     meta: {
@@ -137,6 +139,7 @@ export default handleActions({
     namespaces: payload.data,
     initialValues: {
       ...state.initialValues,
+      deployable: payload.data.deployable,
       namespaces: payload.data.items,
     },
   }),
