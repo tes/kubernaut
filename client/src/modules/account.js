@@ -42,7 +42,7 @@ export default handleActions({
     ...state,
     permissions: {
       ...state.permissions,
-      [payload.permission]: [payload.answer],
+      [payload.permission]: payload.answer,
     }
   }),
 }, defaultState);
