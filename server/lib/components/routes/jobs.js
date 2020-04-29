@@ -34,6 +34,7 @@ function valuesFromYaml(parsed) {
         toReturn.type = 'configMap';
         toReturn.configMap = v.configMap;
       }
+      if (v.secret) toReturn.type = 'secret';
 
       return toReturn;
     }),
