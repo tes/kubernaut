@@ -1094,11 +1094,11 @@ describe('Team store', () => {
       });
   }
 
-  function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
+  function saveRegistry(registry = makeRegistry(), meta = makeRootMeta() ) {
     return store.saveRegistry(registry, meta);
   }
 
-  function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
+  function saveAccount(account = makeAccount(), meta = makeRootMeta() ) {
     return store.saveAccount(account, meta);
   }
 

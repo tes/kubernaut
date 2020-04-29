@@ -1206,15 +1206,15 @@ describe('Account Store', () => {
     });
   });
 
-  function saveRegistry(registry = makeRegistry(), meta = makeRootMeta(), ) {
+  function saveRegistry(registry = makeRegistry(), meta = makeRootMeta() ) {
     return store.saveRegistry(registry, meta);
   }
 
-  function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
+  function saveAccount(account = makeAccount(), meta = makeRootMeta() ) {
     return store.saveAccount(account, meta);
   }
 
-  function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeRootMeta(), ) {
+  function ensureAccount(account = makeAccount(), identity = makeIdentity(), meta = makeRootMeta() ) {
     return store.ensureAccount(account, identity, meta);
   }
 
@@ -1230,39 +1230,39 @@ describe('Account Store', () => {
     return store.findAccounts(criteria, limit, offset);
   }
 
-  function deleteAccount(id, meta = makeRootMeta(), ) {
+  function deleteAccount(id, meta = makeRootMeta() ) {
     return store.deleteAccount(id, meta);
   }
 
-  function saveIdentity(accountId, identity = makeIdentity(), meta = makeRootMeta(), ) {
+  function saveIdentity(accountId, identity = makeIdentity(), meta = makeRootMeta() ) {
     return store.saveIdentity(accountId, identity, meta);
   }
 
-  function deleteIdentity(id, meta = makeRootMeta(), ) {
+  function deleteIdentity(id, meta = makeRootMeta() ) {
     return store.deleteIdentity(id, meta);
   }
 
-  function grantRoleOnRegistry(id, name, registry, meta = makeRootMeta(), ) {
+  function grantRoleOnRegistry(id, name, registry, meta = makeRootMeta() ) {
     return store.grantRoleOnRegistry(id, name, registry, meta);
   }
 
-  function revokeRoleOnRegistry(accountId, roleName, registryId, meta = makeRootMeta(), ) {
+  function revokeRoleOnRegistry(accountId, roleName, registryId, meta = makeRootMeta() ) {
     return store.revokeRoleOnRegistry(accountId, roleName, registryId, meta);
   }
 
-  function grantRoleOnTeam(id, name, team, meta = makeRootMeta(), ) {
+  function grantRoleOnTeam(id, name, team, meta = makeRootMeta() ) {
     return store.grantRoleOnTeam(id, name, team, meta);
   }
 
-  function revokeRoleOnTeam(accountId, roleName, teamId, meta = makeRootMeta(), ) {
+  function revokeRoleOnTeam(accountId, roleName, teamId, meta = makeRootMeta() ) {
     return store.revokeRoleOnTeam(accountId, roleName, teamId, meta);
   }
 
-  function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
+  function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta() ) {
     return store.grantRoleOnNamespace(id, name, namespace, meta);
   }
 
-  function revokeRoleOnNamespace(accountId, roleName, namespaceId, meta = makeRootMeta(), ) {
+  function revokeRoleOnNamespace(accountId, roleName, namespaceId, meta = makeRootMeta() ) {
     return store.revokeRoleOnNamespace(accountId, roleName, namespaceId, meta);
   }
 

@@ -47,7 +47,7 @@
     "chance": "^1.0.11",
     "cheerio": "^1.0.0-rc.2",
     "concurrently": "^3.5.0",
-    "eslint": "^6.5.1",
+    "eslint": "^6.6.0",
     "eslint-config-imperative-es6": "^2.0.0",
     "eslint-plugin-react": "^7.2.0",
     "eslint-plugin-react-hooks": "^2.1.2",

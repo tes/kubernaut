@@ -409,11 +409,11 @@ describe('Service store', () => {
     return store.saveRelease(release, meta);
   }
 
-  function saveAccount(account = makeAccount(), meta = makeRootMeta(), ) {
+  function saveAccount(account = makeAccount(), meta = makeRootMeta() ) {
     return store.saveAccount(account, meta);
   }
 
-  function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta(), ) {
+  function grantRoleOnNamespace(id, name, namespace, meta = makeRootMeta() ) {
     return store.grantRoleOnNamespace(id, name, namespace, meta);
   }
 
