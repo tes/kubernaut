@@ -58,7 +58,7 @@ const paths = {
     action: initAuditPage,
   },
   deploy: {
-    route: '/deploy',
+    route: '/services/:registry/:name/deploy',
     action: initialiseDeploy,
   },
   deployment: {

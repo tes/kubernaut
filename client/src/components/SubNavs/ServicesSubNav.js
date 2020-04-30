@@ -11,6 +11,7 @@ import {
   NewSecretVersionLink,
   ServiceAttributesForNamespaceLink,
   TeamLink,
+  CreateDeploymentLink,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -25,6 +26,8 @@ class ServicesSubNav extends Component {
       newVersion,
       attributes,
       team,
+      deploy,
+      release = '',
     } = this.props;
 
     return (
@@ -46,6 +49,13 @@ class ServicesSubNav extends Component {
                 <ManageServiceLink container registryName={registryName} serviceName={serviceName}>
                   <NavLink>Manage</NavLink>
                 </ManageServiceLink>
+              </NavItem>
+              : null }
+            { deploy ?
+              <NavItem>
+                <CreateDeploymentLink container registry={{ name: registryName }} service={{ name: serviceName }}>
+                  <NavLink><i className="fa fa-cloud-upload" aria-hidden='true'></i> Deploy {release}</NavLink>
+                </CreateDeploymentLink>
               </NavItem>
               : null }
             { canManage && namespace && secrets ?

@@ -30,6 +30,9 @@ import {
   SET_INITIAL_FORM_VALUES,
   setSecretVersions,
   selectNamespaces,
+  setCanManage,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
 } from '../modules/deploy';
 
 import {
@@ -41,6 +44,9 @@ import {
   getLatestDeploymentsByNamespaceForService,
   getSecretVersions,
   getLatestDeployedSecretVersion,
+  getCanManageAnyNamespace,
+  getTeamForService,
+  getService,
 } from '../lib/api';
 
 export function* fetchRegistriesSaga({ payload = {} }) {
@@ -59,7 +65,6 @@ export function* fetchRegistriesSaga({ payload = {} }) {
 export function* fetchNamespacesSaga( { payload = {} }) {
   try {
     const data = yield call(getNamespacesForService, payload.serviceId);
-    if (!data.count) return;
     yield put(SET_NAMESPACES({
       data: data.items,
     }));
@@ -235,14 +240,42 @@ export function* fetchSecretsNamespaceChangedProxySaga({ payload = {} }) {
   });
 }
 
+export function* canManageSaga() {
+  try {
+    const canManage = yield call(getCanManageAnyNamespace);
+    yield put(setCanManage(canManage.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* fetchTeamForServiceSaga({ payload = {} }) {
+  const { registry, service } = payload;
+  try {
+    yield put(FETCH_TEAM_REQUEST());
+    const data = yield call(getTeamForService, { registry, service });
+    yield put(FETCH_TEAM_SUCCESS({ data }));
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export function* initSaga({ payload = {} }) {
   const {
-      registry,
-      service,
       version,
       namespace,
       secret,
   } = parseQueryString(payload.location.search);
+
+  const { match } = payload;
+  if (!match) return;
+  const { registry, name: service } = match.params;
+  if (!registry) throw new Error('provide a registry');
+  if (!service) throw new Error('provide a service');
+
+  const richService = yield call(getService, { registry, service });
+  if (!richService) return;
+
   yield put(SET_INITIAL_FORM_VALUES({
       registry,
       service,
@@ -250,8 +283,11 @@ export function* initSaga({ payload = {} }) {
       namespace,
       secret,
   }));
+  yield call(canManageSaga, {});
   yield call(fetchRegistriesSaga, {});
-  yield call(validateServiceSaga, {});
+  yield call(fetchTeamForServiceSaga, { payload: { registry, service } });
+  yield put(fetchNamespacesForService({ serviceId: richService.id }));
+  yield put(fetchLatestDeploymentsPerNamespace({ service, registry }));
   yield call(validateVersionSaga, validateVersion({ newValue: version }));
   yield call(fetchSecretsInitProxySaga, {});
 }

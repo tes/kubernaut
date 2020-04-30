@@ -138,20 +138,25 @@ export const CreateDeploymentLink = (props) => {
     secret = '',
     text,
     children,
+    container,
   } = props;
+
+  const tagProps = {
+    to: {
+      pathname: `/services/${registry.name}/${service.name}/deploy`,
+      search: stringify({
+        version,
+        namespace: namespace.id || '',
+        secret: secret,
+      })
+    },
+    ...container && { exact: true },
+  };
+  const Tag = container ? LinkContainer : Link;
   const element = children || (<span>{text ? text : 'Deploy'}</span>);
+
   return (
-    <Link to={{
-        pathname: "/deploy",
-        search: stringify({
-          registry: registry.name || '',
-          service: service.name || '',
-          version,
-          namespace: namespace.id || '',
-          secret: secret,
-        })
-      }}
-    >{element}</Link>
+    <Tag {...tagProps}>{element}</Tag>
   );
 };
 

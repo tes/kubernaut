@@ -13,6 +13,8 @@ import {
   validateVersionSaga,
   fetchLatestDeploymentsPerNamespaceSaga,
   fetchSecretVersionsSaga,
+  canManageSaga,
+  fetchTeamForServiceSaga,
 } from '../deploy';
 
 import {
@@ -36,6 +38,9 @@ import {
   fetchLatestDeploymentsPerNamespace,
   setSecretVersions,
   selectNamespaces,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
+  setCanManage,
 } from '../../modules/deploy';
 
 import {
@@ -47,6 +52,8 @@ import {
   getLatestDeploymentsByNamespaceForService,
   getSecretVersions,
   getLatestDeployedSecretVersion,
+  getCanManageAnyNamespace,
+  getTeamForService,
 } from '../../lib/api';
 
 const formValues = {
@@ -264,5 +271,26 @@ describe('Deploy sagas', () => {
     expect(gen.next({a:1}).value).toMatchObject(put(setSecretVersions({a:1})));
     expect(gen.next().value).toMatchObject(select(getDeployFormValues));
     expect(gen.next({ secret: 'abcd' }).done).toBe(true);
+  });
+
+  describe('Can manage', () => {
+    it('should fetch and set can manage status', () => {
+      const gen = canManageSaga({});
+      expect(gen.next().value).toMatchObject(call(getCanManageAnyNamespace));
+      expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
+    });
+  });
+
+  describe('Team', () => {
+    it('should fetch team info for a service', () => {
+      const registry = 'default';
+      const service = 'bob';
+      const team = { name: 'abc', services: [{ name: service }]};
+
+      const gen = fetchTeamForServiceSaga({ payload: { registry, service } });
+      expect(gen.next().value).toMatchObject(put(FETCH_TEAM_REQUEST()));
+      expect(gen.next().value).toMatchObject(call(getTeamForService, { registry, service}));
+      expect(gen.next(team).value).toMatchObject(put(FETCH_TEAM_SUCCESS({ data: team })));
+    });
   });
 });

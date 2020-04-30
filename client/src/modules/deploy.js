@@ -11,6 +11,8 @@ export const SET_REGISTRIES = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const SET_NAMESPACES = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 export const SET_DEPLOYMENTS = createAction(`${actionsPrefix}/SET_DEPLOYMENTS`);
 export const SET_INITIAL_FORM_VALUES = createAction(`${actionsPrefix}/SET_INITIAL_FORM_VALUES`);
+export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQUEST`);
+export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const fetchServiceSuggestions = createAction(`${actionsPrefix}/FETCH_SERVICE_SUGGESTIONS`);
 export const setServiceSuggestions = createAction(`${actionsPrefix}/SET_SERVICE_SUGGESTIONS`);
@@ -23,6 +25,7 @@ export const fetchNamespacesForService = createAction(`${actionsPrefix}/FETCH_NA
 export const fetchLatestDeploymentsPerNamespace = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PER_NAMESPACE`);
 export const fetchSecretVersions = createAction(`${actionsPrefix}/FETCH_SECRET_VERSIONS`);
 export const setSecretVersions = createAction(`${actionsPrefix}/SET_SECRET_VERSIONS`);
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
 export const getDeployFormValues = getFormValues('deploy');
 export const selectNamespaces = (state) => state.deploy.namespaces;
@@ -38,6 +41,13 @@ const defaultState = {
   deployments: [],
   secretVersions: [],
   initialValues: {},
+  canManage: false,
+  serviceName: '',
+  registryName: '',
+  version: '',
+  team: {
+    name: '',
+  },
 };
 
 export default handleActions({
@@ -56,5 +66,23 @@ export default handleActions({
   [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
   [setSecretVersions]: (state, { payload = {} }) => ({ ...state, secretVersions: payload.items }),
   [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
-  [SET_INITIAL_FORM_VALUES]: (state, { payload }) => ({ ...state, initialValues: payload }),
+  [SET_INITIAL_FORM_VALUES]: (state, { payload }) => ({
+    ...state,
+    initialValues: payload,
+    serviceName: payload.service,
+    registryName: payload.registry,
+    version: payload.version,
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
+  }),
+  [FETCH_TEAM_REQUEST]: (state) => ({
+    ...state,
+    team: defaultState.team,
+  }),
+  [FETCH_TEAM_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    team: payload.data,
+  }),
 }, defaultState);

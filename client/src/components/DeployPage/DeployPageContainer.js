@@ -25,6 +25,11 @@ const mapStateToProps = (state, props) => {
 
   return {
     initialValues: deploy.initialValues,
+    canManage: deploy.canManage,
+    serviceName: deploy.serviceName,
+    registryName: deploy.registryName,
+    version: deploy.version,
+    team: deploy.team,
     registries: deploy.registries,
     namespacesRich: deploy.namespaces,
     meta: deploy.meta,

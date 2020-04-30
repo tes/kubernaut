@@ -7,6 +7,9 @@ import reduce, {
   SET_DEPLOYMENTS,
   setServiceSuggestions,
   clearServiceSuggestions,
+  setCanManage,
+  FETCH_TEAM_REQUEST,
+  FETCH_TEAM_SUCCESS,
 } from '../deploy';
 
 describe('Deploy Form Reducer', () => {
@@ -59,5 +62,37 @@ describe('Deploy Form Reducer', () => {
     const state = reduce(undefined, SET_DEPLOYMENTS({ data: ['bob'] }));
     expect(state).toMatchObject({});
     expect(state.deployments).toMatchObject(['bob']);
+  });
+
+  it('should set canManage', () => {
+    const state = reduce({ canManage: false }, setCanManage(true));
+    expect(state.canManage).toBe(true);
+  });
+
+  it('should initialise team state', () => {
+    const initialState = {
+      team: {
+        name: 'bob',
+      }
+    };
+
+    const state = reduce(initialState, FETCH_TEAM_REQUEST());
+    expect(state.team).toMatchObject({
+      name: '',
+    });
+  });
+
+  it('should set team state', () => {
+    const initialState = reduce({}, FETCH_TEAM_REQUEST());
+    const team = {
+      name: 'abc',
+      services: [{ a: 1 }],
+    };
+
+    const state = reduce(initialState, FETCH_TEAM_SUCCESS({ data: team }));
+    expect(state.team).toMatchObject({
+      name: team.name,
+      services: team.services,
+    });
   });
 });
