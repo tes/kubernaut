@@ -145,7 +145,7 @@ class DeployPage extends Component {
                 ) : (
                   <Row>
                     <Col>
-                      <span className="pl-2">Deploying <strong>{formRegistry}/{formService}@{formVersion}</strong> to:</span>
+                      <span className="d-block pl-2">Deploying <strong>{formRegistry}/{formService}@{formVersion}</strong> to:</span>
                       <Button
                         color="link"
                         className="text-secondary"
