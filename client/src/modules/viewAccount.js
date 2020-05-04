@@ -12,6 +12,7 @@ export const setCanGenerate = createAction(`${actionsPrefix}/SET_CAN_GENERATE`);
 export const generateBearer = createAction(`${actionsPrefix}/GENERATE_BEARER`);
 export const setBearerToken = createAction(`${actionsPrefix}/SET_BEARER_TOKEN`);
 export const closeBearerModal = createAction(`${actionsPrefix}/CLOSE_BEARER_MODAL`);
+export const auditAccount = createAction(`${actionsPrefix}/AUDIT_ACCOUNT`);
 
 const defaultState = {
   account: {

@@ -14,6 +14,7 @@ const defaultState = {
   meta: {},
   permissions: {
     'jobs-read': false,
+    'audit-read': false,
   }
 };
 

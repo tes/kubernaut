@@ -1,4 +1,12 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { push, getLocation } from 'connected-react-router';
+import paths from '../paths';
+import {
+  stringifyFiltersForQS,
+} from '../modules/lib/filter';
+import {
+  alterQuery,
+ } from './lib/query';
 
 import { selectAccount } from '../modules/account';
 import {
@@ -11,6 +19,7 @@ import {
   setCanGenerate,
   generateBearer,
   setBearerToken,
+  auditAccount,
 } from '../modules/viewAccount';
 
 import {
@@ -70,8 +79,19 @@ export function* generateBearerSaga({ payload = {} }) {
   }
 }
 
+export function* toAuditSaga({ payload = {} }) {
+  const { id, name } = payload;
+  const location = yield select(getLocation);
+  yield put(push(`${paths.audit.route}?${alterQuery(location.search, {
+    filters: stringifyFiltersForQS({
+      sourceAccount: [{ value: id, displayValue: name, exact: true }],
+    }),
+  })}`));
+}
+
 export default [
   takeLatest(fetchAccountInfo, fetchAccountInfoSaga),
   takeLatest(fetchAccountInfo, checkPermissionSaga),
   takeLatest(generateBearer, generateBearerSaga),
+  takeLatest(auditAccount, toAuditSaga),
 ];

@@ -63,6 +63,13 @@ class Navigation extends Component {
             <NavItem tag={LinkContainer} to="/accounts">
               <NavLink>Accounts</NavLink>
             </NavItem>
+            {
+              this.props.account.permissions['audit-read'] ? (
+                <NavItem tag={LinkContainer} to="/audit">
+                  <NavLink>Audit</NavLink>
+                </NavItem>
+              ) : null
+            }
           </Nav>
         </Collapse>
       </Navbar>

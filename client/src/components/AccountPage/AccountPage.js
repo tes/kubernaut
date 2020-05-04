@@ -62,7 +62,21 @@ class AccountPage extends Component {
             <Col xs={{ size: 'auto' }}>
               {
                 this.props.canGenerate ? (
-                  <Button onClick={() => this.props.generateBearer({ id: account.id })} color="info" outline>Generate bearer token</Button>
+                  <Button
+                    onClick={() => this.props.generateBearer({ id: account.id })}
+                    color="info"
+                    outline
+                  >Generate bearer token</Button>
+                ) : null
+              }
+              {
+                this.props.canAudit ? (
+                  <Button
+                    onClick={() => this.props.auditAccount({ id: account.id, name: account.displayName })}
+                    color="secondary"
+                    outline
+                    className="ml-2"
+                  >Audit</Button>
                 ) : null
               }
               {

@@ -54,11 +54,9 @@ export default function(options = {}) {
 
     app.get('/api/audit', async (req, res, next) => {
       try {
-        const userSystemRoles = await store.rolesForSystem(req.user.id, req.user);
-        if (!userSystemRoles.currentRoles.find(r => (r.name === 'admin' && r.global))) return next(Boom.forbidden());
+        if (! await store.hasPermission(req.user, 'audit-read')) return next(Boom.forbidden());
 
         const meta = { date: new Date(), account: req.user };
-        // await store.audit(meta, 'viewed audit');
 
         const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry', 'team', 'job', 'jobVersion']);
 
