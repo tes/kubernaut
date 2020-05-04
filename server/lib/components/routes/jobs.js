@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
 import { safeLoad, safeDump } from 'js-yaml';
-import { get as _get } from 'lodash';
+import { get as _get, reduce as _reduce } from 'lodash';
 import EventEmitter from 'events';
 import parseFilters from './lib/parseFilters';
 
@@ -13,6 +13,9 @@ function valuesFromYaml(parsed) {
 
   return {
     schedule: spec.schedule,
+    labels: _reduce(_get(spec, 'jobTemplate.spec.template.metadata.labels', {}), (acc, value, key) => {
+      return acc.concat({ key, value });
+    }, []),
     concurrencyPolicy: _get(spec, 'concurrencyPolicy', 'Allow'),
     initContainers: _get(spec, 'jobTemplate.spec.template.spec.initContainers', []),
     containers: _get(spec, 'jobTemplate.spec.template.spec.containers', []).map(c => {
@@ -88,6 +91,13 @@ function buildSpec (values, job) {
     return toReturn;
   }
 
+  function parseLabels (formValues) {
+    return formValues.reduce((acc, label) => {
+      acc[label.key] = label.value || '';
+      return acc;
+    }, {});
+  }
+
   return {
     apiVersion: 'batch/v1beta1',
     kind: 'CronJob',
@@ -100,6 +110,9 @@ function buildSpec (values, job) {
       jobTemplate: {
         spec: {
           template: {
+            metadata: {
+              labels: parseLabels(values.labels || []),
+            },
             spec: {
               initContainers: (values.initContainers || []).map(parseContainer),
               containers: (values.containers || []).map(parseContainer),

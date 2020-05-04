@@ -464,6 +464,76 @@ class RenderVolumes extends Component {
   }
 }
 
+class RenderLabels extends Component {
+  render() {
+    return (
+      <Row>
+        <Col>
+          {this.props.fields.map((label, index) => (
+            <Row form key={this.props.fields.get(index).tempKey}>
+              <Col>
+                <FormGroup className="row no-gutters" key={label}>
+                  <Col sm="3" className="d-flex">
+                    <Field
+                      name={`${label}.key`}
+                      className="form-control"
+                      component={RenderInput}
+                      type="text"
+                      autocomplete="off"
+                      placeholder="key"
+                      onChangeListener={this.props.onChangeListener}
+                    />
+                  <span>:</span>
+                  </Col>
+                  <Col sm="3">
+                    <Field
+                      name={`${label}.value`}
+                      className="form-control"
+                      component={RenderInput}
+                      type="text"
+                      autoComplete="off"
+                      placeholder="value"
+                      onChangeListener={this.props.onChangeListener}
+                      />
+                  </Col>
+                  <Col sm="1">
+                    <Button
+                      outline
+                      color="danger"
+                      onClick={(e) => { e.preventDefault(); this.props.fields.remove(index); }}
+                      ><i className={`fa fa-trash`} aria-hidden='true'></i>
+                    </Button>
+                  </Col>
+                  { index + 1 === this.props.fields.length ?
+                    <Col sm="3">
+                      <Button
+                        color="light"
+                        onClick={(e) => { e.preventDefault(); this.props.fields.push({ tempKey: Math.random() }); }}
+                        >Add new label
+                      </Button>
+                    </Col>
+                    : null }
+              </FormGroup>
+              </Col>
+            </Row>
+          ))}
+          <Row>
+            { this.props.fields.length === 0 ?
+              <Col sm="3">
+                <Button
+                  color="light"
+                  onClick={(e) => { e.preventDefault(); this.props.fields.push({ tempKey: Math.random() }); }}
+                  >Add new label
+                </Button>
+              </Col>
+            : null}
+          </Row>
+        </Col>
+      </Row>
+    );
+  }
+}
+
 class NewJobVersionPage extends Component {
 
   render() {
@@ -533,6 +603,34 @@ class NewJobVersionPage extends Component {
                   color="dark"
                   onClick={this.props.handleSubmit(this.props.submitForm)}
                 >Save</Button>
+              </Col>
+            </Row>
+
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader>
+                    <span>Labels:</span>
+                    <Button
+                      close
+                      onClick={() => this.props.toggleCollapsed('labels')}
+                      >
+                      <i
+                        className={`fa fa-${this.props.collapsed.labels ? 'plus' : 'minus'}`}
+                        aria-hidden='true'
+                        ></i>
+                    </Button>
+                  </CardHeader>
+                  <Collapse isOpen={!this.props.collapsed.labels}>
+                    <CardBody>
+                      <FieldArray
+                        name="labels"
+                        component={RenderLabels}
+                        onChangeListener={() => this.props.triggerPreview()}
+                        />
+                    </CardBody>
+                  </Collapse>
+                </Card>
               </Col>
             </Row>
 

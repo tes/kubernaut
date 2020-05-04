@@ -50,7 +50,8 @@ const defaultState = {
         name: 'job-secret',
         type: 'secret',
       }
-    ]
+    ],
+    labels: [],
   },
   meta: {
     loading: {
@@ -62,6 +63,7 @@ const defaultState = {
     },
   },
   collapsed: {
+    labels: true,
     initContainers: true,
     containers: false,
     secret: true,
