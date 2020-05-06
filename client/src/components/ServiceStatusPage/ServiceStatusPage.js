@@ -95,6 +95,7 @@ class Pod extends Component {
     const {
       name,
       status,
+      restarts,
       createdAt,
       logsPerContainer,
       events,
@@ -107,6 +108,7 @@ class Pod extends Component {
             <CardHeader className="d-flex justify-content-between">
               <span><strong>Pod:</strong> {name}</span>
               <span><strong>Status:</strong> {status}</span>
+              <span><strong>Restarts:</strong> {restarts}</span>
               <span><strong>Created:</strong> <Ago date={createdAt} /></span>
             </CardHeader>
             <CardBody>

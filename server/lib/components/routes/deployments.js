@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import bodyParser from 'body-parser';
 import hogan from 'hogan.js';
 import Boom from 'boom';
@@ -55,6 +56,17 @@ export default function(options = {}) {
         const includeFailed = (req.query || {}).hasOwnProperty('includeFailed');
 
         const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user, includeFailed);
+
+        await Promise.each(deployments, async (latestDeployment, index) => {
+          const namespace = await store.getNamespace(latestDeployment.namespace.id);
+          try {
+            const restarts = await kubernetes.deploymentRestartsInANamespace(namespace.cluster.config, namespace.context, namespace.name, service.name, logger);
+            deployments[index].restarts = restarts;
+          } catch (e) {
+            logger.error(e);
+          }
+        });
+
         await store.audit(meta, 'viewed latest deployments for service by namespace', { registry, service });
         res.json(deployments);
       } catch(err) {

@@ -302,6 +302,31 @@ export default function(options = {}) {
       }
     }
 
+    async function deploymentRestartsInANamespace(config, context, namespace, deploymentName, logger) {
+      const clients = createClients(config, context);
+      let podResult;
+      try {
+        logger.debug(`Checking deployment (${deploymentName} in namespace ${namespace} given context ${context}) actually exists - this prevents a memory explosion when checking non-existent scale`);
+        const deployments = (await clients.k8sAppsApi.listNamespacedDeployment(namespace, undefined, undefined, undefined, `metadata.name=${deploymentName}`)).body;
+        if (deployments.items.length === 0) return null;
+
+        logger.debug(`Fetching scale info for ${deploymentName} in namespace ${namespace} given context ${context}`);
+        const scaleResult = await clients.k8sAppsApi.readNamespacedDeploymentScale(deploymentName, namespace);
+        const podSelector = scaleResult.body.status.selector;
+        logger.debug(`Using pod selector [${podSelector}]`);
+        podResult = await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelector);
+      } catch (e) {
+        logger.error(e);
+        throw e;
+      }
+
+      const restartsPerPod = await Promise.mapSeries(podResult.body.items, async (pod) => {
+        return _.get(pod, 'status.containerStatuses', []).reduce((acc, cStatus) => (Math.max(acc, cStatus.restartCount)), 0);
+      });
+
+      return restartsPerPod.reduce((acc, podRestarts) => (acc + podRestarts), 0);
+    }
+
     async function getLastLogsForDeployment(config, context, namespace, deploymentName, logger) {
       const clients = createClients(config, context);
       let podResult;
@@ -345,9 +370,12 @@ export default function(options = {}) {
           };
         });
 
+        const restarts = _.get(pod, 'status.containerStatuses', []).reduce((acc, cStatus) => (Math.max(acc, cStatus.restartCount)), 0);
+
         return {
           name: pod.metadata.name,
           status: pod.status.phase,
+          restarts,
           createdAt: pod.metadata.creationTimestamp,
           logsPerContainer,
           events: podEvents,
@@ -367,6 +395,7 @@ export default function(options = {}) {
       getLastLogsForDeployment,
       getLastLogsForCronjob,
       createClients,
+      deploymentRestartsInANamespace,
     });
   }
 

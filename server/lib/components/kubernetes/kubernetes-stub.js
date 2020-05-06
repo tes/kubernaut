@@ -109,6 +109,10 @@ export default function(options = {}) {
       });
     }
 
+    function deploymentRestartsInANamespace() {
+      return 0;
+    }
+
     function getContexts() {
       return contexts;
     }
@@ -128,6 +132,7 @@ export default function(options = {}) {
       rolloutStatus,
       getContexts,
       nuke,
+      deploymentRestartsInANamespace,
     });
   }
 
