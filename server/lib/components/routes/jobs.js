@@ -92,10 +92,13 @@ function buildSpec (values, job) {
   }
 
   function parseLabels (formValues) {
-    return formValues.reduce((acc, label) => {
-      acc[label.key] = label.value || '';
-      return acc;
-    }, {});
+    return {
+      ...formValues.reduce((acc, label) => {
+        acc[label.key] = label.value || '';
+        return acc;
+      }, {}),
+      cronjobName: job.name,
+    };
   }
 
   return {
@@ -207,6 +210,23 @@ export default function() {
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job', { job });
         return res.json(job);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/jobs/:id/snapshot', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-read')) return next(Boom.forbidden());
+
+        const namespace = await store.getNamespace(job.namespace.id);
+
+        const output = await kubernetes.getLastLogsForCronjob(namespace.cluster.config, namespace.context, namespace.name, job.name, logger);
+
+        return res.json(output);
       } catch (err) {
         next(err);
       }

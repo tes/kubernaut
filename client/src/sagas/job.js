@@ -18,7 +18,11 @@ import {
   FETCH_JOB_VERSIONS_REQUEST,
   FETCH_JOB_VERSIONS_SUCCESS,
   FETCH_JOB_VERSIONS_ERROR,
-  setCanEdit,
+  FETCH_JOB_SNAPSHOT_REQUEST,
+  FETCH_JOB_SNAPSHOT_SUCCESS,
+  FETCH_JOB_SNAPSHOT_ERROR,
+  fetchSnapshot,
+  // setCanEdit,
   setPagination,
   selectJob,
   selectPaginationState,
@@ -26,7 +30,8 @@ import {
 import {
   getJob,
   getJobVersions,
-  hasPermissionOn,
+  // hasPermissionOn,
+  getJobSnapshot,
 } from '../lib/api';
 
 export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
@@ -40,15 +45,15 @@ export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
   }
 }
 
-export function* checkPermissionSaga({ payload: { data, ...options } }) {
-  const { id } = data;
-  try {
-    const canEdit = yield call(hasPermissionOn, 'teams-manage', 'team', id);
-    yield put(setCanEdit(canEdit.answer));
-  } catch(error) {
-    console.error(error); // eslint-disable-line no-console
-  }
-}
+// export function* checkPermissionSaga({ payload: { data, ...options } }) {
+//   const { id } = data;
+//   try {
+//     const canEdit = yield call(hasPermissionOn, 'teams-manage', 'team', id);
+//     yield put(setCanEdit(canEdit.answer));
+//   } catch(error) {
+//     console.error(error); // eslint-disable-line no-console
+//   }
+// }
 
 export function* paginationSaga() {
   const location = yield select(getLocation);
@@ -73,6 +78,7 @@ export function* locationChangeSaga({ payload = {} }) {
   yield put(setPagination(pagination));
 
   yield put(fetchVersions());
+  yield put(fetchSnapshot());
 }
 
 export function* fetchVersionsForJobSaga({ payload = {} }) {
@@ -92,10 +98,26 @@ export function* fetchVersionsForJobSaga({ payload = {} }) {
   }
 }
 
+export function* fetchSnapshotSaga({ payload = {} }) {
+  const options = payload;
+
+  try {
+    const { id } = yield select(selectJob);
+    if (!id) return;
+    yield put(FETCH_JOB_SNAPSHOT_REQUEST());
+    const data = yield call(getJobSnapshot, id);
+    yield put(FETCH_JOB_SNAPSHOT_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_JOB_SNAPSHOT_ERROR({ error: error.message }));
+  }
+}
+
 export default [
   takeLatest(fetchJobPageData, fetchJobInfoSaga),
-  takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
+  // takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
   takeLatest(initialiseJobPage, locationChangeSaga),
   takeLatest(fetchVersions, fetchVersionsForJobSaga),
+  takeLatest(fetchSnapshot, fetchSnapshotSaga),
   takeLatest(fetchVersionsPagination, paginationSaga),
 ];

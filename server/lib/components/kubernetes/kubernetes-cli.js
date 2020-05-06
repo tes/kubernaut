@@ -5,6 +5,7 @@ import {
   KubeConfig,
   CoreV1Api,
   AppsV1Api,
+  BatchV1Api,
   BatchV1beta1Api,
   loadAllYaml,
 } from '@kubernetes/client-node';
@@ -39,6 +40,7 @@ function createClients(configLocation, context) {
   return {
     k8sApi: kc.makeApiClient(CoreV1Api),
     k8sAppsApi: kc.makeApiClient(AppsV1Api),
+    k8sBatchV1Api: kc.makeApiClient(BatchV1Api),
     k8sBatchV1Beta1Api: kc.makeApiClient(BatchV1beta1Api),
   };
 }
@@ -226,6 +228,80 @@ export default function(options = {}) {
       }
     }
 
+    async function getLastLogsForCronjob(config, context, namespace, cronjobName, logger) {
+      const clients = createClients(config, context);
+
+      try {
+        logger.debug(`Checking cronjob ${cronjobName} in namespace ${namespace} given context ${context}) actually exists.`);
+
+        const cronjobs = (await clients.k8sBatchV1Beta1Api.listNamespacedCronJob(namespace, undefined, undefined, undefined, `metadata.name=${cronjobName}`)).body;
+
+        if (cronjobs.items.length === 0) return null;
+
+        const jobsResult = (await clients.k8sBatchV1Api.listNamespacedJob(namespace, undefined, undefined, undefined, undefined, `cronjobName=${cronjobName}`)).body;
+
+        if (jobsResult.items.length === 0) return null;
+
+        // Array containing only most recent execution
+        const job = _.last(_.sortBy(jobsResult.items, (j) => new Date(j.createdAt)));
+
+        const podSelector = job.spec.selector.matchLabels;
+        if (!podSelector || (Object.keys(podSelector).length === 0)) return [];
+
+        const podSelectorString = _.reduce(podSelector, (acc, val, key) => {
+          return acc.concat(`${key}=${val}`);
+        }, []).join(',');
+        const podResult = (await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelectorString)).body;
+
+        if (podResult.items.length === 0) return [];
+        const pod = podResult.items[0];
+        const podName = pod.metadata.name;
+
+        const containers = job.spec.template.spec.containers || [];
+        const initContainers = job.spec.template.spec.initContainers || [];
+
+        const logsPerContainer = await Promise.mapSeries(containers, async (container) => {
+          let current;
+          logger.debug(`Collecting logs for job pod ${podName} from container ${container.name}`);
+          try {
+            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+          } catch (e) {}
+
+          return {
+            name: container.name,
+            logs: {
+              current,
+            },
+          };
+        });
+
+        const logsPerInitContainer = await Promise.mapSeries(initContainers, async (container) => {
+          let current;
+          logger.debug(`Collecting logs for job pod ${podName} from initContainer ${container.name}`);
+          try {
+            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+          } catch (e) {}
+
+          return {
+            name: container.name,
+            logs: {
+              current,
+            },
+          };
+        });
+
+        return {
+          name: job.metadata.name,
+          createdAt: job.metadata.creationTimestamp,
+          logsPerContainer,
+          logsPerInitContainer,
+        };
+      } catch (e) {
+        logger.error(e);
+        throw e;
+      }
+    }
+
     async function getLastLogsForDeployment(config, context, namespace, deploymentName, logger) {
       const clients = createClients(config, context);
       let podResult;
@@ -289,6 +365,7 @@ export default function(options = {}) {
       checkNamespace,
       rolloutStatus,
       getLastLogsForDeployment,
+      getLastLogsForCronjob,
       createClients,
     });
   }

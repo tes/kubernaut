@@ -5,6 +5,7 @@ const actionsPrefix = 'KUBERNAUT/JOB';
 export const initialiseJobPage = createAction(`${actionsPrefix}/INITIALISE`);
 export const fetchJobPageData = createAction(`${actionsPrefix}/FETCH_JOB_PAGE_DATA`);
 export const fetchVersions = createAction(`${actionsPrefix}/FETCH_VERSIONS`);
+export const fetchSnapshot = createAction(`${actionsPrefix}/FETCH_SNAPSHOT`);
 export const fetchVersionsPagination = createAction(`${actionsPrefix}/FETCH_VERSIONS_PAGINATION`);
 
 export const FETCH_JOB_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_REQUEST`);
@@ -13,6 +14,9 @@ export const FETCH_JOB_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_ERROR`);
 export const FETCH_JOB_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_REQUEST`);
 export const FETCH_JOB_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_SUCCESS`);
 export const FETCH_JOB_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_ERROR`);
+export const FETCH_JOB_SNAPSHOT_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_SNAPSHOT_REQUEST`);
+export const FETCH_JOB_SNAPSHOT_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_SNAPSHOT_SUCCESS`);
+export const FETCH_JOB_SNAPSHOT_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_SNAPSHOT_ERROR`);
 
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
@@ -26,6 +30,7 @@ const defaultState = {
       sections: {
         job: false,
         versions: false,
+        snapshot: false,
       },
       loadingPercent: 100,
     },
@@ -52,6 +57,7 @@ const defaultState = {
       limit: 20,
     },
   },
+  snapshot: null,
   // canEdit: false,
 };
 
@@ -124,6 +130,25 @@ export default handleActions({
         page: payload.page || defaultState.versions.pagination.page,
         limit: payload.limit || defaultState.versions.pagination.limit,
       },
+    },
+  }),
+  [FETCH_JOB_SNAPSHOT_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'snapshot', true),
+    },
+  }),
+  [FETCH_JOB_SNAPSHOT_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'snapshot', false),
+    },
+    snapshot: payload.data,
+  }),
+  [FETCH_JOB_SNAPSHOT_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'snapshot', false),
     },
   }),
 }, defaultState);
