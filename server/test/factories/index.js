@@ -22,6 +22,7 @@ import Namespace from '../../lib/domain/Namespace';
 import Deployment from '../../lib/domain/Deployment';
 import DeploymentLogEntry from '../../lib/domain/DeploymentLogEntry';
 import Team from '../../lib/domain/Team';
+import Job from '../../lib/domain/Job';
 
 const key = crypto.randomBytes(32);
 const chance = new Chance();
@@ -185,6 +186,12 @@ function makeTeam(overrides = {}) {
   }, overrides));
 }
 
+function makeJob(overrides = {}) {
+  return new Job(merge({
+    name: chance.word(),
+  }, overrides));
+}
+
 function makeMeta(overrides = {}) {
   return merge({
     date: createPastDate(),
@@ -264,4 +271,5 @@ export {
   makeRequestFilter,
   stringifyRequestFilter,
   makeTeam,
+  makeJob,
 };
