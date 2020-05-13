@@ -2,6 +2,7 @@ import reduce, {
   FETCH_ACCOUNT_REQUEST,
   FETCH_ACCOUNT_SUCCESS,
   FETCH_ACCOUNT_ERROR,
+  setPermission,
 } from '../account';
 
 describe('Account Reducer', () => {
@@ -35,5 +36,9 @@ describe('Account Reducer', () => {
     expect(state.meta).toMatchObject({ error: 'Oh Noes' });
   });
 
-
+  it('should update permission state', () => {
+    const initialState = reduce(undefined, {});
+    const state = reduce(initialState, setPermission({ permission: 'jobs-read', answer: true }));
+    expect(state.permissions['jobs-read']).toBe(true);
+  });
 });
