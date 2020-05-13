@@ -107,8 +107,18 @@ export default function(options) {
 
       const bindVariables = {};
 
+      const accountCountBuilder = sqb
+        .select(raw('count(1)'))
+        .from('active_team_account__vw ata')
+        .where(Op.eq('ata.team', raw('t.id')));
+
+      const serviceCountBuilder = sqb
+        .select(raw('count(1)'))
+        .from('team_service ts')
+        .where(Op.eq('ts.team', raw('t.id')));
+
       const findTeamsBuilder = sqb
-        .select('t.id', 't.name', 't.created_on', 't.created_by', 'a.display_name')
+        .select('t.id', 't.name', 't.created_on', 't.created_by', 'a.display_name', accountCountBuilder.as('account_count'), serviceCountBuilder.as('service_count'))
         .from('active_team__vw t')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('t.created_by', raw('a.id')))
@@ -1211,6 +1221,8 @@ export default function(options) {
             name: row.registry_name,
           })
         }))),
+        accountsCount: row.account_count,
+        servicesCount: row.service_count,
       });
     }
 

@@ -11,7 +11,7 @@ class TeamsPage extends Component {
     return (
       <div className='page-frame'>
         <Row>
-          <Col md="6">
+          <Col md="9">
             <TeamsTable teams={teams.data} loading={teams.meta.loading} error={teams.meta.error} fetchTeams={fetchTeamsPagination} />
           </Col>
         </Row>
