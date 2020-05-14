@@ -195,6 +195,14 @@ export default function(options = {}) {
         [findAccountsBuilder, countAccountsBuilder].forEach(builder => builder.where(Op.in('a.id', teamAccountsBuilder)));
       }
 
+      if (criteria.noTeam) {
+        const AccountNoTeamBuilder = sqb
+          .select(raw('distinct(ta.account)'))
+          .from('active_team_account__vw ta');
+
+        [findAccountsBuilder, countAccountsBuilder].forEach(builder => builder.where(Op.notIn('a.id', AccountNoTeamBuilder)));
+      }
+
       const findAccountsStatement = db.serialize(findAccountsBuilder, bindVariables);
       const countAccountsStatement = db.serialize(countAccountsBuilder, bindVariables);
 

@@ -97,6 +97,15 @@ export const getAccounts = ({ limit = 20, offset = 0, sort, order, filters = {} 
 
 export const getAccountTeamMembership = (accountId) => makeRequest(`/api/accounts/${accountId}/team-membership`);
 
+export const getAccountsWithNoMembership = ({ limit = 20, offset = 0 }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/accounts/with-no-membership?${qs}`).then(computePagination);
+};
+
 export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   const qs = makeQueryString({
     limit,
@@ -230,6 +239,15 @@ export const getServiceNamespacesStatus = (registry, service, offset, limit) => 
   .then(computePagination);
 
 export const getServiceSuggestions = (registry, service) => makeRequest(`/api/registries/${registry}/search/${service}`);
+
+export const getServicesWithNoTeam = ({ limit = 20, offset = 0 }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/services/with-no-team?${qs}`).then(computePagination);
+};
 
 export const getServicesWithStatusForNamespace = (id, offset, limit) => makeRequest(`/api/services-with-status-for-namespace/${id}?${makeQueryString({ offset, limit })}`)
   .then(computePagination);

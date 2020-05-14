@@ -1,14 +1,22 @@
 import { connect } from 'react-redux';
 import TeamsPage from './TeamsPage';
-import { fetchTeamsPagination } from '../../modules/teams';
+import {
+  fetchTeamsPagination,
+  fetchAccountsPagination,
+  fetchServicesPagination,
+} from '../../modules/teams';
 
 function mapStateToProps(state, props) {
   return {
-    teams: {
-      data: state.teams.data,
-      meta: state.teams.meta,
-    },
+    meta: state.teams.meta,
+    teams: state.teams.teams,
+    services: state.teams.services,
+    accounts: state.teams.accounts,
   };
 }
 
-export default connect(mapStateToProps, { fetchTeamsPagination })(TeamsPage);
+export default connect(mapStateToProps, {
+  fetchTeamsPagination,
+  fetchAccountsPagination,
+  fetchServicesPagination,
+})(TeamsPage);

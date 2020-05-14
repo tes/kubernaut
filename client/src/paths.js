@@ -27,7 +27,7 @@ import { initForm as initServiceNamespaceAttrs } from './modules/serviceNamespac
 import { initialiseTeamPage } from './modules/team';
 import { fetchTeamInfo } from './modules/editTeam';
 import { initForm as initTeamAttrs } from './modules/teamAttrs';
-import { fetchTeamsPagination } from './modules/teams';
+import { initialiseTeamsPage } from './modules/teams';
 import { initialiseJobsPage } from './modules/jobs';
 import { initialiseJobPage } from './modules/job';
 import { initialiseJobVersionPage } from './modules/jobVersion';
@@ -159,7 +159,7 @@ const paths = {
   },
   teams: {
     route: '/teams',
-    action: fetchTeamsPagination,
+    action: initialiseTeamsPage,
   },
 };
 

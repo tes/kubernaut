@@ -7,23 +7,7 @@ import { TeamLink } from '../Links';
 class TeamsTable extends Component {
 
   render() {
-    const { error = null, loading = false, teams = {}, fetchTeams } = this.props;
-
-    const errorTableBody = () =>
-      <tbody>
-        <tr>
-          <td colSpan='4'>Error loading teams</td>
-        </tr>
-      </tbody>
-    ;
-
-    const loadingTableBody = () =>
-      <tbody>
-        <tr>
-          <td colSpan='4'>Loading teams…</td>
-        </tr>
-      </tbody>
-    ;
+    const { teams = {}, fetchTeams } = this.props;
 
     const emptyTableBody = () =>
       <tbody>
@@ -59,9 +43,7 @@ class TeamsTable extends Component {
           </thead>
           {
             (() => {
-              if (error) return errorTableBody();
-              else if (loading) return loadingTableBody();
-              else if (!teams.count) return emptyTableBody();
+              if (!teams.count) return emptyTableBody();
               else return TeamsTableBody();
             })()
           }
@@ -78,8 +60,6 @@ class TeamsTable extends Component {
 }
 
 TeamsTable.propTypes = {
-  error: PropTypes.object,
-  loading: PropTypes.bool,
   teams: PropTypes.shape({
     limit: PropTypes.number.isRequired,
     offset: PropTypes.number.isRequired,

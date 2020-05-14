@@ -56,8 +56,8 @@ class TeamPage extends Component {
                   <Table hover size="sm">
                     <thead>
                       <tr>
-                      <th>Service</th>
-                      <th>Registry</th>
+                        <th>Service</th>
+                        <th>Registry</th>
                       </tr>
                     </thead>
                     <tbody>

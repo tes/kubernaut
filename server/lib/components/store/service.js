@@ -116,6 +116,14 @@ export default function(options) {
         [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.in('s.id', teamServicesBuilder)));
       }
 
+      if (criteria.noTeam) {
+        const serviceNoTeamBuilder = sqb
+          .select(raw('distinct(ts.service)'))
+          .from('team_service ts');
+
+        [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.notIn('s.id', serviceNoTeamBuilder)));
+      }
+
       return db.withTransaction(async connection => {
         const findStatement = db.serialize(findServicesBuilder, bindVariables);
         const countStatement = db.serialize(countServicesBuilder, bindVariables);

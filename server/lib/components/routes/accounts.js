@@ -37,6 +37,26 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/accounts/with-no-membership', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'accounts-read')) return next(Boom.forbidden());
+
+        const criteria = {
+          noTeam: true,
+        };
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findAccounts(criteria, limit, offset);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed accounts with no team');
+        return res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/account/hasPermission/:permission', async (req, res, next) => {
       try {
           const { permission } = req.params;

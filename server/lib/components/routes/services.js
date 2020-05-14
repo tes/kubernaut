@@ -256,6 +256,25 @@ export default function(options = {}) {
       }
     });
 
+    app.get('/api/services/with-no-team', async (req, res, next) => {
+      try {
+        const criteria = {
+          user: { id: req.user.id, permission: 'registries-read' },
+          noTeam: true,
+        };
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findServices(criteria, limit, offset);
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed services with no team');
+        return res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     cb();
   }
 
