@@ -488,6 +488,12 @@ export const enableServiceForNamespace = (namespaceId, serviceId, offset, limit,
   }).then(computePagination);
 };
 
+export const executeJob = (job) => {
+  return makeRequest(`/api/jobs/${job.id}/execute`, {
+    method: 'POST',
+  });
+};
+
 export const makeDeployment = (data, options = {}) => {
   return makeRequest('/api/deployments', {
     method: 'POST',

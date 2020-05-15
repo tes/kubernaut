@@ -129,6 +129,24 @@ function buildSpec (values, job) {
   };
 }
 
+function buildJobSpecFromCronJob (cronJob) {
+  const spec = _get(cronJob, 'spec.jobTemplate.spec');
+  const name = _get(cronJob, 'metadata.name');
+
+  return {
+    apiVersion: 'batch/v1',
+    kind: 'Job',
+    metadata: {
+      ...spec.template.metadata,
+      name: `manual-exec-${name}-${(new Date()).getTime()}`
+    },
+    spec: {
+      ...spec,
+      ttlSecondsAfterFinished: 30 * 60,
+    },
+  };
+}
+
 function generateJobSecretYaml(jobVersion, secretData) {
   const doc = {
     apiVersion: 'v1',
@@ -318,6 +336,67 @@ export default function() {
       }
     });
 
+    app.post('/api/jobs/:id/execute', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
+
+        const namespace = await store.getNamespace(job.namespace.id); // Need richer version
+        const meta = { date: new Date(), account: req.user };
+
+        let lastApplied = await store.getLastAppliedVersion(job);
+        if (!lastApplied) { // Get the latest version instead if this job has never had an applied configuration.
+          const versions = await store.findJobVersions(job, 1);
+          if (!versions.count) return next(Boom.badRequest());
+          lastApplied = await store.getJobVersion(versions.items[0].id);
+        }
+        if (!lastApplied) return next(Boom.badRequest());
+
+        const cronSpec = safeLoad(lastApplied.yaml || '');
+        const jobSpec = buildJobSpecFromCronJob(cronSpec);
+
+        const yamlDocs = [safeDump(jobSpec, { lineWidth: 120 })];
+
+        const jobVersionSecrets = await store.getJobVersionSecretWithData(lastApplied.id, meta, { opaque: true });
+
+        if (jobVersionSecrets) {
+          yamlDocs.push(generateJobSecretYaml(lastApplied, jobVersionSecrets));
+        }
+
+        const emitter = new EventEmitter();
+        const log = [];
+
+        emitter.on('data', async data => {
+          log.push(data);
+          res.locals.logger.info(data.content);
+        }).on('error', async data => {
+          log.push(data);
+          res.locals.logger.error(data.content);
+        });
+
+        const applyExitCode = await kubernetes.apply(
+          namespace.cluster.config,
+          namespace.context,
+          namespace.name,
+          yamlDocs.join('---\n'),
+          emitter,
+        );
+        await store.audit(meta, 'manually executed job version', { jobVersion: lastApplied, job });
+
+        if (applyExitCode === 0) {
+          return res.status(200).json({ log });
+        } else {
+          return res.status(500).json({ log });
+        }
+      } catch (err) {
+        next(err);
+      }
+    });
+
+
     app.post('/api/jobs/version/:id/apply', async (req, res, next) => {
       try {
         const { id } = req.params;
@@ -356,7 +435,7 @@ export default function() {
           yamlDocs.join('---\n'),
           emitter,
         );
-        await store.audit(meta, 'applied job version', { jobVersion });
+        await store.audit(meta, 'applied job version', { jobVersion, job: jobVersion.job });
 
 
         if (applyExitCode === 0) {

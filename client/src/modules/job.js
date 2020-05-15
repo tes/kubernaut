@@ -21,6 +21,11 @@ export const FETCH_JOB_SNAPSHOT_ERROR = createAction(`${actionsPrefix}/FETCH_JOB
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 
+export const execute = createAction(`${actionsPrefix}/EXECUTE`);
+export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
+export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
+export const setLogOutputError = createAction(`${actionsPrefix}/SET_LOG_OUTPUT_ERROR`);
+
 export const selectJob = (state) => (state.job.job.data);
 export const selectPaginationState = (state) => (state.job.versions.pagination);
 
@@ -58,6 +63,9 @@ const defaultState = {
     },
   },
   snapshot: null,
+  applyLog: [],
+  applyError: '',
+  logOpen : false,
   // canEdit: false,
 };
 
@@ -150,5 +158,19 @@ export default handleActions({
     meta: {
       loading: computeLoading(state.meta.loading, 'snapshot', false),
     },
+  }),
+  [setLogOutput]: (state, { payload }) => ({
+    ...state,
+    logOpen: true,
+    applyLog: payload.log,
+  }),
+  [setLogOutputError]: (state, { payload }) => ({
+    ...state,
+    logOpen: true,
+    applyError: payload,
+  }),
+  [closeModal]: (state) => ({
+    ...state,
+    logOpen: false,
   }),
 }, defaultState);

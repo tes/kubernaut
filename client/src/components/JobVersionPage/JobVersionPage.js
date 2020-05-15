@@ -90,8 +90,8 @@ class Version extends Component {
           <ModalBody>
             {
               this.props.applyLog.map((line, idx) => (
-                <pre>
-                  <code key={`${idx}-${line.writtenOn}`}>
+                <pre key={`${idx}-${line.writtenOn}`}>
+                  <code>
                     {line.content}
                   </code>
                 </pre>

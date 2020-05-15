@@ -29,7 +29,7 @@ export default class Example extends React.Component {
       <div className={this.props.classNames}>
         {icon}
         <Popover
-          placement="auto"
+          placement={this.props.placement || 'auto'}
           trigger="focus click hover"
           className="shadow-sm"
           target={this.targetRef}

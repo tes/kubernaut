@@ -70,6 +70,7 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
     k8sApi,
     k8sAppsApi,
     k8sBatchV1Beta1Api,
+    k8sBatchV1Api,
   } = clients;
 
   for (const docType in docsByType) {
@@ -107,6 +108,13 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
     if (docType === 'cronjob') {
       for (const doc of docsByType[docType]) {
         await patchResponseStatus(k8sBatchV1Beta1Api.patchNamespacedCronJob(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+      }
+      continue;
+    }
+
+    if (docType === 'job') {
+      for (const doc of docsByType[docType]) {
+        await patchResponseStatus(k8sBatchV1Api.patchNamespacedJob(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }
@@ -232,11 +240,7 @@ export default function(options = {}) {
       const clients = createClients(config, context);
 
       try {
-        logger.debug(`Checking cronjob ${cronjobName} in namespace ${namespace} given context ${context}) actually exists.`);
-
-        const cronjobs = (await clients.k8sBatchV1Beta1Api.listNamespacedCronJob(namespace, undefined, undefined, undefined, `metadata.name=${cronjobName}`)).body;
-
-        if (cronjobs.items.length === 0) return null;
+        logger.debug(`Checking for any jobs with relevant label ${cronjobName} in namespace ${namespace} given context ${context}) actually exists.`);
 
         const jobsResult = (await clients.k8sBatchV1Api.listNamespacedJob(namespace, undefined, undefined, undefined, undefined, `cronjobName=${cronjobName}`)).body;
 
@@ -246,14 +250,14 @@ export default function(options = {}) {
         const job = _.last(_.sortBy(jobsResult.items, (j) => new Date(j.createdAt)));
 
         const podSelector = job.spec.selector.matchLabels;
-        if (!podSelector || (Object.keys(podSelector).length === 0)) return [];
+        if (!podSelector || (Object.keys(podSelector).length === 0)) return null;
 
         const podSelectorString = _.reduce(podSelector, (acc, val, key) => {
           return acc.concat(`${key}=${val}`);
         }, []).join(',');
         const podResult = (await clients.k8sApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, podSelectorString)).body;
 
-        if (podResult.items.length === 0) return [];
+        if (podResult.items.length === 0) return null;
         const pod = podResult.items[0];
         const podName = pod.metadata.name;
 

@@ -1,5 +1,9 @@
 import { connect } from 'react-redux';
-import { fetchVersionsPagination } from '../../modules/job';
+import {
+  fetchVersionsPagination,
+  execute,
+  closeModal,
+} from '../../modules/job';
 import JobPage from './JobPage';
 
 export default connect((state) => ({
@@ -8,6 +12,11 @@ export default connect((state) => ({
   snapshot: state.job.snapshot,
   meta: state.job.meta,
   canEdit: state.job.canEdit,
+  logOpen: state.job.logOpen,
+  applyLog: state.job.applyLog,
+  applyError: state.job.applyError,
 }),{
   fetchVersionsPagination,
+  execute,
+  closeModal,
 })(JobPage);

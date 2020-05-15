@@ -9,12 +9,16 @@ import {
   Card,
   CardHeader,
   CardBody,
+  Modal,
+  ModalHeader,
+  ModalBody,
 } from 'reactstrap';
 import Title from '../Title';
 import { JobVersionLink, NewJobVersionLink } from '../Links';
 import { JobSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 import { Ago } from '../DisplayDate';
+import Popover from '../Popover';
 
 class LogsContainer extends Component {
   componentDidMount() {
@@ -77,7 +81,7 @@ class JobPage extends Component {
                     </CardHeader>
                     <CardBody className="py-1">
                       {
-                        snapshot.logsPerInitContainer.length ? (
+                        snapshot && snapshot.logsPerInitContainer.length ? (
                           <Row>
                             <Col>
                               <Row>
@@ -86,7 +90,7 @@ class JobPage extends Component {
                                 </Col>
                               </Row>
                               {
-                                snapshot.logsPerInitContainer.map(c => <LogsContainer {...c} />)
+                                snapshot.logsPerInitContainer.map(c => <LogsContainer {...c} key={c.name} />)
                               }
                               <hr />
                             </Col>
@@ -94,7 +98,7 @@ class JobPage extends Component {
                         ) : null
                       }
                       {
-                        snapshot.logsPerContainer.length ? (
+                        snapshot && snapshot.logsPerContainer.length ? (
                           <Row>
                             <Col>
                               <Row>
@@ -103,7 +107,7 @@ class JobPage extends Component {
                                 </Col>
                               </Row>
                               {
-                                snapshot.logsPerContainer.map(c => <LogsContainer {...c} />)
+                                snapshot.logsPerContainer.map(c => <LogsContainer {...c} key={c.name} />)
                               }
                             </Col>
                           </Row>
@@ -116,7 +120,7 @@ class JobPage extends Component {
             </Col>
             <Col md="4">
               <Row className="mb-2">
-                <Col>
+                <Col className="d-flex justify-content-between">
                   <NewJobVersionLink
                     job={job}
                   >
@@ -124,6 +128,16 @@ class JobPage extends Component {
                       Create new version
                     </Button>
                   </NewJobVersionLink>
+                  {
+                    versions.data.count ? (
+                      <Button
+                        className="pull-right"
+                        color="dark"
+                        outline
+                        onClick={() => this.props.execute()}
+                      >Run now <Popover title="What will this do?" body="It will immediately create a job based on the most recently applied configuration. In the event there isn't one, it will choose the latest available configuration." classNames="d-inline" placement='below' /></Button>
+                  ) : null
+                }
                 </Col>
               </Row>
               <Row>
@@ -170,6 +184,29 @@ class JobPage extends Component {
             </Col>
           </Row>
         </Col>
+        <Modal
+          isOpen={this.props.logOpen}
+          toggle={this.props.closeModal}
+          size="lg"
+        >
+          <ModalHeader>
+            <span>Apply result log:</span>
+          </ModalHeader>
+          <ModalBody>
+            {
+              this.props.applyLog.map((line, idx) => (
+                <pre key={`${idx}-${line.writtenOn}`}>
+                  <code>
+                    {line.content}
+                  </code>
+                </pre>
+              ))
+            }
+            {this.props.applyError ? (
+              <span>{this.props.applyError}</span>
+            ): null}
+          </ModalBody>
+        </Modal>
       </Row>
     );
   }

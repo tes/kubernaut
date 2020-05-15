@@ -26,12 +26,16 @@ import {
   setPagination,
   selectJob,
   selectPaginationState,
+  execute,
+  setLogOutput,
+  setLogOutputError,
 } from '../modules/job';
 import {
   getJob,
   getJobVersions,
   // hasPermissionOn,
   getJobSnapshot,
+  executeJob,
 } from '../lib/api';
 
 export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
@@ -113,6 +117,18 @@ export function* fetchSnapshotSaga({ payload = {} }) {
   }
 }
 
+
+export function* executeSaga() {
+  try {
+    const job = yield select(selectJob);
+    const result = yield call(executeJob, job);
+    yield put(setLogOutput(result));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+    yield put(setLogOutputError(error.message || error));
+  }
+}
+
 export default [
   takeLatest(fetchJobPageData, fetchJobInfoSaga),
   // takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
@@ -120,4 +136,5 @@ export default [
   takeLatest(fetchVersions, fetchVersionsForJobSaga),
   takeLatest(fetchSnapshot, fetchSnapshotSaga),
   takeLatest(fetchVersionsPagination, paginationSaga),
+  takeLatest(execute, executeSaga),
 ];

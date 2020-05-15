@@ -40,34 +40,38 @@ export default function() {
       return result.rowCount ? toJob(result.rows[0]) : undefined;
     }
 
-    function getJobVersion(id) {
+    async function _getJobVersion(connection, id) {
       const versionBuilder = sqb
-        .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
-        .from('active_job_version__vw jv')
-        .join(
-          innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
-        )
-        .where(Op.eq('jv.id', id));
+      .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
+      .from('active_job_version__vw jv')
+      .join(
+        innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
+      )
+      .where(Op.eq('jv.id', id));
 
+      const versionResult = await connection.query(db.serialize(versionBuilder, {}).sql);
+
+      if (!versionResult.rowCount) return undefined;
+
+      const job = await _getJob(connection, versionResult.rows[0].job);
+
+      const latestAppliedBuilder = sqb
+      .select('jv.id')
+      .from('active_job_version__vw jv')
+      .where(Op.eq('jv.job', job.id))
+      .where(Op.not('jv.last_applied', null))
+      .orderBy('jv.last_applied desc')
+      .limit(1);
+
+      const latestAppliedResult = await connection.query(db.serialize(latestAppliedBuilder, {}).sql);
+      const latestAppliedId = latestAppliedResult.rowCount ? latestAppliedResult.rows[0].id : null;
+
+      return toJobVersion(versionResult.rows[0], job, latestAppliedId);
+    }
+
+    function getJobVersion(id) {
       return db.withTransaction(async connection => {
-        const versionResult = await connection.query(db.serialize(versionBuilder, {}).sql);
-
-        if (!versionResult.rowCount) return undefined;
-
-        const job = await _getJob(connection, versionResult.rows[0].job);
-
-        const latestAppliedBuilder = sqb
-        .select('jv.id')
-        .from('active_job_version__vw jv')
-        .where(Op.eq('jv.job', job.id))
-        .where(Op.not('jv.last_applied', null))
-        .orderBy('jv.last_applied desc')
-        .limit(1);
-
-        const latestAppliedResult = await connection.query(db.serialize(latestAppliedBuilder, {}).sql);
-        const latestAppliedId = latestAppliedResult.rowCount ? latestAppliedResult.rows[0].id : null;
-
-        return toJobVersion(versionResult.rows[0], job, latestAppliedId);
+        return _getJobVersion(connection, id);
       });
     }
 
@@ -258,12 +262,12 @@ export default function() {
       logger.debug(`Updated job version last applied for id ${jobVersion.id}`);
     }
 
-    async function getJobVersionSecretWithData(joVersionId, meta, options = { opaque: false }) {
-      logger.debug(`Retrieving jobVersion secret for ${joVersionId} for ${meta.account.id}`);
+    async function getJobVersionSecretWithData(jobVersionId, meta, options = { opaque: false }) {
+      logger.debug(`Retrieving jobVersion secret for ${jobVersionId} for ${meta.account.id}`);
       const secretDataBuilder = sqb
         .select('jvd.key', 'jvd.value', 'jvd.editor')
         .from('job_secret_version_data jvd')
-        .where(Op.eq('jvd.job_version', joVersionId))
+        .where(Op.eq('jvd.job_version', jobVersionId))
         .orderBy('jvd.key');
 
       const data = await db.query(db.serialize(secretDataBuilder, {}).sql);
@@ -290,6 +294,25 @@ export default function() {
         });
 
         logger.debug(`Saved jobVersion secret for ${jobVersionId}`);
+      });
+    }
+
+    function getLastAppliedVersion(job) {
+      logger.debug(`Finding latest applied job version for job ${job.id}`);
+
+      return db.withTransaction(async connection => {
+        const latestAppliedIdBuilder = sqb
+          .select('jv.id')
+          .from('active_job_version__vw jv')
+          .where(Op.eq('jv.job', job.id))
+          .where(Op.not('jv.last_applied', null))
+          .orderBy('jv.last_applied desc')
+          .limit(1);
+
+        const latestAppliedIdResult = await connection.query(db.serialize(latestAppliedIdBuilder).sql);
+        if (!latestAppliedIdResult.rowCount) return null;
+
+        return _getJobVersion(connection, latestAppliedIdResult.rows[0].id);
       });
     }
 
@@ -345,6 +368,7 @@ export default function() {
       setJobVersionLastApplied,
       saveJobVersionOfSecret,
       getJobVersionSecretWithData,
+      getLastAppliedVersion,
     });
   }
 
