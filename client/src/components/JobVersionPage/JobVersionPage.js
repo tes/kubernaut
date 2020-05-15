@@ -18,7 +18,7 @@ class Version extends Component {
 
   render() {
     const jobVersion = this.props.jobVersion.data;
-    const { meta } = this.props;
+    const { meta, canApply } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -48,11 +48,15 @@ class Version extends Component {
             <Col>
               <Row>
                 <Col>
-                  <Button
-                    className="pull-right"
-                    color="dark"
-                    onClick={() => this.props.apply()}
-                  >Apply</Button>
+                  {
+                    canApply ? (
+                      <Button
+                        className="pull-right"
+                        color="dark"
+                        onClick={() => this.props.apply()}
+                        >Apply</Button>
+                    ) : null
+                  }
                 </Col>
               </Row>
               <Row>

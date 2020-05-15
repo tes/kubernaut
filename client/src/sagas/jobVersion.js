@@ -1,5 +1,5 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
-
+import { get as _get } from 'lodash';
 import {
   initialiseJobVersionPage,
   FETCH_JOB_VERSION_REQUEST,
@@ -9,10 +9,12 @@ import {
   selectJobVersion,
   setLogOutput,
   setLogOutputError,
+  setCanApply,
 } from '../modules/jobVersion';
 import {
   getJobVersion,
   applyJobVersion,
+  hasPermissionOn,
 } from '../lib/api';
 
 export function* fetchJobVersionSaga({ payload: { match, ...options } }) {
@@ -39,7 +41,19 @@ export function* applySaga() {
   }
 }
 
+export function* checkPermissionSaga({ payload: { data, ...options } }) {
+  try {
+    const namespaceId = _get(data, 'job.namespace.id', '');
+    const canApply = yield call(hasPermissionOn, 'jobs-apply', 'namespace', namespaceId);
+
+    yield put(setCanApply(canApply.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(initialiseJobVersionPage, fetchJobVersionSaga),
+  takeLatest(FETCH_JOB_VERSION_SUCCESS, checkPermissionSaga),
   takeLatest(apply, applySaga),
 ];

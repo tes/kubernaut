@@ -36,7 +36,7 @@ const mapStateToProps = (state, props) => {
     job: newJobVersion.job.data,
     preview: newJobVersion.preview,
     submitForm,
-
+    canEdit: newJobVersion.canEdit,
     formSecrets: (currentFormValues && currentFormValues.secret && currentFormValues.secret.secrets) || [],
     secretErrors,
   };

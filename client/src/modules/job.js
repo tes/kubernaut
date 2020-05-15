@@ -19,6 +19,7 @@ export const FETCH_JOB_SNAPSHOT_SUCCESS = createAction(`${actionsPrefix}/FETCH_J
 export const FETCH_JOB_SNAPSHOT_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_SNAPSHOT_ERROR`);
 
 export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
+export const setCanApply = createAction(`${actionsPrefix}/SET_CAN_APPLY`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 
 export const execute = createAction(`${actionsPrefix}/EXECUTE`);
@@ -66,7 +67,8 @@ const defaultState = {
   applyLog: [],
   applyError: '',
   logOpen : false,
-  // canEdit: false,
+  canEdit: false,
+  canApply: false,
 };
 
 export default handleActions({
@@ -104,6 +106,10 @@ export default handleActions({
   [setCanEdit]: (state, { payload }) => ({
     ...state,
     canEdit: payload,
+  }),
+  [setCanApply]: (state, { payload }) => ({
+    ...state,
+    canApply: payload,
   }),
   [FETCH_JOB_VERSIONS_REQUEST]: (state) => ({
     ...state,

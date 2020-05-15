@@ -569,6 +569,18 @@ class NewJobVersionPage extends Component {
         </Row>
     );
 
+    if (!this.props.canEdit) {
+      return (
+        <Row className="page-frame">
+          <Row>
+            <Col xs="12">
+              <p>You are not authorised to view this page.</p>
+            </Col>
+          </Row>
+        </Row>
+      );
+    }
+
     const availbleVolumes = this.props.currentFormValues.volumes || [];
 
     let humanCronValue = '';

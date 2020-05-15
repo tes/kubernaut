@@ -11,6 +11,7 @@ export default connect((state) => ({
   logOpen: state.jobVersion.logOpen,
   applyLog: state.jobVersion.applyLog,
   applyError: state.jobVersion.applyError,
+  canApply: state.jobVersion.canApply,
 }),{
   apply,
   closeModal,

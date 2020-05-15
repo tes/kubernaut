@@ -1,5 +1,6 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { push } from 'connected-react-router';
+import { get as _get } from 'lodash';
 import {
   resetSection,
   arrayPush,
@@ -25,6 +26,7 @@ import {
   removeSecret,
   validateAnnotations,
   getFormAsyncErrors,
+  setCanEdit,
 } from '../modules/newJobVersion';
 import {
   getJob,
@@ -32,6 +34,7 @@ import {
   getJobVersion,
   getPreviewOfJobVersion,
   saveJobVersion,
+  hasPermissionOn,
 } from '../lib/api';
 
 export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options } }) {
@@ -57,6 +60,17 @@ export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options }
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_JOB_ERROR({ error: error.message }));
+  }
+}
+
+export function* checkPermissionSaga({ payload: { data, ...options } }) {
+  try {
+    const registryId = _get(data, 'registry.id', '');
+    const canEdit = yield call(hasPermissionOn, 'jobs-write', 'registry', registryId);
+
+    yield put(setCanEdit(canEdit.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
   }
 }
 
@@ -121,6 +135,7 @@ export function* removeSecretSaga({ payload }) {
 
 export default [
   takeLatest(INITIALISE, fetchNewJobVersionPageDataSaga),
+  takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
   takeLatest(triggerPreview, previewValuesSaga),
   takeLatest(FETCH_JOB_VERSIONS_SUCCESS, previewValuesSaga),
   takeLatest(submitForm.REQUEST, submitSaga),

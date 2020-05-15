@@ -11,6 +11,7 @@ export const apply = createAction(`${actionsPrefix}/APPLY`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
 export const setLogOutputError = createAction(`${actionsPrefix}/SET_LOG_OUTPUT_ERROR`);
+export const setCanApply = createAction(`${actionsPrefix}/SET_CAN_APPLY`);
 
 export const selectJobVersion = (state) => (state.jobVersion.jobVersion.data);
 
@@ -41,6 +42,7 @@ const defaultState = {
   applyLog: [],
   applyError: '',
   logOpen : false,
+  canApply: false,
 };
 
 export default handleActions({
@@ -88,5 +90,9 @@ export default handleActions({
   [closeModal]: (state) => ({
     ...state,
     logOpen: false,
+  }),
+  [setCanApply]: (state, { payload }) => ({
+    ...state,
+    canApply: payload,
   }),
 }, defaultState);

@@ -12,6 +12,7 @@ export default connect((state) => ({
   snapshot: state.job.snapshot,
   meta: state.job.meta,
   canEdit: state.job.canEdit,
+  canApply: state.job.canApply,
   logOpen: state.job.logOpen,
   applyLog: state.job.applyLog,
   applyError: state.job.applyError,

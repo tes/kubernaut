@@ -21,6 +21,7 @@ export const FETCH_JOB_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_J
 export const FETCH_JOB_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_SUCCESS`);
 export const FETCH_JOB_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_JOB_VERSIONS_ERROR`);
 
+export const setCanEdit = createAction(`${actionsPrefix}/SET_CAN_EDIT`);
 export const addSecret = createAction(`${actionsPrefix}/ADD_SECRET`);
 export const removeSecret = createAction(`${actionsPrefix}/REMOVE_SECRET`);
 export const saveVersion = createFormAction(`${actionsPrefix}/SAVE_VERSION`);
@@ -132,6 +133,8 @@ export default handleActions({
         ...payload.version.values,
       };
     }
+    (newState.initialValues.labels || []).forEach((l) => l.tempKey = Math.random());
+
     return newState;
   },
   [FETCH_JOB_VERSIONS_ERROR]: (state, { payload }) => ({
@@ -143,5 +146,9 @@ export default handleActions({
   [updatePreview]: (state, { payload }) => ({
     ...state,
     preview: payload.yaml,
+  }),
+  [setCanEdit]: (state, { payload }) => ({
+    ...state,
+    canEdit: payload,
   }),
 }, defaultState);

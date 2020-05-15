@@ -38,7 +38,7 @@ describe('newJobVersion Reducer', () => {
       const version = {
         values: {
           schedule: '1 2 3',
-          labels: ['a'],
+          labels: [{ key: 'a' }],
         },
       };
       const state = reduce(createInitialState(), FETCH_JOB_VERSIONS_SUCCESS({ version }));

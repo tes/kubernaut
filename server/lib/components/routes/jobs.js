@@ -296,7 +296,6 @@ export default function() {
         const job = await store.getJob(id);
         if (!job) return next(Boom.notFound());
         if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-write')) return next(Boom.forbidden());
-        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-write')) return next(Boom.forbidden());
 
         const values = req.body || {};
         const spec = buildSpec(values, job);

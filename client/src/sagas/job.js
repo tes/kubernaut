@@ -1,5 +1,6 @@
 import { takeLatest, call, put, take, select } from 'redux-saga/effects';
 import { push, getLocation } from 'connected-react-router';
+import { get as _get } from 'lodash';
 import {
   extractFromQuery,
   alterQuery,
@@ -22,7 +23,8 @@ import {
   FETCH_JOB_SNAPSHOT_SUCCESS,
   FETCH_JOB_SNAPSHOT_ERROR,
   fetchSnapshot,
-  // setCanEdit,
+  setCanEdit,
+  setCanApply,
   setPagination,
   selectJob,
   selectPaginationState,
@@ -33,7 +35,7 @@ import {
 import {
   getJob,
   getJobVersions,
-  // hasPermissionOn,
+  hasPermissionOn,
   getJobSnapshot,
   executeJob,
 } from '../lib/api';
@@ -49,15 +51,19 @@ export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
   }
 }
 
-// export function* checkPermissionSaga({ payload: { data, ...options } }) {
-//   const { id } = data;
-//   try {
-//     const canEdit = yield call(hasPermissionOn, 'teams-manage', 'team', id);
-//     yield put(setCanEdit(canEdit.answer));
-//   } catch(error) {
-//     console.error(error); // eslint-disable-line no-console
-//   }
-// }
+export function* checkPermissionSaga({ payload: { data, ...options } }) {
+  try {
+    const namespaceId = _get(data, 'namespace.id', '');
+    const registryId = _get(data, 'registry.id', '');
+    const canEdit = yield call(hasPermissionOn, 'jobs-write', 'registry', registryId);
+    const canApply = yield call(hasPermissionOn, 'jobs-apply', 'namespace', namespaceId);
+
+    yield put(setCanEdit(canEdit.answer));
+    yield put(setCanApply(canApply.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
 
 export function* paginationSaga() {
   const location = yield select(getLocation);
@@ -131,7 +137,7 @@ export function* executeSaga() {
 
 export default [
   takeLatest(fetchJobPageData, fetchJobInfoSaga),
-  // takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
+  takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
   takeLatest(initialiseJobPage, locationChangeSaga),
   takeLatest(fetchVersions, fetchVersionsForJobSaga),
   takeLatest(fetchSnapshot, fetchSnapshotSaga),

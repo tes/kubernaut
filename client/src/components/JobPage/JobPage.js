@@ -55,7 +55,7 @@ class JobPage extends Component {
 
   render() {
     const job = this.props.job.data;
-    const { versions, snapshot, meta } = this.props;
+    const { versions, snapshot, meta, canEdit, canApply } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -121,21 +121,25 @@ class JobPage extends Component {
             <Col md="4">
               <Row className="mb-2">
                 <Col className="d-flex justify-content-between">
-                  <NewJobVersionLink
-                    job={job}
-                  >
-                    <Button color="dark">
-                      Create new version
-                    </Button>
-                  </NewJobVersionLink>
                   {
-                    versions.data.count ? (
+                    canEdit ? (
+                      <NewJobVersionLink
+                        job={job}
+                        >
+                        <Button color="dark">
+                          Create new version
+                        </Button>
+                      </NewJobVersionLink>
+                    ): null
+                  }
+                  {
+                    versions.data.count && canApply ? (
                       <Button
                         className="pull-right"
                         color="dark"
                         outline
                         onClick={() => this.props.execute()}
-                      >Run now <Popover title="What will this do?" body="It will immediately create a job based on the most recently applied configuration. In the event there isn't one, it will choose the latest available configuration." classNames="d-inline" placement='below' /></Button>
+                      >Run now <Popover title="What will this do?" body="It will immediately create a job based on the most recently applied configuration. In the event there isn't one, it will choose the latest available configuration." classNames="d-inline" placement='bottom' /></Button>
                   ) : null
                 }
                 </Col>
