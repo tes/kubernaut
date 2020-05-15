@@ -21,6 +21,28 @@ import { JobSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 import SecretEditor from '../SecretEditor';
+import Popover from '../Popover';
+
+const help = {
+  schedule: {
+    body: 'How often you want the job to run. Standard cron syntax.',
+  },
+  concurrency: {
+    body: 'How should kubernetes handle the scenario of multiple instances of a job running at once.'
+  },
+  envFrom: {
+    body: 'Inject the job secret as environment variables to this container.'
+  },
+  command: {
+    body: 'The command run by the container (overriding "entrypoint").'
+  },
+  argument: {
+    body: 'Arguments to be passed to the command (overriden or otherwise).'
+  },
+  volumeType: {
+    body: 'Defines the source of the volume. `configMap` will require an existing configMap. Secret will use this job\'s secret definition. `emptyDir` will provide an unpopulated scratch space, perhaps for use between containers.',
+  },
+};
 
 class RenderArgs extends Component {
   render() {
@@ -28,12 +50,12 @@ class RenderArgs extends Component {
       <Button
         outline
         onClick={() => this.props.fields.push('')}
-      >Add argument options</Button>
+      >Add argument options <Popover {...help.argument} classNames="d-inline" /></Button>
     );
 
     return (
       <Card>
-        <CardHeader><span>Args:</span></CardHeader>
+        <CardHeader><span>Args:</span> <Popover {...help.argument} classNames="d-inline" /></CardHeader>
         <CardBody>
           <Row>
             <Col>
@@ -95,19 +117,19 @@ class RenderCommands extends Component {
       <Button
         outline
         onClick={() => this.props.fields.push('')}
-      >Add command options</Button>
+      >Add command options <Popover {...help.command} classNames="d-inline" /></Button>
     );
 
     return (
       <Card>
-        <CardHeader><span>Command:</span></CardHeader>
+        <CardHeader><span>Command:</span> <Popover {...help.command} classNames="d-inline" /></CardHeader>
         <CardBody>
           <Row>
             <Col>
               {this.props.fields.map((command, index) => {
                 return (
                   <FormGroup row key={command}>
-                    <Label sm="3" className="text-right" for={command}>Argument:</Label>
+                    <Label sm="3" className="text-right" for={command}>Command:</Label>
                     <Col sm="8">
                       <Field
                         className="form-control"
@@ -188,7 +210,7 @@ class RenderVolumeMounts extends Component {
                     <Row>
                       <Col>
                         <FormGroup row >
-                          <Label sm="3" className="text-right" for={`${volumeMount}.mountPath`}>mountPath:</Label>
+                          <Label sm="3" className="text-right" for={`${volumeMount}.mountPath`}>Mount path:</Label>
                           <Col sm="9">
                             <Field
                               className="form-control"
@@ -293,7 +315,7 @@ class RenderContainers extends Component {
                                 </Col>
                               </FormGroup>
                               <FormGroup row>
-                                <Label sm="3" className="text-right" for={`${container}.envFromSecret`}>envFrom (use secret):</Label>
+                                <Label sm="3" className="text-right" for={`${container}.envFromSecret`}>envFrom (use secret): <Popover {...help.envFrom} classNames="d-inline" /></Label>
                                 <Col sm="6">
                                   <Field
                                     className="form-control"
@@ -407,7 +429,7 @@ class RenderVolumes extends Component {
                                 </Col>
                               </FormGroup>
                               <FormGroup row>
-                                <Label sm="2" className="text-right" for={`${volume}.type`}>Type:</Label>
+                                <Label sm="2" className="text-right" for={`${volume}.type`}>Type: <Popover {...help.volumeType} classNames="d-inline" /></Label>
                                 <Col sm="5">
                                   <Field
                                     className="form-control"
@@ -566,8 +588,8 @@ class NewJobVersionPage extends Component {
             <Row className="mb-2">
               <Col md="6">
                 <FormGroup row>
-                  <Label sm="3" className="text-right" for="schedule">Schedule:</Label>
-                  <Col sm="9">
+                  <Label sm="5" className="text-right" for="schedule">Schedule: <Popover {...help.schedule} classNames="d-inline" /></Label>
+                  <Col sm="7">
                     <Field
                       className="form-control"
                       name="schedule"
@@ -584,8 +606,8 @@ class NewJobVersionPage extends Component {
                   </Col>
                 </FormGroup>
                 <FormGroup row>
-                  <Label sm="3" className="text-right" for="concurrencyPolicy">Concurrency Policy:</Label>
-                  <Col sm="9">
+                  <Label sm="5" className="text-right" for="concurrencyPolicy">Concurrency policy: <Popover {...help.concurrency} classNames="d-inline" /></Label>
+                  <Col sm="7">
                     <Field
                       className="form-control"
                       name="concurrencyPolicy"
@@ -759,6 +781,7 @@ class NewJobVersionPage extends Component {
 
           <Row>
             <Col>
+              <h5>Yaml preview:</h5>
               <pre className="bg-light p-2">
                 <code>
                   {this.props.preview}
