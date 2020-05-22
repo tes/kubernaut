@@ -333,8 +333,8 @@ class RenderContainers extends Component {
                           <Row className="mb-2">
                             <Col md="10">
                               <FieldArray
-                                name={`${container}.args`}
-                                component={RenderArgs}
+                                name={`${container}.command`}
+                                component={RenderCommands}
                                 onChangeListener={this.props.onChangeListener}
                               />
                             </Col>
@@ -343,8 +343,8 @@ class RenderContainers extends Component {
                           <Row className="mb-2">
                             <Col md="10">
                               <FieldArray
-                                name={`${container}.command`}
-                                component={RenderCommands}
+                                name={`${container}.args`}
+                                component={RenderArgs}
                                 onChangeListener={this.props.onChangeListener}
                               />
                             </Col>
