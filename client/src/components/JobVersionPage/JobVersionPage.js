@@ -13,6 +13,7 @@ import Title from '../Title';
 import { JobSubNav } from '../SubNavs';
 import { AccountLink } from '../Links';
 import { Human } from '../DisplayDate';
+import Popover from '../Popover';
 
 class Version extends Component {
 
@@ -54,7 +55,7 @@ class Version extends Component {
                         className="pull-right"
                         color="dark"
                         onClick={() => this.props.apply()}
-                        >Apply</Button>
+                        >Apply this configuration <Popover title="What will this do?" body="It will immediately update kubernetes with this configuration of cronjob. Yes, that means it will be running at the scheduled times." classNames="d-inline" placement='bottom' /></Button>
                     ) : null
                   }
                 </Col>
