@@ -1,4 +1,7 @@
 import { createAction, handleActions, combineActions } from 'redux-actions';
+import {
+  getFormValues as rfGetFormValues,
+} from 'redux-form';
 import computeLoading from './lib/computeLoading';
 
 const actionsPrefix = 'KUBERNAUT/JOB';
@@ -7,6 +10,8 @@ export const fetchJobPageData = createAction(`${actionsPrefix}/FETCH_JOB_PAGE_DA
 export const fetchVersions = createAction(`${actionsPrefix}/FETCH_VERSIONS`);
 export const fetchSnapshot = createAction(`${actionsPrefix}/FETCH_SNAPSHOT`);
 export const fetchVersionsPagination = createAction(`${actionsPrefix}/FETCH_VERSIONS_PAGINATION`);
+
+export const submitDescription = createAction(`${actionsPrefix}/SUBMIT_DESCRIPTION`);
 
 export const FETCH_JOB_REQUEST = createAction(`${actionsPrefix}/FETCH_JOB_REQUEST`);
 export const FETCH_JOB_SUCCESS = createAction(`${actionsPrefix}/FETCH_JOB_SUCCESS`);
@@ -26,9 +31,11 @@ export const execute = createAction(`${actionsPrefix}/EXECUTE`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
 export const setLogOutputError = createAction(`${actionsPrefix}/SET_LOG_OUTPUT_ERROR`);
+export const editDescription = createAction(`${actionsPrefix}/EDIT_DESCRIPTION`);
 
 export const selectJob = (state) => (state.job.job.data);
 export const selectPaginationState = (state) => (state.job.versions.pagination);
+export const getFormValues = (state) => rfGetFormValues('jobPage')(state);
 
 const defaultState = {
   meta: {
@@ -44,6 +51,7 @@ const defaultState = {
   job: {
     data: {
       name: '',
+      description: '',
       registry: {
         name: '',
       },
@@ -69,6 +77,7 @@ const defaultState = {
   logOpen : false,
   canEdit: false,
   canApply: false,
+  editDescriptionOpen: false,
 };
 
 export default handleActions({
@@ -93,6 +102,10 @@ export default handleActions({
       ...state.job,
       data: payload.data,
     },
+    initialValues: {
+      description: payload.data.description,
+    },
+    editDescriptionOpen: false,
   }),
   [FETCH_JOB_ERROR]: (state, { payload }) => ({
     ...state,
@@ -178,5 +191,9 @@ export default handleActions({
   [closeModal]: (state) => ({
     ...state,
     logOpen: false,
+  }),
+  [editDescription]: (state) => ({
+    ...state,
+    editDescriptionOpen: true,
   }),
 }, defaultState);

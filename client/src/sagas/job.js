@@ -31,6 +31,8 @@ import {
   execute,
   setLogOutput,
   setLogOutputError,
+  submitDescription,
+  getFormValues,
 } from '../modules/job';
 import {
   getJob,
@@ -38,6 +40,7 @@ import {
   hasPermissionOn,
   getJobSnapshot,
   executeJob,
+  saveJobDescription,
 } from '../lib/api';
 
 export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
@@ -123,7 +126,6 @@ export function* fetchSnapshotSaga({ payload = {} }) {
   }
 }
 
-
 export function* executeSaga() {
   try {
     const job = yield select(selectJob);
@@ -135,6 +137,18 @@ export function* executeSaga() {
   }
 }
 
+export function* descriptionSaga() {
+  try {
+    const job = yield select(selectJob);
+    const values = yield select(getFormValues);
+
+    const updatedJob = yield call(saveJobDescription, job, values.description);
+    yield put(FETCH_JOB_SUCCESS({ data: updatedJob }));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(fetchJobPageData, fetchJobInfoSaga),
   takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
@@ -143,4 +157,5 @@ export default [
   takeLatest(fetchSnapshot, fetchSnapshotSaga),
   takeLatest(fetchVersionsPagination, paginationSaga),
   takeLatest(execute, executeSaga),
+  takeLatest(submitDescription, descriptionSaga),
 ];

@@ -295,6 +295,25 @@ export default function() {
       }
     });
 
+    app.post('/api/jobs/:id/description', bodyParser.json(), async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-write')) return next(Boom.forbidden());
+
+        const { description = '' } = req.body || {};
+        const meta = { date: new Date(), account: req.user };
+
+        const updatedJob = await store.updateJobDescription(job, description);
+        await store.audit(meta, 'updated job description', { job });
+
+        return res.json(updatedJob);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/jobs/:id/version', bodyParser.json(), async (req, res, next) => {
       try {
         const { id } = req.params;

@@ -1,8 +1,13 @@
 import { connect } from 'react-redux';
 import {
+  reduxForm,
+} from 'redux-form';
+import {
   fetchVersionsPagination,
   execute,
   closeModal,
+  submitDescription,
+  editDescription,
 } from '../../modules/job';
 import JobPage from './JobPage';
 
@@ -16,8 +21,16 @@ export default connect((state) => ({
   logOpen: state.job.logOpen,
   applyLog: state.job.applyLog,
   applyError: state.job.applyError,
-}),{
+  initialValues: state.job.initialValues,
+  editDescriptionOpen: state.job.editDescriptionOpen,
+}), {
   fetchVersionsPagination,
   execute,
   closeModal,
-})(JobPage);
+  submitDescription,
+  editDescription,
+})(reduxForm({
+  form: 'jobPage',
+  enableReinitialize: true,
+  destroyOnUnmount: false,
+})(JobPage));

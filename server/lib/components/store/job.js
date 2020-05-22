@@ -25,7 +25,7 @@ export default function() {
 
     async function _getJob(connection, id) {
       const builder = sqb
-        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
+        .select('j.id', 'j.name', 'j.description', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
@@ -87,7 +87,7 @@ export default function() {
       const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findJobsBuilder = sqb
-        .select('j.id', 'j.name', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
+        .select('j.id', 'j.name', 'j.description', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
@@ -316,10 +316,25 @@ export default function() {
       });
     }
 
+    function updateJobDescription(job, description) {
+      return db.withTransaction(async connection => {
+        const updateBuilder = sqb
+          .update('job', {
+            description,
+          })
+          .where(Op.eq('id', job.id));
+
+        await connection.query(db.serialize(updateBuilder, {}).sql);
+
+        return _getJob(connection, job.id);
+      });
+    }
+
     function toJob(row) {
       return new Job({
         id: row.id,
         name: row.name,
+        description: row.description,
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by,
@@ -369,6 +384,7 @@ export default function() {
       saveJobVersionOfSecret,
       getJobVersionSecretWithData,
       getLastAppliedVersion,
+      updateJobDescription,
     });
   }
 

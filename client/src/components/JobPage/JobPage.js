@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Field } from 'redux-form';
 import PropTypes from 'prop-types';
 import {
   Row,
@@ -12,6 +13,7 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  FormGroup
 } from 'reactstrap';
 import Title from '../Title';
 import { JobVersionLink, NewJobVersionLink } from '../Links';
@@ -19,6 +21,7 @@ import { JobSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 import { Ago } from '../DisplayDate';
 import Popover from '../Popover';
+import RenderInput from '../RenderInput';
 
 class LogsContainer extends Component {
   componentDidMount() {
@@ -55,7 +58,7 @@ class JobPage extends Component {
 
   render() {
     const job = this.props.job.data;
-    const { versions, snapshot, meta, canEdit, canApply } = this.props;
+    const { versions, snapshot, meta, canEdit, canApply, editDescription, editDescriptionOpen, submitDescription } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -70,8 +73,37 @@ class JobPage extends Component {
         <Col>
           <Title title={`CronJob: ${job.name}`}/>
           <JobSubNav job={job} />
+
           <Row>
             <Col md="8">
+              { editDescriptionOpen ? (
+                <FormGroup row>
+                  <Col md="9">
+                    <Field
+                      className="form-control"
+                      name="description"
+                      component={RenderInput}
+                      type="text"
+                      autoComplete="off"
+                    />
+                  </Col>
+                  <Col>
+                    <Button className="pull-right" outline onClick={() => submitDescription()}>Save</Button>
+                  </Col>
+                </FormGroup>
+              ) : ( job.description ? (
+                  <div>
+                    <span>{job.description} <i className="fa fa-edit clickable" onClick={() => editDescription()}></i></span>
+                    <hr />
+                  </div>
+                ) : (
+                  <div>
+                    <span>why not <a href="" onClick={(e) => {e.preventDefault(); editDescription();}}>add</a> a description</span>
+                    <hr />
+                  </div>
+                )
+              )}
+
               {
                 snapshot ? (
                   <Card>

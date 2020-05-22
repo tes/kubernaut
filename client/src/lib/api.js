@@ -639,6 +639,16 @@ export const saveJob = (name, namespace, registry) => {
   });
 };
 
+export const saveJobDescription = (job, description) => {
+  return makeRequest(`/api/jobs/${job.id}/description`, {
+    method: 'POST',
+    body: JSON.stringify({
+      description,
+    }),
+  });
+};
+
+
 export const saveJobVersion = (job, data) => {
   return makeRequest(`/api/jobs/${job.id}/version`, {
     method: 'POST',
