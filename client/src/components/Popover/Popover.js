@@ -19,8 +19,9 @@ export default class Example extends React.Component {
   }
 
   render() {
+    const iconClass = this.props.iconClass || 'question-circle';
     const icon = <i
-      className={`fa fa-question-circle`}
+      className={`fa fa-${iconClass}`}
       aria-hidden='true'
       ref={this.targetRef}
     ></i>;

@@ -4,6 +4,7 @@ import { Table } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import { JobLink, NamespaceLink } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
+import Popover from '../Popover';
 
 class JobsTable extends Component {
 
@@ -48,7 +49,7 @@ class JobsTable extends Component {
         jobs.items.map(job => {
           return <tr key={job.id} >
             <td className="cellFilterActionsParent">
-              <JobLink job={job} />
+              <JobLink job={job} /> { job.description ? <Popover title="Description" body={job.description} iconClass="info-circle" classNames="d-inline" /> : null}
               <QuickFilters value={job.name} column='name' />
             </td>
             <td className="cellFilterActionsParent">
