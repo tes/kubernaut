@@ -99,6 +99,7 @@
     "prepper": "^1.1.0",
     "ramda": "^0.24.1",
     "safe-json-parse": "^4.0.0",
+    "short-hash": "^1.0.0",
     "sqb": "^3.9.2",
     "sqb-serializer-pg": "^3.1.1",
     "systemic": "^3.0.0",

@@ -11,11 +11,11 @@ import {
   makeJob,
 } from '../factories';
 
-const sampleYaml = `
+const sampleYaml = ({ jobId }) => `
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: a-cronjob
+  name: a-cronjob-af7b41de
 spec:
   schedule: 0 * * * *
   concurrencyPolicy: Replace
@@ -25,7 +25,8 @@ spec:
         metadata:
           labels:
             some/label/bool: 'true'
-            cronjobName: a-cronjob
+            cronjobName: a-cronjob-af7b41de
+            cronjobUuid: ${jobId}
         spec:
           initContainers:
             - name: init
@@ -50,11 +51,11 @@ spec:
                   name: empty
               envFrom:
                 - secretRef:
-                    name: cronjob-a-cronjob
+                    name: cronjob-a-cronjob-af7b41de
           volumes:
             - name: job-secret
               secret:
-                secretName: cronjob-a-cronjob
+                secretName: cronjob-a-cronjob-af7b41de
             - name: empty
               emptyDir: {}
           restartPolicy: OnFailure
@@ -277,7 +278,7 @@ describe('Jobs API', () => {
       const registry = await saveRegistry();
       const namespace = await saveNamespace();
       const jobId = await store.saveJob('a-cronjob', registry, namespace, makeRootMeta());
-      const versionId = await store.saveJobVersion({ id: jobId }, { yaml: sampleYaml }, makeRootMeta());
+      const versionId = await store.saveJobVersion({ id: jobId }, { yaml: sampleYaml({ jobId }) }, makeRootMeta());
       const toInsert = {
         secrets: [
           {
@@ -301,13 +302,14 @@ describe('Jobs API', () => {
 
       expect(response.id).toBe(versionId);
       expect(response.job.id).toBe(jobId);
-      expect(response.yaml).toBe(sampleYaml);
+      expect(response.yaml).toBe(sampleYaml({ jobId }));
       expect(response.values).toBeDefined();
       expect(response.values).toMatchObject({
         schedule: '0 * * * *',
         labels: [
           { key: 'some/label/bool', value: 'true' },
-          { key: 'cronjobName', value: 'a-cronjob' }
+          { key: 'cronjobName', value: 'a-cronjob-af7b41de' },
+          { key: 'cronjobUuid', value: response.job.id }
         ],
         concurrencyPolicy: 'Replace',
         initContainers: [
@@ -324,7 +326,7 @@ describe('Jobs API', () => {
             image: 'busybox',
             command: ['some', 'other', 'command'],
             volumeMounts: [{ mountPath: '/cache', name: 'empty' }],
-            envFrom: [{ secretRef: { name: 'cronjob-a-cronjob' } }],
+            envFrom: [{ secretRef: { name: 'cronjob-a-cronjob-af7b41de' } }],
             envFromSecret: true
           }
         ],
@@ -408,7 +410,7 @@ describe('Jobs API', () => {
       expect(response).toBeDefined();
       expect(response.id).toBeDefined();
       const version = await store.getJobVersion(response.id);
-      expect(version.yaml.trim()).toBe(sampleYaml.trim());
+      expect(version.yaml.trim()).toBe(sampleYaml({ jobId }).trim());
     });
   });
 

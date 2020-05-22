@@ -3,9 +3,12 @@ import Boom from 'boom';
 import { safeLoad, safeDump } from 'js-yaml';
 import { get as _get, reduce as _reduce } from 'lodash';
 import EventEmitter from 'events';
+import shortHash from 'short-hash';
 import parseFilters from './lib/parseFilters';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
+const shortNameGenerator = (jobName = '') => `${jobName.substring(0, 10)}-${shortHash(jobName)}`;
 
 function valuesFromYaml(parsed) {
   const { spec } = parsed || {};
@@ -64,7 +67,7 @@ function buildSpec (values, job) {
 
     if (c.envFromSecret) toReturn.envFrom = [{
       secretRef: {
-        name: `cronjob-${job.name}`,
+        name: `cronjob-${shortNameGenerator(job.name)}`,
       }
     }];
 
@@ -84,7 +87,7 @@ function buildSpec (values, job) {
       };
     } else if (v.type === 'secret') {
       toReturn.secret = {
-        secretName: `cronjob-${job.name}`,
+        secretName: `cronjob-${shortNameGenerator(job.name)}`,
       };
     }
 
@@ -97,7 +100,8 @@ function buildSpec (values, job) {
         acc[label.key] = label.value || '';
         return acc;
       }, {}),
-      cronjobName: job.name,
+      cronjobName: shortNameGenerator(job.name),
+      cronjobUuid: job.id,
     };
   }
 
@@ -105,7 +109,7 @@ function buildSpec (values, job) {
     apiVersion: 'batch/v1beta1',
     kind: 'CronJob',
     metadata: {
-      name: job.name,
+      name: shortNameGenerator(job.name),
     },
     spec: {
       schedule: values.schedule || '',
@@ -138,7 +142,7 @@ function buildJobSpecFromCronJob (cronJob) {
     kind: 'Job',
     metadata: {
       ...spec.template.metadata,
-      name: `manual-exec-${name}-${(new Date()).getTime()}`
+      name: `${name}-${(new Date()).getTime()}`
     },
     spec: {
       ...spec,
@@ -152,7 +156,7 @@ function generateJobSecretYaml(jobVersion, secretData) {
     apiVersion: 'v1',
     kind: 'Secret',
     metadata: {
-      name: `cronjob-${jobVersion.job.name}`,
+      name: `cronjob-${shortNameGenerator(jobVersion.job.name)}`,
     },
     type: 'Opaque',
     data: secretData.reduce((acc, secret) => {
@@ -242,7 +246,7 @@ export default function() {
 
         const namespace = await store.getNamespace(job.namespace.id);
 
-        const output = await kubernetes.getLastLogsForCronjob(namespace.cluster.config, namespace.context, namespace.name, job.name, logger);
+        const output = await kubernetes.getLastLogsForCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
 
         return res.json(output);
       } catch (err) {
@@ -326,7 +330,7 @@ export default function() {
         if (! await store.hasPermission(req.user, 'jobs-read')) return next(Boom.forbidden());
         const values = req.body || {};
 
-        const spec = buildSpec(values, { name: 'preview' });
+        const spec = buildSpec(values, { id: 'preview-uuid', name: 'preview' });
         const yaml = safeDump(spec, { lineWidth: 120 });
 
         return res.json({ yaml });
