@@ -60,7 +60,7 @@ class Version extends Component {
                   }
                 </Col>
               </Row>
-              <Row>
+              <Row className="mt-3">
                 <Col>
                   <span>Created by: <AccountLink account={jobVersion.createdBy} /></span>
                 </Col>

@@ -144,9 +144,9 @@ class JobPage extends Component {
                 }
                 </Col>
               </Row>
-              <Row>
+              <Row className="mt-3">
                 <Col>
-                  <h5>Versions:</h5>
+                  <h5>Configuration versions:</h5>
                 </Col>
               </Row>
               <Row>
@@ -155,7 +155,7 @@ class JobPage extends Component {
                     <thead>
                       <tr>
                         <th>Created</th>
-                        <th></th>
+                        <th className="text-center">Applied</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -163,7 +163,7 @@ class JobPage extends Component {
                       versions.data.items.map(version => (
                         <tr key={version.id}>
                           <td><JobVersionLink version={version} /></td>
-                          <td>
+                          <td className="text-center">
                             {
                               version.isLatestApplied ? (
                                 <i className="fa fa-circle" aria-hidden='true'></i>
