@@ -40,8 +40,9 @@ class JobsPage extends Component {
       clearSearch,
       showFilters,
       hideFilters,
+      error,
     } = this.props;
-
+console.info(error);
     return (
       <Row className='page-frame'>
         <Col>
@@ -131,6 +132,15 @@ class JobsPage extends Component {
                           />
                       </Col>
                     </FormGroup>
+                    {
+                      error ? (
+                        <Row>
+                          <Col>
+                            <span className="text-danger">{error}</span>
+                          </Col>
+                        </Row>
+                      ) : null
+                    }
                     <FormGroup row>
                       <Col>
                         <Button
