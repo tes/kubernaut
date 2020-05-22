@@ -42,7 +42,7 @@ class JobsPage extends Component {
       hideFilters,
       error,
     } = this.props;
-console.info(error);
+
     return (
       <Row className='page-frame'>
         <Col>

@@ -53,7 +53,12 @@ class ServicesSubNav extends Component {
               : null }
             { deploy ?
               <NavItem>
-                <CreateDeploymentLink container registry={{ name: registryName }} service={{ name: serviceName }}>
+                <CreateDeploymentLink
+                  container
+                  registry={{ name: registryName }}
+                  service={{ name: serviceName }}
+                  version={release}
+                >
                   <NavLink><i className="fa fa-cloud-upload" aria-hidden='true'></i> Deploy {release}</NavLink>
                 </CreateDeploymentLink>
               </NavItem>

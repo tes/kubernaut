@@ -70,7 +70,14 @@ class DeployPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Deploy ${this.props.registryName}/${this.props.serviceName}`} />
-          <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} team={this.props.team} deploy release={this.props.version} />
+          <ServicesSubNav
+            registryName={this.props.registryName}
+            serviceName={this.props.serviceName}
+            canManage={this.props.canManage}
+            team={this.props.team}
+            deploy
+            release={this.props.version}
+          />
 
           <Row className="justify-content-between">
             <Col md="5">
