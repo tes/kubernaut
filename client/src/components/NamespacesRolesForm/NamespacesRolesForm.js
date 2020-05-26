@@ -30,7 +30,7 @@ const help = {
   },
   developer: {
     title: 'Namespace \'developer\' role',
-    body: 'Grants the ability to deploy to a namespace.',
+    body: 'Grants the ability to deploy a service or apply a cronjob to a namespace.',
   },
   observer: {
     title: 'Namespace \'observer\' role',

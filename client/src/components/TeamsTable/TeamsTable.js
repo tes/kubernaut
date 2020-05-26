@@ -23,8 +23,8 @@ class TeamsTable extends Component {
         teams.items.map(team => {
           return <tr key={team.id} >
             <td><TeamLink team={team} /></td>
-            <td><span>{team.servicesCount}</span></td>
-            <td><span>{team.accountsCount}</span></td>
+            <td className="text-center"><span>{team.servicesCount}</span></td>
+            <td className="text-center"><span>{team.accountsCount}</span></td>
           </tr>;
         })
       }
@@ -37,8 +37,8 @@ class TeamsTable extends Component {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Services</th>
-              <th>Members</th>
+              <th className="text-center">Services</th>
+              <th className="text-center">Members</th>
             </tr>
           </thead>
           {

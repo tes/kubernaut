@@ -29,7 +29,7 @@ const help = {
   },
   developer: {
     title: 'Registry \'developer\' role',
-    body: 'Grants the ability to create releases/services against a registry.',
+    body: 'Grants the ability to create releases/services & cronjobs against a registry.',
   },
   observer: {
     title: 'Registry \'observer\' role',
