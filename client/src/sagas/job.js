@@ -33,6 +33,9 @@ import {
   setLogOutputError,
   submitDescription,
   getFormValues,
+  deleteJob,
+  stopJob,
+  closeModal,
 } from '../modules/job';
 import {
   getJob,
@@ -41,6 +44,8 @@ import {
   getJobSnapshot,
   executeJob,
   saveJobDescription,
+  deleteJob as deleteJobApi,
+  stopJob as stopJobApi,
 } from '../lib/api';
 
 export function* fetchJobInfoSaga({ payload: { id, ...options } }) {
@@ -149,6 +154,29 @@ export function* descriptionSaga() {
   }
 }
 
+export function* deleteJobSaga() {
+  try {
+    const job = yield select(selectJob);
+
+    yield call(deleteJobApi, job);
+    yield put(push('/cronjobs'));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* stopJobSaga() {
+  try {
+    const job = yield select(selectJob);
+
+    const updatedJob = yield call(stopJobApi, job);
+    yield put(FETCH_JOB_SUCCESS({ data: updatedJob }));
+    yield put(closeModal());
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(fetchJobPageData, fetchJobInfoSaga),
   takeLatest(FETCH_JOB_SUCCESS, checkPermissionSaga),
@@ -158,4 +186,6 @@ export default [
   takeLatest(fetchVersionsPagination, paginationSaga),
   takeLatest(execute, executeSaga),
   takeLatest(submitDescription, descriptionSaga),
+  takeLatest(deleteJob, deleteJobSaga),
+  takeLatest(stopJob, stopJobSaga),
 ];

@@ -13,7 +13,11 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
-  FormGroup
+  FormGroup,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from 'reactstrap';
 import Title from '../Title';
 import { JobVersionLink, NewJobVersionLink } from '../Links';
@@ -58,7 +62,21 @@ class JobPage extends Component {
 
   render() {
     const job = this.props.job.data;
-    const { versions, snapshot, meta, canEdit, canApply, editDescription, editDescriptionOpen, submitDescription } = this.props;
+    const {
+      versions,
+      snapshot,
+      meta,
+      canEdit,
+      canApply,
+      editDescription,
+      editDescriptionOpen,
+      submitDescription,
+    } = this.props;
+
+    const showPause = canApply;
+    const showDelete = canEdit && canApply;
+    const showRunNow = versions.data.count && canApply;
+    const showMenu = showPause || showDelete || showRunNow;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -165,15 +183,38 @@ class JobPage extends Component {
                     ): null
                   }
                   {
-                    versions.data.count && canApply ? (
-                      <Button
-                        className="pull-right"
-                        color="dark"
-                        outline
-                        onClick={() => this.props.execute()}
-                      >Run now <Popover title="What will this do?" body="It will immediately create a job based on the most recently applied configuration. In the event there isn't one, it will choose the latest available configuration." classNames="d-inline" placement='bottom' /></Button>
-                  ) : null
-                }
+                    showMenu ? (
+                      <UncontrolledDropdown>
+                        <DropdownToggle caret outline color="dark">
+                          <i className="fa fa-cog"></i>
+                        </DropdownToggle>
+                        <DropdownMenu right>
+                          {
+                            showRunNow ? (
+                              <DropdownItem onClick={() => this.props.execute()}>
+                                Run now <Popover title="What will this do?" body="It will immediately create a job based on the most recently applied configuration. In the event there isn't one, it will choose the latest available configuration." classNames="d-inline" placement='bottom' />
+                              </DropdownItem>
+                            ) : null
+                          }
+                          {
+                            showPause ? (
+                              <DropdownItem onClick={() => this.props.openStopModal()}>
+                                <i className="fa fa-pause"></i> Pause/remove from cluster
+                              </DropdownItem>
+                            ) : null
+                          }
+                          <DropdownItem divider />
+                          {
+                            showDelete ? (
+                              <DropdownItem className="text-danger" onClick={() => this.props.openDeleteModal()}>
+                                <i className="fa fa-trash"></i> Delete
+                              </DropdownItem>
+                            ) : null
+                          }
+                        </DropdownMenu>
+                      </UncontrolledDropdown>
+                    ) : null
+                  }
                 </Col>
               </Row>
               <Row className="mt-3">
@@ -198,7 +239,7 @@ class JobPage extends Component {
                           <td className="text-center">
                             {
                               version.isLatestApplied ? (
-                                <i className="fa fa-circle" aria-hidden='true'></i>
+                                <i className={`fa fa-${job.paused ? 'pause-circle' : 'circle'}`} aria-hidden='true'></i>
                               ) : version.lastApplied ? (
                                 <i className="fa fa-circle-o" aria-hidden='true'></i>
                               ) : null
@@ -241,6 +282,45 @@ class JobPage extends Component {
             {this.props.applyError ? (
               <span>{this.props.applyError}</span>
             ): null}
+          </ModalBody>
+        </Modal>
+        <Modal
+          isOpen={this.props.deleteModalOpen}
+          toggle={this.props.closeModal}
+          size="lg"
+        >
+          <ModalHeader>
+            <span>Delete job:</span>
+          </ModalHeader>
+          <ModalBody>
+            <Row>
+              <Col className="d-flex justify-content-between">
+                <p>Are you sure?</p>
+                <Button onClick={() => this.props.deleteJob()} color="danger" outline>Delete</Button>
+              </Col>
+            </Row>
+          </ModalBody>
+        </Modal>
+        <Modal
+          isOpen={this.props.stopModalOpen}
+          toggle={this.props.closeModal}
+          size="lg"
+        >
+          <ModalHeader>
+            <span>Stop/pause further job execution:</span>
+          </ModalHeader>
+          <ModalBody>
+            <Row>
+              <Col>
+                <p>This will remove the cronjob definition from the cluster therefore preventing further scheduled executions. Are you sure?</p>
+                <Button
+                  className="pull-right"
+                  onClick={() => this.props.stopJob()}
+                  color="danger"
+                  outline
+                >Pause/Remove</Button>
+              </Col>
+            </Row>
           </ModalBody>
         </Modal>
       </Row>

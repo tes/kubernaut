@@ -236,6 +236,22 @@ export default function(options = {}) {
       }
     }
 
+    async function removeCronjob(config, context, namespace, cronjobName, logger) {
+      const clients = createClients(config, context);
+      try {
+        logger.debug(`Checking for any cronjobs with relevant label ${cronjobName} in namespace ${namespace} given context ${context}) actually exists.`);
+
+        const cronJobsResult = (await clients.k8sBatchV1Beta1Api.listNamespacedCronJob(namespace, undefined, undefined, undefined, `metadata.name=${cronjobName}`)).body;
+
+        if (cronJobsResult.items.length === 0) return;
+
+        await clients.k8sBatchV1Beta1Api.deleteNamespacedCronJob(cronjobName, namespace);
+      } catch (e) {
+        logger.error(e);
+        throw e;
+      }
+    }
+
     async function getLastLogsForCronjob(config, context, namespace, cronjobName, logger) {
       const clients = createClients(config, context);
 
@@ -400,6 +416,7 @@ export default function(options = {}) {
       getLastLogsForCronjob,
       createClients,
       deploymentRestartsInANamespace,
+      removeCronjob,
     });
   }
 

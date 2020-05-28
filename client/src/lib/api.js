@@ -441,6 +441,12 @@ export const deleteAccount = (accountId) => {
   });
 };
 
+export const deleteJob = (job) => {
+  return makeRequest(`/api/jobs/${job.id}`, {
+    method: 'DELETE'
+  });
+};
+
 export const deleteService = (registry, service) => {
   return makeRequest(`/api/services/${registry}/${service}`, {
     method: 'DELETE'
@@ -682,6 +688,10 @@ export const setServiceAttributesForNamespace = (registry, service, namespaceId,
 export const setTeamAttributes = (teamId, data) => makeRequest(`/api/teams/${teamId}/attributes`, {
   method: 'POST',
   body: JSON.stringify(data),
+});
+
+export const stopJob = (job) => makeRequest(`/api/jobs/${job.id}/stop`, {
+  method: 'POST',
 });
 
 export const updateDeploymentNote = (deploymentId, note) => {

@@ -1,6 +1,6 @@
 export default class Job {
 
-  constructor({ id, createdOn, createdBy, name, namespace, registry, description }) {
+  constructor({ id, createdOn, createdBy, name, namespace, registry, description, paused }) {
     this.id = id;
     this.name = name;
     this.createdOn = createdOn;
@@ -8,6 +8,7 @@ export default class Job {
     this.namespace = namespace;
     this.registry = registry;
     this.description = description;
+    this.paused = paused || false;
   }
 
 }

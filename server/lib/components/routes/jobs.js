@@ -238,6 +238,45 @@ export default function() {
       }
     });
 
+    app.delete('/api/jobs/:id', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-write')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
+
+        const namespace = await store.getNamespace(job.namespace.id);
+        await kubernetes.removeCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
+        const meta = { date: new Date(), account: req.user };
+        await store.deleteJob(job, meta);
+        await store.audit(meta, 'deleted job', { job });
+        return res.status(204).send();
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/jobs/:id/stop', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const job = await store.getJob(id);
+        if (!job) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, job.registry.id, 'jobs-read')) return next(Boom.forbidden());
+        if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
+
+        const namespace = await store.getNamespace(job.namespace.id);
+        await kubernetes.removeCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
+        const meta = { date: new Date(), account: req.user };
+
+        const updatedJob = await store.pauseJob(job);
+        await store.audit(meta, 'removed job from kubernetes', { job });
+        return res.json(updatedJob);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/jobs/:id/snapshot', async (req, res, next) => {
       try {
         const { id } = req.params;

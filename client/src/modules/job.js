@@ -32,6 +32,10 @@ export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setLogOutput = createAction(`${actionsPrefix}/SET_LOG_OUTPUT`);
 export const setLogOutputError = createAction(`${actionsPrefix}/SET_LOG_OUTPUT_ERROR`);
 export const editDescription = createAction(`${actionsPrefix}/EDIT_DESCRIPTION`);
+export const openDeleteModal = createAction(`${actionsPrefix}/OPEN_DELETE_MODAL`);
+export const deleteJob = createAction(`${actionsPrefix}/DELETE_JOB`);
+export const openStopModal = createAction(`${actionsPrefix}/OPEN_STOP_MODAL`);
+export const stopJob = createAction(`${actionsPrefix}/STOP_JOB`);
 
 export const selectJob = (state) => (state.job.job.data);
 export const selectPaginationState = (state) => (state.job.versions.pagination);
@@ -78,6 +82,8 @@ const defaultState = {
   canEdit: false,
   canApply: false,
   editDescriptionOpen: false,
+  deleteModalOpen: false,
+  stopModalOpen: false,
 };
 
 export default handleActions({
@@ -191,9 +197,19 @@ export default handleActions({
   [closeModal]: (state) => ({
     ...state,
     logOpen: false,
+    deleteModalOpen: false,
+    stopModalOpen: false,
   }),
   [editDescription]: (state) => ({
     ...state,
     editDescriptionOpen: true,
+  }),
+  [openDeleteModal]: (state) => ({
+    ...state,
+    deleteModalOpen: true,
+  }),
+  [openStopModal]: (state) => ({
+    ...state,
+    stopModalOpen: true,
   }),
 }, defaultState);

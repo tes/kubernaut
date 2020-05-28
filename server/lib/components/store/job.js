@@ -25,7 +25,7 @@ export default function() {
 
     async function _getJob(connection, id) {
       const builder = sqb
-        .select('j.id', 'j.name', 'j.description', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
+        .select('j.id', 'j.name', 'j.description', 'j.paused', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
@@ -54,6 +54,7 @@ export default function() {
       if (!versionResult.rowCount) return undefined;
 
       const job = await _getJob(connection, versionResult.rows[0].job);
+      if (!job) return undefined;
 
       const latestAppliedBuilder = sqb
       .select('jv.id')
@@ -87,7 +88,7 @@ export default function() {
       const sortOrder = (order === 'asc' ? 'asc' : 'desc');
 
       const findJobsBuilder = sqb
-        .select('j.id', 'j.name', 'j.description', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
+        .select('j.id', 'j.name', 'j.description', 'j.paused', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
           innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
@@ -258,7 +259,14 @@ export default function() {
         })
         .where(Op.eq('id', jobVersion.id));
 
+      const unPauseBuilder = sqb
+        .update('job', {
+          paused: false,
+        })
+        .where(Op.eq('id', jobVersion.job.id));
+
       await db.query(db.serialize(builder, {}).sql);
+      await db.query(db.serialize(unPauseBuilder, {}).sql);
       logger.debug(`Updated job version last applied for id ${jobVersion.id}`);
     }
 
@@ -330,11 +338,42 @@ export default function() {
       });
     }
 
+    function pauseJob(job) {
+      return db.withTransaction(async connection => {
+        const updateBuilder = sqb
+          .update('job', {
+            paused: true
+          })
+          .where(Op.eq('id', job.id));
+
+        await connection.query(db.serialize(updateBuilder, {}).sql);
+
+        return _getJob(connection, job.id);
+      });
+    }
+
+    async function deleteJob(job, meta) {
+      logger.debug(`Deleting job id: ${job.id}`);
+
+      const builder = sqb
+        .update('job', {
+          deleted_on: meta.date,
+          deleted_by: meta.account.id,
+        })
+        .where(Op.eq('id', job.id))
+        .where(Op.is('deleted_on', null));
+
+      await db.query(db.serialize(builder, {}).sql);
+
+      logger.debug(`Deleted job, id: ${job.id}`);
+    }
+
     function toJob(row) {
       return new Job({
         id: row.id,
         name: row.name,
         description: row.description,
+        paused: row.paused,
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by,
@@ -385,6 +424,8 @@ export default function() {
       getJobVersionSecretWithData,
       getLastAppliedVersion,
       updateJobDescription,
+      deleteJob,
+      pauseJob,
     });
   }
 
