@@ -128,8 +128,8 @@ describe('Job store', () => {
         date: new Date(applyMeta.date.getTime() + 10000),
       };
 
-      await store.setJobVersionLastApplied({ id: v1 }, applyMeta);
-      await store.setJobVersionLastApplied({ id: v2 }, laterApplyMeta);
+      await store.setJobVersionLastApplied(await store.getJobVersion(v1), applyMeta);
+      await store.setJobVersionLastApplied(await store.getJobVersion(v2), laterApplyMeta);
 
       const results = await store.findJobVersions(job);
       expect(results).toBeDefined();
