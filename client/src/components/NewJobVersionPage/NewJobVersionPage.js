@@ -324,16 +324,24 @@ class RenderContainers extends Component {
                                 </Col>
                               </FormGroup>
                               <FormGroup row>
-                                <Label sm="3" className="text-right" for={`${container}.envFromSecret`}>envFrom (use secret): <Popover {...help.envFrom} classNames="d-inline" /></Label>
+                                <Col sm="2"></Col>
                                 <Col sm="6">
-                                  <Field
-                                    className="form-control"
-                                    name={`${container}.envFromSecret`}
-                                    component={RenderInput}
-                                    type="checkbox"
-                                    autoComplete="off"
-                                    onChangeListener={this.props.onChangeListener}
-                                  />
+                                  <FormGroup check>
+                                    <Label
+                                      check
+                                      for={`${container}.envFromSecret`}
+                                    >
+                                    <Field
+                                      className="form-check-input"
+                                      name={`${container}.envFromSecret`}
+                                      component={RenderInput}
+                                      type="checkbox"
+                                      autoComplete="off"
+                                      onChangeListener={this.props.onChangeListener}
+                                    />
+                                    envFrom (use secret) <Popover {...help.envFrom} classNames="d-inline" />
+                                    </Label>
+                                  </FormGroup>
                                 </Col>
                               </FormGroup>
                             </Col>
