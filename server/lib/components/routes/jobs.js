@@ -20,7 +20,20 @@ function valuesFromYaml(parsed) {
       return acc.concat({ key, value });
     }, []),
     concurrencyPolicy: _get(spec, 'concurrencyPolicy', 'Allow'),
-    initContainers: _get(spec, 'jobTemplate.spec.template.spec.initContainers', []),
+    initContainers: _get(spec, 'jobTemplate.spec.template.spec.initContainers', []).map(c => {
+      const toReturn = {
+        ...c,
+        resources: {
+          collapsed: true,
+          ...c.resources,
+        },
+      };
+      if (_get(c, 'envFrom')) {
+        toReturn.envFromSecret = c.envFrom.filter((ef) => ef.secretRef).length > 0;
+      }
+
+      return toReturn;
+    }),
     containers: _get(spec, 'jobTemplate.spec.template.spec.containers', []).map(c => {
       const toReturn = {
         ...c,
