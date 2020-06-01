@@ -29,6 +29,7 @@ const mapStateToProps = (state, props) => {
 
   return {
     initialValues: newJobVersion.initialValues,
+    initialContainerValues: newJobVersion.initialContainerValues,
     currentFormValues,
     currentFormSyncErrors,
     collapsed: newJobVersion.collapsed,

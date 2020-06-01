@@ -24,6 +24,10 @@ function valuesFromYaml(parsed) {
     containers: _get(spec, 'jobTemplate.spec.template.spec.containers', []).map(c => {
       const toReturn = {
         ...c,
+        resources: {
+          collapsed: true,
+          ...c.resources,
+        },
       };
       if (_get(c, 'envFrom')) {
         toReturn.envFromSecret = c.envFrom.filter((ef) => ef.secretRef).length > 0;
@@ -70,6 +74,17 @@ function buildSpec (values, job) {
         name: `cronjob-${shortNameGenerator(job.name)}`,
       }
     }];
+
+    toReturn.resources = {
+      requests: {
+        cpu: _get(c, 'resources.requests.cpu') || '50m',
+        memory: _get(c, 'resources.requests.memory') || '128M'
+      },
+      limits: {
+        cpu: _get(c, 'resources.limits.cpu') || '1000m',
+        memory: _get(c, 'resources.limits.memory') || '1024M'
+      },
+    };
 
     return toReturn;
   }

@@ -39,6 +39,13 @@ spec:
                   name: empty
                 - mountPath: /secret
                   name: job-secret
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128M
+                limits:
+                  cpu: 1000m
+                  memory: 1024M
           containers:
             - name: main
               image: busybox
@@ -52,6 +59,13 @@ spec:
               envFrom:
                 - secretRef:
                     name: cronjob-a-cronjob-af7b41de
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128M
+                limits:
+                  cpu: 1000m
+                  memory: 1024M
           volumes:
             - name: job-secret
               secret:

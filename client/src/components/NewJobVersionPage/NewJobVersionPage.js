@@ -42,6 +42,15 @@ const help = {
   volumeType: {
     body: 'Defines the source of the volume. `configMap` will require an existing configMap. Secret will use this job\'s secret definition. `emptyDir` will provide an unpopulated scratch space, perhaps for use between containers.',
   },
+  resources: {
+    body: 'These are constraints applied to the container. When you specify a resource limit for a Container, the kubelet enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. The kubelet also reserves at least the request amount of that system resource specifically for that container to use.',
+  },
+  resources_cpu: {
+    body: 'Format of "100m". Think of it like milliseconds of cpu time, where 1000 would therefore mean utilising an entire cpu core.'
+  },
+  resources_memory: {
+    body: 'Measured in bytes, you can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K.'
+  },
 };
 
 class RenderArgs extends Component {
@@ -332,6 +341,85 @@ class RenderContainers extends Component {
 
                           <Row className="mb-2">
                             <Col md="10">
+                              <Card>
+                                <CardHeader>
+                                  <span>Resources: <Popover {...help.resources} classNames="d-inline" /></span>
+                                  <Button
+                                    close
+                                    onClick={() => this.props.rfChange(`${container}.resources.collapsed`, !this.props.fields.get(index).resources.collapsed)}
+                                    >
+                                    <i
+                                      className={`fa fa-${this.props.fields.get(index).resources.collapsed ? 'plus' : 'minus'}`}
+                                      aria-hidden='true'
+                                      ></i>
+                                  </Button>
+                                </CardHeader>
+                                <Collapse isOpen={!this.props.fields.get(index).resources.collapsed}>
+                                  <CardBody>
+                                    <Row form>
+                                      <Col sm="6">
+                                        <FormGroup>
+                                          <Label for={`${container}.resources.requests.cpu`}>Requested CPU <Popover {...help.resources_cpu} classNames="d-inline" /></Label>
+                                          <Field
+                                            className="form-control"
+                                            name={`${container}.resources.requests.cpu`}
+                                            component={RenderInput}
+                                            type="text"
+                                            autoComplete="off"
+                                            onChangeListener={this.props.onChangeListener}
+                                            />
+                                        </FormGroup>
+                                      </Col>
+                                      <Col sm="6">
+                                        <FormGroup>
+                                          <Label for={`${container}.resources.requests.memory`}>Requested Memory <Popover {...help.resources_memory} classNames="d-inline" /></Label>
+                                          <Field
+                                            className="form-control"
+                                            name={`${container}.resources.requests.memory`}
+                                            component={RenderInput}
+                                            type="text"
+                                            autoComplete="off"
+                                            onChangeListener={this.props.onChangeListener}
+                                            />
+                                        </FormGroup>
+                                      </Col>
+                                    </Row>
+                                    <Row form>
+                                      <Col sm="6">
+                                        <FormGroup>
+                                          <Label for={`${container}.resources.limits.cpu`}>CPU limit <Popover {...help.resources_cpu} classNames="d-inline" /></Label>
+                                          <Field
+                                            className="form-control"
+                                            name={`${container}.resources.limits.cpu`}
+                                            component={RenderInput}
+                                            type="text"
+                                            autoComplete="off"
+                                            onChangeListener={this.props.onChangeListener}
+                                            />
+                                        </FormGroup>
+                                      </Col>
+                                      <Col sm="6">
+                                        <FormGroup>
+                                          <Label for={`${container}.resources.limits.memory`}>Memory limit <Popover {...help.resources_memory} classNames="d-inline" /></Label>
+                                          <Field
+                                            className="form-control"
+                                            name={`${container}.resources.limits.memory`}
+                                            component={RenderInput}
+                                            type="text"
+                                            autoComplete="off"
+                                            onChangeListener={this.props.onChangeListener}
+                                            />
+                                        </FormGroup>
+                                      </Col>
+                                    </Row>
+                                  </CardBody>
+                                </Collapse>
+                              </Card>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-2">
+                            <Col md="10">
                               <FieldArray
                                 name={`${container}.command`}
                                 component={RenderCommands}
@@ -375,7 +463,7 @@ class RenderContainers extends Component {
                 outline
                 className="pull-right"
                 onClick={() => {
-                  this.props.fields.push({});
+                  this.props.fields.push(this.props.initialContainerValues);
                   this.props.onChangeListener();
                 }}
                 >Add container</Button>
@@ -559,7 +647,13 @@ class RenderLabels extends Component {
 class NewJobVersionPage extends Component {
 
   render() {
-    const { meta, job, secretErrors } = this.props;
+    const {
+      meta,
+      job,
+      secretErrors,
+      change: rfChange,
+      initialContainerValues,
+    } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
         <Row className="page-frame d-flex justify-content-center">
@@ -690,7 +784,9 @@ class NewJobVersionPage extends Component {
                         component={RenderContainers}
                         availbleVolumes={availbleVolumes}
                         onChangeListener={() => this.props.triggerPreview()}
-                        />
+                        rfChange={rfChange}
+                        initialContainerValues={initialContainerValues}
+                      />
                     </CardBody>
                   </Collapse>
                 </Card>
@@ -719,7 +815,9 @@ class NewJobVersionPage extends Component {
                         component={RenderContainers}
                         availbleVolumes={availbleVolumes}
                         onChangeListener={() => this.props.triggerPreview()}
-                        />
+                        rfChange={rfChange}
+                        initialContainerValues={initialContainerValues}
+                      />
                     </CardBody>
                   </Collapse>
                 </Card>

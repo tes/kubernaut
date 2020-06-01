@@ -31,7 +31,22 @@ export const selectJob = (state) => (state.newJobVersion.job.data);
 export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
 export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
 
+const initialContainerValues = {
+  resources: {
+    collapsed: true,
+    requests: {
+      cpu: '50m',
+      memory: '128M'
+    },
+    limits: {
+      cpu: '1000m',
+      memory: '1024M'
+    },
+  },
+};
+
 const defaultState = {
+  initialContainerValues,
   initialValues: {
     schedule: '0 * * * *',
     concurrencyPolicy: 'Replace',
@@ -43,7 +58,8 @@ const defaultState = {
     },
     containers: [
       {
-        name: 'main'
+        ...initialContainerValues,
+        name: 'main',
       }
     ],
     volumes: [
