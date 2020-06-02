@@ -225,7 +225,7 @@ export default function() {
 
     app.post('/api/jobs', bodyParser.json(), async (req, res, next) => {
       try {
-        const { name, namespace: namespaceId, registry: registryName } = req.body;
+        const { name, namespace: namespaceId, registry: registryName, copyFrom } = req.body;
 
         if (!name || !namespaceId || !registryName) return next(Boom.badRequest());
         if (!name.match(validName)) return next(Boom.badRequest());
@@ -244,9 +244,39 @@ export default function() {
 
         await store.audit(meta, 'saved new job', { job: { id: newJobId } });
 
+        if (copyFrom) {
+          const sourceJob = await store.getJob(copyFrom);
+          if (!sourceJob) return next(Boom.notFound());
+          if (! await store.hasPermissionOnRegistry(req.user, sourceJob.registry.id, 'jobs-read')) return next(Boom.forbidden());
+
+          const versions = await store.findJobVersions(sourceJob, 1, 0);
+          if (versions && versions.count) {
+            const latestVersionToCopy = await store.getJobVersion(versions.items[0].id);
+
+            const newJob = await store.getJob(newJobId);
+            const values = valuesFromYaml(safeLoad(latestVersionToCopy.yaml || ''));
+            const spec = buildSpec(values, newJob);
+            const yaml = safeDump(spec, { lineWidth: 120 });
+            const newVersionId = await store.saveJobVersion(newJob, { yaml }, meta);
+            await store.audit(meta, 'saved new job version', { jobVersion: { id: newVersionId} });
+          }
+        }
+
         return res.json({ id: newJobId });
       } catch (err) {
         if (err.code && err.code === '23505') return next(Boom.conflict(err.detail)); // unique_violation
+        next(err);
+      }
+    });
+
+    app.get('/api/jobs/search/:jobName', async (req, res, next) => {
+      try {
+        const criteria = {
+          user: { id: req.user.id, permission: 'jobs-read' },
+        };
+        const results = await store.searchByJobName(req.params.jobName, criteria);
+        return res.json(results);
+      } catch (err) {
         next(err);
       }
     });

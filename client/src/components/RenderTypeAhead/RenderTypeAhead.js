@@ -49,7 +49,7 @@ const RenderInput = (props) => {
                 {
                   suggestions.map((s) => (
                     <li key={s} className="list-inline-item">
-                      <Button color="link" onClick={() => useSuggestion(s)}>{s}</Button>
+                      <Button color="link" onClick={() => useSuggestion(s)}>{s && s.display ? s.display : s}</Button>
                     </li>
                   ))
                 }

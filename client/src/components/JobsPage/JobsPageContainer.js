@@ -14,6 +14,8 @@ import {
   clearSearch,
   showFilters,
   hideFilters,
+  fetchJobSuggestions,
+  useJobSuggestion,
 } from '../../modules/jobs';
 
 const formName = 'newJob';
@@ -30,6 +32,7 @@ function mapStateToProps(state, props) {
     registries: state.jobs.registries,
     submitForm,
     initialValues: state.jobs.initialValues,
+    jobSuggestions: state.jobs.jobSuggestions,
   };
 }
 
@@ -43,6 +46,8 @@ export default connect(mapStateToProps, {
   clearSearch,
   showFilters,
   hideFilters,
+  fetchJobSuggestions,
+  useJobSuggestion,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

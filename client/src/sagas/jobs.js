@@ -1,6 +1,6 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects';
 import { push, getLocation } from 'connected-react-router';
-import { SubmissionError, reset } from 'redux-form';
+import { SubmissionError, reset, change } from 'redux-form';
 import {
   parseFiltersFromQS,
   parseSearchFromQS,
@@ -34,12 +34,18 @@ import {
   setFilters,
   setSearch,
   setPagination,
+  fetchJobSuggestions,
+  setJobSuggestions,
+  useJobSuggestion,
+  clearJobSuggestions,
+  selectCopyFrom,
 } from '../modules/jobs';
 
 import {
   getJobs,
   withPermission,
   saveJob,
+  getJobSuggestions,
 } from '../lib/api';
 
 const pageUrl = '/cronjobs';
@@ -110,12 +116,12 @@ export function* fetchJobsDataSaga({ payload = {} }) {
 export function* submitSaga() {
   try {
     const values = yield select(getFormValues);
-
+    const copyFrom = yield select(selectCopyFrom);
     if (!values.name || !values.namespace || !values.registry) {
       yield put(submitForm.failure());
       return;
     }
-    const data = yield call(saveJob, values.name, values.namespace, values.registry);
+    const data = yield call(saveJob, values.name, values.namespace, values.registry, copyFrom);
     yield put(submitForm.success());
     yield put(push(`/cronjobs/${data.id}/new`));
   } catch (err) {
@@ -137,6 +143,22 @@ export function* locationChangeSaga({ payload = {} }) {
   yield put(fetchJobs());
 }
 
+export function* fetchJobSuggestionsSaga({ payload = {} }) {
+  const currentValue = yield select(getFormValues);
+
+  try {
+    const results = yield call(getJobSuggestions, currentValue.copy);
+    yield put(setJobSuggestions(results.map(({ id, name }) => ({ value: id, display: name }))));
+  } catch (error) {
+    if (!payload.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
+export function* useJobSuggestionsSaga({ payload }) {
+  yield put(change('newJob', 'copy', payload.display));
+  yield put(clearJobSuggestions());
+}
+
 export default [
   takeLatest(fetchJobs, fetchJobsDataSaga),
   takeLatest(fetchJobsPagination, paginationSaga),
@@ -147,4 +169,6 @@ export default [
   takeLatest(removeFilter, removeFilterSaga),
   takeLatest(search, searchSaga),
   takeLatest(clearSearch, searchSaga),
+  takeLatest(fetchJobSuggestions, fetchJobSuggestionsSaga),
+  takeLatest(useJobSuggestion, useJobSuggestionsSaga),
 ];

@@ -23,6 +23,11 @@ export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 export const setNamespaces = createAction(`${actionsPrefix}/SET_NAMESPACES`);
 export const setRegistries = createAction(`${actionsPrefix}/SET_REGISTRIES`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
+export const fetchJobSuggestions = createAction(`${actionsPrefix}/FETCH_JOB_SUGGESTIONS`);
+export const setJobSuggestions = createAction(`${actionsPrefix}/SET_JOB_SUGGESTIONS`);
+export const useJobSuggestion = createAction(`${actionsPrefix}/USE_JOB_SUGGESTIONS`);
+export const clearJobSuggestions = createAction(`${actionsPrefix}/CLEAR_JOB_SUGGESTIONS`);
+
 export const getFormValues = (state) => rfGetFormValues('newJob')(state);
 export const {
   addFilter,
@@ -35,6 +40,7 @@ export const {
   setSearch,
 } = filterActions;
 export const selectPaginationState = (state) => (state.jobs.pagination);
+export const selectCopyFrom = (state) => (state.jobs.copyFrom);
 export const {
   selectTableFilters,
   selectSearchFilter,
@@ -79,7 +85,9 @@ const defaultState = {
   initialValues: {
     name: '',
     namespace: '',
-  }
+  },
+  jobSuggestions: [],
+  copyFrom: null,
 };
 
 export default handleActions({
@@ -130,6 +138,13 @@ export default handleActions({
       page: payload.page || defaultState.pagination.page,
       limit: payload.limit || defaultState.pagination.limit,
     },
+  }),
+  [setJobSuggestions]: (state, { payload }) => ({ ...state, jobSuggestions: payload }),
+  [clearJobSuggestions]: (state) => ({ ...state, jobSuggestions: defaultState.jobSuggestions }),
+  [fetchJobSuggestions]: (state) => ({ ...state, copyFrom: null }),
+  [useJobSuggestion]: (state, { payload }) => ({
+    ...state,
+    copyFrom: payload.value,
   }),
   ...createFilterReducers(filterActions, defaultFilterState),
 }, defaultState);

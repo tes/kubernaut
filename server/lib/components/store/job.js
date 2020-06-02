@@ -368,6 +368,24 @@ export default function() {
       logger.debug(`Deleted job, id: ${job.id}`);
     }
 
+    async function searchByJobName(searchFilter, criteria) {
+      logger.debug(`Search for jobs with [${searchFilter}] in the name`);
+      const searchBuilder = sqb
+        .select('id', 'name')
+        .from('active_job__vw')
+        .where(Op.like('name', `%${searchFilter}%`))
+        .orderBy('name')
+        .limit(5);
+
+      if (criteria.user) {
+        const idsQuery = authz.querySubjectIdsWithPermission('registry', criteria.user.id, criteria.user.permission);
+        searchBuilder.where(Op.in('registry', idsQuery));
+      }
+
+      const result = await db.query(db.serialize(searchBuilder, {}).sql);
+      return result.rows;
+    }
+
     function toJob(row) {
       return new Job({
         id: row.id,
@@ -426,6 +444,7 @@ export default function() {
       updateJobDescription,
       deleteJob,
       pauseJob,
+      searchByJobName,
     });
   }
 

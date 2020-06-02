@@ -164,6 +164,8 @@ export const getJobs = ({ limit = 20, offset = 0, filters = {}, sort, order }) =
 
 export const getJobSnapshot = (id) => makeRequest(`/api/jobs/${id}/snapshot`);
 
+export const getJobSuggestions = (job) => makeRequest(`/api/jobs/search/${job}`);
+
 export const getJobVersion = (id) => makeRequest(`/api/jobs/version/${id}`);
 
 export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
@@ -634,13 +636,14 @@ export const removeTeamRoleForTeam = (teamId, subjectTeamId, role, options = {})
   });
 };
 
-export const saveJob = (name, namespace, registry) => {
+export const saveJob = (name, namespace, registry, copyFrom) => {
   return makeRequest('/api/jobs', {
     method: 'POST',
     body: JSON.stringify({
       name,
       namespace,
       registry,
+      copyFrom,
     }),
   });
 };

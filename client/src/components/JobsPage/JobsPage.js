@@ -16,7 +16,9 @@ import JobsTable from '../JobsTable';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 import RenderNamespaces from '../RenderNamespaces';
+import RenderTypeAhead from '../RenderTypeAhead';
 import TableFilter from '../TableFilter';
+import Popover from '../Popover';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 
@@ -130,6 +132,23 @@ class JobsPage extends Component {
                           autoComplete="off"
                           options={namespaces.items}
                           />
+                      </Col>
+                    </FormGroup>
+                    <FormGroup row>
+                      <Label sm="3" className="text-right" for="copy">Copy from: <Popover body="Use the latest configuration from another cronjob to create a starting version for your new job. Excludes secrets." classNames="d-inline" /></Label>
+                      <Col sm="9">
+                        <Field
+                          className="form-control"
+                          name="copy"
+                          component={RenderTypeAhead}
+                          type="text"
+                          onChangeListener={() => {
+                            this.props.fetchJobSuggestions();
+                          }}
+                          useSuggestion={this.props.useJobSuggestion}
+                          suggestions={this.props.jobSuggestions}
+                          autoComplete="off"
+                        />
                       </Col>
                     </FormGroup>
                     {
