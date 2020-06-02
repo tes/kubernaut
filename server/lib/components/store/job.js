@@ -28,7 +28,7 @@ export default function() {
         .select('j.id', 'j.name', 'j.description', 'j.paused', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
+          innerJoin('account a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
           innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
           innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
@@ -45,7 +45,7 @@ export default function() {
       .select('jv.id', 'jv.job', 'jv.yaml', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
       .from('active_job_version__vw jv')
       .join(
-        innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
+        innerJoin('account a').on(Op.eq('jv.created_by', raw('a.id')))
       )
       .where(Op.eq('jv.id', id));
 
@@ -91,7 +91,7 @@ export default function() {
         .select('j.id', 'j.name', 'j.description', 'j.paused', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
         .from('active_job__vw j')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
+          innerJoin('account a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
           innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
           innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id')))
@@ -104,7 +104,7 @@ export default function() {
         .select(raw('count(*) count'))
         .from('active_job__vw j')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('j.created_by', raw('a.id'))),
+          innerJoin('account a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
           innerJoin('active_registry__vw r').on(Op.eq('j.registry', raw('r.id'))),
           innerJoin('active_cluster__vw c').on(Op.eq('n.cluster', raw('c.id'))),
@@ -157,7 +157,7 @@ export default function() {
         .select('jv.id', 'jv.created_on', 'jv.created_by', 'jv.last_applied', 'a.display_name')
         .from('active_job_version__vw jv')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('jv.created_by', raw('a.id')))
         )
         .where(Op.eq('jv.job', job.id))
         .orderBy('jv.created_on desc')
@@ -168,7 +168,7 @@ export default function() {
         .select(raw('count(*) count'))
         .from('active_job_version__vw jv')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('jv.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('jv.created_by', raw('a.id')))
         )
         .where(Op.eq('jv.job', job.id));
 
