@@ -15,6 +15,7 @@ import {
 import NamespacesTable from '../NamespacesTable';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
+import TableFilter from '../TableFilter';
 
 class NamespacesPage extends Component {
 
@@ -30,11 +31,35 @@ class NamespacesPage extends Component {
       submitForm,
       clusters,
       error,
+      addFilter,
+      removeFilter,
+      search,
+      clearSearch,
+      showFilters,
+      hideFilters,
     } = this.props;
 
     return (
       <Row className="page-frame">
         <Col>
+          <Row>
+            <Col>
+              <TableFilter
+                formPrefix="namespaces"
+                statePath="namespaces.filter"
+                columns={[
+                  { value: 'name', display: 'Name' },
+                  { value: 'cluster', display: 'Cluster' },
+                ]}
+                addFilter={addFilter}
+                removeFilter={removeFilter}
+                search={search}
+                clearSearch={clearSearch}
+                showFilters={showFilters}
+                hideFilters={hideFilters}
+                />
+            </Col>
+          </Row>
           <Row>
             <Col md="9">
               <NamespacesTable namespaces={namespaces.data} loading={namespaces.meta.loading} error={namespaces.meta.error} fetchNamespaces={fetchNamespacesPagination} />

@@ -8,6 +8,12 @@ import {
   openModal,
   closeModal,
   submitForm,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 } from '../../modules/namespaces';
 
 function mapStateToProps(state, props) {
@@ -28,6 +34,12 @@ export default connect(mapStateToProps, {
   fetchNamespacesPagination,
   openModal,
   closeModal,
+  addFilter,
+  removeFilter,
+  search,
+  clearSearch,
+  showFilters,
+  hideFilters,
 })(reduxForm({
   form: 'newNamespace',
   enableReinitialize: true,

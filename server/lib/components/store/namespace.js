@@ -142,15 +142,25 @@ export default function(options) {
         .where(Op.eq('n.cluster', raw('c.id')));
 
       if (criteria.hasOwnProperty('ids')) {
-        db.buildWhereClause('n.id', criteria.ids, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.applyFilter({ value: criteria.ids }, 'n.id', findNamespacesBuilder, countNamespacesBuilder);
       }
 
       if (criteria.hasOwnProperty('name')) {
-        db.buildWhereClause('n.name', criteria.name, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.applyFilter({ value: criteria.name }, 'n.name', findNamespacesBuilder, countNamespacesBuilder);
       }
 
       if (criteria.hasOwnProperty('cluster')) {
-        db.buildWhereClause('c.name', criteria.cluster, bindVariables, findNamespacesBuilder, countNamespacesBuilder);
+        db.applyFilter({ value: criteria.cluster }, 'c.name', findNamespacesBuilder, countNamespacesBuilder);
+      }
+
+      if (criteria.filters) {
+        if (criteria.filters.name) {
+          db.applyFilter(criteria.filters.name, 'n.name', findNamespacesBuilder, countNamespacesBuilder);
+        }
+
+        if (criteria.filters.cluster) {
+          db.applyFilter(criteria.filters.cluster, 'c.name', findNamespacesBuilder, countNamespacesBuilder);
+        }
       }
 
       if (criteria.user) {

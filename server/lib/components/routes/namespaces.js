@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import Boom from 'boom';
 import isCSSColorName from 'is-css-color-name';
 import isCSSColorHex from 'is-css-color-hex';
+import parseFilters from './lib/parseFilters';
 
 export default function(options = {}) {
 
@@ -13,11 +14,14 @@ export default function(options = {}) {
       try {
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed namespaces');
+        const filters = parseFilters(req.query, ['name', 'cluster']);
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
-        const result = await store.findNamespaces({
+        const criteria = {
+          filters,
           user: { id: req.user.id, permission: 'namespaces-read' },
-        }, limit, offset);
+        };
+        const result = await store.findNamespaces(criteria, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);

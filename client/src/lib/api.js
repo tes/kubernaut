@@ -189,7 +189,14 @@ export const getLatestDeploymentsByNamespaceForService = ({ registry, service, i
 
 export const getNamespace = (id) => makeRequest(`/api/namespaces/${id}`);
 
-export const getNamespaces = () => makeRequest('/api/namespaces').then(computePagination);
+export const getNamespaces = ({ limit = 20, offset = 0, filters = {} }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    ...stringifyFilters(filters)
+  });
+  return makeRequest(`/api/namespaces?${qs}`).then(computePagination);
+};
 
 export const getNamespaceHistoryForRelease = ({ filters = {} }) => {
   const qs = makeQueryString({
