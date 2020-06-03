@@ -27,7 +27,7 @@ export default function(options) {
 
       const teamBuilder = sqb
         .select('t.id', 't.name', 't.created_on', 't.created_by', 'a.display_name')
-        .from('active_team__vw t', 'active_account__vw a')
+        .from('active_team__vw t', 'account a')
         .where(Op.eq('t.created_by', raw('a.id')))
         .where(Op.eq('t.id', id));
 
@@ -121,7 +121,7 @@ export default function(options) {
         .select('t.id', 't.name', 't.created_on', 't.created_by', 'a.display_name', accountCountBuilder.as('account_count'), serviceCountBuilder.as('service_count'))
         .from('active_team__vw t')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('t.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('t.created_by', raw('a.id')))
         )
         .orderBy('t.name asc')
         .limit(limit)
@@ -131,7 +131,7 @@ export default function(options) {
         .select(raw('count(*) count'))
         .from('active_team__vw t')
         .join(
-          innerJoin('active_account__vw a').on(Op.eq('t.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('t.created_by', raw('a.id')))
         );
 
       if (criteria.filters) {

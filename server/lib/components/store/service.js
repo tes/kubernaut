@@ -17,7 +17,7 @@ export default function(options) {
       logger.debug(`Getting service by id ${id}`);
       const serviceBuilder = sqb
         .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
-        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
+        .from('active_service__vw s', 'active_registry__vw sr', 'account a')
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('s.created_by', raw('a.id')))
         .where(Op.eq('s.id', id));
@@ -67,7 +67,7 @@ export default function(options) {
         .from('active_service__vw s')
         .join(
           innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
-          innerJoin('active_account__vw a').on(Op.eq('s.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('s.created_by', raw('a.id')))
         )
         .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
@@ -78,7 +78,7 @@ export default function(options) {
         .from('active_service__vw s')
         .join(
           innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
-          innerJoin('active_account__vw a').on(Op.eq('s.created_by', raw('a.id')))
+          innerJoin('account a').on(Op.eq('s.created_by', raw('a.id')))
         );
 
       if (criteria.registries) {
@@ -187,7 +187,7 @@ export default function(options) {
             .where(Op.is('sn.deleted_on', null))
             .as('enabled')
         )
-        .from('active_service__vw s', 'active_registry__vw sr', 'active_account__vw a')
+        .from('active_service__vw s', 'active_registry__vw sr', 'account a')
         .where(Op.eq('s.registry', raw('sr.id')))
         .where(Op.eq('s.created_by', raw('a.id')))
         .orderBy('s.name asc')
