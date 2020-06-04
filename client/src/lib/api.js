@@ -106,6 +106,8 @@ export const getAccountsWithNoMembership = ({ limit = 20, offset = 0 }) => {
   return makeRequest(`/api/accounts/with-no-membership?${qs}`).then(computePagination);
 };
 
+export const getAdminSummary = () => makeRequest('/api/admin/summary');
+
 export const getAuditEntries = ({ limit = 20, offset = 0, filters = {} }) => {
   const qs = makeQueryString({
     limit,

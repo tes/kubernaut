@@ -4,6 +4,7 @@ import { connectRouter } from 'connected-react-router';
 
 import account from './account';
 import accounts from './accounts';
+import admin from './admin';
 import audit from './audit';
 import deploy from './deploy';
 import deployment from './deployment';
@@ -41,6 +42,7 @@ export default (history) => combineReducers({
   router: connectRouter(history),
   account,
   accounts,
+  admin,
   audit,
   deploy,
   deployment,

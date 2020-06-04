@@ -6,6 +6,7 @@ import { selectAccount, FETCH_ACCOUNT_SUCCESS } from './modules/account';
 import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
+import { initAdminPage } from './modules/admin';
 import { fetchAccountInfo as fetchEditAccountTeamsInfo } from './modules/editAccountTeams';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
@@ -51,6 +52,7 @@ const paths = {
   },
   admin: {
     route: '/admin',
+    action: initAdminPage,
   },
   editAccountTeams: {
     route: '/accounts/:accountId/teams',

@@ -2,6 +2,7 @@ import systemic from 'systemic';
 import system from './system';
 import app from './app';
 import accounts from './accounts';
+import admin from './admin';
 import audit from './audit';
 import clusters from './clusters';
 import deployments from './deployments';
@@ -31,6 +32,8 @@ export default () => systemic({
     .dependsOn(...minimumRequirements, 'pkg')
   .add('routes.accounts', accounts())
     .dependsOn(...minimumRequirements, 'store', 'auth')
+  .add('routes.admin', admin())
+    .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.audit', audit())
     .dependsOn(...minimumRequirements, 'store', 'auth')
   .add('routes.clusters', clusters())
@@ -57,6 +60,7 @@ export default () => systemic({
     .dependsOn(
       'routes.system',
       'routes.accounts',
+      'routes.admin',
       'routes.audit',
       'routes.clusters',
       'routes.deployments',
