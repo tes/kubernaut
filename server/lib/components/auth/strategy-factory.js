@@ -1,4 +1,5 @@
 import eachSeries from 'async/mapSeries';
+import Boom from 'Boom';
 
 export default function() {
 
@@ -6,7 +7,7 @@ export default function() {
 
   function start(dependencies, cb) {
 
-    const { config, app, passport, session } = dependencies;
+    const { config, app, passport, session, logger } = dependencies;
 
     app.use(session);
     app.use(passport.initialize());
@@ -27,7 +28,10 @@ export default function() {
       app.post('/login', (req, res, next) => {
         if (req.isAuthenticated()) return next();
         passport.authenticate(getAuthenticationsMethods(strategies)['app'], (passportError, user, info) => {
-          if (passportError) return next(passportError);
+          if (passportError) {
+            logger.error(passportError);
+            return next(Boom.conflict('Please contact an adminstrator about your account.'));
+          }
           if (!user) return res.redirect('/login');
 
           req.logIn(user, function(loginError) {
