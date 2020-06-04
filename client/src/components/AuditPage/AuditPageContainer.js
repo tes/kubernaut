@@ -7,10 +7,11 @@ import {
 
 import AuditPage from './AuditPage';
 
-export default connect(({ audit }) => ({
+export default connect(({ audit, account }) => ({
   meta: audit.meta,
   audits: audit.data,
   filters: audit.filter.filters,
+  canAudit: account && account.permissions && account.permissions['audit-read'],
 }), {
   fetchAuditPagination,
   addFilter,

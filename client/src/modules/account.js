@@ -15,7 +15,8 @@ const defaultState = {
   permissions: {
     'jobs-read': false,
     'audit-read': false,
-  }
+  },
+  showAdmin: false,
 };
 
 export default handleActions({
@@ -39,11 +40,16 @@ export default handleActions({
       loading: false,
     },
   }),
-  [setPermission]: (state, { payload }) => ({
-    ...state,
-    permissions: {
+  [setPermission]: (state, { payload }) => {
+    const updatedPermissions = {
       ...state.permissions,
       [payload.permission]: payload.answer,
-    }
-  }),
+    };
+
+    return {
+      ...state,
+      permissions: updatedPermissions,
+      showAdmin: updatedPermissions['audit-read'],
+    };
+  },
 }, defaultState);

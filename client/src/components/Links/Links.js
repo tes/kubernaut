@@ -273,3 +273,23 @@ export const ServiceStatusLink = ({ registryName = '', serviceName = '', contain
 
   return <Tag {...props}>{children || <span>Status</span>}</Tag>;
 };
+
+export const AdminSummaryLink = ({ container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: '/admin',
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Summary</span>}</Tag>;
+};
+
+export const AuditLink = ({ container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: '/admin/audit',
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Audit</span>}</Tag>;
+};

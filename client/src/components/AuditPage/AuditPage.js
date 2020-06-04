@@ -26,6 +26,7 @@ import {
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
 import { Ago } from '../DisplayDate';
+import { AdminSubNav } from '../SubNavs';
 
 const filterDisplayNameLookup = {
   sourceAccount: 'Source account',
@@ -44,7 +45,7 @@ const filterDisplayNameLookup = {
 class AuditPage extends Component {
 
   render() {
-    const { meta, audits } = this.props;
+    const { meta, audits, canAudit } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Row className="page-frame d-flex justify-content-center">
         <Col sm="12" className="mt-5">
@@ -68,6 +69,7 @@ class AuditPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
+          <AdminSubNav canAudit={canAudit} />
           <Row>
             <Col className="d-flex justify-content-start flex-wrap">
               {this.props.filters.map((filter) => {
