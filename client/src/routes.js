@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
 // Components
 import Title from './components/Title';
@@ -295,6 +295,9 @@ export default () => <Switch>
       return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
     }}
   />
+  <Route path="/audit">
+    <Redirect to={paths.audit.route} />
+  </Route>
   <Route
     path={paths.audit.route}
     render={() => <Wrapper><AuditPage /></Wrapper> }

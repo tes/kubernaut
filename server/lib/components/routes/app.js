@@ -52,6 +52,8 @@ module.exports = function() {
       /^\/releases(?:\/.)*/,
       /^\/services(?:\/.)*/,
       /^\/audit(?:\/.)*/,
+      /^\/admin(?:\/.)*/,
+      /^\/cronjobs(?:\/.)*/,
       /^\/teams(?:\/.)*/,
     ], clientApp(200));
 

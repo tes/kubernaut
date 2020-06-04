@@ -54,7 +54,7 @@ const paths = {
     action: fetchEditAccountTeamsInfo,
   },
   audit: {
-    route: '/audit',
+    route: '/admin/audit',
     action: initAuditPage,
   },
   deploy: {
