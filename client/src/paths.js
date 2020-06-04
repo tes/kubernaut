@@ -49,6 +49,9 @@ const paths = {
     route: '/accounts',
     action: initialiseAccountsPage,
   },
+  admin: {
+    route: '/admin',
+  },
   editAccountTeams: {
     route: '/accounts/:accountId/teams',
     action: fetchEditAccountTeamsInfo,

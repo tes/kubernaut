@@ -8,6 +8,7 @@ import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
 import AccountTeamPage from './components/AccountTeamPage';
+import AdminSummaryPage from './components/AdminSummaryPage';
 import AuditPage from './components/AuditPage';
 import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
@@ -295,10 +296,16 @@ export default () => <Switch>
       return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
     }}
   />
+  <Route
+    exact
+    path={paths.admin.route}
+    render={() => <Wrapper><AdminSummaryPage /></Wrapper> }
+  />
   <Route path="/audit">
     <Redirect to={paths.audit.route} />
   </Route>
   <Route
+    exact
     path={paths.audit.route}
     render={() => <Wrapper><AuditPage /></Wrapper> }
   />
