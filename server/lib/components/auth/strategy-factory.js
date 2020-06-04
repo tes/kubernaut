@@ -1,5 +1,5 @@
 import eachSeries from 'async/mapSeries';
-import Boom from 'Boom';
+import Boom from 'boom';
 
 export default function() {
 
