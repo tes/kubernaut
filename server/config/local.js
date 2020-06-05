@@ -18,6 +18,7 @@ module.exports = {
     host: 'localhost',
     database: 'postgres',
     user: 'postgres',
+    password: 'password',
   },
   session: {
     secret: 'secret',
