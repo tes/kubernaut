@@ -33,7 +33,8 @@
     "kube-deploy": "deploy",
     "kube-status": "status",
     "create-bearer-token": "./bin/create-bearer-token.js",
-    "setup-local": "babel-node ./bin/setup-local.js"
+    "setup-local": "babel-node ./bin/setup-local.js",
+    "install-client": "cd client; npm ci"
   },
   "author": "TES",
   "license": "UNLICENSED",

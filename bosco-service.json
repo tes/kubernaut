@@ -1,0 +1,9 @@
+{
+  "service": {
+    "name": "kubernaut",
+    "username": "tescloud",
+    "dependsOn": [
+      "infra-postgres"
+    ]
+  }
+}

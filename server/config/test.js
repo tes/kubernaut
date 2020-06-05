@@ -15,9 +15,10 @@ module.exports = {
     transport: 'human',
   },
   postgres: {
-    hostname: 'localhost',
+    host: 'local.tescloud.com',
     database: 'postgres',
     user: 'postgres',
+    password: 'password',
   },
   server: {
     port: 13000,
