@@ -116,7 +116,7 @@ class JobPage extends Component {
                   </div>
                 ) : (
                   <div>
-                    <span>Why not <a href="" onClick={(e) => {e.preventDefault(); editDescription();}}>add</a> a description</span>
+                    <div>Why not <Button className="p-0 mb-1" color="link" onClick={(e) => {e.preventDefault(); editDescription();}}>add</Button> a description</div>
                     <hr />
                   </div>
                 )
