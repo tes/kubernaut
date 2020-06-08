@@ -1,3 +1,5 @@
+import sqb from 'sqb';
+import Promise from 'bluebird';
 import SQL from './sql';
 import Account from '../../domain/Account';
 import Registry from '../../domain/Registry';
@@ -8,7 +10,6 @@ import Cluster from '../../domain/Cluster';
 import Namespace from '../../domain/Namespace';
 import Deployment from '../../domain/Deployment';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
-import sqb from 'sqb';
 
 export default function(options) {
 
@@ -46,15 +47,23 @@ export default function(options) {
 
       logger.debug(`Saving deployment attributes: [ ${attributeNames.join(', ')} ] for deployment id: ${deployment.id}`);
 
-      const attributes = attributeNames.map(name => ({
-        name, value: data[name], deployment: deployment.id,
-      }));
+      const insertBuilders = [];
+      for (const name in data) {
+        insertBuilders.push(sqb
+        .insert('deployment_attribute', {
+          deployment: deployment.id,
+          name,
+          value: data[name],
+        }));
+      }
 
-      await connection.query(SQL.SAVE_DEPLOYMENT_ATTRIBUTES, [JSON.stringify(attributes)]);
+      await Promise.mapSeries(insertBuilders, async (insertBuilder) => {
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+      });
 
       logger.debug(`Saved deployment attributes: [ ${attributeNames.join(', ')} ] for deployment id: ${deployment.id}`);
 
-      return attributes;
+      return data;
     }
 
     async function saveApplyExitCode(id, code) {

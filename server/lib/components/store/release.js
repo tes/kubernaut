@@ -1,10 +1,11 @@
+import sqb from 'sqb';
+import Promise from 'bluebird';
 import SQL from './sql';
 import Namespace from '../../domain/Namespace';
 import Service from '../../domain/Service';
 import ReleaseTemplate from '../../domain/ReleaseTemplate';
 import Release from '../../domain/Release';
 import Account from '../../domain/Account';
-import sqb from 'sqb';
 
 export default function(options) {
 
@@ -79,15 +80,23 @@ export default function(options) {
 
       logger.debug(`Saving release attributes: [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
 
-      const attributes = attributeNames.map(name => ({
-        name, value: data[name], release: release.id,
-      }));
+      const insertBuilders = [];
+      for (const name in data) {
+        insertBuilders.push(sqb
+        .insert('release_attribute', {
+          release: release.id,
+          name,
+          value: data[name],
+        }));
+      }
 
-      await connection.query(SQL.SAVE_RELEASE_ATTRIBUTES, [JSON.stringify(attributes)]);
+      await Promise.mapSeries(insertBuilders, async (insertBuilder) => {
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+      });
 
       logger.debug(`Saved release attributes: [ ${attributeNames.join(', ')} ] for release id: ${release.id}`);
 
-      return attributes;
+      return data;
     }
 
     async function getRelease(id) {

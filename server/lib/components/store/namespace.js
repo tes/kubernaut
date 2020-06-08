@@ -1,8 +1,9 @@
 import { v4 as uuid } from 'uuid';
+import sqb from 'sqb';
+import Promise from 'bluebird';
 import SQL from './sql';
 import Namespace from '../../domain/Namespace';
 import Account from '../../domain/Account';
-import sqb from 'sqb';
 
 export default function(options) {
 
@@ -68,15 +69,23 @@ export default function(options) {
 
       logger.debug(`Saving namespace attributes: [ ${attributeNames.join(', ')} ] for namespace id: ${namespace.id}`);
 
-      const attributes = attributeNames.map(name => ({
-        name, value: data[name], namespace: namespace.id,
-      }));
+      const insertBuilders = [];
+      for (const name in data) {
+        insertBuilders.push(sqb
+        .insert('namespace_attribute', {
+          namespace: namespace.id,
+          name,
+          value: data[name],
+        }));
+      }
 
-      await connection.query(SQL.SAVE_NAMESPACE_ATTRIBUTES, [JSON.stringify(attributes)]);
+      await Promise.mapSeries(insertBuilders, async (insertBuilder) => {
+        await connection.query(db.serialize(insertBuilder, {}).sql);
+      });
 
       logger.debug(`Saved namespace attributes: [ ${attributeNames.join(', ')} ] for namespace id: ${namespace.id}`);
 
-      return attributes;
+      return data;
     }
 
     async function updateNamespace(id, data) {
