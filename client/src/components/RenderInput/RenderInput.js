@@ -20,6 +20,7 @@ class RenderInput extends Component {
       type,
       meta: {
         error,
+        warning,
         asyncValidating
       },
       className,
@@ -48,6 +49,7 @@ class RenderInput extends Component {
             }}
           />
           {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
+          {warning && <span className="help-block"><span className="text-warning">{warning}</span></span>}
         </div>
         <div className="col-sm-1">
           { asyncValidating && (<i className="fa fa-spin fa-spinner mt-2" aria-hidden='true' />) }

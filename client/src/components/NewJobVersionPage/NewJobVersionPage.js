@@ -23,6 +23,8 @@ import RenderSelect from '../RenderSelect';
 import SecretEditor from '../SecretEditor';
 import Popover from '../Popover';
 
+const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
+
 const help = {
   schedule: {
     body: 'How often you want the job to run. Standard cron syntax.',
@@ -80,7 +82,10 @@ class RenderArgs extends Component {
                         type="text"
                         autoComplete="off"
                         onChangeListener={this.props.onChangeListener}
-                        />
+                        warn={(value = '') => {
+                          if (value.match(/\s$/)) return 'Are you sure you want the trailing space?';
+                        }}
+                      />
                     </Col>
                     <Col>
                       <Button
@@ -147,6 +152,12 @@ class RenderCommands extends Component {
                         type="text"
                         autoComplete="off"
                         onChangeListener={this.props.onChangeListener}
+                        warn={(value = '') => {
+                          if (value.match(/\s$/)) return 'Are you sure you want the trailing space?';
+                        }}
+                        validate={(value) => {
+                          if (!value) return 'Cannot be empty';
+                        }}
                         />
                     </Col>
                     <Col>
@@ -228,6 +239,9 @@ class RenderVolumeMounts extends Component {
                               type="text"
                               autoComplete="off"
                               onChangeListener={this.props.onChangeListener}
+                              validate={(value) => {
+                                if (!value) return 'Cannot be empty';
+                              }}
                             />
                           </Col>
                         </FormGroup>
@@ -307,6 +321,10 @@ class RenderContainers extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
+                                    validate={(value = '') => {
+                                      if (value.match(validName)) return;
+                                      return 'Invalid name';
+                                    }}
                                   />
                                 </Col>
                               </FormGroup>
@@ -320,6 +338,9 @@ class RenderContainers extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
+                                    validate={(value) => {
+                                      if (!value) return 'Cannot be empty';
+                                    }}
                                   />
                                 </Col>
                               </FormGroup>
@@ -521,7 +542,11 @@ class RenderVolumes extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
-                                    />
+                                    validate={(value = '') => {
+                                      if (value.match(validName)) return;
+                                      return 'Invalid name';
+                                    }}
+                                  />
                                 </Col>
                               </FormGroup>
                               <FormGroup row>
@@ -534,7 +559,7 @@ class RenderVolumes extends Component {
                                     autoComplete="off"
                                     options={['emptyDir', 'configMap', 'secret']}
                                     onChangeListener={this.props.onChangeListener}
-                                    />
+                                  />
                                 </Col>
                               </FormGroup>
                               {
@@ -549,7 +574,11 @@ class RenderVolumes extends Component {
                                         type="text"
                                         autoComplete="off"
                                         onChangeListener={this.props.onChangeListener}
-                                        />
+                                        validate={(value = '') => {
+                                          if (value.match(validName)) return;
+                                          return 'Invalid name';
+                                        }}
+                                      />
                                     </Col>
                                   </FormGroup>
                                 ) : null
