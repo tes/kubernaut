@@ -162,7 +162,7 @@ export default function(options = {}) {
 
       const findAccountsBuilder = sqb
         .select('a.id', 'a.display_name', 'a.created_on', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
-        .from('active_account__vw a', 'account cb')
+        .from(criteria.deleted ? 'account a' : 'active_account__vw a', 'account cb')
         .where(Op.eq('a.created_by', raw('cb.id')))
         .orderBy(`${sortColumn} ${sortOrder}`)
         .limit(limit)
@@ -170,7 +170,7 @@ export default function(options = {}) {
 
       const countAccountsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_account__vw a', 'account cb')
+        .from(criteria.deleted ? 'account a' : 'active_account__vw a', 'account cb')
         .where(Op.eq('a.created_by', raw('cb.id')));
 
       if (criteria && criteria.filters) {
@@ -181,6 +181,10 @@ export default function(options = {}) {
         if (criteria.filters.createdBy) {
           db.applyFilter(criteria.filters.createdBy, 'cb.display_name', findAccountsBuilder, countAccountsBuilder);
         }
+      }
+
+      if (criteria.deleted) {
+        [findAccountsBuilder, countAccountsBuilder].forEach(builder => builder.where(Op.not('a.deleted_by', null)));
       }
 
       if (criteria.team) {
@@ -1423,6 +1427,18 @@ export default function(options = {}) {
       }));
     }
 
+    function restoreAccount(id) {
+      logger.debug(`Restoring account with id ${id}`);
+      const builder = sqb
+        .update('account', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toAccount(row) {
       return new Account({
         id: row.id,
@@ -1471,6 +1487,7 @@ export default function(options = {}) {
       checkCanRevokeGlobal,
       teamsWithPermission,
       getBearerTokenForAccount,
+      restoreAccount,
     });
   }
 

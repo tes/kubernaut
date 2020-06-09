@@ -119,7 +119,7 @@ export default function(options) {
 
       const findTeamsBuilder = sqb
         .select('t.id', 't.name', 't.created_on', 't.created_by', 'a.display_name', accountCountBuilder.as('account_count'), serviceCountBuilder.as('service_count'))
-        .from('active_team__vw t')
+        .from(criteria.deleted ? 'team t' : 'active_team__vw t')
         .join(
           innerJoin('account a').on(Op.eq('t.created_by', raw('a.id')))
         )
@@ -129,7 +129,7 @@ export default function(options) {
 
       const countTeamsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_team__vw t')
+        .from(criteria.deleted ? 'team t' : 'active_team__vw t')
         .join(
           innerJoin('account a').on(Op.eq('t.created_by', raw('a.id')))
         );
@@ -142,6 +142,10 @@ export default function(options) {
         if (criteria.filters.createdBy) {
           db.applyFilter(criteria.filters.createdBy, 'a.display_name', findTeamsBuilder, countTeamsBuilder);
         }
+      }
+
+      if (criteria.deleted) {
+        [findTeamsBuilder, countTeamsBuilder].forEach(builder => builder.where(Op.not('t.deleted_by', null)));
       }
 
       if (criteria.user) {
@@ -1201,6 +1205,18 @@ export default function(options) {
       return getTeam(teamId);
     }
 
+    function restoreTeam(id) {
+      logger.debug(`Restoring team with id ${id}`);
+      const builder = sqb
+        .update('team', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toTeam(row, attributes = [], services = []) {
       return new Team({
         id: row.id,
@@ -1255,6 +1271,7 @@ export default function(options) {
       revokeRoleOnNamespaceFromTeam,
       grantRoleOnTeamForTeam,
       revokeRoleOnTeamFromTeam,
+      restoreTeam,
     });
   }
 

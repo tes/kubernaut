@@ -132,6 +132,16 @@ export const getCanManageAnyTeam = () => {
 
 export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
 
+export const getDeleted = ({ limit = 20, offset = 0, type }) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+    type,
+  });
+
+  return makeRequest(`/api/admin/deleted?${qs}`).then(computePagination);
+};
+
 export const getDeployment = (id) => makeRequest(`/api/deployments/${id}`);
 
 export const getDeployments = ({ limit = 20, offset = 0, service, registry, namespace, cluster, sort, order, filters = {}, hasNotes = null }) => {
@@ -641,6 +651,17 @@ export const removeTeamRoleForTeam = (teamId, subjectTeamId, role, options = {})
       team: teamId,
       role,
       subjectTeam: subjectTeamId,
+    }),
+  });
+};
+
+export const restoreDeleted = ({ type, id }) => {
+  const url = '/api/admin/restore';
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      type,
+      id,
     }),
   });
 };

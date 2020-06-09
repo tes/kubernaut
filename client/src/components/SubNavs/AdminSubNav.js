@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
+  AdminRestoreLink,
   AdminSummaryLink,
   AuditLink,
 } from '../Links';
@@ -31,7 +32,11 @@ class AdminSubNav extends Component {
               </NavItem>
               : null
             }
-
+            <NavItem>
+              <AdminRestoreLink container>
+                <NavLink><i className="fa fa-undo" aria-hidden='true'></i> Restore</NavLink>
+              </AdminRestoreLink>
+            </NavItem>
           </Nav>
         </Col>
       </Row>

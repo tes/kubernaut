@@ -7,6 +7,7 @@ import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
 import { initAdminPage } from './modules/admin';
+import { initAdminRestorePage } from './modules/adminRestore';
 import { fetchAccountInfo as fetchEditAccountTeamsInfo } from './modules/editAccountTeams';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
@@ -53,6 +54,10 @@ const paths = {
   admin: {
     route: '/admin',
     action: initAdminPage,
+  },
+  adminRestore: {
+    route: '/admin/restore',
+    action: initAdminRestorePage,
   },
   editAccountTeams: {
     route: '/accounts/:accountId/teams',

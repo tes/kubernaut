@@ -46,7 +46,7 @@ export default function(options) {
 
       const findClustersBuilder = sqb
         .select('c.id', 'c.name', 'c.config', 'c.created_on', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.priority')
-        .from('active_cluster__vw c', 'account cb')
+        .from(criteria.deleted ? 'cluster c' : 'active_cluster__vw c', 'account cb')
         .where(Op.eq('c.created_by', raw('cb.id')))
         .orderBy('c.priority asc', 'c.name asc')
         .limit(limit)
@@ -54,10 +54,14 @@ export default function(options) {
 
       const countClustersBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_cluster__vw c');
+        .from(criteria.deleted ? 'cluster c' : 'active_cluster__vw c');
 
       if (criteria.hasOwnProperty('name')) {
         db.buildWhereClause('c.name', criteria.name, bindVariables, findClustersBuilder, countClustersBuilder);
+      }
+
+      if (criteria.deleted) {
+        [findClustersBuilder, countClustersBuilder].forEach(builder => builder.where(Op.not('c.deleted_by', null)));
       }
 
       const findClustersStatement = db.serialize(findClustersBuilder, bindVariables);
@@ -84,6 +88,18 @@ export default function(options) {
       logger.debug(`Deleted cluster id: ${id}`);
     }
 
+    function restoreCluster(id) {
+      logger.debug(`Restoring cluster with id ${id}`);
+      const builder = sqb
+        .update('cluster', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toCluster(row) {
       return new Cluster({
         id: row.id,
@@ -105,6 +121,7 @@ export default function(options) {
       findClusters,
       saveCluster,
       deleteCluster,
+      restoreCluster,
     });
   }
 

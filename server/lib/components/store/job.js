@@ -89,7 +89,7 @@ export default function() {
 
       const findJobsBuilder = sqb
         .select('j.id', 'j.name', 'j.description', 'j.paused', 'j.created_on', 'j.created_by', 'a.display_name', 'n.id namespace_id', 'n.name namespace_name', 'n.color namespace_color', 'c.id cluster_id', 'c.name cluster_name', 'c.color cluster_color', 'r.id registry_id', 'r.name registry_name')
-        .from('active_job__vw j')
+        .from(criteria.deleted ? 'job j' : 'active_job__vw j')
         .join(
           innerJoin('account a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
@@ -102,7 +102,7 @@ export default function() {
 
       const countJobsBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_job__vw j')
+        .from(criteria.deleted ? 'job j' : 'active_job__vw j')
         .join(
           innerJoin('account a').on(Op.eq('j.created_by', raw('a.id'))),
           innerJoin('active_namespace__vw n').on(Op.eq('j.namespace', raw('n.id'))),
@@ -121,6 +121,10 @@ export default function() {
         if (criteria.filters.cluster) {
           db.applyFilter(criteria.filters.cluster, 'c.name', findJobsBuilder, countJobsBuilder);
         }
+      }
+
+      if (criteria.deleted) {
+        [findJobsBuilder, countJobsBuilder].forEach(builder => builder.where(Op.not('j.deleted_by', null)));
       }
 
       if (criteria.user) {
@@ -386,6 +390,18 @@ export default function() {
       return result.rows;
     }
 
+    function restoreJob(id) {
+      logger.debug(`Restoring job with id ${id}`);
+      const builder = sqb
+        .update('job', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toJob(row) {
       return new Job({
         id: row.id,
@@ -445,6 +461,7 @@ export default function() {
       deleteJob,
       pauseJob,
       searchByJobName,
+      restoreJob,
     });
   }
 

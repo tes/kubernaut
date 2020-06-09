@@ -1,4 +1,5 @@
 import Boom from 'boom';
+import bodyParser from 'body-parser';
 
 export default function(options = {}) {
   function start({ app, store, auth }, cb) {
@@ -31,6 +32,67 @@ export default function(options = {}) {
           services: services.count,
           teams: teams.count,
         });
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    const deletedTypeLookup = {
+      account: {
+        find: store.findAccounts,
+        restore: store.restoreAccount,
+      },
+      cluster: {
+        find: store.findClusters,
+        restore: store.restoreCluster,
+      },
+      job: {
+        find: store.findJobs,
+        restore: store.restoreJob,
+      },
+      namespace: {
+        find: store.findNamespaces,
+        restore: store.restoreNamespace,
+      },
+      service: {
+        find: store.findServices,
+        restore: store.restoreService,
+      },
+      team: {
+        find: store.findTeams,
+        restore: store.restoreTeam,
+      },
+    };
+
+    app.get('/api/admin/deleted', async (req, res, next) => {
+      try {
+        const hasGlobalAdmin = !!(await store.rolesForSystem(req.user.id, req.user)).currentRoles.find(({ name, global }) => (name === 'admin' && global));
+        if (!hasGlobalAdmin) return next(Boom.forbidden());
+
+        if (!req.query.type || (Object.keys(deletedTypeLookup).indexOf(req.query.type) === -1)) return next(Boom.badRequest());
+
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const results = await deletedTypeLookup[req.query.type].find({ deleted: true }, limit, offset);
+        res.json(results);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/admin/restore', bodyParser.json(), async (req, res, next) => {
+      try {
+        const hasGlobalAdmin = !!(await store.rolesForSystem(req.user.id, req.user)).currentRoles.find(({ name, global }) => (name === 'admin' && global));
+        if (!hasGlobalAdmin) return next(Boom.forbidden());
+
+        const { type, id } = req.body;
+        if (!type || !id) return next(Boom.badRequest());
+        if ((Object.keys(deletedTypeLookup).indexOf(type) === -1)) return next(Boom.badRequest());
+
+        await deletedTypeLookup[type].restore(id);
+
+        return res.status(204).send();
       } catch (err) {
         next(err);
       }

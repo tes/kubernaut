@@ -4,6 +4,7 @@ import { LOCATION_CHANGE } from 'connected-react-router';
 import accountSagas from './account';
 import accountsSagas from './accounts';
 import adminSagas from './admin';
+import adminRestoreSagas from './adminRestore';
 import auditSagas from './audit';
 import deploySagas from './deploy';
 import deploymentSagas from './deployment';
@@ -41,6 +42,7 @@ export default function* rootSaga() {
     ...accountSagas,
     ...accountsSagas,
     ...adminSagas,
+    ...adminRestoreSagas,
     ...auditSagas,
     ...deploySagas,
     ...deploymentSagas,

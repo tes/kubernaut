@@ -64,7 +64,7 @@ export default function(options) {
 
       const findServicesBuilder = sqb
         .select('s.id', 's.name', 's.created_on', 's.created_by', 'sr.id registry_id', 'sr.name registry_name', 'a.display_name')
-        .from('active_service__vw s')
+        .from(criteria.deleted ? 'service s' : 'active_service__vw s')
         .join(
           innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
           innerJoin('account a').on(Op.eq('s.created_by', raw('a.id')))
@@ -75,7 +75,7 @@ export default function(options) {
 
       const countServicesBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_service__vw s')
+        .from(criteria.deleted ? 'service s' : 'active_service__vw s')
         .join(
           innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id'))),
           innerJoin('account a').on(Op.eq('s.created_by', raw('a.id')))
@@ -97,6 +97,10 @@ export default function(options) {
         if (criteria.filters.createdBy) {
           db.applyFilter(criteria.filters.createdBy, 'a.display_name', findServicesBuilder, countServicesBuilder);
         }
+      }
+
+      if (criteria.deleted) {
+        [findServicesBuilder, countServicesBuilder].forEach(builder => builder.where(Op.not('s.deleted_by', null)));
       }
 
       if (criteria.user) {
@@ -423,6 +427,18 @@ export default function(options) {
       };
     }
 
+    function restoreService(id) {
+      logger.debug(`Restoring service with id ${id}`);
+      const builder = sqb
+        .update('service', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     return cb(null, {
       getService,
       findService,
@@ -434,6 +450,7 @@ export default function(options) {
       serviceDeployStatusForNamespaces,
       getServiceAttributesForNamespace,
       saveServiceAttributesForNamespace,
+      restoreService,
     });
   }
 

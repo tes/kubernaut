@@ -138,7 +138,7 @@ export default function(options) {
 
       const findNamespacesBuilder = sqb
         .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
-        .from('active_namespace__vw n', 'cluster c', 'account cb')
+        .from(criteria.deleted ? 'namespace n' : 'active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
         .orderBy(...(sortMapping[sort] || sortMapping.name))
@@ -147,7 +147,7 @@ export default function(options) {
 
       const countNamespacesBuilder = sqb
         .select(raw('count(*)'))
-        .from('active_namespace__vw n', 'cluster c')
+        .from(criteria.deleted ? 'namespace n' : 'active_namespace__vw n', 'cluster c')
         .where(Op.eq('n.cluster', raw('c.id')));
 
       if (criteria.hasOwnProperty('ids')) {
@@ -170,6 +170,10 @@ export default function(options) {
         if (criteria.filters.cluster) {
           db.applyFilter(criteria.filters.cluster, 'c.name', findNamespacesBuilder, countNamespacesBuilder);
         }
+      }
+
+      if (criteria.deleted) {
+        [findNamespacesBuilder, countNamespacesBuilder].forEach(builder => builder.where(Op.not('n.deleted_by', null)));
       }
 
       if (criteria.user) {
@@ -302,6 +306,18 @@ export default function(options) {
       });
     }
 
+    function restoreNamespace(id) {
+      logger.debug(`Restoring namespace with id ${id}`);
+      const builder = sqb
+        .update('namespace', {
+          deleted_by: null,
+          deleted_on: null,
+        })
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toNamespace(row, attributeRows = []) {
       return new Namespace({
         id: row.id,
@@ -335,6 +351,7 @@ export default function(options) {
       enableServiceForNamespace,
       disableServiceForNamespace,
       namespacesForService,
+      restoreNamespace,
     });
   }
 

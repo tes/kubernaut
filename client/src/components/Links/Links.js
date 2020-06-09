@@ -293,3 +293,13 @@ export const AuditLink = ({ container, children }) => {
 
   return <Tag {...props}>{children || <span>Audit</span>}</Tag>;
 };
+
+export const AdminRestoreLink = ({ container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: '/admin/restore',
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Restore</span>}</Tag>;
+};
