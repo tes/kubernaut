@@ -12,6 +12,7 @@ import {
   Button,
 } from 'reactstrap';
 import { AdminSubNav } from '../SubNavs';
+import TablePagination from '../TablePagination';
 import RenderSelect from '../RenderSelect';
 
 class AdminRestorePage extends Component {
@@ -81,6 +82,12 @@ class AdminRestorePage extends Component {
                           }
                         </tbody>
                       </Table>
+                      <TablePagination
+                        pages={deleted.data.pages}
+                        page={deleted.data.page}
+                        limit={deleted.data.limit}
+                        fetchContent={this.props.fetchDeletedPagination}
+                      />
                     </Col>
                     <Col sm="1"></Col>
                   </Row>

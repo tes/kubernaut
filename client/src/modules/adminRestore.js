@@ -1,4 +1,4 @@
-import { createAction, handleActions } from 'redux-actions';
+import { createAction, handleActions, combineActions } from 'redux-actions';
 import {
   getFormValues as rfGetFormValues,
 } from 'redux-form';
@@ -64,6 +64,16 @@ export default handleActions({
       ...state.deleted,
       meta: {
         error: payload.error,
+      },
+    },
+  }),
+  [combineActions(fetchDeletedPagination, setPagination)]: (state, { payload }) => ({
+    ...state,
+    deleted: {
+      ...state.deleted,
+      pagination: {
+        page: payload.page || defaultState.deleted.pagination.page,
+        limit: payload.limit || defaultState.deleted.pagination.limit,
       },
     },
   }),

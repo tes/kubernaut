@@ -5,6 +5,7 @@ import {
 import {
   changeType,
   restore,
+  fetchDeletedPagination,
 } from '../../modules/adminRestore';
 import AdminRestorePage from './AdminRestorePage';
 
@@ -16,6 +17,7 @@ export default connect(({ account, adminRestore }) => ({
 }), {
   changeType,
   restore,
+  fetchDeletedPagination,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,
