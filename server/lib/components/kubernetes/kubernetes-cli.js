@@ -284,7 +284,7 @@ export default function(options = {}) {
           let current;
           logger.debug(`Collecting logs for job pod ${podName} from container ${container.name}`);
           try {
-            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, undefined, 30)).body;
           } catch (e) {}
 
           return {
@@ -299,7 +299,7 @@ export default function(options = {}) {
           let current;
           logger.debug(`Collecting logs for job pod ${podName} from initContainer ${container.name}`);
           try {
-            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+            current = (await clients.k8sApi.readNamespacedPodLog(podName, namespace, container.name, undefined, undefined, undefined, undefined, undefined, undefined, 30)).body;
           } catch (e) {}
 
           return {
@@ -373,10 +373,10 @@ export default function(options = {}) {
           let previous;
           let current;
           try {
-            previous = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, true, undefined, 30)).body;
+            previous = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, true, undefined, undefined, 30)).body;
           } catch (e) {}
           try {
-            current = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, undefined, undefined, 30)).body;
+            current = (await clients.k8sApi.readNamespacedPodLog(pod.metadata.name, namespace, container.name, undefined, undefined, undefined, undefined, undefined, undefined, 30)).body;
           } catch (e) {}
 
           const logs = {
