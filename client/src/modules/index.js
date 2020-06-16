@@ -7,6 +7,7 @@ import accounts from './accounts';
 import admin from './admin';
 import adminRestore from './adminRestore';
 import audit from './audit';
+import clusterEdit from './clusterEdit';
 import clusters from './clusters';
 import deploy from './deploy';
 import deployment from './deployment';
@@ -47,6 +48,7 @@ export default (history) => combineReducers({
   admin,
   adminRestore,
   audit,
+  clusterEdit,
   clusters,
   deploy,
   deployment,

@@ -11,6 +11,8 @@ export default function(options = {}) {
 
     app.get('/api/clusters', async (req, res, next) => {
       try {
+        if (! await store.hasPermission(req.user, 'clusters-read')) return next(Boom.forbidden());
+
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed clusters');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
@@ -24,6 +26,8 @@ export default function(options = {}) {
 
     app.get('/api/clusters/:id', async (req, res, next) => {
       try {
+        if (! await store.hasPermission(req.user, 'clusters-read')) return next(Boom.forbidden());
+
         const cluster = await store.getCluster(req.params.id);
         if (!cluster) return next();
         const meta = { date: new Date(), account: req.user };
@@ -34,8 +38,45 @@ export default function(options = {}) {
       }
     });
 
+    app.post('/api/clusters/:id', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'clusters-write')) return next(Boom.forbidden());
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.notFound());
+
+        if (!req.body.name) return next(Boom.badRequest('name is required'));
+        if (!req.body.config) return next(Boom.badRequest('config is required'));
+        if (!req.body.color) return next(Boom.badRequest('color is required'));
+
+        const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
+
+        const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
+        if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
+
+        const clusterOk = await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
+        if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster`));
+
+        const colorOk = isCSSColorHex(req.body.color) || isCSSColorName(req.body.color);
+        if (!colorOk) return next(Boom.badRequest(`Unable to verify color`));
+
+        const updated = await store.updateCluster(cluster.id, {
+          name: req.body.name,
+          config: req.body.config,
+          color: req.body.color,
+          priority,
+        });
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'updated cluster', { cluster });
+        res.json(updated);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.post('/api/clusters', bodyParser.json(), async (req, res, next) => {
       try {
+        if (! await store.hasPermission(req.user, 'clusters-write')) return next(Boom.forbidden());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.config) return next(Boom.badRequest('config is required'));
@@ -69,6 +110,8 @@ export default function(options = {}) {
 
     app.delete('/api/clusters/:id', async (req, res, next) => {
       try {
+        if (! await store.hasPermission(req.user, 'clusters-write')) return next(Boom.forbidden());
+
         const cluster = await store.getCluster(req.params.id);
         if (!cluster) return next();
         const meta = { date: new Date(), account: { id: req.user.id } };

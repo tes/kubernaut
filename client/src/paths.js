@@ -35,6 +35,7 @@ import { initialiseJobsPage } from './modules/jobs';
 import { initialiseJobPage } from './modules/job';
 import { initialiseJobVersionPage } from './modules/jobVersion';
 import { INITIALISE as initNewJobPage } from './modules/newJobVersion';
+import { initClusterEditPage } from './modules/clusterEdit';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 
@@ -63,6 +64,10 @@ const paths = {
   adminRestore: {
     route: '/admin/restore',
     action: initAdminRestorePage,
+  },
+  clusterEdit: {
+    route: '/admin/clusters/:clusterId/edit',
+    action: initClusterEditPage,
   },
   editAccountTeams: {
     route: '/accounts/:accountId/teams',

@@ -100,6 +100,16 @@ export default function(options) {
       return db.query(db.serialize(builder, {}).sql);
     }
 
+    function updateCluster(id, values) {
+      logger.debug(`Updating cluster with id ${id}`);
+
+      const builder = sqb
+        .update('cluster', values)
+        .where(Op.eq('id', id));
+
+      return db.query(db.serialize(builder, {}).sql);
+    }
+
     function toCluster(row) {
       return new Cluster({
         id: row.id,
@@ -122,6 +132,7 @@ export default function(options) {
       saveCluster,
       deleteCluster,
       restoreCluster,
+      updateCluster,
     });
   }
 

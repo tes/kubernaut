@@ -21,6 +21,7 @@ import {
   ClusterLink,
   EditClusterLink,
 } from '../Links';
+import Title from '../Title';
 
 class AdminClustersPage extends Component {
 
@@ -41,6 +42,7 @@ class AdminClustersPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
+          <Title title="Clusters" />
           <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
 
           <Row>

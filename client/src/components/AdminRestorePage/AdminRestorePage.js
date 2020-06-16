@@ -14,6 +14,7 @@ import {
 import { AdminSubNav } from '../SubNavs';
 import TablePagination from '../TablePagination';
 import RenderSelect from '../RenderSelect';
+import Title from '../Title';
 
 class AdminRestorePage extends Component {
 
@@ -31,6 +32,7 @@ class AdminRestorePage extends Component {
     return (
       <Row className='page-frame'>
         <Col md className="mb-2">
+          <Title title="Restore" />
           <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
 
           <Row>

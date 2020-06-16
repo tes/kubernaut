@@ -12,6 +12,7 @@ import AdminClustersPage from './components/AdminClustersPage';
 import AdminRestorePage from './components/AdminRestorePage';
 import AdminSummaryPage from './components/AdminSummaryPage';
 import AuditPage from './components/AuditPage';
+import ClusterEditPage from './components/ClusterEditPage';
 import DeployPage from './components/DeployPage';
 import DeploymentsPage from './components/DeploymentsPage';
 import DeploymentDetailsPage from './components/DeploymentDetailsPage';
@@ -302,6 +303,11 @@ export default () => <Switch>
     exact
     path={paths.adminClusters.route}
     render={() => <Wrapper><AdminClustersPage /></Wrapper> }
+  />
+  <Route
+    exact
+    path={paths.clusterEdit.route}
+    render={() => <Wrapper><ClusterEditPage /></Wrapper> }
   />
   <Route
     exact

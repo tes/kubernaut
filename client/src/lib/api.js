@@ -130,6 +130,10 @@ export const getCanManageAnyTeam = () => {
   return makeRequest(url);
 };
 
+export const getCluster = (id) => {
+  return makeRequest(`/api/clusters/${id}`);
+};
+
 export const getClusters = ({ limit = 20, offset = 0 } = {}) => {
   const qs = makeQueryString({
     limit,
@@ -498,6 +502,14 @@ export const disassociateService = (serviceId) => {
     body: JSON.stringify({
       service: serviceId,
     }),
+  });
+};
+
+export const editCluster = (id, data) => {
+  const url = `/api/clusters/${id}`;
+  return makeRequest(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
 };
 

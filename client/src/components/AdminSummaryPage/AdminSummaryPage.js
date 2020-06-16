@@ -9,6 +9,7 @@ import {
   Badge,
 } from 'reactstrap';
 import { AdminSubNav } from '../SubNavs';
+import Title from '../Title';
 
 class AdminSummaryPage extends Component {
 
@@ -18,6 +19,7 @@ class AdminSummaryPage extends Component {
     return (
       <Row className='page-frame'>
         <Col md className="mb-2">
+          <Title title="Summary" />
           <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
 
           <Row>

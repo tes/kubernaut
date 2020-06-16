@@ -6,6 +6,7 @@ import {
   AdminRestoreLink,
   AdminSummaryLink,
   AuditLink,
+  EditClusterLink,
 } from '../Links';
 
 class AdminSubNav extends Component {
@@ -13,6 +14,8 @@ class AdminSubNav extends Component {
     const {
       canAudit,
       hasClustersWrite,
+      edit,
+      cluster,
     } = this.props;
 
 
@@ -45,6 +48,15 @@ class AdminSubNav extends Component {
                 <AdminClustersLink container>
                   <NavLink><i className="fa fa-server" aria-hidden='true'></i> Clusters</NavLink>
                 </AdminClustersLink>
+              </NavItem>
+              : null
+            }
+            {
+              edit && cluster ?
+              <NavItem className="bread-nav">
+                <EditClusterLink container cluster={cluster}>
+                  <NavLink><i className="fa fa-server" aria-hidden='true'></i> Edit {cluster.name}</NavLink>
+                </EditClusterLink>
               </NavItem>
               : null
             }

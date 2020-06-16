@@ -27,6 +27,7 @@ import {
 import { CreateQuickFilters } from '../TableFilter';
 import { Ago } from '../DisplayDate';
 import { AdminSubNav } from '../SubNavs';
+import Title from '../Title';
 
 const filterDisplayNameLookup = {
   sourceAccount: 'Source account',
@@ -69,6 +70,7 @@ class AuditPage extends Component {
     return (
       <Row className="page-frame">
         <Col>
+          <Title title="Audit" />
           <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
           <Row>
             <Col className="d-flex justify-content-start flex-wrap">

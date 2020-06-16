@@ -4,6 +4,7 @@ SELECT
   c.config,
   c.created_on,
   c.color,
+  c.priority,
   cb.id AS created_by_id,
   cb.display_name AS created_by_display_name
 FROM
