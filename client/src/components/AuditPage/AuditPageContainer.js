@@ -12,6 +12,7 @@ export default connect(({ audit, account }) => ({
   audits: audit.data,
   filters: audit.filter.filters,
   canAudit: account && account.permissions && account.permissions['audit-read'],
+  hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
 }), {
   fetchAuditPagination,
   addFilter,

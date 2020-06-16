@@ -15,6 +15,7 @@ const defaultState = {
   permissions: {
     'jobs-read': false,
     'audit-read': false,
+    'clusters-write': false,
   },
   showAdmin: false,
 };
@@ -49,7 +50,7 @@ export default handleActions({
     return {
       ...state,
       permissions: updatedPermissions,
-      showAdmin: updatedPermissions['audit-read'],
+      showAdmin: updatedPermissions['audit-read'] || updatedPermissions['clusters-write'],
     };
   },
 }, defaultState);

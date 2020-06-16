@@ -160,6 +160,16 @@ export const CreateDeploymentLink = (props) => {
   );
 };
 
+export const EditClusterLink = ({ cluster = {}, container, children}) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: `/admin/clusters/${cluster.id}/edit`,
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Edit</span>}</Tag>;
+};
+
 export const EditNamespaceLink = ({ namespace = {}, container, namespaceId, children}) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
@@ -302,4 +312,14 @@ export const AdminRestoreLink = ({ container, children }) => {
   };
 
   return <Tag {...props}>{children || <span>Restore</span>}</Tag>;
+};
+
+export const AdminClustersLink = ({ container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: '/admin/clusters',
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Clusters</span>}</Tag>;
 };

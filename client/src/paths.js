@@ -9,6 +9,7 @@ import { initialiseAccountsPage } from './modules/accounts';
 import { initAdminPage } from './modules/admin';
 import { initAdminRestorePage } from './modules/adminRestore';
 import { fetchAccountInfo as fetchEditAccountTeamsInfo } from './modules/editAccountTeams';
+import { initialiseClustersPage } from './modules/clusters';
 import { INITIALISE as initialiseDeploy } from './modules/deploy';
 import { fetchDeployment } from './modules/deployment';
 import { initialiseDeploymentsPage } from './modules/deployments';
@@ -54,6 +55,10 @@ const paths = {
   admin: {
     route: '/admin',
     action: initAdminPage,
+  },
+  adminClusters: {
+    route: '/admin/clusters',
+    action: initialiseClustersPage,
   },
   adminRestore: {
     route: '/admin/restore',

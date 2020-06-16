@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Nav, NavItem, NavLink } from 'reactstrap';
 import {
+  AdminClustersLink,
   AdminRestoreLink,
   AdminSummaryLink,
   AuditLink,
@@ -10,7 +11,8 @@ import {
 class AdminSubNav extends Component {
   render() {
     const {
-      canAudit
+      canAudit,
+      hasClustersWrite,
     } = this.props;
 
 
@@ -37,6 +39,15 @@ class AdminSubNav extends Component {
                 <NavLink><i className="fa fa-undo" aria-hidden='true'></i> Restore</NavLink>
               </AdminRestoreLink>
             </NavItem>
+            {
+              hasClustersWrite ?
+              <NavItem>
+                <AdminClustersLink container>
+                  <NavLink><i className="fa fa-server" aria-hidden='true'></i> Clusters</NavLink>
+                </AdminClustersLink>
+              </NavItem>
+              : null
+            }
           </Nav>
         </Col>
       </Row>

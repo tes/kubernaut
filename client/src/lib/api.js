@@ -130,7 +130,13 @@ export const getCanManageAnyTeam = () => {
   return makeRequest(url);
 };
 
-export const getClusters = () => makeRequest('/api/clusters').then(computePagination);
+export const getClusters = ({ limit = 20, offset = 0 } = {}) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+  return makeRequest(`/api/clusters?${qs}`).then(computePagination);
+};
 
 export const getDeleted = ({ limit = 20, offset = 0, type }) => {
   const qs = makeQueryString({
@@ -663,6 +669,13 @@ export const restoreDeleted = ({ type, id }) => {
       type,
       id,
     }),
+  });
+};
+
+export const saveCluster = (values) => {
+  return makeRequest('/api/clusters', {
+    method: 'POST',
+    body: JSON.stringify(values),
   });
 };
 

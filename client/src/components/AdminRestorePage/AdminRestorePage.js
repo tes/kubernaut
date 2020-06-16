@@ -18,7 +18,7 @@ import RenderSelect from '../RenderSelect';
 class AdminRestorePage extends Component {
 
   render() {
-    const { canAudit, deleted } = this.props;
+    const { canAudit, deleted, hasClustersWrite } = this.props;
     const restoreSelectValues = [
       { value: 'account', display: 'Account' },
       { value: 'cluster', display: 'Cluster' },
@@ -31,7 +31,7 @@ class AdminRestorePage extends Component {
     return (
       <Row className='page-frame'>
         <Col md className="mb-2">
-          <AdminSubNav canAudit={canAudit} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
 
           <Row>
             <Col>

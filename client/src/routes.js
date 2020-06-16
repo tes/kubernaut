@@ -8,6 +8,7 @@ import AccountEditPage from './components/AccountEditPage';
 import AccountPage from './components/AccountPage';
 import AccountsPage from './components/AccountsPage';
 import AccountTeamPage from './components/AccountTeamPage';
+import AdminClustersPage from './components/AdminClustersPage';
 import AdminRestorePage from './components/AdminRestorePage';
 import AdminSummaryPage from './components/AdminSummaryPage';
 import AuditPage from './components/AuditPage';
@@ -296,6 +297,11 @@ export default () => <Switch>
     render={({ location }) => {
       return <Wrapper title="Deploy"><DeployPage /></Wrapper>;
     }}
+  />
+  <Route
+    exact
+    path={paths.adminClusters.route}
+    render={() => <Wrapper><AdminClustersPage /></Wrapper> }
   />
   <Route
     exact

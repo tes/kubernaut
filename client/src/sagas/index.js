@@ -6,6 +6,7 @@ import accountsSagas from './accounts';
 import adminSagas from './admin';
 import adminRestoreSagas from './adminRestore';
 import auditSagas from './audit';
+import clustersSagas from './clusters';
 import deploySagas from './deploy';
 import deploymentSagas from './deployment';
 import deploymentsSagas from './deployments';
@@ -44,6 +45,7 @@ export default function* rootSaga() {
     ...adminSagas,
     ...adminRestoreSagas,
     ...auditSagas,
+    ...clustersSagas,
     ...deploySagas,
     ...deploymentSagas,
     ...deploymentsSagas,

@@ -13,12 +13,12 @@ import { AdminSubNav } from '../SubNavs';
 class AdminSummaryPage extends Component {
 
   render() {
-    const { canAudit, summary } = this.props;
+    const { canAudit, summary, hasClustersWrite } = this.props;
 
     return (
       <Row className='page-frame'>
         <Col md className="mb-2">
-          <AdminSubNav canAudit={canAudit} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
 
           <Row>
             <Col md="5">

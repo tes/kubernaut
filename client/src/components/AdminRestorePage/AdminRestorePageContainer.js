@@ -13,6 +13,7 @@ const formName = 'adminRestore';
 
 export default connect(({ account, adminRestore }) => ({
   canAudit: account && account.permissions && account.permissions['audit-read'],
+  hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
   deleted: adminRestore.deleted,
 }), {
   changeType,

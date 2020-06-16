@@ -29,6 +29,8 @@ export function* checkPermissionSaga({ payload: { data, ...options } }) {
     yield put(setPermission({ permission: 'jobs-read', answer: jobsRead.answer }));
     const auditRead = yield call(hasPermission, 'audit-read');
     yield put(setPermission({ permission: 'audit-read', answer: auditRead.answer }));
+    const clustersWrite = yield call(hasPermission, 'clusters-write');
+    yield put(setPermission({ permission: 'clusters-write', answer: clustersWrite.answer }));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
   }

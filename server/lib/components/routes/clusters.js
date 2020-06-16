@@ -41,6 +41,8 @@ export default function(options = {}) {
         if (!req.body.config) return next(Boom.badRequest('config is required'));
         if (!req.body.color) return next(Boom.badRequest('color is required'));
 
+        const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
+
         const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
         if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
 
@@ -54,6 +56,7 @@ export default function(options = {}) {
           name: req.body.name,
           config: req.body.config,
           color: req.body.color,
+          priority,
         };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const cluster = await store.saveCluster(data, meta);
