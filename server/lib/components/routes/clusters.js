@@ -47,6 +47,7 @@ export default function(options = {}) {
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.config) return next(Boom.badRequest('config is required'));
         if (!req.body.color) return next(Boom.badRequest('color is required'));
+        if (!req.body.context) return next(Boom.badRequest('context is required'));
 
         const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
 
@@ -64,6 +65,7 @@ export default function(options = {}) {
           config: req.body.config,
           color: req.body.color,
           priority,
+          context: req.body.context,
         });
 
         const meta = { date: new Date(), account: req.user };
@@ -81,6 +83,7 @@ export default function(options = {}) {
         if (!req.body.name) return next(Boom.badRequest('name is required'));
         if (!req.body.config) return next(Boom.badRequest('config is required'));
         if (!req.body.color) return next(Boom.badRequest('color is required'));
+        if (!req.body.context) return next(Boom.badRequest('context is required'));
 
         const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
 
@@ -98,6 +101,7 @@ export default function(options = {}) {
           config: req.body.config,
           color: req.body.color,
           priority,
+          context: req.body.context,
         };
         const meta = { date: new Date(), account: { id: req.user.id } };
         const cluster = await store.saveCluster(data, meta);

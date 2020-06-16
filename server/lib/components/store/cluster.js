@@ -1,6 +1,7 @@
 import SQL from './sql';
 import Cluster from '../../domain/Cluster';
 import Account from '../../domain/Account';
+import { v4 as uuid } from 'uuid';
 import sqb from 'sqb';
 
 export default function(options) {
@@ -11,14 +12,22 @@ export default function(options) {
 
     async function saveCluster(data, meta) {
       logger.debug(`Saving cluster: ${data.name}`);
+      const newClusterId = uuid();
+      const builder = sqb
+        .insert('cluster', {
+          id: newClusterId,
+          name: data.name,
+          config: data.config,
+          color: data.color,
+          created_by: meta.account.id,
+          created_on: meta.date,
+          priority: data.priority,
+          context: data.context,
+        });
 
-      const result = await db.query(SQL.SAVE_CLUSTER, [
-        data.name, data.config, data.color, meta.date, meta.account.id, data.priority
-      ]);
+      await db.query(db.serialize(builder, {}).sql);
 
-      const cluster = new Cluster({
-        ...data, id: result.rows[0].id, createdOn: meta.date, createdBy: meta.account.id,
-      });
+      const cluster = await getCluster(newClusterId);
 
       logger.debug(`Saved cluster: ${cluster.name}/${cluster.id}`);
 
@@ -27,7 +36,14 @@ export default function(options) {
 
     async function getCluster(id) {
       logger.debug(`Getting cluster by id: ${id}`);
-      const result = await db.query(SQL.SELECT_CLUSTER_BY_ID, [id]);
+      const builder = sqb
+        .select('c.id', 'c.name', 'c.config', 'c.context', 'c.created_on', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.priority')
+        .from('active_cluster__vw c', 'account cb')
+        .where(Op.eq('c.created_by', raw('cb.id')))
+        .where(Op.eq('c.id', id));
+
+      const result = await db.query(db.serialize(builder, {}).sql);
+
       logger.debug(`Found ${result.rowCount} clusters with id: ${id}`);
       return result.rowCount ? toCluster(result.rows[0]) : undefined;
     }
@@ -45,7 +61,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findClustersBuilder = sqb
-        .select('c.id', 'c.name', 'c.config', 'c.created_on', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.priority')
+        .select('c.id', 'c.name', 'c.config', 'c.context', 'c.created_on', 'c.color', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.priority')
         .from(criteria.deleted ? 'cluster c' : 'active_cluster__vw c', 'account cb')
         .where(Op.eq('c.created_by', raw('cb.id')))
         .orderBy('c.priority asc', 'c.name asc')
@@ -115,6 +131,7 @@ export default function(options) {
         id: row.id,
         name: row.name,
         config: row.config,
+        context: row.context,
         createdOn: row.created_on,
         color: row.color,
         createdBy: new Account({
