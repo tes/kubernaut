@@ -132,6 +132,7 @@ function makeCluster(overrides = {}) {
     name: chance.word({ length: 32 }),
     config: `.kube/${chance.word()}`,
     color: 'black',
+    context: chance.word({ length: 32 }),
   }, overrides));
 }
 

@@ -179,6 +179,7 @@ describe('Clusters API', () => {
         json: {
           name: 'foo',
           color: 'foo',
+          context: 'foo',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -199,7 +200,8 @@ describe('Clusters API', () => {
         json: {
           name: 'foo',
           config: 'does-not-exist-123123123',
-          color: 'foo'
+          color: 'foo',
+          context: 'foo',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -220,6 +222,7 @@ describe('Clusters API', () => {
         json: {
           name: 'foo',
           config: __filename,
+          context: 'foo',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -241,6 +244,7 @@ describe('Clusters API', () => {
           name: 'foo',
           config: __filename,
           color: 'bob',
+          context: 'foo',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
