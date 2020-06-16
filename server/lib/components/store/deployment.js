@@ -376,13 +376,13 @@ export default function(options) {
         namespace: new Namespace({
           id: row.namespace_id,
           name: row.namespace_name,
-          context: row.namespace_context,
           color: row.namespace_color,
           cluster: new Cluster({
             id: row.cluster_id,
             name: row.cluster_name,
             config: row.cluster_config,
             color: row.cluster_color,
+            context: row.cluster_context,
           }),
         }),
         manifest: new Manifest({

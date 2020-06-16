@@ -30,11 +30,11 @@ describe('NamespaceManage reducer', () => {
     const namespaceData = {
       id: '123',
       name: 'abc',
-      context: 'abc',
       cluster: {
         id: '456',
         name: 'bob',
         color: 'black',
+        context: 'abc',
       },
       attributes: {
         a: '1',

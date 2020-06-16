@@ -97,7 +97,6 @@ export default handleActions({
     cluster: data.cluster.name,
     color: data.color || data.cluster.color,
     initialValues: {
-      context: data.context || '',
       color: data.color || '',
       cluster: data.cluster.id || '',
       attributes: Object.keys(data.attributes).reduce((arr, attr) => {

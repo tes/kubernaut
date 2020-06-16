@@ -69,7 +69,6 @@ const defaultState = {
   initialValues: {
     name: '',
     cluster: '',
-    context: '',
   },
   pagination: {
     page: 1,

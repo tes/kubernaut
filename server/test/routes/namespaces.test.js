@@ -139,8 +139,8 @@ describe('Namespaces API', () => {
 
     it('should save a namespace', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const data = makeNamespace({ name: 'other', cluster, context: 'test' });
+      const cluster = await store.saveCluster(makeCluster({ context: 'test'}), makeRootMeta());
+      const data = makeNamespace({ name: 'other', cluster });
 
       const response = await request({
         url: `/api/namespaces`,
@@ -148,7 +148,6 @@ describe('Namespaces API', () => {
         json: {
           name: data.name,
           cluster: data.cluster.name,
-          context: data.context,
         },
       });
 
@@ -158,13 +157,12 @@ describe('Namespaces API', () => {
 
       expect(namespace).toBeDefined();
       expect(namespace.name).toBe(data.name);
-      expect(namespace.context).toBe(data.context);
     });
 
     it('should save a namespace with a color', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const data = makeNamespace({ name: 'other', cluster, context: 'test' });
+      const cluster = await store.saveCluster(makeCluster({ context: 'test'}), makeRootMeta());
+      const data = makeNamespace({ name: 'other', cluster });
 
       const response = await request({
         url: `/api/namespaces`,
@@ -172,7 +170,6 @@ describe('Namespaces API', () => {
         json: {
           name: data.name,
           cluster: data.cluster.name,
-          context: data.context,
           color: 'black',
         },
       });
@@ -183,7 +180,6 @@ describe('Namespaces API', () => {
 
       expect(namespace).toBeDefined();
       expect(namespace.name).toBe(data.name);
-      expect(namespace.context).toBe(data.context);
       expect(namespace.color).toBe('black');
     });
 
@@ -197,33 +193,12 @@ describe('Namespaces API', () => {
         resolveWithFullResponse: true,
         json: {
           cluster: 'Test',
-          context: 'test',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('name is required');
-      });
-    });
-
-    it('should reject payloads without a context', async () => {
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `/api/namespaces`,
-        method: 'POST',
-        resolveWithFullResponse: true,
-        json: {
-          name: 'foo',
-          cluster: 'Test',
-        },
-      }).then(() => {
-        throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('context is required');
       });
     });
 
@@ -237,7 +212,6 @@ describe('Namespaces API', () => {
         resolveWithFullResponse: true,
         json: {
           name: 'foo',
-          context: 'test',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -258,36 +232,12 @@ describe('Namespaces API', () => {
         json: {
           name: 'foo',
           cluster: 'missing',
-          context: 'test',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe('cluster missing was not found');
-      });
-    });
-
-    it('should reject payloads where context cannot be found', async () => {
-
-      await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
-
-      loggerOptions.suppress = true;
-
-      await request({
-        url: `/api/namespaces`,
-        method: 'POST',
-        resolveWithFullResponse: true,
-        json: {
-          name: 'foo',
-          cluster: 'Test',
-          context: 'missing',
-        },
-      }).then(() => {
-        throw new Error('Should have failed with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe('context missing was not found on Test cluster');
       });
     });
 
@@ -304,7 +254,6 @@ describe('Namespaces API', () => {
         json: {
           name: 'missing',
           cluster: cluster.name,
-          context: 'test',
         },
       }).then(() => {
         throw new Error('Should have failed with 400');
@@ -318,7 +267,7 @@ describe('Namespaces API', () => {
       loggerOptions.suppress = true;
 
       const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
-      const data = makeNamespace({ name: 'other', cluster, context: 'test' });
+      const data = makeNamespace({ name: 'other', cluster });
 
       await request({
         url: `/api/namespaces`,
@@ -327,7 +276,6 @@ describe('Namespaces API', () => {
         json: {
           name: data.name,
           cluster: cluster.name,
-          context: data.context,
           color: 'foo',
         },
       }).then(() => {
@@ -440,28 +388,6 @@ describe('Namespaces API', () => {
       }).catch(errors.StatusCodeError, (reason) => {
         expect(reason.response.statusCode).toBe(400);
         expect(reason.response.body.message).toBe(`cluster ${invalidClusterId} was not found`);
-      });
-    });
-
-    it('should return bad request for an invalid context', async () => {
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
-      const data = makeNamespace({ cluster, color: 'black' });
-      const saved = await store.saveNamespace(data, makeRootMeta());
-      const invalidContext = 'notacontext';
-
-      loggerOptions.suppress = true;
-      await request({
-        url: `/api/namespaces/${saved.id}`,
-        method: 'POST',
-        resolveWithFullResponse: true,
-        json: {
-          context: invalidContext,
-        },
-      }).then(() => {
-        throw new Error('Should have errored with 400');
-      }).catch(errors.StatusCodeError, (reason) => {
-        expect(reason.response.statusCode).toBe(400);
-        expect(reason.response.body.message).toBe(`context ${invalidContext} was not found on ${cluster.name} cluster`);
       });
     });
   });

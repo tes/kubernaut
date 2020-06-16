@@ -146,21 +146,6 @@ class NamespaceEditPage extends Component {
                     </FormGroup>
                   </Col>
                 </Row>
-                <Row form>
-                  <Col md="6">
-                    <FormGroup className="row">
-                      <Label for="context" className="col-sm-2 col-form-label text-right">Context:</Label>
-                      <Col sm="5">
-                        <Field
-                          name="context"
-                          className="form-control"
-                          component={RenderInput}
-                          type="text"
-                          />
-                      </Col>
-                    </FormGroup>
-                  </Col>
-                </Row>
                 <FieldArray
                   name="attributes"
                   component={renderAttributes}

@@ -60,7 +60,7 @@ export default function(options = {}) {
         await Promise.each(deployments, async (latestDeployment, index) => {
           const namespace = await store.getNamespace(latestDeployment.namespace.id);
           try {
-            const restarts = await kubernetes.deploymentRestartsInANamespace(namespace.cluster.config, namespace.context, namespace.name, service.name, logger);
+            const restarts = await kubernetes.deploymentRestartsInANamespace(namespace.cluster.config, namespace.cluster.context, namespace.name, service.name, logger);
             deployments[index].restarts = restarts;
           } catch (e) {
             logger.error(e);
@@ -133,10 +133,10 @@ export default function(options = {}) {
         if (!registry) return next(Boom.badRequest(`registry ${req.body.registry} was not found`));
         if (! await store.hasPermissionOnRegistry(req.user, registry.id, 'releases-read')) return next(Boom.forbidden());
 
-        const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.context, res.locals.logger);
-        if (!contextOk) return next(Boom.badRequest(`context ${namespace.context} was not found`));
+        const contextOk = await kubernetes.checkContext(namespace.cluster.config, namespace.cluster.context, res.locals.logger);
+        if (!contextOk) return next(Boom.badRequest(`context ${namespace.cluster.context} was not found`));
 
-        const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.context, namespace.name, res.locals.logger);
+        const namespaceOk = await kubernetes.checkNamespace(namespace.cluster.config, namespace.cluster.context, namespace.name, res.locals.logger);
         if (!namespaceOk) return next(Boom.badRequest(`namespace ${namespace.name} was not found in ${namespace.cluster.name} cluster`));
 
         const serviceCanDeploytoNamespace = await store.checkServiceCanDeploytoNamespace(namespace, release.service);
@@ -238,7 +238,7 @@ export default function(options = {}) {
       const yaml = deployment.secret ? `${deployment.secret.yaml}\n${deployment.manifest.yaml}`: deployment.manifest.yaml;
       const code = await kubernetes.apply(
         deployment.namespace.cluster.config,
-        deployment.namespace.context,
+        deployment.namespace.cluster.context,
         deployment.namespace.name,
         yaml,
         emitter,
@@ -259,7 +259,7 @@ export default function(options = {}) {
         });
         const code = await kubernetes.rolloutStatus(
           deployment.namespace.cluster.config,
-          deployment.namespace.context,
+          deployment.namespace.cluster.context,
           deployment.namespace.name,
           deployment.release.service.name,
           emitter

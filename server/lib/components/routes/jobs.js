@@ -305,7 +305,7 @@ export default function() {
         if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(job.namespace.id);
-        await kubernetes.removeCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
+        await kubernetes.removeCronjob(namespace.cluster.config, namespace.cluster.context, namespace.name, shortNameGenerator(job.name), logger);
         const meta = { date: new Date(), account: req.user };
         await store.deleteJob(job, meta);
         await store.audit(meta, 'deleted job', { job });
@@ -324,7 +324,7 @@ export default function() {
         if (! await store.hasPermissionOnNamespace(req.user, job.namespace.id, 'jobs-apply')) return next(Boom.forbidden());
 
         const namespace = await store.getNamespace(job.namespace.id);
-        await kubernetes.removeCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
+        await kubernetes.removeCronjob(namespace.cluster.config, namespace.cluster.context, namespace.name, shortNameGenerator(job.name), logger);
         const meta = { date: new Date(), account: req.user };
 
         const updatedJob = await store.pauseJob(job);
@@ -344,7 +344,7 @@ export default function() {
 
         const namespace = await store.getNamespace(job.namespace.id);
 
-        const output = await kubernetes.getLastLogsForCronjob(namespace.cluster.config, namespace.context, namespace.name, shortNameGenerator(job.name), logger);
+        const output = await kubernetes.getLastLogsForCronjob(namespace.cluster.config, namespace.cluster.context, namespace.name, shortNameGenerator(job.name), logger);
 
         return res.json(output);
       } catch (err) {
@@ -499,7 +499,7 @@ export default function() {
 
         const applyExitCode = await kubernetes.apply(
           namespace.cluster.config,
-          namespace.context,
+          namespace.cluster.context,
           namespace.name,
           yamlDocs.join('---\n'),
           emitter,
@@ -550,7 +550,7 @@ export default function() {
         await store.setJobVersionLastApplied(jobVersion, meta);
         const applyExitCode = await kubernetes.apply(
           namespace.cluster.config,
-          namespace.context,
+          namespace.cluster.context,
           namespace.name,
           yamlDocs.join('---\n'),
           emitter,

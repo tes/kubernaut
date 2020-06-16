@@ -130,7 +130,7 @@ export default function(options = {}) {
         if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'deployments-read')) return next(Boom.forbidden());
         let result;
         try {
-          result = await kubernetes.getLastLogsForDeployment(namespace.cluster.config, namespace.context, namespace.name, service.name, logger);
+          result = await kubernetes.getLastLogsForDeployment(namespace.cluster.config, namespace.cluster.context, namespace.name, service.name, logger);
         } catch (e) {
           logger.error(e);
           result = [];

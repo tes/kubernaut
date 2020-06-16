@@ -720,13 +720,12 @@ export const saveJobVersion = (job, data) => {
   });
 };
 
-export const saveNamespace = (name, cluster, context) => {
+export const saveNamespace = (name, cluster) => {
   return makeRequest('/api/namespaces', {
     method: 'POST',
     body: JSON.stringify({
       name,
       cluster,
-      context,
     }),
   });
 };

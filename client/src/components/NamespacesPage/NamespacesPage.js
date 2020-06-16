@@ -112,18 +112,6 @@ class NamespacesPage extends Component {
                       </Col>
                     </FormGroup>
                     <FormGroup row>
-                      <Label sm="3" className="text-right" for="context">Context:</Label>
-                      <Col sm="9">
-                        <Field
-                          className="form-control"
-                          name="context"
-                          component={RenderInput}
-                          type="text"
-                          autoComplete="off"
-                        />
-                      </Col>
-                    </FormGroup>
-                    <FormGroup row>
                       <Col>
                         {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
                       </Col>

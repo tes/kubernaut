@@ -29,7 +29,7 @@ try {
       }), makeRootMeta({ date: new Date() }));
     };
 
-    const ensureCluster = async (name, color = 'saddlebrown', priority, config = resolve(process.env.HOME, '.kube/config')) => {
+    const ensureCluster = async (name, color = 'saddlebrown', priority, config = resolve(process.env.HOME, '.kube/config'), context = 'docker-for-desktop') => {
       const existingCluster = await store.findCluster({ name });
       if (existingCluster) return existingCluster;
 
@@ -38,16 +38,16 @@ try {
         config,
         color,
         priority,
+        context,
       }), makeRootMeta({ date: new Date() }));
     };
-    const ensureNamespace = async (name, cluster, context = 'docker-for-desktop') => {
+    const ensureNamespace = async (name, cluster) => {
       const existing = await store.findNamespace({ name, cluster: cluster.name });
       if (existing) return existing;
 
       return await store.saveNamespace(makeNamespace({
         name,
         cluster: cluster,
-        context: context,
       }), makeRootMeta({ date: new Date() }));
     };
 
@@ -57,9 +57,9 @@ try {
     const cluster = await ensureCluster('development', 'saddlebrown', 100);
     const stagingCluster = await ensureCluster('staging', 'blue', 200);
     const liveCluster = await ensureCluster('live', 'goldenrod', 300);
-    const localCluster = await ensureCluster('local', 'lightblue', 100, resolve(process.env.HOME, '.config/k3d/k3s-default/kubeconfig.yaml'));
+    const localCluster = await ensureCluster('local', 'lightblue', 100, resolve(process.env.HOME, '.config/k3d/k3s-default/kubeconfig.yaml'), 'k3s-default');
 
-    await ensureNamespace('default', localCluster, 'k3s-default');
+    await ensureNamespace('default', localCluster);
     const defaultNS = await ensureNamespace('default', cluster);
     const privateNS = await ensureNamespace('private', cluster);
     const defaultNSOnStagingCluster = await ensureNamespace('default', stagingCluster);

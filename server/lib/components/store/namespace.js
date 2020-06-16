@@ -3,6 +3,7 @@ import sqb from 'sqb';
 import Promise from 'bluebird';
 import SQL from './sql';
 import Namespace from '../../domain/Namespace';
+import Cluster from '../../domain/Cluster';
 import Account from '../../domain/Account';
 
 export default function(options) {
@@ -15,7 +16,7 @@ export default function(options) {
       logger.debug(`Getting namespace by id: ${id}`);
 
       const selectNamespaceBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.created_on', 'n.color', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.color cluster_color', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
+        .select('n.id', 'n.name', 'n.created_on', 'n.color', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.context cluster_context', 'c.color cluster_color', 'cb.id created_by_id', 'cb.display_name created_by_display_name')
         .from('active_namespace__vw n', 'account cb', 'cluster c')
         .where(Op.eq('n.id', id))
         .where(Op.eq('n.cluster', raw('c.id')))
@@ -52,7 +53,7 @@ export default function(options) {
       logger.debug(`Saving namespace: ${data.cluster.id}/${data.name}`);
 
       const result = await connection.query(SQL.SAVE_NAMESPACE, [
-        data.name, data.cluster.id, data.context, data.color, meta.date, meta.account.id,
+        data.name, data.cluster.id, data.color, meta.date, meta.account.id,
       ]);
 
       const namespace = new Namespace({
@@ -137,7 +138,7 @@ export default function(options) {
       const bindVariables = {};
 
       const findNamespacesBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
+        .select('n.id', 'n.name', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.context cluster_context', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
         .from(criteria.deleted ? 'namespace n' : 'active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
@@ -266,7 +267,7 @@ export default function(options) {
         .where(Op.is('sn.deleted_on', null));
 
       const selectBuilder = sqb
-        .select('n.id', 'n.name', 'n.context', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
+        .select('n.id', 'n.name', 'n.color', 'n.created_on', 'c.id cluster_id', 'c.name cluster_name', 'c.config cluster_config', 'c.context cluster_context', 'cb.id created_by_id', 'cb.display_name created_by_display_name', 'c.color cluster_color')
         .from('active_namespace__vw n', 'cluster c', 'account cb')
         .where(Op.eq('n.cluster', raw('c.id')))
         .where(Op.eq('n.created_by', raw('cb.id')))
@@ -322,14 +323,14 @@ export default function(options) {
       return new Namespace({
         id: row.id,
         name: row.name,
-        context: row.context,
         color: row.color,
-        cluster: {
+        cluster: new Cluster({
           id: row.cluster_id,
           name: row.cluster_name,
           config: row.cluster_config,
           color: row.cluster_color,
-        },
+          context: row.cluster_context,
+        }),
         createdOn: row.created_on,
         createdBy: new Account({
           id: row.created_by_id,

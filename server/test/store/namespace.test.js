@@ -85,7 +85,6 @@ describe('Namespace Store', () => {
       const updatedNamespace = await updateNamespace(namespace.id, {
         cluster: secondCluster.id,
         color: 'aliceblue',
-        context: 'bob',
         attributes: {
           a: 'abc',
           b: '123',
@@ -96,7 +95,6 @@ describe('Namespace Store', () => {
       expect(updatedNamespace.id).toBe(namespace.id);
       expect(updatedNamespace.cluster.id).toBe(secondCluster.id);
       expect(updatedNamespace.color).toBe('aliceblue');
-      expect(updatedNamespace.context).toBe('bob');
       expect(updatedNamespace.attributes).toBeDefined();
       expect(updatedNamespace.attributes).toMatchObject({
         a: 'abc',
@@ -117,7 +115,6 @@ describe('Namespace Store', () => {
       expect(namespace).toBeDefined();
       expect(namespace.id).toBe(saved.id);
       expect(namespace.name).toBe(data.name);
-      expect(namespace.context).toBe(data.context);
       expect(namespace.cluster.id).toBe(data.cluster.id);
       expect(namespace.createdOn.toISOString()).toBe(meta.date.toISOString());
       expect(namespace.createdBy.id).toBe(meta.account.id);

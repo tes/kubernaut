@@ -27,9 +27,6 @@ class NamespaceDetailsPage extends Component {
           <NamespacesSubNav namespace={namespace} canEdit={this.props.canEdit} canManage={this.props.canManage} />
 
           <dl className="row">
-            <dt className="col-md-3">Context:</dt>
-            <dd className="col-md-9">{namespace.context}</dd>
-
             <dt className="col-md-3">Attributes:</dt>
             <dd className="col-md-9">
               {namespaceAttributes}

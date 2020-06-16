@@ -144,10 +144,10 @@ describe('Deployments API', () => {
     let latestFromNs2;
 
     beforeEach(async () => {
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const cluster2 = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace1 = await store.saveNamespace(makeNamespace({ name: 'ns1', cluster, context: 'test' }), makeRootMeta());
-      const namespace2 = await store.saveNamespace(makeNamespace({ name: 'ns2', cluster: cluster2, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const cluster2 = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace1 = await store.saveNamespace(makeNamespace({ name: 'ns1', cluster }), makeRootMeta());
+      const namespace2 = await store.saveNamespace(makeNamespace({ name: 'ns2', cluster: cluster2 }), makeRootMeta());
       const release1 = await store.saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 1 }), makeRootMeta());
       const release2 = await store.saveRelease(makeRelease({ service: { name: 'hello-world' }, version: 2 }), makeRootMeta());
       registry = release1.service.registry.name;
@@ -220,8 +220,8 @@ describe('Deployments API', () => {
 
     it('should save a deployment', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         service: {
@@ -266,8 +266,8 @@ describe('Deployments API', () => {
 
     it('should save a deployment with secret', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         service: {
@@ -318,8 +318,8 @@ describe('Deployments API', () => {
 
     it('should report manifest compilation errors', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         template: {
@@ -354,8 +354,8 @@ describe('Deployments API', () => {
 
     it('should apply the kubernetes manifest', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         service: {
@@ -391,8 +391,8 @@ describe('Deployments API', () => {
 
     it('should apply the kubernetes manifest (with secrets)', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         service: {
@@ -437,8 +437,8 @@ describe('Deployments API', () => {
 
     it('should report apply failure', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
 
       const release = makeRelease({
         service: {
@@ -476,11 +476,10 @@ describe('Deployments API', () => {
     });
 
     it('should use namespace attributes', async () => {
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'test' }), makeRootMeta());
       const namespace = await store.saveNamespace(makeNamespace({
         name: 'default',
         cluster,
-        context: 'test',
         attributes: {
           replicas: '3',
         },
@@ -638,8 +637,8 @@ describe('Deployments API', () => {
 
     it('should reject payloads a missing context (kubernetes)', async () => {
 
-      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'missing' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ context: 'missing' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
       const release = makeRelease();
       await store.saveRelease(release, makeRootMeta());
 
@@ -666,8 +665,8 @@ describe('Deployments API', () => {
 
     it('should reject payloads with a missing namespace (kubernetes)', async () => {
 
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'missing', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'missing', cluster }), makeRootMeta());
       const release = makeRelease();
       await store.saveRelease(release, makeRootMeta());
 
@@ -755,8 +754,8 @@ describe('Deployments API', () => {
 
   describe('POST /api/deployments/:id/note', () => {
     it('should add a note to a deployment', async () => {
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
       const saved = await saveDeployment({ namespace });
 
       const response = await request({
@@ -774,8 +773,8 @@ describe('Deployments API', () => {
     });
 
     it('should update a note on a deployment', async () => {
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
       const saved = await saveDeployment({ namespace });
       await store.setDeploymentNote(saved.id, 'testing123');
 
@@ -798,8 +797,8 @@ describe('Deployments API', () => {
 
     it('should delete deployments', async () => {
 
-      const cluster = await store.saveCluster(makeCluster({ name: 'Test' }), makeRootMeta());
-      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster, context: 'test' }), makeRootMeta());
+      const cluster = await store.saveCluster(makeCluster({ name: 'Test', context: 'test' }), makeRootMeta());
+      const namespace = await store.saveNamespace(makeNamespace({ name: 'default', cluster }), makeRootMeta());
       const saved = await saveDeployment({ namespace });
 
       const response = await request({

@@ -29,11 +29,11 @@ describe('NamespaceEdit reducer', () => {
     const namespaceData = {
       id: '123',
       name: 'abc',
-      context: 'abc',
       cluster: {
         id: '456',
         name: 'bob',
         color: 'black',
+        context: 'abc',
       },
       attributes: {
         a: '1',
@@ -45,7 +45,6 @@ describe('NamespaceEdit reducer', () => {
     expect(state.name).toBe(namespaceData.name);
     expect(state.color).toBe(namespaceData.cluster.color);
     expect(state.initialValues).toMatchObject({
-      context: namespaceData.context,
       color: '',
       cluster: namespaceData.cluster.id,
       attributes: [{ name: 'a', value: namespaceData.attributes.a }],

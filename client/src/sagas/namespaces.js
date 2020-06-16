@@ -78,11 +78,11 @@ export function* submitSaga() {
   try {
     const values = yield select(getFormValues);
 
-    if (!values.name || !values.cluster || !values.context) {
+    if (!values.name || !values.cluster) {
       yield put(submitForm.failure());
       return;
     }
-    const data = yield call(saveNamespace, values.name, values.cluster, values.context);
+    const data = yield call(saveNamespace, values.name, values.cluster);
     yield put(submitForm.success());
     yield put(push(`/namespaces/${data.id}`));
   } catch (err) {
