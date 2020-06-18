@@ -15,6 +15,7 @@ import audit from './audit';
 import team from './team';
 import authz from './authz';
 import store from './store';
+import ingress from './ingress';
 
 const authzDep = { component: 'store.authz', destination: 'authz' };
 
@@ -34,6 +35,7 @@ export default () => systemic({ name: 'stores/postgres' })
   .add('store.secret', secret()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.team', team()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store.audit', audit()).dependsOn('config', 'logger', 'db', authzDep)
+  .add('store.ingress', ingress()).dependsOn('config', 'logger', 'db', authzDep)
   .add('store', store()).dependsOn(
     'config', 'logger', 'db',
     { component: 'store.registry', destination: 'registry' },
@@ -47,4 +49,5 @@ export default () => systemic({ name: 'stores/postgres' })
     { component: 'store.team', destination: 'team' },
     { component: 'store.audit', destination: 'audit' },
     { component: 'store.job', destination: 'job' },
+    { component: 'store.ingress', destination: 'ingress' },
   );
