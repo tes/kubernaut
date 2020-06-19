@@ -1,8 +1,12 @@
 import sqb from 'sqb';
-
 import { v4 as uuid } from 'uuid';
-
 import Promise from 'bluebird';
+import Account from '../../domain/Account';
+import Cluster from '../../domain/Cluster';
+import IngressHostKey from '../../domain/IngressHostKey';
+import IngressVariableKey from '../../domain/IngressVariableKey';
+import ClusterIngressHost from '../../domain/ClusterIngressHost';
+import ClusterIngressVariable from '../../domain/ClusterIngressVariable';
 
 const { Op, raw, innerJoin } = sqb;
 
@@ -25,9 +29,9 @@ export default function() {
         )
         .where(Op.eq('ihk.id', id));
 
-        const result = await connection.query(db.serialize(builder, {}).sql);
+      const result = await connection.query(db.serialize(builder, {}).sql);
 
-        return result.rowCount ? toIngressHostKey(result.rows[0]) : undefined;
+      return result.rowCount ? toIngressHostKey(result.rows[0]) : undefined;
     }
 
     function getIngressVariableKey(id) {
@@ -45,9 +49,9 @@ export default function() {
         )
         .where(Op.eq('ivk.id', id));
 
-        const result = await connection.query(db.serialize(builder, {}).sql);
+      const result = await connection.query(db.serialize(builder, {}).sql);
 
-        return result.rowCount ? toIngressVariableKey(result.rows[0]) : undefined;
+      return result.rowCount ? toIngressVariableKey(result.rows[0]) : undefined;
     }
 
     function getClusterIngressHost(id) {
@@ -58,17 +62,18 @@ export default function() {
 
     async function _getClusterIngressHost(connection, id) {
       const builder = sqb
-        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name')
+        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cih.ingress_host_key', 'ihk.name ingress_host_key_name')
         .from('active_cluster_ingress_host__vw cih')
         .join(
           innerJoin('account a').on(Op.eq('cih.created_by', raw('a.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('cih.ingress_host_key', raw('ihk.id')))
         )
         .where(Op.eq('cih.id', id));
 
-        const result = await connection.query(db.serialize(builder, {}).sql);
+      const result = await connection.query(db.serialize(builder, {}).sql);
 
-        return result.rowCount ? toClusterIngressHost(result.rows[0]) : undefined;
+      return result.rowCount ? toClusterIngressHost(result.rows[0]) : undefined;
     }
 
     function getClusterIngressVariable(id) {
@@ -79,17 +84,18 @@ export default function() {
 
     async function _getClusterIngressVariable(connection, id) {
       const builder = sqb
-        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name')
+        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'civ.ingress_host_variable', 'ihv.name ingress_host_variable_name')
         .from('active_cluster_ingress_variable__vw civ')
         .join(
           innerJoin('account a').on(Op.eq('civ.created_by', raw('a.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_variable__vw ihv').on(Op.eq('civ.ingress_host_variable', raw('ihv.id')))
         )
         .where(Op.eq('civ.id', id));
 
-        const result = await connection.query(db.serialize(builder, {}).sql);
+      const result = await connection.query(db.serialize(builder, {}).sql);
 
-        return result.rowCount ? toClusterIngressVariable(result.rows[0]) : undefined;
+      return result.rowCount ? toClusterIngressVariable(result.rows[0]) : undefined;
     }
 
     function findIngressHostKeys(limit = 50, offset = 0) {
@@ -148,11 +154,12 @@ export default function() {
 
     function findClusterIngressHosts(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
-        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name')
+        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cih.ingress_host_key', 'ihk.name ingress_host_key_name')
         .from('active_cluster_ingress_host__vw cih')
         .join(
           innerJoin('account a').on(Op.eq('cih.created_by', raw('a.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('cih.ingress_host_key', raw('ihk.id')))
         )
         .orderBy('cih.name')
         .limit(limit)
@@ -162,7 +169,8 @@ export default function() {
         .select(raw('count(*) count'))
         .from('active_cluster_ingress_host__vw cih')
         .join(
-          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('cih.ingress_host_key', raw('ihk.id')))
         );
 
       if(criteria.cluster) {
@@ -183,11 +191,12 @@ export default function() {
 
     function findClusterIngressVariables(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
-        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name')
+        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'civ.ingress_variable_key', 'ihv.name ingress_host_variable_name')
         .from('active_cluster_ingress_variable__vw civ')
         .join(
           innerJoin('account a').on(Op.eq('civ.created_by', raw('a.id'))),
-          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_variable__vw ihv').on(Op.eq('civ.ingress_variable_key', raw('ihv.id')))
         )
         .orderBy('civ.name')
         .limit(limit)
@@ -197,7 +206,8 @@ export default function() {
         .select(raw('count(*) count'))
         .from('active_cluster_ingress_variable__vw civ')
         .join(
-          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id')))
+          innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id'))),
+          innerJoin('active_ingress_host_variable__vw ihv').on(Op.eq('civ.ingress_variable_key', raw('ihv.id')))
         );
 
       if(criteria.cluster) {
@@ -321,19 +331,67 @@ export default function() {
     }
 
     function toIngressHostKey(row) {
-      return row;
+      return new IngressHostKey({
+        id: row.id,
+        name: row.name,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+      });
     }
 
     function toIngressVariableKey(row) {
-      return row;
+      return new IngressVariableKey({
+        id: row.id,
+        name: row.name,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+      });
     }
 
     function toClusterIngressHost(row) {
-      return row;
+      return new ClusterIngressHost({
+        id: row.id,
+        value: row.value,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+        cluster: new Cluster({
+          id: row.cluster_id,
+          name: row.cluster_name,
+        }),
+        ingressHostKey: new IngressHostKey({
+          id: row.ingress_host_key,
+          name: row.ingress_host_key_name,
+        }),
+      });
     }
 
     function toClusterIngressVariable(row) {
-      return row;
+      return new ClusterIngressVariable({
+        id: row.id,
+        value: row.value,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+        cluster: new Cluster({
+          id: row.cluster_id,
+          name: row.cluster_name,
+        }),
+        ingressHostVariable: new IngressVariableKey({
+          id: row.ingress_variable_key,
+          name: row.ingress_host_variable_name,
+        }),
+      });
     }
 
     cb(null, {
