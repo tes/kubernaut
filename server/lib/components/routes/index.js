@@ -6,6 +6,7 @@ import admin from './admin';
 import audit from './audit';
 import clusters from './clusters';
 import deployments from './deployments';
+import ingress from './ingress';
 import jobs from './jobs';
 import namespaces from './namespaces';
 import registries from './registries';
@@ -40,6 +41,8 @@ export default () => systemic({
     .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
   .add('routes.deployments', deployments())
     .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
+  .add('routes.ingress', ingress())
+    .dependsOn(...minimumRequirements, 'store', 'kubernetes', 'auth')
   .add('routes.jobs', jobs())
     .dependsOn(...minimumRequirements, 'store', 'auth', 'kubernetes')
   .add('routes.namespaces', namespaces())
@@ -64,6 +67,7 @@ export default () => systemic({
       'routes.audit',
       'routes.clusters',
       'routes.deployments',
+      'routes.ingress',
       'routes.jobs',
       'routes.namespaces',
       'routes.registries',

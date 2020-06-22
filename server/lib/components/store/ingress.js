@@ -138,7 +138,7 @@ export default function() {
 
       const countBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_ingress_host_key__vw');
+        .from('active_ingress_variable_key__vw');
 
       return db.withTransaction(async connection => {
         const [result, countResult] = await Promise.all([
@@ -154,14 +154,14 @@ export default function() {
 
     function findClusterIngressHosts(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
-        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cih.ingress_host_key', 'ihk.name ingress_host_key_name')
+        .select('cih.id', 'cih.value', 'cih.created_by', 'a.display_name', 'cih.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cih.ingress_host_key', 'ihk.name ingress_host_key_name')
         .from('active_cluster_ingress_host__vw cih')
         .join(
           innerJoin('account a').on(Op.eq('cih.created_by', raw('a.id'))),
           innerJoin('active_cluster__vw c').on(Op.eq('cih.cluster', raw('c.id'))),
           innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('cih.ingress_host_key', raw('ihk.id')))
         )
-        .orderBy('cih.name')
+        .orderBy('ihk.name')
         .limit(limit)
         .offset(offset);
 
@@ -191,14 +191,14 @@ export default function() {
 
     function findClusterIngressVariables(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
-        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'ivk.created_on', 'c.id cluster_id', 'c.name cluster_name', 'civ.ingress_variable_key', 'ihv.name ingress_host_variable_name')
+        .select('civ.id', 'civ.value', 'civ.created_by', 'a.display_name', 'civ.created_on', 'c.id cluster_id', 'c.name cluster_name', 'civ.ingress_variable_key', 'ivk.name ingress_host_variable_name')
         .from('active_cluster_ingress_variable__vw civ')
         .join(
           innerJoin('account a').on(Op.eq('civ.created_by', raw('a.id'))),
           innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id'))),
-          innerJoin('active_ingress_host_variable__vw ihv').on(Op.eq('civ.ingress_variable_key', raw('ihv.id')))
+          innerJoin('active_ingress_variable_key__vw ivk').on(Op.eq('civ.ingress_variable_key', raw('ivk.id')))
         )
-        .orderBy('civ.name')
+        .orderBy('ivk.name')
         .limit(limit)
         .offset(offset);
 
@@ -207,7 +207,7 @@ export default function() {
         .from('active_cluster_ingress_variable__vw civ')
         .join(
           innerJoin('active_cluster__vw c').on(Op.eq('civ.cluster', raw('c.id'))),
-          innerJoin('active_ingress_host_variable__vw ihv').on(Op.eq('civ.ingress_variable_key', raw('ihv.id')))
+          innerJoin('active_ingress_variable_key__vw ivk').on(Op.eq('civ.ingress_variable_key', raw('ivk.id')))
         );
 
       if(criteria.cluster) {
