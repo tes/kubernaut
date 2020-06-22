@@ -282,13 +282,13 @@ export default function() {
       });
     }
 
-    function saveClusterIngressVariableValue (ingressHostVariable, cluster, value, meta) {
+    function saveClusterIngressVariableValue (ingressVariableKey, cluster, value, meta) {
       const newId = uuid();
 
       const builder = sqb
         .insert('cluster_ingress_variable', {
             id: newId,
-            ingress_host_variable: ingressHostVariable.id,
+            ingress_variable_key: ingressVariableKey.id,
             cluster: cluster.id,
             value,
             created_on: meta.date,

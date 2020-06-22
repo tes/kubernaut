@@ -23,6 +23,24 @@ export default function() {
       }
     });
 
+    app.post('/api/ingress/host-keys', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { name } = req.body;
+        if (!name) return next(Boom.badRequest());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveIngressHostKey(name, meta);
+
+        await store.audit(meta, 'added ingress host key');
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/ingress/variable-keys', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
@@ -34,6 +52,24 @@ export default function() {
 
         const result = await store.findIngressVariableKeys(limit, offset);
         res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/ingress/variable-keys', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { name } = req.body;
+        if (!name) return next(Boom.badRequest());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveIngressVariableKey(name, meta);
+
+        await store.audit(meta, 'added ingress variable key');
+
+        res.json(newId);
       } catch (err) {
         next(err);
       }
@@ -57,6 +93,30 @@ export default function() {
       }
     });
 
+    app.post('/api/ingress/cluster/:id/hosts', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { value, ingressHostKeyId } = req.body;
+        if (!value || !ingressHostKeyId) return next(Boom.badRequest());
+
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.notFound());
+
+        const ingressHostKey = await store.getIngressHostKey(ingressHostKeyId);
+        if (!ingressHostKey) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveClusterIngressHostValue(ingressHostKey, cluster, value, meta);
+
+        await store.audit(meta, 'added cluster ingress host value', { cluster });
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/ingress/cluster/:id/variables', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
@@ -75,6 +135,29 @@ export default function() {
       }
     });
 
+    app.post('/api/ingress/cluster/:id/variables', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { value, ingressVariableKeyId } = req.body;
+        if (!value || !ingressVariableKeyId) return next(Boom.badRequest());
+
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.notFound());
+
+        const ingressVariableKey = await store.getIngressHostKey(ingressVariableKeyId);
+        if (!ingressVariableKey) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveClusterIngressVariableValue(ingressVariableKey, cluster, value, meta);
+
+        await store.audit(meta, 'added cluster ingress variable value', { cluster });
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
 
 
     cb();
