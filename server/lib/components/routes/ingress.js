@@ -117,6 +117,27 @@ export default function() {
       }
     });
 
+    app.put('/api/ingress/cluster/hosts/:id', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { value } = req.body;
+        if (!value ) return next(Boom.badRequest());
+
+        const clusterIngressHost = await store.getClusterIngressHost(req.params.id);
+        if (!clusterIngressHost) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.updateClusterIngressHostValue(clusterIngressHost.id, value);
+
+        await store.audit(meta, 'updated cluster ingress host value');
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/ingress/cluster/:id/variables', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
@@ -152,6 +173,27 @@ export default function() {
         const newId = await store.saveClusterIngressVariableValue(ingressVariableKey, cluster, value, meta);
 
         await store.audit(meta, 'added cluster ingress variable value', { cluster });
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.put('/api/ingress/cluster/variables/:id', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { value } = req.body;
+        if (!value ) return next(Boom.badRequest());
+
+        const clusterIngressVariable = await store.getClusterIngressHost(req.params.id);
+        if (!clusterIngressVariable) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.updateClusterIngressVariableValue(clusterIngressVariable.id, value);
+
+        await store.audit(meta, 'updated cluster ingress variable value');
 
         res.json(newId);
       } catch (err) {
