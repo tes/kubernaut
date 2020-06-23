@@ -1,8 +1,8 @@
 export default class ClusterIngressVariable {
 
-  constructor({ id, createdOn, createdBy, ingressHostVariable, value, cluster }) {
+  constructor({ id, createdOn, createdBy, ingressVariableKey, value, cluster }) {
     this.id = id;
-    this.ingressHostVariable = ingressHostVariable;
+    this.ingressVariableKey = ingressVariableKey;
     this.value = value;
     this.cluster = cluster;
     this.createdOn = createdOn;

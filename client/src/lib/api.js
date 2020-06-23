@@ -134,6 +134,10 @@ export const getCluster = (id) => {
   return makeRequest(`/api/clusters/${id}`);
 };
 
+export const getClusterIngressHosts = (id) => makeRequest(`/api/ingress/cluster/${id}/hosts`).then(computePagination);
+
+export const getClusterIngressVariables = (id) => makeRequest(`/api/ingress/cluster/${id}/variables`).then(computePagination);
+
 export const getClusters = ({ limit = 20, offset = 0 } = {}) => {
   const qs = makeQueryString({
     limit,
@@ -199,6 +203,10 @@ export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
   });
   return makeRequest(`/api/jobs/${id}/versions?${qs}`).then(computePagination);
 };
+
+export const getIngressHosts = () => makeRequest(`/api/ingress/host-keys`).then(computePagination);
+
+export const getIngressVariables = () => makeRequest(`/api/ingress/variable-keys`).then(computePagination);
 
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 
@@ -691,6 +699,16 @@ export const saveCluster = (values) => {
   });
 };
 
+export const saveClusterIngressHost = (clusterId, values) => makeRequest(`/api/ingress/cluster/${clusterId}/hosts`, {
+  method: 'POST',
+  body: JSON.stringify(values),
+});
+
+export const saveClusterIngressVariable = (clusterId, values) => makeRequest(`/api/ingress/cluster/${clusterId}/variables`, {
+  method: 'POST',
+  body: JSON.stringify(values),
+});
+
 export const saveJob = (name, namespace, registry, copyFrom) => {
   return makeRequest('/api/jobs', {
     method: 'POST',
@@ -749,6 +767,20 @@ export const setTeamAttributes = (teamId, data) => makeRequest(`/api/teams/${tea
 
 export const stopJob = (job) => makeRequest(`/api/jobs/${job.id}/stop`, {
   method: 'POST',
+});
+
+export const updateClusterIngressHost = (id, value) => makeRequest(`/api/ingress/cluster/hosts/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+    value,
+  }),
+});
+
+export const updateClusterIngressVariable = (id, value) => makeRequest(`/api/ingress/cluster/variables/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({
+    value,
+  }),
 });
 
 export const updateDeploymentNote = (deploymentId, note) => {

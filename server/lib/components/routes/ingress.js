@@ -166,7 +166,7 @@ export default function() {
         const cluster = await store.getCluster(req.params.id);
         if (!cluster) return next(Boom.notFound());
 
-        const ingressVariableKey = await store.getIngressHostKey(ingressVariableKeyId);
+        const ingressVariableKey = await store.getIngressVariableKey(ingressVariableKeyId);
         if (!ingressVariableKey) return next(Boom.notFound());
 
         const meta = { date: new Date(), account: req.user };
@@ -187,7 +187,7 @@ export default function() {
         const { value } = req.body;
         if (!value ) return next(Boom.badRequest());
 
-        const clusterIngressVariable = await store.getClusterIngressHost(req.params.id);
+        const clusterIngressVariable = await store.getClusterIngressVariable(req.params.id);
         if (!clusterIngressVariable) return next(Boom.notFound());
 
         const meta = { date: new Date(), account: req.user };
