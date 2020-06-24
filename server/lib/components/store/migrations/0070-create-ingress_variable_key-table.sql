@@ -13,6 +13,10 @@ CREATE TABLE ingress_variable_key
   CONSTRAINT deletion_check CHECK (deleted_on IS NULL AND deleted_by IS NULL OR deleted_on IS NOT NULL AND deleted_by IS NOT NULL)
 );
 
+CREATE UNIQUE INDEX ingress_variable_name__uniq ON ingress_variable_key (
+  name DESC
+) WHERE deleted_on IS NULL;
+
 CREATE VIEW active_ingress_variable_key__vw AS (
   SELECT ivk.*
   FROM

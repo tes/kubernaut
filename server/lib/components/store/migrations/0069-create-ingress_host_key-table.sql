@@ -13,6 +13,11 @@ CREATE TABLE ingress_host_key
   CONSTRAINT deletion_check CHECK (deleted_on IS NULL AND deleted_by IS NULL OR deleted_on IS NOT NULL AND deleted_by IS NOT NULL)
 );
 
+CREATE UNIQUE INDEX ingress_host_name__uniq ON ingress_host_key (
+  name DESC
+) WHERE deleted_on IS NULL;
+
+
 CREATE VIEW active_ingress_host_key__vw AS (
   SELECT ihk.*
   FROM

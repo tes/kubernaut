@@ -23,6 +23,10 @@ CREATE TABLE cluster_ingress_host
   CONSTRAINT deletion_check CHECK (deleted_on IS NULL AND deleted_by IS NULL OR deleted_on IS NOT NULL AND deleted_by IS NOT NULL)
 );
 
+CREATE UNIQUE INDEX cluster_ingress_host_key__uniq ON cluster_ingress_host (
+  cluster, ingress_host_key
+) WHERE deleted_on IS NULL;
+
 CREATE VIEW active_cluster_ingress_host__vw AS (
   SELECT cih.*
   FROM

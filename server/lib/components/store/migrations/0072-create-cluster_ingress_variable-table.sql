@@ -23,6 +23,11 @@ CREATE TABLE cluster_ingress_variable
   CONSTRAINT deletion_check CHECK (deleted_on IS NULL AND deleted_by IS NULL OR deleted_on IS NOT NULL AND deleted_by IS NOT NULL)
 );
 
+
+CREATE UNIQUE INDEX cluster_ingress_variable_key__uniq ON cluster_ingress_variable (
+  cluster, ingress_variable_key
+) WHERE deleted_on IS NULL;
+
 CREATE VIEW active_cluster_ingress_variable__vw AS (
   SELECT civ.*
   FROM
