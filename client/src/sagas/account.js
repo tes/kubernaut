@@ -31,6 +31,8 @@ export function* checkPermissionSaga({ payload: { data, ...options } }) {
     yield put(setPermission({ permission: 'audit-read', answer: auditRead.answer }));
     const clustersWrite = yield call(hasPermission, 'clusters-write');
     yield put(setPermission({ permission: 'clusters-write', answer: clustersWrite.answer }));
+    const ingressAdmin = yield call(hasPermission, 'ingress-admin');
+    yield put(setPermission({ permission: 'ingress-admin', answer: ingressAdmin.answer }));
   } catch(error) {
     console.error(error); // eslint-disable-line no-console
   }

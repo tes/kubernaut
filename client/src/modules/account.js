@@ -16,6 +16,7 @@ const defaultState = {
     'jobs-read': false,
     'audit-read': false,
     'clusters-write': false,
+    'ingress-admin': false,
   },
   showAdmin: false,
 };
@@ -50,7 +51,7 @@ export default handleActions({
     return {
       ...state,
       permissions: updatedPermissions,
-      showAdmin: updatedPermissions['audit-read'] || updatedPermissions['clusters-write'],
+      showAdmin: updatedPermissions['audit-read'] || updatedPermissions['clusters-write'] || updatedPermissions['ingress-admin'],
     };
   },
 }, defaultState);

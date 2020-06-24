@@ -100,6 +100,7 @@ class ClusterEditPage extends Component {
       cluster,
       canAudit,
       hasClustersWrite,
+      hasIngressAdminWrite,
       handleSubmit,
       submitForm,
       submitNewHostForm,
@@ -112,7 +113,7 @@ class ClusterEditPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Edit cluster: ${cluster.name}`} />
-          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} edit cluster={cluster}/>
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} edit cluster={cluster} hasIngressAdminWrite={hasIngressAdminWrite} />
           <Form>
             <Row>
               <Col md="6">

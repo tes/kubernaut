@@ -323,3 +323,13 @@ export const AdminClustersLink = ({ container, children }) => {
 
   return <Tag {...props}>{children || <span>Clusters</span>}</Tag>;
 };
+
+export const AdminIngressLink = ({ container, children }) => {
+  const Tag = container ? LinkContainer : Link;
+  const props = {
+    to: '/admin/ingress',
+    ...container && { exact: true }
+  };
+
+  return <Tag {...props}>{children || <span>Ingress</span>}</Tag>;
+};

@@ -7,6 +7,7 @@ import { fetchAccountInfo } from './modules/viewAccount';
 import { fetchAccountInfo as fetchEditAccountInfo } from './modules/editAccount';
 import { initialiseAccountsPage } from './modules/accounts';
 import { initAdminPage } from './modules/admin';
+import { initialiseAdminIngressPage } from './modules/adminIngress';
 import { initAdminRestorePage } from './modules/adminRestore';
 import { fetchAccountInfo as fetchEditAccountTeamsInfo } from './modules/editAccountTeams';
 import { initialiseClustersPage } from './modules/clusters';
@@ -56,6 +57,10 @@ const paths = {
   admin: {
     route: '/admin',
     action: initAdminPage,
+  },
+  adminIngress: {
+    route: '/admin/ingress',
+    action: initialiseAdminIngressPage,
   },
   adminClusters: {
     route: '/admin/clusters',

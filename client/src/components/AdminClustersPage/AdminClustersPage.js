@@ -29,6 +29,7 @@ class AdminClustersPage extends Component {
     const {
       canAudit,
       hasClustersWrite,
+      hasIngressAdminWrite,
       clusters,
       fetchClustersPagination,
       openModal,
@@ -43,7 +44,7 @@ class AdminClustersPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title="Clusters" />
-          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} hasIngressAdminWrite={hasIngressAdminWrite} />
 
           <Row>
             <Col>

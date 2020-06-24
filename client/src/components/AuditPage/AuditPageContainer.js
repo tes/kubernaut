@@ -13,6 +13,7 @@ export default connect(({ audit, account }) => ({
   filters: audit.filter.filters,
   canAudit: account && account.permissions && account.permissions['audit-read'],
   hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
+  hasIngressAdminWrite: account && account.permissions && account.permissions['ingress-admin'],
 }), {
   fetchAuditPagination,
   addFilter,

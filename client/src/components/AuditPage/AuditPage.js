@@ -46,7 +46,7 @@ const filterDisplayNameLookup = {
 class AuditPage extends Component {
 
   render() {
-    const { meta, audits, canAudit, hasClustersWrite } = this.props;
+    const { meta, audits, canAudit, hasClustersWrite, hasIngressAdminWrite } = this.props;
     if (meta.loading.loadingPercent !== 100) return (
       <Row className="page-frame d-flex justify-content-center">
         <Col sm="12" className="mt-5">
@@ -71,7 +71,7 @@ class AuditPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title="Audit" />
-          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} hasIngressAdminWrite={hasIngressAdminWrite} />
           <Row>
             <Col className="d-flex justify-content-start flex-wrap">
               {this.props.filters.map((filter) => {

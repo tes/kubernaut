@@ -4,6 +4,7 @@ import { LOCATION_CHANGE } from 'connected-react-router';
 import accountSagas from './account';
 import accountsSagas from './accounts';
 import adminSagas from './admin';
+import adminIngressSagas from './adminIngress';
 import adminRestoreSagas from './adminRestore';
 import auditSagas from './audit';
 import clusterEditSagas from './clusterEdit';
@@ -44,6 +45,7 @@ export default function* rootSaga() {
     ...accountSagas,
     ...accountsSagas,
     ...adminSagas,
+    ...adminIngressSagas,
     ...adminRestoreSagas,
     ...auditSagas,
     ...clusterEditSagas,

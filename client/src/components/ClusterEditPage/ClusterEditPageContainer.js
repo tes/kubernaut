@@ -22,6 +22,7 @@ export default connect(({ clusterEdit, account }) => {
   return {
     canAudit: account && account.permissions && account.permissions['audit-read'],
     hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
+    hasIngressAdminWrite: account && account.permissions && account.permissions['ingress-admin'],
     meta: clusterEdit.meta,
     initialValues: clusterEdit.initialValues,
     cluster: clusterEdit.cluster,

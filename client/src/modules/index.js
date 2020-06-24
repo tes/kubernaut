@@ -5,6 +5,7 @@ import { connectRouter } from 'connected-react-router';
 import account from './account';
 import accounts from './accounts';
 import admin from './admin';
+import adminIngress from './adminIngress';
 import adminRestore from './adminRestore';
 import audit from './audit';
 import clusterEdit from './clusterEdit';
@@ -46,6 +47,7 @@ export default (history) => combineReducers({
   account,
   accounts,
   admin,
+  adminIngress,
   adminRestore,
   audit,
   clusterEdit,

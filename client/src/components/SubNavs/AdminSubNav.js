@@ -7,6 +7,7 @@ import {
   AdminSummaryLink,
   AuditLink,
   EditClusterLink,
+  AdminIngressLink,
 } from '../Links';
 
 class AdminSubNav extends Component {
@@ -16,6 +17,7 @@ class AdminSubNav extends Component {
       hasClustersWrite,
       edit,
       cluster,
+      hasIngressAdminWrite,
     } = this.props;
 
 
@@ -57,6 +59,15 @@ class AdminSubNav extends Component {
                 <EditClusterLink container cluster={cluster}>
                   <NavLink><i className="fa fa-server" aria-hidden='true'></i> Edit {cluster.name}</NavLink>
                 </EditClusterLink>
+              </NavItem>
+              : null
+            }
+            {
+              hasIngressAdminWrite ?
+              <NavItem>
+                <AdminIngressLink container>
+                  <NavLink><i className="fa fa-sign-in" aria-hidden='true'></i> Ingress</NavLink>
+                </AdminIngressLink>
               </NavItem>
               : null
             }

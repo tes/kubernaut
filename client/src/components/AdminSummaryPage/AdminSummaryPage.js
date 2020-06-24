@@ -14,13 +14,13 @@ import Title from '../Title';
 class AdminSummaryPage extends Component {
 
   render() {
-    const { canAudit, summary, hasClustersWrite } = this.props;
+    const { canAudit, summary, hasClustersWrite, hasIngressAdminWrite } = this.props;
 
     return (
       <Row className='page-frame'>
         <Col md className="mb-2">
           <Title title="Summary" />
-          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} hasIngressAdminWrite={hasIngressAdminWrite} />
 
           <Row>
             <Col md="5">

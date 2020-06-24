@@ -19,7 +19,7 @@ import Title from '../Title';
 class AdminRestorePage extends Component {
 
   render() {
-    const { canAudit, deleted, hasClustersWrite } = this.props;
+    const { canAudit, deleted, hasClustersWrite, hasIngressAdminWrite } = this.props;
     const restoreSelectValues = [
       { value: 'account', display: 'Account' },
       { value: 'cluster', display: 'Cluster' },
@@ -33,7 +33,7 @@ class AdminRestorePage extends Component {
       <Row className='page-frame'>
         <Col md className="mb-2">
           <Title title="Restore" />
-          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} />
+          <AdminSubNav canAudit={canAudit} hasClustersWrite={hasClustersWrite} hasIngressAdminWrite={hasIngressAdminWrite} />
 
           <Row>
             <Col>

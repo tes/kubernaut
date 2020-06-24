@@ -2,37 +2,33 @@ import { connect } from 'react-redux';
 import {
   reduxForm,
 } from 'redux-form';
-import AdminClustersPage from './AdminClustersPage';
+import AdminIngressPage from './AdminIngressPage';
 import {
-  fetchClustersPagination,
-  openModal,
-  closeModal,
-  submitForm,
-} from '../../modules/clusters';
+  fetchHostKeysPagination,
+  fetchVariableKeysPagination,
+  submitHostForm,
+  submitVariableForm,
+} from '../../modules/adminIngress';
 
 function mapStateToProps(state, props) {
   const { account } = state;
   return {
-    clusters: {
-      data: state.clusters.data,
-      meta: state.clusters.meta,
-    },
-    canCreate: state.clusters.canWrite,
-    initialValues: state.clusters.initialValues,
-    newModalOpen: state.clusters.newModalOpen,
-    submitForm,
+    initialValues: state.adminIngress.initialValues,
     canAudit: account && account.permissions && account.permissions['audit-read'],
     hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
     hasIngressAdminWrite: account && account.permissions && account.permissions['ingress-admin'],
+    hosts: state.adminIngress.hosts,
+    variables: state.adminIngress.variables,
+    submitHostForm,
+    submitVariableForm,
   };
 }
 
 export default connect(mapStateToProps, {
-  fetchClustersPagination,
-  openModal,
-  closeModal,
+  fetchHostKeysPagination,
+  fetchVariableKeysPagination,
 })(reduxForm({
-  form: 'newCluster',
+  form: 'newIngressKeys',
   enableReinitialize: true,
   destroyOnUnmount: false,
-})(AdminClustersPage));
+})(AdminIngressPage));

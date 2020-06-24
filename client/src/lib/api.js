@@ -204,9 +204,23 @@ export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
   return makeRequest(`/api/jobs/${id}/versions?${qs}`).then(computePagination);
 };
 
-export const getIngressHosts = () => makeRequest(`/api/ingress/host-keys`).then(computePagination);
+export const getIngressHosts = ({ limit = 50, offset = 0 } = {}) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
 
-export const getIngressVariables = () => makeRequest(`/api/ingress/variable-keys`).then(computePagination);
+  return makeRequest(`/api/ingress/host-keys?${qs}`).then(computePagination);
+};
+
+export const getIngressVariables = ({ limit = 50, offset = 0 } = {}) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/ingress/variable-keys?${qs}`).then(computePagination);
+};
 
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 
@@ -707,6 +721,16 @@ export const saveClusterIngressHost = (clusterId, values) => makeRequest(`/api/i
 export const saveClusterIngressVariable = (clusterId, values) => makeRequest(`/api/ingress/cluster/${clusterId}/variables`, {
   method: 'POST',
   body: JSON.stringify(values),
+});
+
+export const saveIngressHost = (name) => makeRequest(`/api/ingress/host-keys`, {
+  method: 'POST',
+  body: JSON.stringify({ name }),
+});
+
+export const saveIngressVariable = (name) => makeRequest(`/api/ingress/variable-keys`, {
+  method: 'POST',
+  body: JSON.stringify({ name }),
 });
 
 export const saveJob = (name, namespace, registry, copyFrom) => {
