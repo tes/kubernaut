@@ -119,7 +119,10 @@ export function* editClusterSaga({ payload: formValues }, options = {}) {
 export function* addClusterIngressHostSaga({ payload: formValues }, options = {}) {
   const { newIngressHostValue: data } = formValues;
   try {
-    if (!data.ingressHostKey || !data.value) return submitNewHostForm.success();
+    if (!data.ingressHostKey || !data.value) {
+      yield put(submitNewHostForm.success());
+      return;
+    }
     const { id } = yield select(selectCluster);
     yield call(saveClusterIngressHost, id, {
       value: data.value,
@@ -138,7 +141,10 @@ export function* addClusterIngressHostSaga({ payload: formValues }, options = {}
 export function* addClusterIngressVariableSaga({ payload: formValues }, options = {}) {
   const { newIngressVariableValue: data } = formValues;
   try {
-    if (!data.ingressVariableKey || !data.value) return submitNewVariableForm.success();
+    if (!data.ingressVariableKey || !data.value) {
+      yield put(submitNewVariableForm.success());
+      return;
+    }
     const { id } = yield select(selectCluster);
     yield call(saveClusterIngressVariable, id, {
       value: data.value,
@@ -158,7 +164,10 @@ export function* updateClusterIngressHostsSaga({ payload: formValues }, options 
   const { clusterIngressHosts: data } = formValues;
   try {
 
-    if (!data.hosts) return updateHostsForm.success();
+    if (!data.hosts) {
+      yield put(updateHostsForm.success());
+      return;
+    }
 
     for (const ingressHost of data.hosts) {
       const { id, value } = ingressHost;
@@ -175,7 +184,10 @@ export function* updateClusterIngressVariablesSaga({ payload: formValues }, opti
   const { clusterIngressVariables: data } = formValues;
   try {
 
-    if (!data.variables) return updateVariablesForm.success();
+    if (!data.variables) {
+      yield put(updateVariablesForm.success());
+      return;
+    }
 
     for (const ingressVariable of data.variables) {
       const { id, value } = ingressVariable;

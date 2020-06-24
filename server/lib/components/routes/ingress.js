@@ -1,7 +1,12 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
 // import { get as _get, reduce as _reduce } from 'lodash';
+import { parseAndValidate } from './lib/ingressTemplating';
 
+
+const systemProvidedTemplateVariables = [
+  'service',
+];
 
 export default function() {
   function start({ app, store, auth, kubernetes, logger }, cb) {
@@ -106,6 +111,14 @@ export default function() {
         const ingressHostKey = await store.getIngressHostKey(ingressHostKeyId);
         if (!ingressHostKey) return next(Boom.notFound());
 
+        const clusterIngressVariables = await store.findClusterIngressVariables({ cluster: cluster.id });
+        const templatingVariables = systemProvidedTemplateVariables.concat(clusterIngressVariables.items.map(civ => (civ.ingressVariableKey.name)));
+        try {
+          parseAndValidate(value, templatingVariables);
+        } catch (templateErr) {
+          return next(Boom.badRequest(templateErr.message));
+        }
+
         const meta = { date: new Date(), account: req.user };
         const newId = await store.saveClusterIngressHostValue(ingressHostKey, cluster, value, meta);
 
@@ -126,6 +139,14 @@ export default function() {
 
         const clusterIngressHost = await store.getClusterIngressHost(req.params.id);
         if (!clusterIngressHost) return next(Boom.notFound());
+
+        const clusterIngressVariables = await store.findClusterIngressVariables({ cluster: clusterIngressHost.cluster.id });
+        const templatingVariables = systemProvidedTemplateVariables.concat(clusterIngressVariables.items.map(civ => (civ.ingressVariableKey.name)));
+        try {
+          parseAndValidate(value, templatingVariables);
+        } catch (templateErr) {
+          return next(Boom.badRequest(templateErr.message));
+        }
 
         const meta = { date: new Date(), account: req.user };
         const newId = await store.updateClusterIngressHostValue(clusterIngressHost.id, value);
