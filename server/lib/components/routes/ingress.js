@@ -80,6 +80,40 @@ export default function() {
       }
     });
 
+    app.get('/api/ingress/classes', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed ingress classes');
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findIngressClasses(limit, offset);
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/ingress/classes', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { name } = req.body;
+        if (!name) return next(Boom.badRequest());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveIngressClass(name, meta);
+
+        await store.audit(meta, 'added ingress class');
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.get('/api/ingress/cluster/:id/hosts', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
@@ -215,6 +249,48 @@ export default function() {
         const newId = await store.updateClusterIngressVariableValue(clusterIngressVariable.id, value);
 
         await store.audit(meta, 'updated cluster ingress variable value');
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/ingress/cluster/:id/classes', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed ingress classes for cluster', { cluster });
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findClusterIngressClasses({ cluster: cluster.id }, limit, offset);
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/ingress/cluster/:id/classes', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-admin')) return next(Boom.forbidden());
+
+        const { ingressClassId } = req.body;
+        if (!ingressClassId) return next(Boom.badRequest());
+
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.notFound());
+
+        const ingressClass = await store.getIngressClass(ingressClassId);
+        if (!ingressClass) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveClusterIngressClass(ingressClass, cluster, meta);
+
+        await store.audit(meta, 'added cluster ingress class', { cluster });
 
         res.json(newId);
       } catch (err) {

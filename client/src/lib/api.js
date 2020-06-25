@@ -138,6 +138,8 @@ export const getClusterIngressHosts = (id) => makeRequest(`/api/ingress/cluster/
 
 export const getClusterIngressVariables = (id) => makeRequest(`/api/ingress/cluster/${id}/variables`).then(computePagination);
 
+export const getClusterIngressClasses = (id) => makeRequest(`/api/ingress/cluster/${id}/classes`).then(computePagination);
+
 export const getClusters = ({ limit = 20, offset = 0 } = {}) => {
   const qs = makeQueryString({
     limit,
@@ -220,6 +222,15 @@ export const getIngressVariables = ({ limit = 50, offset = 0 } = {}) => {
   });
 
   return makeRequest(`/api/ingress/variable-keys?${qs}`).then(computePagination);
+};
+
+export const getIngressClasses = ({ limit = 50, offset = 0 } = {}) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/ingress/classes?${qs}`).then(computePagination);
 };
 
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
@@ -723,12 +734,22 @@ export const saveClusterIngressVariable = (clusterId, values) => makeRequest(`/a
   body: JSON.stringify(values),
 });
 
+export const saveClusterIngressClass = (clusterId, values) => makeRequest(`/api/ingress/cluster/${clusterId}/classes`, {
+  method: 'POST',
+  body: JSON.stringify(values),
+});
+
 export const saveIngressHost = (name) => makeRequest(`/api/ingress/host-keys`, {
   method: 'POST',
   body: JSON.stringify({ name }),
 });
 
 export const saveIngressVariable = (name) => makeRequest(`/api/ingress/variable-keys`, {
+  method: 'POST',
+  body: JSON.stringify({ name }),
+});
+
+export const saveIngressClass = (name) => makeRequest(`/api/ingress/classes`, {
   method: 'POST',
   body: JSON.stringify({ name }),
 });

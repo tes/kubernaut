@@ -7,6 +7,8 @@ import IngressHostKey from '../../domain/IngressHostKey';
 import IngressVariableKey from '../../domain/IngressVariableKey';
 import ClusterIngressHost from '../../domain/ClusterIngressHost';
 import ClusterIngressVariable from '../../domain/ClusterIngressVariable';
+import IngressClass from '../../domain/IngressClass';
+import ClusterIngressClass from '../../domain/ClusterIngressClass';
 
 const { Op, raw, innerJoin } = sqb;
 
@@ -53,6 +55,25 @@ export default function() {
 
       return result.rowCount ? toIngressVariableKey(result.rows[0]) : undefined;
     }
+    function getIngressClass(id) {
+      return db.withTransaction(connection => {
+        return _getIngressClass(connection, id);
+      });
+    }
+
+    async function _getIngressClass(connection, id) {
+      const builder = sqb
+        .select('ic.id', 'ic.name', 'ic.created_by', 'a.display_name', 'ic.created_on')
+        .from('active_ingress_class__vw ic')
+        .join(
+          innerJoin('account a').on(Op.eq('ic.created_by', raw('a.id')))
+        )
+        .where(Op.eq('ic.id', id));
+
+      const result = await connection.query(db.serialize(builder, {}).sql);
+
+      return result.rowCount ? toIngressClass(result.rows[0]) : undefined;
+    }
 
     function getClusterIngressHost(id) {
       return db.withTransaction(connection => {
@@ -96,6 +117,28 @@ export default function() {
       const result = await connection.query(db.serialize(builder, {}).sql);
 
       return result.rowCount ? toClusterIngressVariable(result.rows[0]) : undefined;
+    }
+
+    function getClusterIngressClass(id) {
+      return db.withTransaction(connection => {
+        return _getClusterIngressClass(connection, id);
+      });
+    }
+
+    async function _getClusterIngressClass(connection, id) {
+      const builder = sqb
+        .select('cic.id', 'cic.created_by', 'a.display_name', 'cic.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cic.ingress_class', 'ic.name ingress_class_name')
+        .from('active_cluster_ingress_class__vw cic')
+        .join(
+          innerJoin('account a').on(Op.eq('cic.created_by', raw('a.id'))),
+          innerJoin('active_cluster__vw c').on(Op.eq('cic.cluster', raw('c.id'))),
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('cic.ingress_class', raw('ic.id')))
+        )
+        .where(Op.eq('cic.id', id));
+
+      const result = await connection.query(db.serialize(builder, {}).sql);
+
+      return result.rowCount ? toClusterIngressClass(result.rows[0]) : undefined;
     }
 
     function findIngressHostKeys(limit = 50, offset = 0) {
@@ -147,6 +190,33 @@ export default function() {
         ]);
 
         const items = result.rows.map(toIngressHostKey);
+        const count = parseInt(countResult.rows[0].count, 10);
+        return { limit, offset, count, items };
+      });
+    }
+
+    function findIngressClasses(limit = 50, offset = 0) {
+      const builder = sqb
+        .select('ic.id', 'ic.name', 'ic.created_by', 'a.display_name', 'ic.created_on')
+        .from('active_ingress_class__vw ic')
+        .join(
+          innerJoin('account a').on(Op.eq('ic.created_by', raw('a.id')))
+        )
+        .orderBy('ic.name')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_ingress_class__vw');
+
+      return db.withTransaction(async connection => {
+        const [result, countResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(countBuilder, {}).sql)
+        ]);
+
+        const items = result.rows.map(toIngressClass);
         const count = parseInt(countResult.rows[0].count, 10);
         return { limit, offset, count, items };
       });
@@ -226,6 +296,43 @@ export default function() {
       });
     }
 
+    function findClusterIngressClasses(criteria = {}, limit = 50, offset = 0) {
+      const builder = sqb
+        .select('cic.id', 'cic.created_by', 'a.display_name', 'cic.created_on', 'c.id cluster_id', 'c.name cluster_name', 'cic.ingress_class', 'ic.name ingress_class_name')
+        .from('active_cluster_ingress_class__vw cic')
+        .join(
+          innerJoin('account a').on(Op.eq('cic.created_by', raw('a.id'))),
+          innerJoin('active_cluster__vw c').on(Op.eq('cic.cluster', raw('c.id'))),
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('cic.ingress_class', raw('ic.id')))
+        )
+        .orderBy('ic.name')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_cluster_ingress_class__vw cic')
+        .join(
+          innerJoin('active_cluster__vw c').on(Op.eq('cic.cluster', raw('c.id'))),
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('cic.ingress_class', raw('ic.id')))
+        );
+
+      if(criteria.cluster) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('c.id', criteria.cluster)));
+      }
+
+      return db.withTransaction(async connection => {
+        const [result, countResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(countBuilder, {}).sql)
+        ]);
+
+        const items = result.rows.map(toClusterIngressClass);
+        const count = parseInt(countResult.rows[0].count, 10);
+        return { limit, offset, count, items };
+      });
+    }
+
     function saveIngressHostKey(name, meta) {
       return db.withTransaction(async connection => {
         const newId = uuid();
@@ -250,6 +357,24 @@ export default function() {
 
         const builder = sqb
           .insert('ingress_variable_key', {
+            id: newId,
+            name,
+            created_on: meta.date,
+            created_by: meta.account.id,
+          });
+
+        await connection.query(db.serialize(builder, {}).sql);
+
+        return newId;
+      });
+    }
+
+    function saveIngressClass(name, meta) {
+      return db.withTransaction(async connection => {
+        const newId = uuid();
+
+        const builder = sqb
+          .insert('ingress_class', {
             id: newId,
             name,
             created_on: meta.date,
@@ -291,6 +416,25 @@ export default function() {
             ingress_variable_key: ingressVariableKey.id,
             cluster: cluster.id,
             value,
+            created_on: meta.date,
+            created_by: meta.account.id,
+        });
+
+      return db.withTransaction(async connection => {
+        await connection.query(db.serialize(builder, {}).sql);
+
+        return newId;
+      });
+    }
+
+    function saveClusterIngressClass (ingressClass, cluster,  meta) {
+      const newId = uuid();
+
+      const builder = sqb
+        .insert('cluster_ingress_class', {
+            id: newId,
+            ingress_class: ingressClass.id,
+            cluster: cluster.id,
             created_on: meta.date,
             created_by: meta.account.id,
         });
@@ -354,6 +498,18 @@ export default function() {
       });
     }
 
+    function toIngressClass(row) {
+      return new IngressClass({
+        id: row.id,
+        name: row.name,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+      });
+    }
+
     function toClusterIngressHost(row) {
       return new ClusterIngressHost({
         id: row.id,
@@ -394,19 +550,44 @@ export default function() {
       });
     }
 
+    function toClusterIngressClass(row) {
+      return new ClusterIngressClass({
+        id: row.id,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+        cluster: new Cluster({
+          id: row.cluster_id,
+          name: row.cluster_name,
+        }),
+        ingressClass: new IngressClass({
+          id: row.ingress_class,
+          name: row.ingress_class_name,
+        }),
+      });
+    }
+
     cb(null, {
       getIngressHostKey,
       getIngressVariableKey,
+      getIngressClass,
       getClusterIngressHost,
       getClusterIngressVariable,
+      getClusterIngressClass,
       findIngressHostKeys,
       findIngressVariableKeys,
+      findIngressClasses,
       findClusterIngressHosts,
       findClusterIngressVariables,
+      findClusterIngressClasses,
       saveIngressHostKey,
       saveIngressVariableKey,
+      saveIngressClass,
       saveClusterIngressHostValue,
       saveClusterIngressVariableValue,
+      saveClusterIngressClass,
       updateClusterIngressHostValue,
       updateClusterIngressVariableValue,
     });

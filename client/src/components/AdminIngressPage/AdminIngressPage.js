@@ -27,11 +27,14 @@ class AdminClustersPage extends Component {
       hasIngressAdminWrite,
       fetchHostKeysPagination,
       fetchVariableKeysPagination,
+      fetchClassesPagination,
       handleSubmit,
       submitHostForm,
       submitVariableForm,
+      submitClassForm,
       hosts,
       variables,
+      classes,
     } = this.props;
 
     return (
@@ -167,6 +170,73 @@ class AdminClustersPage extends Component {
                                     className="pull-right"
                                     color="dark"
                                     onClick={handleSubmit(submitVariableForm)}
+                                    >Add</Button>
+                                </Col>
+                              </FormGroup>
+                            </FormSection>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader><span>Ingress classes:</span></CardHeader>
+                  <CardBody>
+                    <Row>
+                      <Col>
+                        <Table hover size="sm">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {
+                              classes.items.map(c => (
+                                <tr key={c.id}>
+                                  <td>
+                                    {c.name}
+                                  </td>
+                                </tr>
+                              ))
+                            }
+                          </tbody>
+                        </Table>
+                        <TablePagination
+                          pages={variables.pages}
+                          page={variables.page}
+                          limit={variables.limit}
+                          fetchContent={fetchClassesPagination}
+                        />
+                      </Col>
+                      <Col>
+                        <Card>
+                          <CardBody>
+                            <FormSection name="newClass">
+                              <h6>New ingress class:</h6>
+                              <FormGroup row>
+                                <Label sm="3" className="text-right" for="name">Name:</Label>
+                                <Col sm="9">
+                                  <Field
+                                    className="form-control"
+                                    name="name"
+                                    component={RenderInput}
+                                    type="text"
+                                    autoComplete="off"
+                                  />
+                                </Col>
+                              </FormGroup>
+                              <FormGroup row>
+                                <Col>
+                                  <Button
+                                    className="pull-right"
+                                    color="dark"
+                                    onClick={handleSubmit(submitClassForm)}
                                     >Add</Button>
                                 </Col>
                               </FormGroup>

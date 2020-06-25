@@ -73,6 +73,25 @@ class RenderClusterIngressVariables extends Component {
   }
 }
 
+class RenderClusterIngressClasses extends Component {
+  render() {
+
+    return (
+      <div>
+          {
+            this.props.fields.map((ingressClass, index) => {
+              return (
+                <FormGroup row key={ingressClass}>
+                  <Label sm="9" for={ingressClass}>{this.props.fields.get(index).ingressClass.name}</Label>
+                </FormGroup>
+              );
+            })
+          }
+      </div>
+    );
+  }
+}
+
 class ClusterEditPage extends Component {
 
   render() {
@@ -105,6 +124,7 @@ class ClusterEditPage extends Component {
       submitForm,
       submitNewHostForm,
       submitNewVariableForm,
+      submitNewClassForm,
       updateHostsForm,
       updateVariablesForm,
     } = this.props;
@@ -261,7 +281,7 @@ class ClusterEditPage extends Component {
                   </Col>
                 </Row>
 
-                <Row>
+                <Row className="mb-2">
                   <Col>
                     <Card>
                       <CardHeader className="py-2">Ingress Variable values:</CardHeader>
@@ -317,6 +337,50 @@ class ClusterEditPage extends Component {
                                 className="pull-right"
                                 color="dark"
                                 onClick={handleSubmit(submitNewVariableForm)}
+                                >Add</Button>
+                            </Col>
+                          </FormGroup>
+                        </FormSection>
+                      </CardBody>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Row className="mb-2">
+                  <Col>
+                    <Card>
+                      <CardHeader className="py-2">Ingress classes:</CardHeader>
+                      <CardBody>
+                        <FormSection name="clusterIngressClasses">
+                          <FieldArray
+                            name="classes"
+                            component={RenderClusterIngressClasses}
+                          />
+                        </FormSection>
+                        <hr />
+                        <h6>New ingress class:</h6>
+                        <FormSection name="newIngressClassValue">
+                          <FormGroup row>
+                            <Label sm="3" className="text-right" for="ingressClass">Ingress class:</Label>
+                            <Col sm="8">
+                              <Field
+                                name="ingressClass"
+                                className="form-control"
+                                component={RenderSelect}
+                                options={this.props.availableIngressClasses.map(ic => ({
+                                  value: ic.id,
+                                  display: ic.name,
+                                }))}
+                                autoComplete="off"
+                              />
+                            </Col>
+                          </FormGroup>
+                          <FormGroup row>
+                            <Col>
+                              <Button
+                                className="pull-right"
+                                color="dark"
+                                onClick={handleSubmit(submitNewClassForm)}
                                 >Add</Button>
                             </Col>
                           </FormGroup>

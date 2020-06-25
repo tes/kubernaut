@@ -5,6 +5,7 @@ import {
   submitForm,
   submitNewHostForm,
   submitNewVariableForm,
+  submitNewClassForm,
   updateHostsForm,
   updateVariablesForm,
 } from '../../modules/clusterEdit';
@@ -19,6 +20,10 @@ export default connect(({ clusterEdit, account }) => {
     !clusterEdit.initialValues.clusterIngressVariables.variables.find((hv => hv.ingressVariableKey.id === iv.id))
   );
 
+  const availableIngressClasses = clusterEdit.ingressClasses.items.filter((ic) =>
+    !clusterEdit.initialValues.clusterIngressClasses.classes.find((hc => hc.ingressClass.id === ic.id))
+  );
+
   return {
     canAudit: account && account.permissions && account.permissions['audit-read'],
     hasClustersWrite: account && account.permissions && account.permissions['clusters-write'],
@@ -28,9 +33,11 @@ export default connect(({ clusterEdit, account }) => {
     cluster: clusterEdit.cluster,
     availableIngressHostKeys,
     availableIngressVariableKeys,
+    availableIngressClasses,
     submitForm,
     submitNewHostForm,
     submitNewVariableForm,
+    submitNewClassForm,
     updateHostsForm,
     updateVariablesForm,
   };

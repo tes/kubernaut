@@ -19,14 +19,23 @@ export const FETCH_VARIABLE_KEYS_REQUEST = createAction(`${actionsPrefix}/FETCH_
 export const FETCH_VARIABLE_KEYS_SUCCESS = createAction(`${actionsPrefix}/FETCH_VARIABLE_KEYS_SUCCESS`);
 export const FETCH_VARIABLE_KEYS_ERROR = createAction(`${actionsPrefix}/FETCH_VARIABLE_KEYS_ERROR`);
 
+export const fetchClasses = createAction(`${actionsPrefix}/FETCH_CLASSES`);
+export const fetchClassesPagination = createAction(`${actionsPrefix}/FETCH_CLASSES_PAGINATION`);
+export const FETCH_CLASSES_REQUEST = createAction(`${actionsPrefix}/FETCH_CLASSES_REQUEST`);
+export const FETCH_CLASSES_SUCCESS = createAction(`${actionsPrefix}/FETCH_CLASSES_SUCCESS`);
+export const FETCH_CLASSES_ERROR = createAction(`${actionsPrefix}/FETCH_CLASSES_ERROR`);
+
 export const setHostPagination = createAction(`${actionsPrefix}/SET_HOST_PAGINATION`);
 export const setVariablePagination = createAction(`${actionsPrefix}/SET_VARIABLE_PAGINATION`);
+export const setClassPagination = createAction(`${actionsPrefix}/SET_CLASS_PAGINATION`);
 
 export const getFormValues = (state) => rfGetFormValues('newIngressKeys')(state);
 export const submitHostForm = createFormAction(`${actionsPrefix}/SUBMIT_HOST_FORM`);
 export const submitVariableForm = createFormAction(`${actionsPrefix}/SUBMIT_VARIABLE_FORM`);
+export const submitClassForm = createFormAction(`${actionsPrefix}/SUBMIT_CLASS_FORM`);
 export const selectHostPaginationState = (state) => (state.adminIngress.hostPagination);
 export const selectVariablePaginationState = (state) => (state.adminIngress.variablePagination);
+export const selectClassPaginationState = (state) => (state.adminIngress.classPagination);
 
 
 const defaultState = {
@@ -46,6 +55,14 @@ const defaultState = {
     page: 0,
     items: [],
   },
+  classes: {
+    limit: 0,
+    offset: 0,
+    count: 0,
+    pages: 0,
+    page: 0,
+    items: [],
+  },
   meta: {},
   initialValues: {
     newHost: {
@@ -54,12 +71,19 @@ const defaultState = {
     newVariable: {
       name: '',
     },
+    newClass: {
+      name: '',
+    },
   },
   hostPagination: {
     page: 1,
     limit: 10,
   },
   variablePagination: {
+    page: 1,
+    limit: 10,
+  },
+  classPagination: {
     page: 1,
     limit: 10,
   },
@@ -113,6 +137,29 @@ export default handleActions({
       loading: false,
     },
   }),
+  [FETCH_CLASSES_REQUEST]: (state) => ({
+    ...state,
+    classes: {
+      ...defaultState.classes,
+    },
+    meta: {
+      loading: true,
+    },
+  }),
+  [FETCH_CLASSES_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    classes: payload.data,
+    meta: {
+      loading: false,
+    },
+  }),
+  [FETCH_CLASSES_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      error: payload.error,
+      loading: false,
+    },
+  }),
   [combineActions(fetchHostKeysPagination, setHostPagination)]: (state, { payload }) => ({
     ...state,
     hostPagination: {
@@ -125,6 +172,13 @@ export default handleActions({
     variablePagination: {
       page: payload.page || defaultState.variablePagination.page,
       limit: payload.limit || defaultState.variablePagination.limit,
+    },
+  }),
+  [combineActions(fetchClassesPagination, setClassPagination)]: (state, { payload }) => ({
+    ...state,
+    classPagination: {
+      page: payload.page || defaultState.classPagination.page,
+      limit: payload.limit || defaultState.classPagination.limit,
     },
   }),
 }, defaultState);

@@ -20,20 +20,30 @@ import {
   FETCH_VARIABLE_KEYS_REQUEST,
   FETCH_VARIABLE_KEYS_SUCCESS,
   FETCH_VARIABLE_KEYS_ERROR,
+  fetchClasses,
+  fetchClassesPagination,
+  FETCH_CLASSES_REQUEST,
+  FETCH_CLASSES_SUCCESS,
+  FETCH_CLASSES_ERROR,
   setHostPagination,
   setVariablePagination,
+  setClassPagination,
   getFormValues,
   submitHostForm,
   submitVariableForm,
+  submitClassForm,
   selectHostPaginationState,
   selectVariablePaginationState,
+  selectClassPaginationState,
 } from '../modules/adminIngress';
 
 import {
   getIngressHosts,
   getIngressVariables,
+  getIngressClasses,
   saveIngressHost,
   saveIngressVariable,
+  saveIngressClass,
 } from '../lib/api';
 
 const pageUrl = '/admin/ingress';
@@ -65,6 +75,21 @@ export function* fetchVariableKeysSaga({ payload = {} }) {
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_VARIABLE_KEYS_ERROR({ error: error.message }));
+  }
+}
+
+export function* fetchClassesSaga({ payload = {} }) {
+  const options = payload;
+  const { page, limit } = yield select(selectClassPaginationState);
+  const offset = (page - 1) * limit;
+
+  yield put(FETCH_CLASSES_REQUEST());
+  try {
+    const data = yield call(getIngressClasses, { offset, limit });
+    yield put(FETCH_CLASSES_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_CLASSES_ERROR({ error: error.message }));
   }
 }
 
@@ -106,11 +131,35 @@ export function* submitVariableSaga() {
   }
 }
 
+export function* submitClassSaga() {
+  try {
+    const { newClass: values = {} } = yield select(getFormValues);
+
+    if (!values.name) {
+      yield put(submitClassForm.failure());
+      return;
+    }
+    yield call(saveIngressClass, values.name);
+
+    yield put(submitClassForm.success());
+    yield put(reset('newIngressKeys'));
+    yield put(fetchClasses());
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+    yield put(submitClassForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));
+  }
+}
+
 export function* paginationSaga() {
   const location = yield select(getLocation);
   const hostPagination = yield select(selectHostPaginationState);
   const variablePagination = yield select(selectVariablePaginationState);
-  yield put(push(`${pageUrl}?${alterQuery(location.search, { 'h-pagination': makeQueryString({ ...hostPagination }), 'v-pagination': makeQueryString({ ...variablePagination }) })}`));
+  const classPagination = yield select(selectClassPaginationState);
+  yield put(push(`${pageUrl}?${alterQuery(location.search, {
+    'h-pagination': makeQueryString({ ...hostPagination }),
+    'v-pagination': makeQueryString({ ...variablePagination }),
+    'c-pagination': makeQueryString({ ...classPagination }),
+  })}`));
 }
 
 export function* locationChangeSaga({ payload = {} }) {
@@ -119,19 +168,25 @@ export function* locationChangeSaga({ payload = {} }) {
 
   const hostPagination = parseQueryString(extractFromQuery(location.search, 'h-pagination') || '');
   const variablePagination = parseQueryString(extractFromQuery(location.search, 'v-pagination') || '');
+  const classPagination = parseQueryString(extractFromQuery(location.search, 'c-pagination') || '');
 
   yield put(setHostPagination(hostPagination));
   yield put(setVariablePagination(variablePagination));
+  yield put(setClassPagination(classPagination));
   yield put(fetchHostKeys());
   yield put(fetchVariableKeys());
+  yield put(fetchClasses());
 }
 
 export default [
   takeLatest(fetchHostKeys, fetchHostKeysSaga),
   takeLatest(fetchVariableKeys, fetchVariableKeysSaga),
+  takeLatest(fetchClasses, fetchClassesSaga),
   takeLatest(initialiseAdminIngressPage, locationChangeSaga),
   takeLatest(fetchHostKeysPagination, paginationSaga),
   takeLatest(fetchVariableKeysPagination, paginationSaga),
+  takeLatest(fetchClassesPagination, paginationSaga),
   takeLatest(submitHostForm.REQUEST, submitHostSaga),
   takeLatest(submitVariableForm.REQUEST, submitVariableSaga),
+  takeLatest(submitClassForm.REQUEST, submitClassSaga),
 ];
