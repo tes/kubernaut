@@ -9,6 +9,9 @@ import {
   Label,
   FormGroup,
   Table,
+  Card,
+  CardHeader,
+  CardBody,
 } from 'reactstrap';
 import TablePagination from '../TablePagination';
 import RenderInput from '../RenderInput';
@@ -42,111 +45,138 @@ class AdminClustersPage extends Component {
             </Col>
           </Row>
           <Form>
-            <Row>
-              <Col md="5">
-                <h6>Host keys:</h6>
-                <Table hover size="sm">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      hosts.items.map(c => (
-                        <tr key={c.id}>
-                          <td>
-                            {c.name}
-                          </td>
-                        </tr>
-                      ))
-                    }
-                  </tbody>
-                </Table>
-                <TablePagination
-                  pages={hosts.pages}
-                  page={hosts.page}
-                  limit={hosts.limit}
-                  fetchContent={fetchHostKeysPagination}
-                  />
-                <hr />
-                <FormSection name="newHost">
-                  <h6>New host key:</h6>
-                  <FormGroup row>
-                    <Label sm="3" className="text-right" for="name">Name:</Label>
-                    <Col sm="9">
-                      <Field
-                        className="form-control"
-                        name="name"
-                        component={RenderInput}
-                        type="text"
-                        autoComplete="off"
-                      />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup row>
-                    <Col>
-                      <Button
-                        className="pull-right"
-                        color="dark"
-                        onClick={handleSubmit(submitHostForm)}
-                        >Add</Button>
-                    </Col>
-                  </FormGroup>
-                </FormSection>
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader><span>Host keys:</span></CardHeader>
+                  <CardBody>
+                    <Row>
+                      <Col>
+                        <Table hover size="sm">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {
+                              hosts.items.map(c => (
+                                <tr key={c.id}>
+                                  <td>
+                                    {c.name}
+                                  </td>
+                                </tr>
+                              ))
+                            }
+                          </tbody>
+                        </Table>
+                        <TablePagination
+                          pages={hosts.pages}
+                          page={hosts.page}
+                          limit={hosts.limit}
+                          fetchContent={fetchHostKeysPagination}
+                          />
+                      </Col>
+                      <Col>
+                        <Card>
+                          <CardBody>
+                            <FormSection name="newHost">
+                              <h6>New host key:</h6>
+                              <FormGroup row>
+                                <Label sm="3" className="text-right" for="name">Name:</Label>
+                                <Col sm="9">
+                                  <Field
+                                    className="form-control"
+                                    name="name"
+                                    component={RenderInput}
+                                    type="text"
+                                    autoComplete="off"
+                                  />
+                                </Col>
+                              </FormGroup>
+                              <FormGroup row>
+                                <Col>
+                                  <Button
+                                    className="pull-right"
+                                    color="dark"
+                                    onClick={handleSubmit(submitHostForm)}
+                                    >Add</Button>
+                                </Col>
+                              </FormGroup>
+                            </FormSection>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </CardBody>
+                </Card>
               </Col>
-              <Col></Col>
-              <Col md="5">
-                <h6>Variable keys:</h6>
-                <Table hover size="sm">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      variables.items.map(c => (
-                        <tr key={c.id}>
-                          <td>
-                            {c.name}
-                          </td>
-                        </tr>
-                      ))
-                    }
-                  </tbody>
-                </Table>
-                <TablePagination
-                  pages={variables.pages}
-                  page={variables.page}
-                  limit={variables.limit}
-                  fetchContent={fetchVariableKeysPagination}
-                  />
-                <hr />
-                <FormSection name="newVariable">
-                  <h6>New variable key:</h6>
-                  <FormGroup row>
-                    <Label sm="3" className="text-right" for="name">Name:</Label>
-                    <Col sm="9">
-                      <Field
-                        className="form-control"
-                        name="name"
-                        component={RenderInput}
-                        type="text"
-                        autoComplete="off"
-                      />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup row>
-                    <Col>
-                      <Button
-                        className="pull-right"
-                        color="dark"
-                        onClick={handleSubmit(submitVariableForm)}
-                        >Add</Button>
-                    </Col>
-                  </FormGroup>
-                </FormSection>
+            </Row>
+            <Row className="mb-2">
+              <Col>
+                <Card>
+                  <CardHeader><span>Variable keys:</span></CardHeader>
+                  <CardBody>
+                    <Row>
+                      <Col>
+                        <Table hover size="sm">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {
+                              variables.items.map(c => (
+                                <tr key={c.id}>
+                                  <td>
+                                    {c.name}
+                                  </td>
+                                </tr>
+                              ))
+                            }
+                          </tbody>
+                        </Table>
+                        <TablePagination
+                          pages={variables.pages}
+                          page={variables.page}
+                          limit={variables.limit}
+                          fetchContent={fetchVariableKeysPagination}
+                        />
+                      </Col>
+                      <Col>
+                        <Card>
+                          <CardBody>
+                            <FormSection name="newVariable">
+                              <h6>New variable key:</h6>
+                              <FormGroup row>
+                                <Label sm="3" className="text-right" for="name">Name:</Label>
+                                <Col sm="9">
+                                  <Field
+                                    className="form-control"
+                                    name="name"
+                                    component={RenderInput}
+                                    type="text"
+                                    autoComplete="off"
+                                  />
+                                </Col>
+                              </FormGroup>
+                              <FormGroup row>
+                                <Col>
+                                  <Button
+                                    className="pull-right"
+                                    color="dark"
+                                    onClick={handleSubmit(submitVariableForm)}
+                                    >Add</Button>
+                                </Col>
+                              </FormGroup>
+                            </FormSection>
+                          </CardBody>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </CardBody>
+                </Card>
               </Col>
             </Row>
           </Form>
