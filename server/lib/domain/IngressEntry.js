@@ -1,10 +1,9 @@
 export default class IngressEntry {
 
-  constructor({ id, name, ingressClass, rules = [], annotations }) {
+  constructor({ id, name, ingressClass, annotations }) {
     this.id = id;
     this.name = name;
     this.ingressClass = ingressClass;
-    this.rules = rules;
     this.annotations = annotations;
   }
 

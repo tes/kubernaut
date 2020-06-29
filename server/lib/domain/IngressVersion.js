@@ -1,10 +1,9 @@
-export default class IngressEntry {
+export default class IngressVersion {
 
-  constructor({ id, comment, service, entries = [], createdBy, createdOn }) {
+  constructor({ id, comment, service, createdBy, createdOn }) {
     this.id = id;
     this.comment = comment;
     this.service = service;
-    this.entries = entries;
     this.createdBy = createdBy;
     this.createdOn = createdOn;
   }

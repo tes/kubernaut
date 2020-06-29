@@ -9,6 +9,10 @@ import ClusterIngressHost from '../../domain/ClusterIngressHost';
 import ClusterIngressVariable from '../../domain/ClusterIngressVariable';
 import IngressClass from '../../domain/IngressClass';
 import ClusterIngressClass from '../../domain/ClusterIngressClass';
+import IngressVersion from '../../domain/IngressVersion';
+import IngressEntry from '../../domain/IngressEntry';
+import IngressEntryRule from '../../domain/IngressEntryRule';
+import IngressEntryAnnotation from '../../domain/IngressEntryAnnotation';
 
 const { Op, raw, innerJoin } = sqb;
 
@@ -474,6 +478,176 @@ export default function() {
       });
     }
 
+    function findIngressVersions(criteria = {}, limit = 50, offset = 0) {
+      const builder = sqb
+        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name')
+        .from('active_ingress_versions__vw iv')
+        .join(
+          innerJoin('account a').on(Op.eq('iv.created_by', raw('a.id'))),
+          innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id')))
+        )
+        .orderBy('ic.name')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('active_ingress_versions__vw iv')
+        .join(
+          innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id')))
+        );
+
+      if(criteria.service) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('s.id', criteria.service.id)));
+      }
+
+      return db.withTransaction(async connection => {
+        const [result, countResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(countBuilder, {}).sql)
+        ]);
+
+        const items = result.rows.map((row) => toIngressVersion(row, { service: criteria.service }));
+        const count = parseInt(countResult.rows[0].count, 10);
+        return { limit, offset, count, items };
+      });
+    }
+
+    function getIngressVersion(id) {
+      return db.withTransaction(connection => {
+        return _getIngressVersion(connection, id);
+      });
+    }
+
+    async function _getIngressVersion(connection, id) {
+      const builder = sqb
+        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name')
+        .from('active_ingress_versions__vw iv')
+        .join(
+          innerJoin('account a').on(Op.eq('iv.created_by', raw('a.id'))),
+          innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id')))
+        )
+        .where(Op.eq('iv.id', id));
+
+      const result = await connection.query(db.serialize(builder, {}).sql);
+
+      return result.rowCount ? toIngressVersion(result.rows[0]) : undefined;
+    }
+
+    function findIngressEntries(criteria = {}, limit = 50, offset = 0) {
+      const builder = sqb
+        .select('ie.id', 'ie.name', 'ie.ingress_class', 'ic.name ingress_class_name')
+        .from('ingress_entry ie')
+        .join(
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('ie.ingress_class', raw('ic.id')))
+        )
+        .orderBy('ie.name')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('ingress_entry ie')
+        .join(
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('ie.ingress_class', raw('ic.id')))
+        );
+
+      if(criteria.ingressVersion) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('iv.id', criteria.ingressVersion.id)));
+      }
+
+      return db.withTransaction(async connection => {
+        const [result, countResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(countBuilder, {}).sql)
+        ]);
+
+        const items = result.rows.map((row) => toIngressEntry(row));
+        const count = parseInt(countResult.rows[0].count, 10);
+        return { limit, offset, count, items };
+      });
+    }
+
+    function getIngressEntry(id) {
+      return db.withTransaction(connection => {
+        return _getIngressEntry(connection, id);
+      });
+    }
+
+    async function _getIngressEntry(connection, id) {
+      const builder = sqb
+        .select('ie.id', 'ie.name', 'ie.ingress_class', 'ic.name ingress_class_name')
+        .from('ingress_entry ie')
+        .join(
+          innerJoin('active_ingress_class__vw ic').on(Op.eq('ie.ingress_class', raw('ic.id')))
+        )
+        .where(Op.eq('ie.id', id));
+
+      const annotationBuilder = sqb
+        .select('iea.name', 'iea.value')
+        .from('ingress_entry_annotation iea')
+        .where(Op.eq('iea.ingress_entry', id));
+
+      const result = await connection.query(db.serialize(builder, {}).sql);
+      const annotationResult = await connection.query(db.serialize(annotationBuilder, {}).sql);
+
+      return result.rowCount ? toIngressVersion(result.rows[0], annotationResult.rows) : undefined;
+    }
+
+    function findIngressRules(criteria = {}, limit = 50, offset = 0) {
+      const builder = sqb
+        .select('ier.id', 'ier.path', 'ier.port', 'ier.custom_host', 'ier.ingress_host_key', 'ihk.name ingress_host_key_name')
+        .from('ingress_entry_rule ier')
+        .join(
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('ier.ingress_host_key', raw('ihk.id')))
+        )
+        .orderBy('ier.path')
+        .limit(limit)
+        .offset(offset);
+
+      const countBuilder = sqb
+        .select(raw('count(*) count'))
+        .from('ingress_entry_rule ier')
+        .join(
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('ier.ingress_host_key', raw('ihk.id')))
+        );
+
+      if(criteria.ingressEntry) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('ier.ingress_entry', criteria.ingressEntry.id)));
+      }
+
+      return db.withTransaction(async connection => {
+        const [result, countResult] = await Promise.all([
+          connection.query(db.serialize(builder, {}).sql),
+          connection.query(db.serialize(countBuilder, {}).sql)
+        ]);
+
+        const items = result.rows.map((row) => toIngressEntryRule(row));
+        const count = parseInt(countResult.rows[0].count, 10);
+        return { limit, offset, count, items };
+      });
+    }
+
+    function getIngressEntryRule(id) {
+      return db.withTransaction(connection => {
+        return _getIngressEntryRule(connection, id);
+      });
+    }
+
+    async function _getIngressEntryRule(connection, id) {
+      const builder = sqb
+        .select('ier.id', 'ier.path', 'ier.port', 'ier.custom_host', 'ier.ingress_host_key', 'ihk.name ingress_host_key_name')
+        .from('ingress_entry_rule ier')
+        .join(
+          innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('ier.ingress_host_key', raw('ihk.id')))
+        )
+        .where(Op.eq('ier.id', id));
+
+      const result = await connection.query(db.serialize(builder, {}).sql);
+
+      return result.rowCount ? toIngressVersion(result.rows[0]) : undefined;
+    }
+
     function toIngressHostKey(row) {
       return new IngressHostKey({
         id: row.id,
@@ -569,6 +743,49 @@ export default function() {
       });
     }
 
+    function toIngressVersion(row, { service }) {
+      return new IngressVersion({
+        id: row.id,
+        createdOn: row.created_on,
+        createdBy: new Account({
+          id: row.created_by,
+          displayName: row.display_name,
+        }),
+        comment: row.comment,
+        service,
+      });
+    }
+
+    function toIngressEntry(row, annotationRows) {
+      const annotations = annotationRows ? annotationRows.map((row) => new IngressEntryAnnotation({
+        name: row.name,
+        value: row.value,
+      })) : undefined;
+
+      return new IngressEntry({
+        id: row.id,
+        name: row.name,
+        ingressClass: new IngressClass({
+          id: row.ingress_class,
+          name: row.ingress_class_name,
+        }),
+        annotations,
+      });
+    }
+
+    function toIngressEntryRule(row) {
+      return new IngressEntryRule({
+        id: row.id,
+        path: row.path,
+        port: row.port,
+        customHost: row.custom_host,
+        ingressHostKey: new IngressHostKey({
+          id: row.ingress_host_key,
+          name: row.ingress_host_key_name,
+        }),
+      });
+    }
+
     cb(null, {
       getIngressHostKey,
       getIngressVariableKey,
@@ -576,12 +793,18 @@ export default function() {
       getClusterIngressHost,
       getClusterIngressVariable,
       getClusterIngressClass,
+      getIngressVersion,
+      getIngressEntry,
+      getIngressEntryRule,
       findIngressHostKeys,
       findIngressVariableKeys,
       findIngressClasses,
       findClusterIngressHosts,
       findClusterIngressVariables,
       findClusterIngressClasses,
+      findIngressVersions,
+      findIngressEntries,
+      findIngressRules,
       saveIngressHostKey,
       saveIngressVariableKey,
       saveIngressClass,
