@@ -648,6 +648,90 @@ export default function() {
       return result.rowCount ? toIngressVersion(result.rows[0]) : undefined;
     }
 
+    async function _saveIngressVersion(connection, serviceId, comment, meta) {
+      const newId = uuid();
+
+      const builder = sqb
+        .insert('ingress_version', {
+          id: newId,
+          service: serviceId,
+          comment,
+          created_on: meta.date,
+          created_by: meta.account.id,
+        });
+
+      await connection.query(db.serialize(builder, {}).sql);
+
+      return newId;
+    }
+
+    async function _saveIngressEntry(connection, ingressVersionId, name, ingressClassId) {
+      const newId = uuid();
+
+      const builder = sqb
+        .insert('ingress_entry', {
+          id: newId,
+          ingress_version: ingressVersionId,
+          ingress_class: ingressClassId,
+          name,
+        });
+
+      await connection.query(db.serialize(builder, {}).sql);
+
+      return newId;
+    }
+
+    async function _saveIngressEntryAnnotation(connection, ingressEntryId, name, value) {
+      const builder = sqb
+        .insert('ingress_entry_annotation', {
+          ingress_entry: ingressEntryId,
+          name,
+          value,
+        });
+
+      await connection.query(db.serialize(builder, {}).sql);
+
+      return;
+    }
+
+    async function _saveIngressRule(connection, ingressEntryId, path, port, customHost, ingressHostKeyId) {
+      const newId = uuid();
+
+      const builder = sqb
+        .insert('ingress_entry_rule', {
+          id: newId,
+          ingress_entry: ingressEntryId,
+          path,
+          port,
+          customHost,
+          ingress_host_key: ingressHostKeyId,
+        });
+
+      await connection.query(db.serialize(builder, {}).sql);
+
+      return newId;
+    }
+
+    function saveIngressVersion(service, versionData, meta) {
+      return db.withTransaction(async connection => {
+        const ingressVersionId = await _saveIngressVersion(connection, service.id, versionData.comment, meta);
+
+        for (const entryData of versionData.entries) {
+          const ingressEntryId = await _saveIngressEntry(connection, ingressVersionId, entryData.name, entryData.ingressClass);
+
+          for (const annotationData of entryData.annotations) {
+            await _saveIngressEntryAnnotation(connection, ingressEntryId, annotationData.name, annotationData.value);
+          }
+
+          for (const ruleData of entryData.rules) {
+            await _saveIngressRule(connection, ingressEntryId, ruleData.path, ruleData.port, ruleData.customHost, ruleData.ingressHostKey);
+          }
+        }
+
+        return ingressVersionId;
+      });
+    }
+
     function toIngressHostKey(row) {
       return new IngressHostKey({
         id: row.id,
@@ -811,6 +895,7 @@ export default function() {
       saveClusterIngressHostValue,
       saveClusterIngressVariableValue,
       saveClusterIngressClass,
+      saveIngressVersion,
       updateClusterIngressHostValue,
       updateClusterIngressVariableValue,
     });
