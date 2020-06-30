@@ -126,6 +126,10 @@ const paths = {
     route: '/namespaces',
     action: initialiseNamespacesPage,
   },
+  newIngressVersion: {
+    route: '/services/:registry/:name/ingress/new',
+    // action: initNewJobPage,
+  },
   newJobVersion: {
     route: '/cronjobs/:id/new',
     action: initNewJobPage,

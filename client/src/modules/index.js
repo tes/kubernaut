@@ -24,6 +24,7 @@ import namespace from './namespace';
 import namespaceEdit from './namespaceEdit';
 import namespaceManage from './namespaceManage';
 import namespaces from './namespaces';
+import newIngressVersion from './newIngressVersion';
 import newJobVersion from './newJobVersion';
 import newSecretVersion from './newSecretVersion';
 import registries from './registries';
@@ -66,6 +67,7 @@ export default (history) => combineReducers({
   namespaceEdit,
   namespaceManage,
   namespaces,
+  newIngressVersion,
   newJobVersion,
   newSecretVersion,
   registries,

@@ -25,6 +25,7 @@ import NamespacesPage from './components/NamespacesPage';
 import NamespaceDetailsPage from './components/NamespaceDetailsPage';
 import NamespaceEditPage from './components/NamespaceEditPage';
 import NamespaceManagePage from './components/NamespaceManagePage';
+import NewIngressVersionPage from './components/NewIngressVersionPage';
 import NewJobVersionPage from './components/NewJobVersionPage';
 import NewSecretVersionPage from './components/NewSecretVersionPage';
 import RegistriesPage from './components/RegistriesPage';
@@ -146,6 +147,13 @@ export default () => <Switch>
     render={({ match }) => <Wrapper>
           <DeploymentDetailsPage />
         </Wrapper>}
+  />
+  <Route
+    exact
+    path={paths.newIngressVersion.route}
+    render={() => {
+      return <Wrapper title="New ingress version"><NewIngressVersionPage /></Wrapper>;
+    }}
   />
   <Route
     exact
