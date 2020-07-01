@@ -15,13 +15,21 @@ export default function() {
     app.get('/api/ingress/host-keys', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const criteria = {};
+
+        if (req.query.serviceId) {
+          const service = await store.getService(req.query.serviceId);
+          if (! await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read'))  return next(Boom.forbidden());
+
+          criteria.service = service;
+        }
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed ingress host keys');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 
-        const result = await store.findIngressHostKeys(limit, offset);
+        const result = await store.findIngressHostKeys(criteria, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -49,13 +57,21 @@ export default function() {
     app.get('/api/ingress/variable-keys', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const criteria = {};
+
+        if (req.query.serviceId) {
+          const service = await store.getService(req.query.serviceId);
+          if (! await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read'))  return next(Boom.forbidden());
+
+          criteria.service = service;
+        }
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed ingress variable keys');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 
-        const result = await store.findIngressVariableKeys(limit, offset);
+        const result = await store.findIngressVariableKeys(criteria, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);
@@ -83,13 +99,21 @@ export default function() {
     app.get('/api/ingress/classes', async (req, res, next) => {
       try {
         if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const criteria = {};
+
+        if (req.query.serviceId) {
+          const service = await store.getService(req.query.serviceId);
+          if (! await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read'))  return next(Boom.forbidden());
+
+          criteria.service = service;
+        }
 
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed ingress classes');
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
 
-        const result = await store.findIngressClasses(limit, offset);
+        const result = await store.findIngressClasses(criteria, limit, offset);
         res.json(result);
       } catch (err) {
         next(err);

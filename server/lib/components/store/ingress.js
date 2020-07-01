@@ -145,7 +145,7 @@ export default function() {
       return result.rowCount ? toClusterIngressClass(result.rows[0]) : undefined;
     }
 
-    function findIngressHostKeys(limit = 50, offset = 0) {
+    function findIngressHostKeys(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
         .select('ihk.id', 'ihk.name', 'ihk.created_by', 'a.display_name', 'ihk.created_on')
         .from('active_ingress_host_key__vw ihk')
@@ -158,7 +158,39 @@ export default function() {
 
       const countBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_ingress_host_key__vw');
+        .from('active_ingress_host_key__vw ihk');
+
+      if (criteria.service) {
+        const filterBuilder = sqb
+          .select('ingress_host_key')
+          .from(sqb
+            .select('ingress_host_key', 'cluster_count', raw('max(cluster_count) over() max_count'))
+            .from(sqb
+              .select('ingress_host_key', raw('count(1) over( partition by ingress_host_key) cluster_count'))
+              .from(sqb
+                .select('cih.ingress_host_key')
+                .from('active_cluster_ingress_host__vw cih')
+                .where(Op.in('cih.cluster', sqb
+                  .select(raw('distinct c.id'))
+                  .from('service_namespace sn')
+                  .join(
+                    innerJoin('active_namespace__vw n').on(Op.eq('n.id', raw('sn.namespace'))),
+                    innerJoin('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster')))
+                  )
+                  .where(Op.eq('sn.service', criteria.service.id))
+                  .where(Op.is('sn.deleted_on', null))
+                ))
+                .as('cih_for_deployable_clusters')
+              )
+              .as('cih_for_deployable_clusters_with_max')
+            )
+            .groupBy('ingress_host_key', 'cluster_count')
+            .as('ihk_counts')
+          )
+          .where(Op.eq('cluster_count', raw('max_count')));
+
+          [builder, countBuilder].forEach(builder => builder.where(Op.in('ihk.id', filterBuilder)));
+      }
 
       return db.withTransaction(async connection => {
         const [result, countResult] = await Promise.all([
@@ -172,7 +204,7 @@ export default function() {
       });
     }
 
-    function findIngressVariableKeys(limit = 50, offset = 0) {
+    function findIngressVariableKeys(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
         .select('ivk.id', 'ivk.name', 'ivk.created_by', 'a.display_name', 'ivk.created_on')
         .from('active_ingress_variable_key__vw ivk')
@@ -185,7 +217,39 @@ export default function() {
 
       const countBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_ingress_variable_key__vw');
+        .from('active_ingress_variable_key__vw ivk');
+
+      if (criteria.service) {
+        const filterBuilder = sqb
+          .select('ingress_variable_key')
+          .from(sqb
+            .select('ingress_variable_key', 'cluster_count', raw('max(cluster_count) over() max_count'))
+            .from(sqb
+              .select('ingress_variable_key', raw('count(1) over( partition by ingress_variable_key) cluster_count'))
+              .from(sqb
+                .select('civ.ingress_variable_key')
+                .from('active_cluster_ingress_variable__vw civ')
+                .where(Op.in('civ.cluster', sqb
+                  .select(raw('distinct c.id'))
+                  .from('service_namespace sn')
+                  .join(
+                    innerJoin('active_namespace__vw n').on(Op.eq('n.id', raw('sn.namespace'))),
+                    innerJoin('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster')))
+                  )
+                  .where(Op.eq('sn.service', criteria.service.id))
+                  .where(Op.is('sn.deleted_on', null))
+                ))
+                .as('civ_for_deployable_clusters')
+              )
+              .as('civ_for_deployable_clusters_with_max')
+            )
+            .groupBy('ingress_variable_key', 'cluster_count')
+            .as('ihk_counts')
+          )
+          .where(Op.eq('cluster_count', raw('max_count')));
+
+          [builder, countBuilder].forEach(builder => builder.where(Op.in('ivk.id', filterBuilder)));
+      }
 
       return db.withTransaction(async connection => {
         const [result, countResult] = await Promise.all([
@@ -199,7 +263,7 @@ export default function() {
       });
     }
 
-    function findIngressClasses(limit = 50, offset = 0) {
+    function findIngressClasses(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
         .select('ic.id', 'ic.name', 'ic.created_by', 'a.display_name', 'ic.created_on')
         .from('active_ingress_class__vw ic')
@@ -212,7 +276,39 @@ export default function() {
 
       const countBuilder = sqb
         .select(raw('count(*) count'))
-        .from('active_ingress_class__vw');
+        .from('active_ingress_class__vw ic');
+
+      if (criteria.service) {
+        const filterBuilder = sqb
+          .select('ingress_class')
+          .from(sqb
+            .select('ingress_class', 'cluster_count', raw('max(cluster_count) over() max_count'))
+            .from(sqb
+              .select('ingress_class', raw('count(1) over( partition by ingress_class) cluster_count'))
+              .from(sqb
+                .select('cic.ingress_class')
+                .from('active_cluster_ingress_class__vw cic')
+                .where(Op.in('cic.cluster', sqb
+                  .select(raw('distinct c.id'))
+                  .from('service_namespace sn')
+                  .join(
+                    innerJoin('active_namespace__vw n').on(Op.eq('n.id', raw('sn.namespace'))),
+                    innerJoin('active_cluster__vw c').on(Op.eq('c.id', raw('n.cluster')))
+                  )
+                  .where(Op.eq('sn.service', criteria.service.id))
+                  .where(Op.is('sn.deleted_on', null))
+                ))
+                .as('cic_for_deployable_clusters')
+              )
+              .as('cic_for_deployable_clusters_with_max')
+            )
+            .groupBy('ingress_class', 'cluster_count')
+            .as('ihc_counts')
+          )
+          .where(Op.eq('cluster_count', raw('max_count')));
+
+          [builder, countBuilder].forEach(builder => builder.where(Op.in('ic.id', filterBuilder)));
+      }
 
       return db.withTransaction(async connection => {
         const [result, countResult] = await Promise.all([
