@@ -206,10 +206,11 @@ export const getJobVersions = ({ id, limit = 20, offset = 0, sort, order }) => {
   return makeRequest(`/api/jobs/${id}/versions?${qs}`).then(computePagination);
 };
 
-export const getIngressHosts = ({ limit = 50, offset = 0 } = {}) => {
+export const getIngressHosts = ({ limit = 50, offset = 0, serviceId } = {}) => {
   const qs = makeQueryString({
     limit,
     offset,
+    serviceId,
   });
 
   return makeRequest(`/api/ingress/host-keys?${qs}`).then(computePagination);
@@ -224,10 +225,11 @@ export const getIngressVariables = ({ limit = 50, offset = 0 } = {}) => {
   return makeRequest(`/api/ingress/variable-keys?${qs}`).then(computePagination);
 };
 
-export const getIngressClasses = ({ limit = 50, offset = 0 } = {}) => {
+export const getIngressClasses = ({ limit = 50, offset = 0, serviceId } = {}) => {
   const qs = makeQueryString({
     limit,
     offset,
+    serviceId,
   });
 
   return makeRequest(`/api/ingress/classes?${qs}`).then(computePagination);

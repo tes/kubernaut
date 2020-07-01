@@ -23,6 +23,7 @@ import namespaceSagas from './namespace';
 import namespaceEditSagas from './namespaceEdit';
 import namespaceManageSagas from './namespaceManage';
 import namespacesSagas from './namespaces';
+import newIngressVersionSagas from './newIngressVersion';
 import newJobVersionSagas from './newJobVersion';
 import newSecretVersionSagas from './newSecretVersion';
 import registriesSagas from './registries';
@@ -64,6 +65,7 @@ export default function* rootSaga() {
     ...namespaceEditSagas,
     ...namespaceManageSagas,
     ...namespacesSagas,
+    ...newIngressVersionSagas,
     ...newJobVersionSagas,
     ...newSecretVersionSagas,
     ...registriesSagas,

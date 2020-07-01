@@ -12,6 +12,8 @@ import {
   ServiceAttributesForNamespaceLink,
   TeamLink,
   CreateDeploymentLink,
+  IngressVersionsLink,
+  NewIngressVersionLink,
 } from '../Links';
 
 class ServicesSubNav extends Component {
@@ -28,6 +30,7 @@ class ServicesSubNav extends Component {
       team,
       deploy,
       release = '',
+      newIngress,
     } = this.props;
 
     return (
@@ -50,7 +53,7 @@ class ServicesSubNav extends Component {
                   <NavLink>Manage</NavLink>
                 </ManageServiceLink>
               </NavItem>
-              : null }
+            : null }
             { deploy ?
               <NavItem>
                 <CreateDeploymentLink
@@ -62,7 +65,7 @@ class ServicesSubNav extends Component {
                   <NavLink><i className="fa fa-cloud-upload" aria-hidden='true'></i> Deploy {release}</NavLink>
                 </CreateDeploymentLink>
               </NavItem>
-              : null }
+            : null }
             { canManage && namespace && secrets ?
               <NavItem className="bread-nav">
                 <ServiceSecretsForNamespaceLink
@@ -74,7 +77,7 @@ class ServicesSubNav extends Component {
                   <NavLink><NamespacePill namespace={namespace}/> <i className="fa fa-key" aria-hidden='true'></i> secrets</NavLink>
                 </ServiceSecretsForNamespaceLink>
               </NavItem>
-              : null }
+            : null }
             {
               canManage && version ?
               <NavItem className="bread-nav">
@@ -85,7 +88,7 @@ class ServicesSubNav extends Component {
                   <NavLink>{version.comment.length < 10 ? version.comment : `${version.comment.substring(0,7)}...`}</NavLink>
                 </SecretVersionLink>
               </NavItem>
-              : null }
+            : null }
             {
               canManage && newVersion ?
               <NavItem className="bread-nav">
@@ -98,7 +101,7 @@ class ServicesSubNav extends Component {
                   <NavLink><i className="fa fa-key" aria-hidden='true'></i> New version</NavLink>
                 </NewSecretVersionLink>
               </NavItem>
-              : null }
+            : null }
             {
               canManage && attributes ?
               <NavItem className="bread-nav">
@@ -111,17 +114,41 @@ class ServicesSubNav extends Component {
                   <NavLink><NamespacePill namespace={namespace}/> <i className="fa fa-tags" aria-hidden='true'></i> Attributes</NavLink>
                 </ServiceAttributesForNamespaceLink>
               </NavItem>
-              : null }
+            : null }
 
-              {
-                team && team.name ?
-                <NavItem className="ml-auto">
-                  <TeamLink container team={team}>
-                    <NavLink><i className="fa fa-users" aria-hidden='true'></i> {team.name}</NavLink>
-                  </TeamLink>
-                </NavItem>
-                : null
-              }
+            <NavItem>
+              <IngressVersionsLink
+                container
+                registryName={registryName}
+                serviceName={serviceName}
+              >
+                <NavLink><i className="fa fa-sign-in" aria-hidden='true'></i> Ingress</NavLink>
+              </IngressVersionsLink>
+            </NavItem>
+
+            {
+              newIngress ?
+              <NavItem className="bread-nav">
+                <NewIngressVersionLink
+                  container
+                  registryName={registryName}
+                  serviceName={serviceName}
+                >
+                  <NavLink>New version</NavLink>
+                </NewIngressVersionLink>
+              </NavItem>
+            : null }
+
+
+            {
+              team && team.name ?
+              <NavItem className="ml-auto">
+                <TeamLink container team={team}>
+                  <NavLink><i className="fa fa-users" aria-hidden='true'></i> {team.name}</NavLink>
+                </TeamLink>
+              </NavItem>
+              : null
+            }
             </Nav>
           </Col>
         </Row>

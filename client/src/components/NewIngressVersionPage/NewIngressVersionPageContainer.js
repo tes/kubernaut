@@ -13,6 +13,8 @@ export default connect((state, props) => ({
   initialValues: state.newIngressVersion.initialValues,
   ingressClasses: state.newIngressVersion.ingressClasses,
   ingressHostKeys: state.newIngressVersion.ingressHostKeys,
+  service: state.newIngressVersion.service,
+  meta: state.newIngressVersion.meta,
 }), {
 
 })(reduxForm({

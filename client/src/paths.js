@@ -39,6 +39,7 @@ import { INITIALISE as initNewJobPage } from './modules/newJobVersion';
 import { initClusterEditPage } from './modules/clusterEdit';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
+import { initNewIngressVersionPage } from './modules/newIngressVersion';
 
 
 const paths = {
@@ -128,7 +129,7 @@ const paths = {
   },
   newIngressVersion: {
     route: '/services/:registry/:name/ingress/new',
-    // action: initNewJobPage,
+    action: initNewIngressVersionPage,
   },
   newJobVersion: {
     route: '/cronjobs/:id/new',

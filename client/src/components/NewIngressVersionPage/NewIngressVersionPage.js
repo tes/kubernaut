@@ -250,13 +250,23 @@ class NewIngressVersionPage extends Component {
     const {
       ingressClasses,
       ingressHostKeys,
+      service,
+      meta,
     } = this.props;
+
+    if (meta.loading.loadingPercent !== 100) return (
+      <Row className="page-frame d-flex justify-content-center">
+        <Col sm="12" className="mt-5">
+          <Progress animated color="info" value={meta.loading.loadingPercent} />
+        </Col>
+      </Row>
+    );
 
     return (
       <Row className="page-frame">
         <Col>
           <Title title={`New ingress version `}/>
-          <ServicesSubNav  />
+          <ServicesSubNav registryName={service.registry.name} serviceName={service.name} newIngress />
 
           <Form>
             <Row>

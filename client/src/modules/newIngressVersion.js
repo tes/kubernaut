@@ -7,11 +7,25 @@ import {
 } from 'redux-form';
 
 const actionsPrefix = 'KUBERNAUT/NEW_INGRESS_VERSION';
-// export const INITIALISE = createAction(`${actionsPrefix}/INITIALISE`);
+export const initNewIngressVersionPage = createAction(`${actionsPrefix}/INITIALISE`);
+
+export const FETCH_SERVICE_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICE_REQUEST`);
+export const FETCH_SERVICE_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICE_SUCCESS`);
+export const FETCH_SERVICE_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICE_ERROR`);
+
+export const FETCH_INGRESS_HOSTS_REQUEST = createAction(`${actionsPrefix}/FETCH_INGRESS_HOSTS_REQUEST`);
+export const FETCH_INGRESS_HOSTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_HOSTS_SUCCESS`);
+export const FETCH_INGRESS_HOSTS_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_HOSTS_ERROR`);
+
+export const FETCH_INGRESS_CLASSES_REQUEST = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_REQUEST`);
+export const FETCH_INGRESS_CLASSES_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_SUCCESS`);
+export const FETCH_INGRESS_CLASSES_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_ERROR`);
+
 // export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 //
 // export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
 // export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
+export const selectService = (state) => state.newIngressVersion.service;
 
 const initialEntryValues = {
   ingressClass: 'some-uuid',
@@ -79,18 +93,97 @@ const defaultState = {
       display: 'tes-internal',
     },
   ],
-  // meta: {
-  //   loading: {
-  //     sections: {
-  //       job: false,
-  //       priorVersion: false,
-  //     },
-  //     loadingPercent: 100,
-  //   },
-  // },
+  meta: {
+    loading: {
+      sections: {
+        service: false,
+        ingressHosts: false,
+        ingressClasses: false,
+      },
+      loadingPercent: 100,
+    },
+  },
+  service: {
+    id: '',
+    name: '',
+    registry: {
+      name: '',
+    },
+  },
 };
 
 
 export default handleActions({
-
+  [initNewIngressVersionPage]: () => ({
+    ...defaultState,
+  }),
+  [FETCH_SERVICE_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'service', true),
+    },
+  }),
+  [FETCH_SERVICE_SUCCESS]: (state, { payload: { data } }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'service', false),
+    },
+    service: data,
+  }),
+  [FETCH_SERVICE_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'service', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_INGRESS_HOSTS_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressHosts', true),
+    },
+  }),
+  [FETCH_INGRESS_HOSTS_SUCCESS]: (state, { payload: { data } }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressHosts', false),
+    },
+    ingressHostKeys: data.items.map(({ id, name }) => ({ value: id, display: name })),
+  }),
+  [FETCH_INGRESS_HOSTS_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressHosts', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_INGRESS_CLASSES_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressClasses', true),
+    },
+  }),
+  [FETCH_INGRESS_CLASSES_SUCCESS]: (state, { payload: { data } }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressClasses', false),
+    },
+    ingressClasses: data.items.map(({ id, name }) => ({ value: id, display: name })),
+  }),
+  [FETCH_INGRESS_CLASSES_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressClasses', false),
+      error: payload.error,
+    },
+  }),
 }, defaultState);
