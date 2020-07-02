@@ -1,10 +1,10 @@
 import { createAction, handleActions } from 'redux-actions';
-import { createFormAction } from 'redux-form-saga';
+// import { createFormAction } from 'redux-form-saga';
 import computeLoading from './lib/computeLoading';
-import {
-  getFormValues as rfGetFormValues,
-  getFormAsyncErrors as rfGetFormAsyncErrors,
-} from 'redux-form';
+// import {
+//   getFormValues as rfGetFormValues,
+//   getFormAsyncErrors as rfGetFormAsyncErrors,
+// } from 'redux-form';
 
 const actionsPrefix = 'KUBERNAUT/NEW_INGRESS_VERSION';
 export const initNewIngressVersionPage = createAction(`${actionsPrefix}/INITIALISE`);
@@ -21,6 +21,14 @@ export const FETCH_INGRESS_CLASSES_REQUEST = createAction(`${actionsPrefix}/FETC
 export const FETCH_INGRESS_CLASSES_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_SUCCESS`);
 export const FETCH_INGRESS_CLASSES_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_ERROR`);
 
+export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQUEST`);
+export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
+export const FETCH_TEAM_ERROR = createAction(`${actionsPrefix}/FETCH_TEAM_ERROR`);
+
+export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
+export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const canWriteIngressRequest = createAction(`${actionsPrefix}/CAN_WRITE_INGRESS_REQUEST`);
+export const setCanWriteIngress = createAction(`${actionsPrefix}/SET_CAN_WRITE_INGRESS`);
 // export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 //
 // export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
@@ -43,69 +51,20 @@ const initialEntryValues = {
 const defaultState = {
   initialEntryValues,
   initialValues: {
-    comment: 'bob',
-    entries: [
-      {
-        ...initialEntryValues,
-        name: 'something-generated-and-random',
-        annotations: [
-          {
-            name: 'nginx.ingress.kubernetes.io/use-regex',
-            value: 'true'
-          },
-          {
-            name: 'nginx.ingress.kubernetes.io/configuration-snippet',
-            value: 'more_set_headers "x-robots-tag: none";'
-          },
-        ],
-        rules: [
-          {
-            path: '/api/bob',
-            port: '80',
-            host: 'some-uuid',
-          },
-          {
-            path: '/',
-            port: '80',
-            host: '',
-            customHost: '{{service}}.service.{{environment}}.tescloud.com',
-          },
-        ]
-      },
-      {
-        ...initialEntryValues,
-        name: 'something-else-random',
-        annotations: [
-          {
-            name: 'nginx.ingress.kubernetes.io/rewrite-target',
-            value: '/api/$1/$2'
-          }
-        ]
-      },
-    ],
+    comment: '',
+    entries: [],
   },
-  ingressClasses: [
-    {
-      value: 'some-uuid',
-      display: 'nginx-internal',
-    },
-  ],
-  ingressHostKeys: [
-    {
-      value: 'some-uuid',
-      display: 'tes-www',
-    },
-    {
-      value: 'some-uuid-internal',
-      display: 'tes-internal',
-    },
-  ],
+  ingressClasses: [],
+  ingressHostKeys: [],
   meta: {
     loading: {
       sections: {
         service: false,
         ingressHosts: false,
         ingressClasses: false,
+        canManage: false,
+        team: false,
+        canWriteIngress: false,
       },
       loadingPercent: 100,
     },
@@ -117,6 +76,11 @@ const defaultState = {
       name: '',
     },
   },
+  team: {
+    name: '',
+  },
+  canManage: false,
+  canWriteIngress: false,
 };
 
 
@@ -191,6 +155,60 @@ export default handleActions({
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'ingressClasses', false),
       error: payload.error,
+    },
+  }),
+  [canManageRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', true),
+    }
+  }),
+  [setCanManage]: (state, { payload }) => ({
+    ...state,
+    canManage: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canManage', false),
+    },
+  }),
+  [canWriteIngressRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canWriteIngress', true),
+    }
+  }),
+  [setCanWriteIngress]: (state, { payload }) => ({
+    ...state,
+    canWriteIngress: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canWriteIngress', false),
+    },
+  }),
+  [FETCH_TEAM_REQUEST]: (state) => ({
+    ...state,
+    team: defaultState.team,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', true),
+    },
+  }),
+  [FETCH_TEAM_SUCCESS]: (state, { payload }) => ({
+    ...state,
+    team: payload.data,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', false),
+    },
+  }),
+  [FETCH_TEAM_ERROR]: (state, { payload }) => ({
+    ...state,
+    team: defaultState.team,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'team', false),
     },
   }),
 }, defaultState);

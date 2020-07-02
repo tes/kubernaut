@@ -358,6 +358,9 @@ class NewIngressVersionPage extends Component {
       service,
       meta,
       initialEntryValues,
+      canManage,
+      team,
+      canWriteIngress,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -368,11 +371,29 @@ class NewIngressVersionPage extends Component {
       </Row>
     );
 
+    if (!canWriteIngress) {
+      return (
+        <Row className="page-frame">
+          <Row>
+            <Col xs="12">
+              <p>You are not authorised to view this page.</p>
+            </Col>
+          </Row>
+        </Row>
+      );
+    }
+
     return (
       <Row className="page-frame">
         <Col>
           <Title title={`New ingress version `}/>
-          <ServicesSubNav registryName={service.registry.name} serviceName={service.name} newIngress />
+          <ServicesSubNav
+            registryName={service.registry.name}
+            serviceName={service.name}
+            newIngress
+            canManage={canManage}
+            team={team}
+          />
 
           <Form>
             <Row>

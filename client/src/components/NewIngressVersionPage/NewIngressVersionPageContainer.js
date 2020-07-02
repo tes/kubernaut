@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
 import {
   reduxForm,
-  getFormValues,
-  getFormSyncErrors,
-  getFormAsyncErrors,
+  // getFormValues,
+  // getFormSyncErrors,
+  // getFormAsyncErrors,
 } from 'redux-form';
 import NewIngressVersionPage from './NewIngressVersionPage';
 
@@ -16,6 +16,9 @@ export default connect((state, props) => ({
   service: state.newIngressVersion.service,
   meta: state.newIngressVersion.meta,
   initialEntryValues: state.newIngressVersion.initialEntryValues,
+  canManage: state.newIngressVersion.canManage,
+  canWriteIngress: state.newIngressVersion.canWriteIngress,
+  team: state.newIngressVersion.team,
 }), {
 
 })(reduxForm({
