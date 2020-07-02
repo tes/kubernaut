@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Field, FieldArray, FormSection } from 'redux-form';
+import { Field, FieldArray } from 'redux-form';
 import {
   Row,
   Col,
@@ -11,13 +11,15 @@ import {
   CardBody,
   Button,
   Progress,
+  Collapse,
 } from 'reactstrap';
+import { customAlphabet } from 'nanoid';
 import Title from '../Title';
 import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
-import Popover from '../Popover';
-
+// import Popover from '../Popover';
+const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16);
 
 class RenderRules extends Component {
   render() {
@@ -28,7 +30,7 @@ class RenderRules extends Component {
           {this.props.fields.map((rule, index) => {
             const ruleData = this.props.fields.get(index);
             return (
-              <Card className="mb-2">
+              <Card className="mb-2" key={index}>
                 <CardBody className="py-2">
                   <Button
                     close
@@ -104,6 +106,20 @@ class RenderRules extends Component {
               </Card>
             );
           })}
+          <Row>
+            <Col>
+              <Button
+                outline
+                className="pull-right"
+                onClick={() => {
+                  this.props.fields.push({
+                    port: '80',
+                  });
+                }}
+              >Add rule
+              </Button>
+            </Col>
+          </Row>
         </Col>
       </Row>
     );
@@ -118,8 +134,19 @@ class RenderAnnotations extends Component {
         <Col>
           {this.props.fields.map((annotation, index) => {
             return (
-              <Card className="mb-2">
+              <Card className="mb-2" key={index}>
                 <CardBody className="py-2">
+                  <Button
+                    close
+                    onClick={() => {
+                      this.props.fields.remove(index);
+                    }}
+                    >
+                    <i
+                      className="fa fa-trash text-danger"
+                      aria-hidden='true'
+                      ></i>
+                  </Button>
                   <Row>
                     <Col sm="6">
                       <FormGroup>
@@ -154,8 +181,122 @@ class RenderAnnotations extends Component {
               </Card>
             );
           })}
+          <Row>
+            <Col>
+              <Button
+                outline
+                className="pull-right"
+                onClick={() => { this.props.fields.push({}); }}
+              >Add annotation
+              </Button>
+            </Col>
+          </Row>
         </Col>
       </Row>
+    );
+  }
+}
+
+class RenderEntry extends Component {
+  constructor(props) {
+    super(props);
+    this.toggleAnnotationsCollapsed = this.toggleAnnotationsCollapsed.bind(this);
+    this.state = {
+      annotationsCollapsed: true,
+    };
+  }
+
+  toggleAnnotationsCollapsed() {
+    this.setState({
+      annotationsCollapsed: !this.state.annotationsCollapsed,
+    });
+  }
+
+  render() {
+    const {
+      ingressClasses,
+      ingressHostKeys,
+      entryData,
+      entry,
+      index,
+    } = this.props;
+    return (
+      <Card className="mb-3">
+        <CardHeader>
+          <span>Entry: {entryData.name}</span>
+          <Button
+            close
+            onClick={() => {
+              this.props.fields.remove(index);
+            }}
+            >
+            <i
+              className="fa fa-trash text-danger"
+              aria-hidden='true'
+              ></i>
+          </Button>
+        </CardHeader>
+        <CardBody className="py-2">
+          <Row className="mb-2">
+            <Col>
+              <FormGroup row >
+                <Label sm="3" className="text-right" for={`${entry}.ingressClass`}>Ingress class:</Label>
+                <Col sm="5">
+                  <Field
+                    className="form-control"
+                    name={`${entry}.ingressClass`}
+                    component={RenderSelect}
+                    autoComplete="off"
+                    options={ingressClasses}
+                  />
+                </Col>
+              </FormGroup>
+            </Col>
+          </Row>
+
+          <Row className="mb-2">
+            <Col>
+              <Card>
+                <CardHeader>
+                  <span>Annotations</span>
+                  <Button
+                    close
+                    onClick={() => this.toggleAnnotationsCollapsed()}
+                  >
+                    <i
+                      className={`fa fa-${this.state.annotationsCollapsed ? 'plus' : 'minus'}`}
+                      aria-hidden='true'
+                    ></i>
+                  </Button>
+                </CardHeader>
+                <Collapse isOpen={!this.state.annotationsCollapsed}>
+                  <CardBody className="py-2">
+                    <FieldArray
+                      name={`${entry}.annotations`}
+                      component={RenderAnnotations}
+                    />
+                  </CardBody>
+                </Collapse>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row className="mb-2">
+            <Col>
+              <Card>
+                <CardHeader><span>Rules</span></CardHeader>
+                <CardBody className="py-2">
+                  <FieldArray
+                    name={`${entry}.rules`}
+                    component={RenderRules}
+                    ingressHostKeys={ingressHostKeys}
+                  />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </CardBody>
+      </Card>
     );
   }
 }
@@ -165,78 +306,42 @@ class RenderEntries extends Component {
     const {
       ingressClasses,
       ingressHostKeys,
+      initialEntryValues,
+      fields,
+      service,
     } = this.props;
     return (
       <Row>
         <Col>
-          {this.props.fields.map((entry, index) => {
-            const entryData = this.props.fields.get(index);
+          {fields.map((entry, index) => {
+            const entryData = fields.get(index);
             return (
-              <Card className="mb-3">
-                <CardHeader>
-                  <span>Entry: {entryData.name}</span>
-                  <Button
-                    close
-                    onClick={() => {
-                      this.props.fields.remove(index);
-                    }}
-                    >
-                    <i
-                      className="fa fa-trash text-danger"
-                      aria-hidden='true'
-                      ></i>
-                  </Button>
-                </CardHeader>
-                <CardBody className="py-2">
-                  <Row className="mb-2">
-                    <Col>
-                      <FormGroup row >
-                        <Label sm="3" className="text-right" for={`${entry}.ingressClass`}>Ingress class:</Label>
-                        <Col sm="5">
-                          <Field
-                            className="form-control"
-                            name={`${entry}.ingressClass`}
-                            component={RenderSelect}
-                            autoComplete="off"
-                            options={ingressClasses}
-                          />
-                        </Col>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-2">
-                    <Col>
-                      <Card>
-                        <CardHeader><span>Annotations</span></CardHeader>
-                        <CardBody className="py-2">
-                          <FieldArray
-                            name={`${entry}.annotations`}
-                            component={RenderAnnotations}
-                          />
-                        </CardBody>
-                      </Card>
-                    </Col>
-                  </Row>
-
-                  <Row className="mb-2">
-                    <Col>
-                      <Card>
-                        <CardHeader><span>Rules</span></CardHeader>
-                        <CardBody className="py-2">
-                          <FieldArray
-                            name={`${entry}.rules`}
-                            component={RenderRules}
-                            ingressHostKeys={ingressHostKeys}
-                          />
-                        </CardBody>
-                      </Card>
-                    </Col>
-                  </Row>
-                </CardBody>
-              </Card>
+              <RenderEntry
+                entryData={entryData}
+                entry={entry}
+                index={index}
+                key={index}
+                ingressClasses={ingressClasses}
+                ingressHostKeys={ingressHostKeys}
+                fields={fields}
+              />
             );
           })}
+          <Row>
+            <Col>
+              <Button
+                outline
+                className="pull-right"
+                onClick={() => {
+                  fields.push({
+                    ...initialEntryValues,
+                    name: `${service.name}-${nanoid()}`
+                  });
+                }}
+              >Add entry
+              </Button>
+            </Col>
+          </Row>
         </Col>
       </Row>
     );
@@ -252,6 +357,7 @@ class NewIngressVersionPage extends Component {
       ingressHostKeys,
       service,
       meta,
+      initialEntryValues,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -292,6 +398,8 @@ class NewIngressVersionPage extends Component {
                   component={RenderEntries}
                   ingressClasses={ingressClasses}
                   ingressHostKeys={ingressHostKeys}
+                  initialEntryValues={initialEntryValues}
+                  service={service}
                 />
               </Col>
             </Row>

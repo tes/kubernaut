@@ -27,10 +27,17 @@ export const FETCH_INGRESS_CLASSES_ERROR = createAction(`${actionsPrefix}/FETCH_
 // export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
 export const selectService = (state) => state.newIngressVersion.service;
 
+const initialRuleValues = {
+  port: 80,
+};
+
 const initialEntryValues = {
-  ingressClass: 'some-uuid',
+  ingressClass: '',
   annotations: [],
-  rules: [],
+  rules: [
+    { ...initialRuleValues },
+  ],
+  name: '',
 };
 
 const defaultState = {

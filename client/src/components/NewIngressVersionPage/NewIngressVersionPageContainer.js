@@ -15,6 +15,7 @@ export default connect((state, props) => ({
   ingressHostKeys: state.newIngressVersion.ingressHostKeys,
   service: state.newIngressVersion.service,
   meta: state.newIngressVersion.meta,
+  initialEntryValues: state.newIngressVersion.initialEntryValues,
 }), {
 
 })(reduxForm({
