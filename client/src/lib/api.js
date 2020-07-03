@@ -225,6 +225,17 @@ export const getIngressVariables = ({ limit = 50, offset = 0 } = {}) => {
   return makeRequest(`/api/ingress/variable-keys?${qs}`).then(computePagination);
 };
 
+export const getIngressVersion = (serviceId, id) => makeRequest(`/api/ingress/${serviceId}/versions/${id}`);
+
+export const getIngressVersions = ({ serviceId, limit = 50, offset = 0 } = {}) => {
+  const qs = makeQueryString({
+    limit,
+    offset,
+  });
+
+  return makeRequest(`/api/ingress/${serviceId}/versions?${qs}`).then(computePagination);
+};
+
 export const getIngressClasses = ({ limit = 50, offset = 0, serviceId } = {}) => {
   const qs = makeQueryString({
     limit,
@@ -754,6 +765,11 @@ export const saveIngressVariable = (name) => makeRequest(`/api/ingress/variable-
 export const saveIngressClass = (name) => makeRequest(`/api/ingress/classes`, {
   method: 'POST',
   body: JSON.stringify({ name }),
+});
+
+export const saveIngressVersion = (service, data) => makeRequest(`/api/ingress/${service.id}/versions`, {
+  method: 'POST',
+  body: JSON.stringify(data),
 });
 
 export const saveJob = (name, namespace, registry, copyFrom) => {

@@ -1,10 +1,11 @@
 import { createAction, handleActions } from 'redux-actions';
-// import { createFormAction } from 'redux-form-saga';
+import { createFormAction } from 'redux-form-saga';
+import { get as _get } from 'lodash';
 import computeLoading from './lib/computeLoading';
-// import {
-//   getFormValues as rfGetFormValues,
+import {
+  getFormValues as rfGetFormValues,
 //   getFormAsyncErrors as rfGetFormAsyncErrors,
-// } from 'redux-form';
+} from 'redux-form';
 
 const actionsPrefix = 'KUBERNAUT/NEW_INGRESS_VERSION';
 export const initNewIngressVersionPage = createAction(`${actionsPrefix}/INITIALISE`);
@@ -25,13 +26,17 @@ export const FETCH_TEAM_REQUEST = createAction(`${actionsPrefix}/FETCH_TEAM_REQU
 export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCCESS`);
 export const FETCH_TEAM_ERROR = createAction(`${actionsPrefix}/FETCH_TEAM_ERROR`);
 
+export const FETCH_INGRESS_VERSIONS_REQUEST = createAction(`${actionsPrefix}/FETCH_INGRESS_VERSIONS_REQUEST`);
+export const FETCH_INGRESS_VERSIONS_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_VERSIONS_SUCCESS`);
+export const FETCH_INGRESS_VERSIONS_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_VERSIONS_ERROR`);
+
 export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 export const canWriteIngressRequest = createAction(`${actionsPrefix}/CAN_WRITE_INGRESS_REQUEST`);
 export const setCanWriteIngress = createAction(`${actionsPrefix}/SET_CAN_WRITE_INGRESS`);
-// export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
+export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
 //
-// export const getFormValues = (state) => rfGetFormValues('newJobVersion')(state);
+export const getFormValues = (state) => rfGetFormValues('newIngressVersion')(state);
 // export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
 export const selectService = (state) => state.newIngressVersion.service;
 
@@ -65,6 +70,7 @@ const defaultState = {
         canManage: false,
         team: false,
         canWriteIngress: false,
+        priorVersion: false,
       },
       loadingPercent: 100,
     },
@@ -209,6 +215,43 @@ export default handleActions({
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'team', false),
+    },
+  }),
+  [FETCH_INGRESS_VERSIONS_REQUEST]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'priorVersion', true),
+    },
+  }),
+  [FETCH_INGRESS_VERSIONS_SUCCESS]: (state, { payload }) => {
+    const newState = {
+      ...state,
+      meta: {
+        loading: computeLoading(state.meta.loading, 'priorVersion', false),
+      },
+    };
+
+    const version = payload.version;
+    (version.entries || []).forEach(e => {
+      e.ingressClass = _get(e, 'ingressClass.id', '');
+      e.rules.forEach(r => {
+        r.host = _get(r, 'ingressHostKey.id', '');
+      });
+    });
+
+    if (payload && payload.version ) {
+      newState.initialValues = {
+        ...defaultState.initialValues,
+        ...version,
+      };
+    }
+
+    return newState;
+  },
+  [FETCH_INGRESS_VERSIONS_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      loading: computeLoading(state.meta.loading, 'priorVersion', false),
     },
   }),
 }, defaultState);

@@ -361,6 +361,8 @@ class NewIngressVersionPage extends Component {
       canManage,
       team,
       canWriteIngress,
+      handleSubmit,
+      submitForm,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -410,6 +412,13 @@ class NewIngressVersionPage extends Component {
                     />
                   </Col>
                 </FormGroup>
+              </Col>
+              <Col sm="2">
+                <Button
+                  className="pull-right"
+                  color="dark"
+                  onClick={handleSubmit(submitForm)}
+                >Save</Button>
               </Col>
             </Row>
             <Row>

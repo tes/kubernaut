@@ -19,9 +19,9 @@ CREATE TABLE ingress_entry_rule
       ON UPDATE NO ACTION
       ON DELETE CASCADE,
   CONSTRAINT host_check CHECK (
-    (ingress_host_key IS NOT NULL)
-    OR
-    (custom_host IS NOT NULL)
+    (custom_host IS NOT NULL AND ingress_host_key IS NULL) OR
+    (custom_host IS NULL AND ingress_host_key IS NOT NULL) OR
+    (custom_host IS NULL AND ingress_host_key IS NULL)
   )
 
 );

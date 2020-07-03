@@ -5,6 +5,9 @@ import {
   // getFormSyncErrors,
   // getFormAsyncErrors,
 } from 'redux-form';
+import {
+  submitForm,
+} from '../../modules/newIngressVersion';
 import NewIngressVersionPage from './NewIngressVersionPage';
 
 const formName = 'newIngressVersion';
@@ -19,6 +22,7 @@ export default connect((state, props) => ({
   canManage: state.newIngressVersion.canManage,
   canWriteIngress: state.newIngressVersion.canWriteIngress,
   team: state.newIngressVersion.team,
+  submitForm,
 }), {
 
 })(reduxForm({

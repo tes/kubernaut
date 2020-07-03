@@ -1,8 +1,9 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
+import { customAlphabet } from 'nanoid';
 // import { get as _get, reduce as _reduce } from 'lodash';
 import { parseAndValidate } from './lib/ingressTemplating';
-
+const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16);
 
 const systemProvidedTemplateVariables = [
   'service',
@@ -317,6 +318,97 @@ export default function() {
         await store.audit(meta, 'added cluster ingress class', { cluster });
 
         res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/ingress/:serviceId/versions', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed ingress versions for service', { service });
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
+
+        const result = await store.findIngressVersions({ service }, limit, offset);
+        res.json(result);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/ingress/:serviceId/versions', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-write')) return next(Boom.forbidden());
+
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+
+        const versionData = {};
+        versionData.comment = req.body.comment;
+        versionData.entries = (req.body.entries || []).reduce((acc, entry = {}) => {
+          const newEntry = {};
+          newEntry.name = entry.name || `${service.name}-${nanoid()}`;
+
+          if (!entry.ingressClass) return acc;
+          newEntry.ingressClass = entry.ingressClass;
+
+          newEntry.annotations = (entry.annotations || []).reduce((aAcc, { name, value } = {}) => {
+            if (!name || !value) return aAcc;
+            aAcc.push({ name, value });
+            return aAcc;
+          }, []);
+
+          newEntry.rules = (entry.rules || []).reduce((rAcc, rule) => {
+            const newRule = {};
+
+            newRule.port = rule.port || '80';
+
+            if (!rule.path) return rAcc;
+            newRule.path = rule.path;
+
+            if (rule.customHost) {
+              newRule.customHost = rule.customHost;
+            } else if (rule.host) {
+              newRule.ingressHostKey = rule.host;
+            }
+
+            rAcc.push(newRule);
+            return rAcc;
+          }, []);
+
+          acc.push(newEntry);
+          return acc;
+        }, []);
+
+        const meta = { date: new Date(), account: req.user };
+        const newId = await store.saveIngressVersion(service, versionData, meta);
+
+        await store.audit(meta, 'saved ingress version for service', { service });
+
+        res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/ingress/:serviceId/versions/:id', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+
+        const ingressVersion = await store.getIngressVersion(req.params.id);
+        if (!ingressVersion) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'viewed ingress version for service', { service });
+
+        res.json(ingressVersion);
       } catch (err) {
         next(err);
       }

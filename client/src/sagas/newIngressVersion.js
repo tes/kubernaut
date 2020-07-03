@@ -1,14 +1,14 @@
 import { takeLatest, call, put, select, race, take } from 'redux-saga/effects';
 // import { push } from 'connected-react-router';
 // import { get as _get } from 'lodash';
-// import {
+import {
 //   resetSection,
 //   arrayPush,
-//   SubmissionError,
+  SubmissionError,
 //   arrayRemove,
 //   startAsyncValidation,
 //   stopAsyncValidation,
-// } from 'redux-form';
+} from 'redux-form';
 import {
   initNewIngressVersionPage,
   FETCH_SERVICE_REQUEST,
@@ -23,11 +23,16 @@ import {
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
   FETCH_TEAM_ERROR,
+  FETCH_INGRESS_VERSIONS_REQUEST,
+  FETCH_INGRESS_VERSIONS_SUCCESS,
+  FETCH_INGRESS_VERSIONS_ERROR,
   selectService,
   canManageRequest,
   setCanManage,
   canWriteIngressRequest,
   setCanWriteIngress,
+  submitForm,
+  getFormValues,
 } from '../modules/newIngressVersion';
 import {
   getService,
@@ -36,6 +41,9 @@ import {
   getCanManageAnyNamespace,
   getTeamForService,
   hasPermission,
+  saveIngressVersion,
+  getIngressVersions,
+  getIngressVersion,
 } from '../lib/api';
 
 export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options } }) {
@@ -45,6 +53,19 @@ export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options }
   try {
     const data = yield call(getService, { registry, service });
     yield put(FETCH_SERVICE_SUCCESS({ data }));
+
+    try {
+      yield put(FETCH_INGRESS_VERSIONS_REQUEST());
+      const versions = yield call(getIngressVersions, { serviceId: data.id, offset: 0, limit: 1 });
+
+      if (versions && versions.count) {
+        const version = yield call(getIngressVersion, data.id, versions.items[0].id);
+        yield put(FETCH_INGRESS_VERSIONS_SUCCESS({ version }));
+      } else yield put(FETCH_INGRESS_VERSIONS_SUCCESS({ }));
+    } catch(error) {
+      if (!options.quiet) console.error(error); // eslint-disable-line no-console
+      yield put(FETCH_INGRESS_VERSIONS_ERROR({ error: error.message }));
+    }
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_SERVICE_ERROR({ error: error.message }));
@@ -126,18 +147,18 @@ export function* checkPermissionSaga({ payload: { match, ...options }}) {
   }
 }
 
-// export function* submitSaga() {
-//   try {
-//     const values = yield select(getFormValues);
-//     const job = yield select(selectJob);
-//     const data = yield call(saveJobVersion, job, values);
-//     yield put(submitForm.success());
-//     yield put(push(`/cronjobs/version/${data.id}`));
-//   } catch (err) {
-//     console.error(err); // eslint-disable-line no-console
-//     yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));
-//   }
-// }
+export function* submitSaga() {
+  try {
+    const values = yield select(getFormValues);
+    const service = yield select(selectService);
+    /* const data = */ yield call(saveIngressVersion, service, values);
+    yield put(submitForm.success());
+    // yield put(push(`/cronjobs/version/${data.id}`));
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+    yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));
+  }
+}
 
 export default [
   takeLatest(initNewIngressVersionPage, fetchNewJobVersionPageDataSaga),
@@ -145,5 +166,5 @@ export default [
   takeLatest(initNewIngressVersionPage, fetchIngressHostsSaga),
   takeLatest(initNewIngressVersionPage, fetchIngressClassesSaga),
   takeLatest(initNewIngressVersionPage, fetchTeamForServiceSaga),
-  // takeLatest(submitForm.REQUEST, submitSaga),
+  takeLatest(submitForm.REQUEST, submitSaga),
 ];
