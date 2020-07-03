@@ -443,6 +443,28 @@ export default function() {
       }
     });
 
+    app.post('/api/ingress/validateCustomHost/:serviceId', bodyParser.json(), async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+
+        if (!req.body.value) return res.json({});
+
+        const serviceVariableKeys = await store.findIngressVariableKeys({ service });
+        const templatingVariables = systemProvidedTemplateVariables.concat(serviceVariableKeys.items.map(ivk => (ivk.name)));
+        try {
+          parseAndValidate(req.body.value, templatingVariables);
+        } catch (templateErr) {
+          return res.json({ error: templateErr.message });
+        }
+
+        res.json({});
+      } catch (err) {
+        next(err);
+      }
+    });
+
 
     cb();
   }

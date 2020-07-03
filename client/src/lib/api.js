@@ -854,3 +854,12 @@ export const updateDeploymentNote = (deploymentId, note) => {
     }),
   });
 };
+
+export const validateCustomHostValue = (serviceId, value) => {
+  return makeRequest(`/api/ingress/validateCustomHost/${serviceId}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      value,
+    })
+  });
+};

@@ -4,7 +4,7 @@ import { get as _get } from 'lodash';
 import computeLoading from './lib/computeLoading';
 import {
   getFormValues as rfGetFormValues,
-//   getFormAsyncErrors as rfGetFormAsyncErrors,
+  getFormAsyncErrors as rfGetFormAsyncErrors,
 } from 'redux-form';
 
 const actionsPrefix = 'KUBERNAUT/NEW_INGRESS_VERSION';
@@ -35,9 +35,10 @@ export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 export const canWriteIngressRequest = createAction(`${actionsPrefix}/CAN_WRITE_INGRESS_REQUEST`);
 export const setCanWriteIngress = createAction(`${actionsPrefix}/SET_CAN_WRITE_INGRESS`);
 export const submitForm = createFormAction(`${actionsPrefix}/SUBMIT_FORM`);
-//
+export const validateCustomHost = createAction(`${actionsPrefix}/VALIDATE_CUSTOM_HOST`);
+
 export const getFormValues = (state) => rfGetFormValues('newIngressVersion')(state);
-// export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newJobVersion')(state);
+export const getFormAsyncErrors = (state) => rfGetFormAsyncErrors('newIngressVersion')(state);
 export const selectService = (state) => state.newIngressVersion.service;
 
 const initialRuleValues = {

@@ -54,6 +54,9 @@ class RenderRules extends Component {
                           component={RenderInput}
                           type="text"
                           autoComplete="off"
+                          validate={(value) => {
+                            if (!value) return 'Must provide a path.';
+                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -67,6 +70,9 @@ class RenderRules extends Component {
                           type="text"
                           autoComplete="off"
                           placeholder="80"
+                          validate={(value) => {
+                            if (!value) return 'Must provide a port.';
+                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -96,6 +102,7 @@ class RenderRules extends Component {
                           component={RenderInput}
                           type="text"
                           autoComplete="off"
+                          onChangeListener={() => this.props.validateCustomHost(`${rule}.customHost`)}
                         />
                       </FormGroup>
                     </Col>
@@ -161,6 +168,9 @@ class RenderAnnotations extends Component {
                             'nginx.ingress.kubernetes.io/use-regex',
                             'nginx.ingress.kubernetes.io/configuration-snippet'
                           ]}
+                          validate={(value) => {
+                            if (!value) return 'Must select an annotation name.';
+                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -173,7 +183,10 @@ class RenderAnnotations extends Component {
                           component={RenderInput}
                           type="text"
                           autoComplete="off"
-                          />
+                          validate={(value) => {
+                            if (!value) return 'Must provide an annotation value.';
+                          }}
+                        />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -219,6 +232,7 @@ class RenderEntry extends Component {
       entryData,
       entry,
       index,
+      validateCustomHost,
     } = this.props;
     return (
       <Card className="mb-3">
@@ -248,6 +262,9 @@ class RenderEntry extends Component {
                     component={RenderSelect}
                     autoComplete="off"
                     options={ingressClasses}
+                    validate={(value) => {
+                      if (!value) return 'Must select an ingress class.';
+                    }}
                   />
                 </Col>
               </FormGroup>
@@ -290,6 +307,7 @@ class RenderEntry extends Component {
                     name={`${entry}.rules`}
                     component={RenderRules}
                     ingressHostKeys={ingressHostKeys}
+                    validateCustomHost={validateCustomHost}
                   />
                 </CardBody>
               </Card>
@@ -309,6 +327,7 @@ class RenderEntries extends Component {
       initialEntryValues,
       fields,
       service,
+      validateCustomHost,
     } = this.props;
     return (
       <Row>
@@ -324,6 +343,7 @@ class RenderEntries extends Component {
                 ingressClasses={ingressClasses}
                 ingressHostKeys={ingressHostKeys}
                 fields={fields}
+                validateCustomHost={validateCustomHost}
               />
             );
           })}
@@ -364,6 +384,8 @@ class NewIngressVersionPage extends Component {
       canWriteIngress,
       handleSubmit,
       submitForm,
+      canSave,
+      validateCustomHost,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -418,6 +440,7 @@ class NewIngressVersionPage extends Component {
                 <Button
                   className="pull-right"
                   color="dark"
+                  disabled={!canSave}
                   onClick={handleSubmit(submitForm)}
                 >Save</Button>
               </Col>
@@ -431,6 +454,7 @@ class NewIngressVersionPage extends Component {
                   ingressHostKeys={ingressHostKeys}
                   initialEntryValues={initialEntryValues}
                   service={service}
+                  validateCustomHost={validateCustomHost}
                 />
               </Col>
             </Row>

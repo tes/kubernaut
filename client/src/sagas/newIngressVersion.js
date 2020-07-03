@@ -1,13 +1,10 @@
 import { takeLatest, call, put, select, race, take } from 'redux-saga/effects';
 // import { push } from 'connected-react-router';
-// import { get as _get } from 'lodash';
+import { get as _get, set as _set } from 'lodash';
 import {
-//   resetSection,
-//   arrayPush,
   SubmissionError,
-//   arrayRemove,
-//   startAsyncValidation,
-//   stopAsyncValidation,
+  startAsyncValidation,
+  stopAsyncValidation,
 } from 'redux-form';
 import {
   initNewIngressVersionPage,
@@ -33,6 +30,8 @@ import {
   setCanWriteIngress,
   submitForm,
   getFormValues,
+  validateCustomHost,
+  getFormAsyncErrors,
 } from '../modules/newIngressVersion';
 import {
   getService,
@@ -44,6 +43,7 @@ import {
   saveIngressVersion,
   getIngressVersions,
   getIngressVersion,
+  validateCustomHostValue,
 } from '../lib/api';
 
 export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options } }) {
@@ -61,7 +61,7 @@ export function* fetchNewJobVersionPageDataSaga({ payload: { match, ...options }
       if (versions && versions.count) {
         const version = yield call(getIngressVersion, data.id, versions.items[0].id);
         yield put(FETCH_INGRESS_VERSIONS_SUCCESS({ version }));
-      } else yield put(FETCH_INGRESS_VERSIONS_SUCCESS({ }));
+      } else yield put(FETCH_INGRESS_VERSIONS_SUCCESS({ version: { entries: [] } }));
     } catch(error) {
       if (!options.quiet) console.error(error); // eslint-disable-line no-console
       yield put(FETCH_INGRESS_VERSIONS_ERROR({ error: error.message }));
@@ -160,6 +160,29 @@ export function* submitSaga() {
   }
 }
 
+export function* validateCustomHostSaga({ payload }) {
+  try {
+    const values = yield select(getFormValues);
+    const hostValue = _get(values, payload);
+    const service = yield select(selectService);
+
+    yield put(startAsyncValidation('newIngressVersion'));
+    const errors = (yield select(getFormAsyncErrors) )|| {};
+    const result = yield call(validateCustomHostValue, service.id, hostValue);
+
+    if (result.error) {
+      _set(errors, payload, result.error);
+    } else {
+      _set(errors, payload, undefined);
+    }
+
+    yield put(stopAsyncValidation('newIngressVersion', errors));
+
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(initNewIngressVersionPage, fetchNewJobVersionPageDataSaga),
   takeLatest(initNewIngressVersionPage, checkPermissionSaga),
@@ -167,4 +190,5 @@ export default [
   takeLatest(initNewIngressVersionPage, fetchIngressClassesSaga),
   takeLatest(initNewIngressVersionPage, fetchTeamForServiceSaga),
   takeLatest(submitForm.REQUEST, submitSaga),
+  takeLatest(validateCustomHost, validateCustomHostSaga),
 ];
