@@ -222,7 +222,7 @@ class RenderEntry extends Component {
     } = this.props;
     return (
       <Card className="mb-3">
-        <CardHeader>
+        <CardHeader className="py-2">
           <span>Entry: {entryData.name}</span>
           <Button
             close
@@ -257,7 +257,7 @@ class RenderEntry extends Component {
           <Row className="mb-2">
             <Col>
               <Card>
-                <CardHeader>
+                <CardHeader className="py-2">
                   <span>Annotations</span>
                   <Button
                     close
@@ -284,7 +284,7 @@ class RenderEntry extends Component {
           <Row className="mb-2">
             <Col>
               <Card>
-                <CardHeader><span>Rules</span></CardHeader>
+                <CardHeader className="py-2"><span>Rules</span></CardHeader>
                 <CardBody className="py-2">
                   <FieldArray
                     name={`${entry}.rules`}
@@ -335,7 +335,8 @@ class RenderEntries extends Component {
                 onClick={() => {
                   fields.push({
                     ...initialEntryValues,
-                    name: `${service.name}-${nanoid()}`
+                    name: `${service.name}-${nanoid()}`,
+                    ingressClass: ingressClasses[0] ? ingressClasses[0].value : '',
                   });
                 }}
               >Add entry

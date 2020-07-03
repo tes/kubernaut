@@ -243,6 +243,7 @@ export default handleActions({
       newState.initialValues = {
         ...defaultState.initialValues,
         ...version,
+        comment: '',
       };
     }
 
