@@ -348,6 +348,8 @@ export default function() {
         const service = await store.getService(req.params.serviceId);
         if (!service) return next(Boom.notFound());
 
+        if (! await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read'))  return next(Boom.forbidden());
+
         const versionData = {};
         versionData.comment = req.body.comment;
         versionData.entries = (req.body.entries || []).reduce((acc, entry = {}) => {
@@ -384,6 +386,33 @@ export default function() {
           acc.push(newEntry);
           return acc;
         }, []);
+
+        if (!versionData.comment) return next(Boom.badRequest('Comment is required.'));
+        for (const entry of versionData.entries) {
+          if (!entry.ingressClass) return next(Boom.badRequest('Ingress class is required.'));
+          const serviceClasses = await store.findIngressClasses({ service });
+          const ingressClassOk = serviceClasses.items.filter(({ id }) => entry.ingressClass).length > 0;
+          if (!ingressClassOk) return next(Boom.badRequest('Ingress class selected is not available.'));
+
+          for (const rule of entry.rules) {
+            if (!rule.port) return next(Boom.badRequest('Port is required.'));
+            if (!rule.path) return next(Boom.badRequest('Port is required.'));
+            if (rule.ingressHostKey) {
+              const serviceHostKeys = await store.findIngressHostKeys({ service });
+              const ingressHostKeyOk = serviceHostKeys.items.filter(({ id }) => rule.ingressHostKey).length > 0;
+              if (!ingressHostKeyOk) return next(Boom.badRequest('Ingress host selected is not available.'));
+            }
+            if (rule.customHost) {
+              const serviceVariableKeys = await store.findIngressVariableKeys({ service });
+              const templatingVariables = systemProvidedTemplateVariables.concat(serviceVariableKeys.items.map(ivk => (ivk.name)));
+              try {
+                parseAndValidate(rule.customHost, templatingVariables);
+              } catch (templateErr) {
+                return next(Boom.badRequest(templateErr.message));
+              }
+            }
+          }
+        }
 
         const meta = { date: new Date(), account: req.user };
         const newId = await store.saveIngressVersion(service, versionData, meta);
