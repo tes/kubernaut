@@ -18,7 +18,6 @@ import Title from '../Title';
 import { ServicesSubNav } from '../SubNavs';
 import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
-// import Popover from '../Popover';
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16);
 
 class RenderRules extends Component {
@@ -103,6 +102,10 @@ class RenderRules extends Component {
                           type="text"
                           autoComplete="off"
                           onChangeListener={() => this.props.validateCustomHost(`${rule}.customHost`)}
+                          popover={{
+                            title: 'Available variables',
+                            body: this.props.ingressVariables.join(', '),
+                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -229,6 +232,7 @@ class RenderEntry extends Component {
     const {
       ingressClasses,
       ingressHostKeys,
+      ingressVariables,
       entryData,
       entry,
       index,
@@ -308,6 +312,7 @@ class RenderEntry extends Component {
                     component={RenderRules}
                     ingressHostKeys={ingressHostKeys}
                     validateCustomHost={validateCustomHost}
+                    ingressVariables={ingressVariables}
                   />
                 </CardBody>
               </Card>
@@ -324,6 +329,7 @@ class RenderEntries extends Component {
     const {
       ingressClasses,
       ingressHostKeys,
+      ingressVariables,
       initialEntryValues,
       fields,
       service,
@@ -342,6 +348,7 @@ class RenderEntries extends Component {
                 key={index}
                 ingressClasses={ingressClasses}
                 ingressHostKeys={ingressHostKeys}
+                ingressVariables={ingressVariables}
                 fields={fields}
                 validateCustomHost={validateCustomHost}
               />
@@ -376,6 +383,7 @@ class NewIngressVersionPage extends Component {
     const {
       ingressClasses,
       ingressHostKeys,
+      ingressVariables,
       service,
       meta,
       initialEntryValues,
@@ -452,6 +460,7 @@ class NewIngressVersionPage extends Component {
                   component={RenderEntries}
                   ingressClasses={ingressClasses}
                   ingressHostKeys={ingressHostKeys}
+                  ingressVariables={ingressVariables}
                   initialEntryValues={initialEntryValues}
                   service={service}
                   validateCustomHost={validateCustomHost}

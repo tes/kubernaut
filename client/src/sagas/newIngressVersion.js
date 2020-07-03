@@ -14,6 +14,9 @@ import {
   FETCH_INGRESS_HOSTS_REQUEST,
   FETCH_INGRESS_HOSTS_SUCCESS,
   FETCH_INGRESS_HOSTS_ERROR,
+  FETCH_INGRESS_VARIABLES_REQUEST,
+  FETCH_INGRESS_VARIABLES_SUCCESS,
+  FETCH_INGRESS_VARIABLES_ERROR,
   FETCH_INGRESS_CLASSES_REQUEST,
   FETCH_INGRESS_CLASSES_SUCCESS,
   FETCH_INGRESS_CLASSES_ERROR,
@@ -36,6 +39,7 @@ import {
 import {
   getService,
   getIngressHosts,
+  getIngressVariables,
   getIngressClasses,
   getCanManageAnyNamespace,
   getTeamForService,
@@ -110,6 +114,27 @@ export function* fetchIngressHostsSaga({ payload: options }) {
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
     yield put(FETCH_INGRESS_HOSTS_ERROR({ error: error.message }));
+  }
+}
+
+export function* fetchIngressVariablesSaga({ payload: options }) {
+  try {
+    yield put(FETCH_INGRESS_VARIABLES_REQUEST());
+
+    const raceResult = yield race({
+      success: take(FETCH_SERVICE_SUCCESS),
+      failure: take(FETCH_SERVICE_ERROR),
+    });
+    if (raceResult.failure) {
+      yield put(FETCH_INGRESS_VARIABLES_ERROR());
+      return;
+    }
+    const service = yield select(selectService);
+    const data = yield call(getIngressVariables, { serviceId: service.id });
+    yield put(FETCH_INGRESS_VARIABLES_SUCCESS({ data }));
+  } catch(error) {
+    if (!options.quiet) console.error(error); // eslint-disable-line no-console
+    yield put(FETCH_INGRESS_VARIABLES_ERROR({ error: error.message }));
   }
 }
 
@@ -188,6 +213,7 @@ export default [
   takeLatest(initNewIngressVersionPage, checkPermissionSaga),
   takeLatest(initNewIngressVersionPage, fetchIngressHostsSaga),
   takeLatest(initNewIngressVersionPage, fetchIngressClassesSaga),
+  takeLatest(initNewIngressVersionPage, fetchIngressVariablesSaga),
   takeLatest(initNewIngressVersionPage, fetchTeamForServiceSaga),
   takeLatest(submitForm.REQUEST, submitSaga),
   takeLatest(validateCustomHost, validateCustomHostSaga),

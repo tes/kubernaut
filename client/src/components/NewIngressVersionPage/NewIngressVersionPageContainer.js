@@ -24,6 +24,7 @@ export default connect((state, props) => {
     initialValues: state.newIngressVersion.initialValues,
     ingressClasses: state.newIngressVersion.ingressClasses,
     ingressHostKeys: state.newIngressVersion.ingressHostKeys,
+    ingressVariables: state.newIngressVersion.ingressVariables,
     service: state.newIngressVersion.service,
     meta: state.newIngressVersion.meta,
     initialEntryValues: state.newIngressVersion.initialEntryValues,

@@ -18,6 +18,10 @@ export const FETCH_INGRESS_HOSTS_REQUEST = createAction(`${actionsPrefix}/FETCH_
 export const FETCH_INGRESS_HOSTS_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_HOSTS_SUCCESS`);
 export const FETCH_INGRESS_HOSTS_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_HOSTS_ERROR`);
 
+export const FETCH_INGRESS_VARIABLES_REQUEST = createAction(`${actionsPrefix}/FETCH_INGRESS_VARIABLES_REQUEST`);
+export const FETCH_INGRESS_VARIABLES_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_VARIABLES_SUCCESS`);
+export const FETCH_INGRESS_VARIABLES_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_VARIABLES_ERROR`);
+
 export const FETCH_INGRESS_CLASSES_REQUEST = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_REQUEST`);
 export const FETCH_INGRESS_CLASSES_SUCCESS = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_SUCCESS`);
 export const FETCH_INGRESS_CLASSES_ERROR = createAction(`${actionsPrefix}/FETCH_INGRESS_CLASSES_ERROR`);
@@ -62,11 +66,13 @@ const defaultState = {
   },
   ingressClasses: [],
   ingressHostKeys: [],
+  ingressVariables: [],
   meta: {
     loading: {
       sections: {
         service: false,
         ingressHosts: false,
+        ingressVariables: false,
         ingressClasses: false,
         canManage: false,
         team: false,
@@ -138,6 +144,29 @@ export default handleActions({
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'ingressHosts', false),
+      error: payload.error,
+    },
+  }),
+  [FETCH_INGRESS_VARIABLES_REQUEST]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressVariables', true),
+    },
+  }),
+  [FETCH_INGRESS_VARIABLES_SUCCESS]: (state, { payload: { data } }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressVariables', false),
+    },
+    ingressVariables: ['service'].concat(data.items.map(({ name }) => (name))),
+  }),
+  [FETCH_INGRESS_VARIABLES_ERROR]: (state, { payload }) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'ingressVariables', false),
       error: payload.error,
     },
   }),

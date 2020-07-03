@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Popover, PopoverHeader, PopoverBody } from 'reactstrap';
 
 class RenderInput extends Component {
   constructor(props) {
@@ -7,10 +8,21 @@ class RenderInput extends Component {
 
     this.textInput = React.createRef();
     this.focusInput = this.focusInput.bind(this);
+    this.setPopoverOpen = this.setPopoverOpen.bind(this);
+
+    this.state = {
+      popoverOpen: false
+    };
   }
 
   focusInput() {
     this.textInput.current.focus();
+  }
+
+  setPopoverOpen(value) {
+    this.setState({
+      popoverOpen: value,
+    });
   }
 
   render() {
@@ -28,6 +40,7 @@ class RenderInput extends Component {
       autoComplete,
       placeholder,
       onChangeListener, // onChange is great, unless you want to run a function/saga that fetches all form values which you expect to include the change performed in this event.
+      popover = {},
     } = this.props;
 
     return (
@@ -47,6 +60,18 @@ class RenderInput extends Component {
                 onChangeListener();
               }
             }}
+            onFocus={(...args)=> {
+              input.onFocus(...args);
+              if (popover && popover.title) {
+                this.setPopoverOpen(true);
+              }
+            }}
+            onBlur={(...args)=> {
+              input.onBlur(...args);
+              if (popover && popover.title) {
+                this.setPopoverOpen(false);
+              }
+            }}
           />
           {error && <span className="help-block"><span className="text-danger">{error}</span></span>}
           {warning && <span className="help-block"><span className="text-warning">{warning}</span></span>}
@@ -54,6 +79,16 @@ class RenderInput extends Component {
         <div className="col-sm-1">
           { asyncValidating && (<i className="fa fa-spin fa-spinner mt-2" aria-hidden='true' />) }
         </div>
+        <Popover
+          placement={popover.placement || 'auto'}
+          trigger="focus click hover"
+          className="shadow-sm"
+          target={this.textInput}
+          isOpen={this.state.popoverOpen}
+        >
+          <PopoverHeader>{popover.title}</PopoverHeader>
+          <PopoverBody>{popover.body}</PopoverBody>
+        </Popover>
       </div>
     );
   }

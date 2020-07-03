@@ -216,10 +216,11 @@ export const getIngressHosts = ({ limit = 50, offset = 0, serviceId } = {}) => {
   return makeRequest(`/api/ingress/host-keys?${qs}`).then(computePagination);
 };
 
-export const getIngressVariables = ({ limit = 50, offset = 0 } = {}) => {
+export const getIngressVariables = ({ limit = 50, offset = 0, serviceId } = {}) => {
   const qs = makeQueryString({
     limit,
     offset,
+    serviceId,
   });
 
   return makeRequest(`/api/ingress/variable-keys?${qs}`).then(computePagination);
