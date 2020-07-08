@@ -3,9 +3,14 @@ import {
   fetchVersionsPagination
 } from '../../modules/serviceIngress';
 import ServiceIngressPage from './ServiceIngressPage';
-
+import {
+  alterQuery,
+  makeQueryString,
+} from '../../sagas/lib/query';
 
 export default connect((state, props) => {
+  const { search } = props.location;
+  const qsPagination = alterQuery(search, { pagination: makeQueryString(state.serviceIngress.pagination) });
 
   return {
     service: state.serviceIngress.service,
@@ -16,6 +21,7 @@ export default connect((state, props) => {
     versions: state.serviceIngress.versions,
     version: state.serviceIngress.version,
     versionId: props.versionId,
+    qsPagination,
   };
 }, {
   fetchVersionsPagination

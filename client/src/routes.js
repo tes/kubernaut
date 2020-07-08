@@ -210,12 +210,13 @@ export default () => <Switch>
   <Route
     exact
     path={paths.serviceIngress.route}
-    render={({ match }) =>
+    render={({ match, location }) =>
       <Wrapper title="Service ingress">
         <ServiceIngressPage
           registryName={match.params.registry}
           serviceName={match.params.name}
           versionId={match.params.version}
+          location={location}
         />
       </Wrapper>
     }

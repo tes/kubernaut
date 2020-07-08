@@ -334,10 +334,10 @@ export const AdminIngressLink = ({ container, children }) => {
   return <Tag {...props}>{children || <span>Ingress</span>}</Tag>;
 };
 
-export const IngressVersionsLink = ({ container, children, serviceName, registryName, versionId }) => {
+export const IngressVersionsLink = ({ container, children, serviceName, registryName, versionId, qsPagination }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/${registryName}/${serviceName}/ingress${versionId ? `/${versionId}` : ''}`,
+    to: `/services/${registryName}/${serviceName}/ingress${versionId ? `/${versionId}` : ''}${qsPagination ? `?pagination=${qsPagination}` : ''}`,
     ...container && { exact: true },
   };
 

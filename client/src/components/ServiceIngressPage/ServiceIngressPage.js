@@ -29,6 +29,7 @@ class ServiceIngress extends Component {
       fetchVersionsPagination,
       version,
       versionId,
+      qsPagination,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -93,6 +94,7 @@ class ServiceIngress extends Component {
                   serviceName={service.name}
                   versionId={version.id}
                   key={version.id}
+                  qsPagination={qsPagination}
                 >
                   <ListGroupItem
                     className={`p-1 text-truncate ${versionId === version.id ? '' : 'text-dark'}`}
