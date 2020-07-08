@@ -7,7 +7,7 @@ import { Badge } from 'reactstrap';
 import paths from '../../paths';
 import { Human } from '../DisplayDate';
 
-const { serviceStatus } = paths;
+const { serviceStatus, serviceIngress } = paths;
 
 export const AccountLink = ({ account, children, container }) => {
   const Tag = container ? LinkContainer : Link;
@@ -334,12 +334,17 @@ export const AdminIngressLink = ({ container, children }) => {
   return <Tag {...props}>{children || <span>Ingress</span>}</Tag>;
 };
 
-export const IngressVersionsLink = ({ container, children, serviceName, registryName }) => {
+export const IngressVersionsLink = ({ container, children, serviceName, registryName, versionId }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/${registryName}/${serviceName}/ingress`,
-    ...container && { exact: true }
+    to: `/services/${registryName}/${serviceName}/ingress${versionId ? `/${versionId}` : ''}`,
+    ...container && { exact: true },
   };
+
+  if (container) props.isActive = (match, location) => (
+    matchPath(location.pathname, { path: serviceIngress.route, exact: true })
+    // "manual" because we optionally match on the version id in the url as well
+  );
 
   return <Tag {...props}>{children || <span>Ingress</span>}</Tag>;
 };

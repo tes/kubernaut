@@ -32,6 +32,7 @@ import releases from './releases';
 import service from './service';
 import secretOverview from './secretOverview';
 import secretVersion from './secretVersion';
+import serviceIngress from './serviceIngress';
 import serviceManage from './serviceManage';
 import serviceNamespaceAttrs from './serviceNamespaceAttrs';
 import services from './services';
@@ -75,6 +76,7 @@ export default (history) => combineReducers({
   service,
   secretOverview,
   secretVersion,
+  serviceIngress,
   serviceManage,
   serviceNamespaceAttrs,
   services,

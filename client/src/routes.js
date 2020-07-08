@@ -32,6 +32,7 @@ import RegistriesPage from './components/RegistriesPage';
 import ReleasesPage from './components/ReleasesPage';
 import ServicesPage from './components/ServicesPage';
 import ServiceDetailsPage from './components/ServiceDetailsPage';
+import ServiceIngressPage from './components/ServiceIngressPage';
 import ServiceManagePage from './components/ServiceManagePage';
 import ServiceStatusPage from './components/ServiceStatusPage';
 import ServiceNamespaceAttrsPage from './components/ServiceNamespaceAttrsPage';
@@ -202,6 +203,19 @@ export default () => <Switch>
         <ServiceStatusPage
           registryName={match.params.registry}
           serviceName={match.params.name}
+        />
+      </Wrapper>
+    }
+  />
+  <Route
+    exact
+    path={paths.serviceIngress.route}
+    render={({ match }) =>
+      <Wrapper title="Service ingress">
+        <ServiceIngressPage
+          registryName={match.params.registry}
+          serviceName={match.params.name}
+          versionId={match.params.version}
         />
       </Wrapper>
     }

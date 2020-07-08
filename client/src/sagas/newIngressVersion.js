@@ -1,5 +1,5 @@
 import { takeLatest, call, put, select, race, take } from 'redux-saga/effects';
-// import { push } from 'connected-react-router';
+import { push } from 'connected-react-router';
 import { get as _get, set as _set } from 'lodash';
 import {
   SubmissionError,
@@ -176,9 +176,9 @@ export function* submitSaga() {
   try {
     const values = yield select(getFormValues);
     const service = yield select(selectService);
-    /* const data = */ yield call(saveIngressVersion, service, values);
+    const newId = yield call(saveIngressVersion, service, values);
     yield put(submitForm.success());
-    // yield put(push(`/cronjobs/version/${data.id}`));
+    yield put(push(`/services/${service.registry.name}/${service.name}/ingress/${newId}`));
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
     yield put(submitForm.failure(new SubmissionError({ _error: err.message || 'Something bad and unknown happened.' })));

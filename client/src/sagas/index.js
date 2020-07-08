@@ -31,6 +31,7 @@ import releasesSagas from './releases';
 import serviceSagas from './service';
 import secretOverviewSagas from './secretOverview';
 import secretVersionSagas from './secretVersion';
+import serviceIngressSagas from './serviceIngress';
 import serviceManageSagas from './serviceManage';
 import serviceNamespaceAttrsSagas from './serviceNamespaceAttrs';
 import servicesSagas from './services';
@@ -73,6 +74,7 @@ export default function* rootSaga() {
     ...serviceSagas,
     ...secretOverviewSagas,
     ...secretVersionSagas,
+    ...serviceIngressSagas,
     ...serviceManageSagas,
     ...serviceNamespaceAttrsSagas,
     ...servicesSagas,

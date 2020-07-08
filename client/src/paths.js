@@ -40,6 +40,7 @@ import { initClusterEditPage } from './modules/clusterEdit';
 import { initHomePage } from './modules/home';
 import { initAuditPage } from './modules/audit';
 import { initNewIngressVersionPage } from './modules/newIngressVersion';
+import { initIngressPage } from './modules/serviceIngress';
 
 
 const paths = {
@@ -174,6 +175,10 @@ const paths = {
   serviceManage: {
     route: '/services/:registry/:name/manage',
     action: initServiceManage,
+  },
+  serviceIngress: {
+    route: '/services/:registry/:name/ingress/:version?',
+    action: initIngressPage,
   },
   team: {
     route: '/teams/:team',
