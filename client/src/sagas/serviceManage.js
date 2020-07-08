@@ -25,6 +25,8 @@ import {
   FETCH_SERVICE_NAMESPACES_STATUS_ERROR,
   canManageRequest,
   setCanManage,
+  canReadIngressRequest,
+  setCanReadIngress,
   fetchTeamForService,
   FETCH_TEAM_REQUEST,
   FETCH_TEAM_SUCCESS,
@@ -48,6 +50,7 @@ import {
   getCanManageAnyNamespace,
   getTeamForService,
   hasPermissionOn,
+  hasPermission,
   withPermission,
   associateServiceWithTeam,
   disassociateService,
@@ -59,6 +62,7 @@ export function* checkPermissionSaga({ payload: { match, ...options }}) {
   try {
     yield put(canManageRequest());
     yield put(canDeleteRequest());
+    yield put(canReadIngressRequest());
     const raceResult = yield race({
       success: take(FETCH_SERVICE_SUCCESS),
       failure: take(FETCH_SERVICE_ERROR),
@@ -66,16 +70,19 @@ export function* checkPermissionSaga({ payload: { match, ...options }}) {
     if (raceResult.failure) {
       yield put(setCanManage(false));
       yield put(setCanDelete(false));
+      yield put(setCanReadIngress(false));
       return;
     }
 
-    const hasPermission = yield call(getCanManageAnyNamespace);
-    yield put(setCanManage(hasPermission.answer));
+    const canManage = yield call(getCanManageAnyNamespace);
+    yield put(setCanManage(canManage.answer));
 
     const { payload: serviceResult } = raceResult.success;
     const registryId = serviceResult.data.registry.id;
     const canDelete = yield call(hasPermissionOn, 'registries-write', 'registry', registryId);
     yield put(setCanDelete(canDelete.answer));
+    const canReadIngress = yield call(hasPermission, 'ingress-read');
+    yield put(setCanReadIngress(canReadIngress.answer));
   } catch(error) {
     if (!options.quiet) console.error(error); // eslint-disable-line no-console
   }

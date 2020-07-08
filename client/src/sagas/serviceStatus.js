@@ -6,6 +6,7 @@ import {
   fetchLatestDeployments,
   fetchStatus,
   setCanManage,
+  setCanReadIngress,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_REQUEST,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_SUCCESS,
   FETCH_LATEST_DEPLOYMENTS_BY_NAMESPACE_ERROR,
@@ -24,6 +25,7 @@ import {
   getCanManageAnyNamespace,
   getTeamForService,
   getStatusForService,
+  hasPermission,
 } from '../lib/api';
 
 export function* initServiceStatusPageSaga({ payload = {} }) {
@@ -78,6 +80,15 @@ export function* canManageSaga() {
   }
 }
 
+export function* canReadIngressSaga() {
+  try {
+    const canReadIngress = yield call(hasPermission, 'ingress-read');
+    yield put(setCanReadIngress(canReadIngress.answer));
+  } catch(error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export function* fetchTeamForServiceSaga({ payload = {} }) {
   const { registry, service } = payload;
   try {
@@ -109,6 +120,7 @@ export function* changeToNamespaceSaga({ payload = {} }) {
 export default [
   takeLatest(initServiceStatusPage, initServiceStatusPageSaga),
   takeLatest(initServiceStatusPage, canManageSaga),
+  takeLatest(initServiceStatusPage, canReadIngressSaga),
   takeLatest(fetchLatestDeployments, fetchLatestDeploymentsByNamespaceForServiceSaga),
   takeLatest(fetchTeamForService, fetchTeamForServiceSaga),
   takeLatest(fetchStatus, fetchStatusSaga),

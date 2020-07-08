@@ -44,6 +44,8 @@ import {
   closeDeleteModal,
   setCanDelete,
   canDeleteRequest,
+  setCanReadIngress,
+  canReadIngressRequest,
 } from '../../modules/serviceManage';
 
 import {
@@ -54,6 +56,7 @@ import {
   getCanManageAnyNamespace,
   getTeamForService,
   hasPermissionOn,
+  hasPermission,
   withPermission,
   associateServiceWithTeam,
   disassociateService,
@@ -99,6 +102,7 @@ describe('ServiceManageSagas', () => {
         const gen = checkPermissionSaga(initServiceManage(initPayload));
         expect(gen.next().value).toMatchObject(put(canManageRequest()));
         expect(gen.next().value).toMatchObject(put(canDeleteRequest()));
+        expect(gen.next().value).toMatchObject(put(canReadIngressRequest()));
         expect(gen.next().value).toMatchObject(race({
           success: take(FETCH_SERVICE_SUCCESS),
           failure: take(FETCH_SERVICE_ERROR),
@@ -107,6 +111,8 @@ describe('ServiceManageSagas', () => {
         expect(gen.next({ answer: true }).value).toMatchObject(put(setCanManage(true)));
         expect(gen.next().value).toMatchObject(call(hasPermissionOn, 'registries-write', 'registry', '000'));
         expect(gen.next({ answer: true }).value).toMatchObject(put(setCanDelete(true)));
+        expect(gen.next().value).toMatchObject(call(hasPermission, 'ingress-read'));
+        expect(gen.next({ answer: true }).value).toMatchObject(put(setCanReadIngress(true)));
         expect(gen.next().done).toBe(true);
       });
 
@@ -114,12 +120,14 @@ describe('ServiceManageSagas', () => {
         const gen = checkPermissionSaga(initServiceManage(initPayload));
         expect(gen.next().value).toMatchObject(put(canManageRequest()));
         expect(gen.next().value).toMatchObject(put(canDeleteRequest()));
+        expect(gen.next().value).toMatchObject(put(canReadIngressRequest()));
         expect(gen.next().value).toMatchObject(race({
           success: take(FETCH_SERVICE_SUCCESS),
           failure: take(FETCH_SERVICE_ERROR),
         }));
         expect(gen.next({ failure: {}}).value).toMatchObject(put(setCanManage(false)));
         expect(gen.next().value).toMatchObject(put(setCanDelete(false)));
+        expect(gen.next().value).toMatchObject(put(setCanReadIngress(false)));
         expect(gen.next().done).toBe(true);
       });
     });

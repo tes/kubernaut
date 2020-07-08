@@ -31,6 +31,7 @@ class ServicesSubNav extends Component {
       deploy,
       release = '',
       newIngress,
+      canReadIngress,
     } = this.props;
 
     return (
@@ -116,15 +117,17 @@ class ServicesSubNav extends Component {
               </NavItem>
             : null }
 
-            <NavItem>
-              <IngressVersionsLink
-                container
-                registryName={registryName}
-                serviceName={serviceName}
-              >
-                <NavLink><i className="fa fa-sign-in" aria-hidden='true'></i> Ingress</NavLink>
-              </IngressVersionsLink>
-            </NavItem>
+            { canReadIngress ?
+              <NavItem>
+                <IngressVersionsLink
+                  container
+                  registryName={registryName}
+                  serviceName={serviceName}
+                  >
+                  <NavLink><i className="fa fa-sign-in" aria-hidden='true'></i> Ingress</NavLink>
+                </IngressVersionsLink>
+              </NavItem>
+            : null }
 
             {
               newIngress ?

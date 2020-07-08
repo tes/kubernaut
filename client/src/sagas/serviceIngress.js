@@ -27,6 +27,8 @@ import {
   setCanManage,
   canWriteIngressRequest,
   setCanWriteIngress,
+  canReadIngressRequest,
+  setCanReadIngress,
   fetchVersionsPagination,
   setPagination,
   fetchVersions,
@@ -122,9 +124,12 @@ export function* fetchTeamForServiceSaga({ payload = {} }) {
 export function* checkPermissionSaga({ payload: { match, ...options }}) {
   try {
     yield put(canManageRequest());
+    yield put(canReadIngressRequest());
     yield put(canWriteIngressRequest());
     const canMange = yield call(getCanManageAnyNamespace);
     yield put(setCanManage(canMange.answer));
+    const canReadIngress = yield call(hasPermission, 'ingress-read');
+    yield put(setCanReadIngress(canReadIngress.answer));
     const canWriteIngress = yield call(hasPermission, 'ingress-write');
     yield put(setCanWriteIngress(canWriteIngress.answer));
   } catch(error) {

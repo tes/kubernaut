@@ -9,7 +9,9 @@ export const fetchNamespacesPagination = createAction(`${actionsPrefix}/FETCH_NA
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
 export const canManageRequest = createAction(`${actionsPrefix}/CAN_MANAGE_REQUEST`);
 export const canDeleteRequest = createAction(`${actionsPrefix}/CAN_DELETE_REQUEST`);
+export const canReadIngressRequest = createAction(`${actionsPrefix}/CAN_READ_INGRESS_REQUEST`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const setCanReadIngress = createAction(`${actionsPrefix}/SET_CAN_READ_INGRESS`);
 export const FETCH_SERVICE_REQUEST = createAction(`${actionsPrefix}/FETCH_SERVICE_REQUEST`);
 export const FETCH_SERVICE_SUCCESS = createAction(`${actionsPrefix}/FETCH_SERVICE_SUCCESS`);
 export const FETCH_SERVICE_ERROR = createAction(`${actionsPrefix}/FETCH_SERVICE_ERROR`);
@@ -45,6 +47,7 @@ const defaultState = {
         namespaces: false,
         canManage: false,
         canDelete: false,
+        canReadIngress: false,
         team: false,
       },
       loadingPercent: 100,
@@ -65,6 +68,7 @@ const defaultState = {
   canManage: false,
   canDelete: false,
   canManageTeamForService: false,
+  canReadIngress: false,
   initialValues: {},
   id: '',
   registry: '',
@@ -163,6 +167,21 @@ export default handleActions({
     meta: {
       ...state.meta,
       loading: computeLoading(state.meta.loading, 'canManage', false),
+    },
+  }),
+  [canReadIngressRequest]: (state) => ({
+    ...state,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canReadIngress', true),
+    }
+  }),
+  [setCanReadIngress]: (state, { payload }) => ({
+    ...state,
+    canReadIngress: payload,
+    meta: {
+      ...state.meta,
+      loading: computeLoading(state.meta.loading, 'canReadIngress', false),
     },
   }),
   [canDeleteRequest]: (state) => ({

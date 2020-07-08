@@ -16,6 +16,7 @@ export default connect((state, props) => {
     service: state.serviceIngress.service,
     meta: state.serviceIngress.meta,
     canManage: state.serviceIngress.canManage,
+    canReadIngress: state.serviceIngress.canReadIngress,
     canWriteIngress: state.serviceIngress.canWriteIngress,
     team: state.serviceIngress.team,
     versions: state.serviceIngress.versions,

@@ -24,6 +24,7 @@ class ServiceIngress extends Component {
       meta,
       canManage,
       team,
+      canReadIngress,
       canWriteIngress,
       versions,
       fetchVersionsPagination,
@@ -40,6 +41,18 @@ class ServiceIngress extends Component {
       </Row>
     );
 
+    if (!canReadIngress) {
+      return (
+        <Row className="page-frame">
+          <Row>
+            <Col xs="12">
+              <p>You are not authorised to view this page.</p>
+            </Col>
+          </Row>
+        </Row>
+      );
+    }
+
 
     return (
       <Row className="page-frame">
@@ -50,6 +63,7 @@ class ServiceIngress extends Component {
             serviceName={service.name}
             canManage={canManage}
             team={team}
+            canReadIngress={canReadIngress}
         />
 
         <Row>

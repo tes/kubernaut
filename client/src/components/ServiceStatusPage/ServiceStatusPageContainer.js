@@ -11,6 +11,7 @@ export default connect((state, { registryName, serviceName }) => ({
     serviceName,
   },
   canManage: state.serviceStatus.canManage,
+  canReadIngress: state.serviceStatus.canReadIngress,
   team: state.serviceStatus.team,
   meta: state.serviceStatus.meta,
   status: state.serviceStatus.status,

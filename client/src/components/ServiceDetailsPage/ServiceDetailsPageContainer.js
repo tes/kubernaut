@@ -16,6 +16,7 @@ export default connect((state, { registryName, serviceName }) => ({
   releasesNamespaceHistory: state.service.releasesNamespaceHistory.data,
   deploymentsWithNotes: state.service.deploymentsWithNotes.data,
   canManage: state.service.canManage,
+  canReadIngress: state.service.canReadIngress,
   team: state.service.team,
 }),{
   fetchReleasesPagination,

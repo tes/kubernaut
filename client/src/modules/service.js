@@ -30,6 +30,7 @@ export const FETCH_TEAM_SUCCESS = createAction(`${actionsPrefix}/FETCH_TEAM_SUCC
 export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR_SERVICE`);
 
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const setCanReadIngress = createAction(`${actionsPrefix}/SET_CAN_READ_INGRESS`);
 
 export const setCurrentService = createAction(`${actionsPrefix}/SET_CURRENT_SERVICE`);
 export const clearCurrentService = createAction(`${actionsPrefix}/CLEAR_CURRENT_SERVICE`);
@@ -81,6 +82,7 @@ const defaultState = {
     data: [],
   },
   canManage: false,
+  canReadIngress: false,
   service: {
     registryName: '',
     name: '',
@@ -231,6 +233,10 @@ export default handleActions({
   [setCanManage]: (state, { payload }) => ({
     ...state,
     canManage: payload,
+  }),
+  [setCanReadIngress]: (state, { payload }) => ({
+    ...state,
+    canReadIngress: payload,
   }),
   [FETCH_TEAM_REQUEST]: (state) => ({
     ...state,

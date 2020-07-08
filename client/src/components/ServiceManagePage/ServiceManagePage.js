@@ -91,7 +91,7 @@ class ServiceManagePage extends Component {
     return (
       <Container className="page-frame">
         <Title title={`Manage service: ${this.props.registryName}/${this.props.serviceName}`} />
-        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} team={this.props.team} />
+        <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} team={this.props.team} canReadIngress={this.props.canReadIngress} />
         <Row>
           <Col md="8">
             <form>
@@ -233,6 +233,7 @@ ServiceManagePage.propTypes = {
   registryName: PropTypes.string.isRequired,
   serviceId: PropTypes.string.isRequired,
   canManage: PropTypes.bool.isRequired,
+  canReadIngress: PropTypes.bool.isRequired,
   team: PropTypes.object,
 };
 

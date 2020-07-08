@@ -20,6 +20,7 @@ export const fetchStatus = createAction(`${actionsPrefix}/FETCH_STATUS`);
 export const fetchTeamForService = createAction(`${actionsPrefix}/FETCH_TEAM_FOR_SERVICE`);
 export const changeToNamespace = createAction(`${actionsPrefix}/CHANGE_TO_NAMESPACE`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
+export const setCanReadIngress = createAction(`${actionsPrefix}/SET_CAN_READ_INGRESS`);
 
 export const selectLatestDeployments = (state) => (state.serviceStatus.latestDeployments.data);
 
@@ -39,6 +40,7 @@ const defaultState = {
   },
   status: [],
   canManage: false,
+  canReadIngress: false,
   team: {
     name: '',
   },
@@ -111,6 +113,10 @@ export default handleActions({
   [setCanManage]: (state, { payload }) => ({
     ...state,
     canManage: payload,
+  }),
+  [setCanReadIngress]: (state, { payload }) => ({
+    ...state,
+    canReadIngress: payload,
   }),
   [FETCH_TEAM_REQUEST]: (state) => ({
     ...state,

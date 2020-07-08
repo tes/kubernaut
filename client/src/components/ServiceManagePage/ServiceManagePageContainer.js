@@ -15,6 +15,7 @@ export default connect(({ serviceManage, account }, { registryName, serviceName 
   canManage: serviceManage.canManage,
   canDelete: serviceManage.canDelete,
   canManageTeamForService: serviceManage.canManageTeamForService,
+  canReadIngress: serviceManage.canReadIngress,
   meta: serviceManage.meta,
   initialValues: serviceManage.initialValues,
   registryName,

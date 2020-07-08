@@ -426,6 +426,7 @@ class NewIngressVersionPage extends Component {
             newIngress
             canManage={canManage}
             team={team}
+            canReadIngress={true}
           />
 
           <Form>

@@ -40,7 +40,13 @@ class ServiceDetailsPage extends Component {
       <Row className="page-frame">
         <Col>
           <Title title={`Service: ${this.props.registryName}/${this.props.serviceName}`} />
-          <ServicesSubNav registryName={this.props.registryName} serviceName={this.props.serviceName} canManage={this.props.canManage} team={this.props.team}/>
+          <ServicesSubNav
+            registryName={this.props.registryName}
+            serviceName={this.props.serviceName}
+            canManage={this.props.canManage}
+            team={this.props.team}
+            canReadIngress={this.props.canReadIngress}
+          />
 
           {
             this.props.latestDeployments.length ? (
