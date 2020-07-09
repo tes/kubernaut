@@ -109,7 +109,7 @@ try {
       services.forEach(service => {
         const base = Math.floor(Math.random() * 100);
         for (let i = 0; i < releasesPerService; i++) {
-          newReleases.push(makeRelease({ service, version: base + i }));
+          newReleases.push(makeRelease({ service, version: base + i, attributes: { image: 'agabert/beacon', port: 80, probe: '/beacon/health' } }));
         }
       });
 
@@ -138,22 +138,24 @@ try {
       await Promise.map(services, async service => {
         const ns = Math.random() > 0.5 ? [defaultNS, defaultNSOnStagingCluster, defaultNSOnliveCluster] : [privateNS, privateNSOnStagingCluster, privateNSOnliveCluster];
         const releases = await store.findReleases({ service: service.name, registries: [service.registry.id]}, releasesPerService, 0, 'created', 'asc');
-        return await Promise.map(releases.items, (release, index, length) => {
-          return store.saveDeployment(makeDeployment({
-            namespace: ns[0],
-            release,
-          }), makeRootMeta({ date: release.createdOn }))
-          .then(() => store.saveDeployment(makeDeployment({
-            namespace: ns[1],
-            release,
-          }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) })))
-          .then(() => {
-            if (index === length - 2) return store.saveDeployment(makeDeployment({
+        return await Promise.map(releases.items, async (releaseThin, index, length) => {
+          try {
+            const release = await store.getRelease(releaseThin.id);
+            await store.saveDeployment(makeDeployment({
+              namespace: ns[0],
+              release,
+            }), makeRootMeta({ date: release.createdOn }));
+
+            await store.saveDeployment(makeDeployment({
+              namespace: ns[1],
+              release,
+            }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) }));
+
+            if (index === length - 2) await store.saveDeployment(makeDeployment({
               namespace: ns[2],
               release,
             }), makeRootMeta({ date: new Date(release.createdOn.getTime() + 1) }));
-          })
-          .catch(() => {});
+          } catch (e) {}
         }, { concurrency: 1});
       },
         { concurrency: 1 }

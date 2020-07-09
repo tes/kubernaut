@@ -123,6 +123,8 @@ function makeRelease(overrides = {}) {
       image: `registry/repo/${service.name}:${version}`,
       service: service.name,
       version: version,
+      port: 3000,
+      probe: '/status',
     },
   }, overrides));
 }

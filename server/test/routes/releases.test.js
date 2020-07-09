@@ -375,7 +375,7 @@ describe('Releases API', () => {
       expect(release.version).toBe(formData.version);
       expect(release.template.source.yaml).toBeDefined();
       expect(release.template.source.json).toBeDefined();
-      expect(release.template.checksum).toBe('c03684f5dee8b081');
+      expect(release.template.checksum).toBe('e2bc44771a6d790e');
       expect(release.attributes.image).toBe(formData.image);
     });
 

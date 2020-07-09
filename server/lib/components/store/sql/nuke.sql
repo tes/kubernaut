@@ -2,6 +2,16 @@ START TRANSACTION;
 
 -- DELETE appears faster than truncate on small tables
 DELETE FROM audit;
+DELETE FROM ingress_entry_rule;
+DELETE FROM ingress_entry_annotation;
+DELETE FROM ingress_entry;
+DELETE FROM ingress_version;
+DELETE FROM cluster_ingress_host;
+DELETE FROM cluster_ingress_variable;
+DELETE FROM cluster_ingress_class;
+DELETE FROM ingress_class;
+DELETE FROM ingress_host_key;
+DELETE FROM ingress_variable_key;
 DELETE FROM job_version;
 DELETE FROM job;
 DELETE FROM team_attribute;
