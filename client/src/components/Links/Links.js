@@ -337,7 +337,7 @@ export const AdminIngressLink = ({ container, children }) => {
 export const IngressVersionsLink = ({ container, children, serviceName, registryName, versionId, qsPagination }) => {
   const Tag = container ? LinkContainer : Link;
   const props = {
-    to: `/services/${registryName}/${serviceName}/ingress${versionId ? `/${versionId}` : ''}${qsPagination ? `?pagination=${qsPagination}` : ''}`,
+    to: `/services/${registryName}/${serviceName}/ingress${versionId ? `/${versionId}` : ''}${qsPagination ? `?${qsPagination}` : ''}`,
     ...container && { exact: true },
   };
 
