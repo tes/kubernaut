@@ -28,3 +28,8 @@ export const parseAndValidate = (raw = '', acceptedVariables = []) => {
 
   return parsed; // Its valid.
 };
+
+export const extractTemplateVariables = (raw = '') => {
+  const parsed = hogan.parse(hogan.scan(raw));
+  return parsed.filter(({ tag }) => (tag === '_v')).map(({ n }) => (n));
+};

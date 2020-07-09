@@ -17,6 +17,7 @@ import RenderTypeAhead from '../RenderTypeAhead';
 import RenderSelect from '../RenderSelect';
 import RenderNamespaces from '../RenderNamespaces';
 import RenderSecretVersions from '../RenderSecretVersions';
+import RenderIngressVersions from '../RenderIngressVersions';
 import { NamespaceLink } from '../Links';
 import { ServicesSubNav } from '../SubNavs';
 import Title from '../Title';
@@ -51,6 +52,7 @@ class DeployPage extends Component {
       validateService,
       validateVersion,
       fetchSecretVersions,
+      fetchIngressVersions,
     } = this.props;
 
     const validRegistryAndService = (registrySelected && serviceSelected);
@@ -174,6 +176,7 @@ class DeployPage extends Component {
                       onChange={(evt, newValue) => {
                         clearFormFields({ source: 'namespace' });
                         fetchSecretVersions(this.props.namespacesRich.find(({ id }) => (newValue === id)));
+                        fetchIngressVersions(this.props.namespacesRich.find(({ id }) => (newValue === id)));
                       }}
                       />
                   </Col>
@@ -186,6 +189,18 @@ class DeployPage extends Component {
                       name="secret"
                       component={RenderSecretVersions}
                       options={this.props.secretVersions}
+                      disabled={!validNamespace}
+                      />
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label sm="3" className="text-right" for="ingress">Secret:</Label>
+                  <Col sm="9">
+                    <Field
+                      className=""
+                      name="ingress"
+                      component={RenderIngressVersions}
+                      options={this.props.ingressVersions}
                       disabled={!validNamespace}
                       />
                   </Col>

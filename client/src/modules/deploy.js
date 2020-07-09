@@ -24,7 +24,9 @@ export const validateVersion = createAction(`${actionsPrefix}/VALIDATE_VERSION`)
 export const fetchNamespacesForService = createAction(`${actionsPrefix}/FETCH_NAMESPACES_FOR_SERVICE`);
 export const fetchLatestDeploymentsPerNamespace = createAction(`${actionsPrefix}/FETCH_DEPLOYMENTS_PER_NAMESPACE`);
 export const fetchSecretVersions = createAction(`${actionsPrefix}/FETCH_SECRET_VERSIONS`);
+export const fetchIngressVersions = createAction(`${actionsPrefix}/FETCH_INGRESS_VERSIONS`);
 export const setSecretVersions = createAction(`${actionsPrefix}/SET_SECRET_VERSIONS`);
+export const setIngressVersions = createAction(`${actionsPrefix}/SET_INGRESS_VERSIONS`);
 export const setCanManage = createAction(`${actionsPrefix}/SET_CAN_MANAGE`);
 
 export const getDeployFormValues = getFormValues('deploy');
@@ -40,6 +42,7 @@ const defaultState = {
   serviceSuggestions: [],
   deployments: [],
   secretVersions: [],
+  ingressVersions: [],
   initialValues: {},
   canManage: false,
   serviceName: '',
@@ -65,6 +68,7 @@ export default handleActions({
   [SET_DEPLOYMENTS]: (state, { payload }) => ({ ...state, deployments: payload.data }),
   [setServiceSuggestions]: (state, { payload }) => ({ ...state, serviceSuggestions: payload }),
   [setSecretVersions]: (state, { payload = {} }) => ({ ...state, secretVersions: payload.items }),
+  [setIngressVersions]: (state, { payload = {} }) => ({ ...state, ingressVersions: payload.items }),
   [clearServiceSuggestions]: (state) => ({ ...state, serviceSuggestions: [] }),
   [SET_INITIAL_FORM_VALUES]: (state, { payload }) => ({
     ...state,
@@ -72,6 +76,7 @@ export default handleActions({
     serviceName: payload.service,
     registryName: payload.registry,
     version: payload.version,
+    ingress: payload.ingress,
   }),
   [setCanManage]: (state, { payload }) => ({
     ...state,

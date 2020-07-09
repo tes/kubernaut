@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
+import parseFilters from './lib/parseFilters';
 import { customAlphabet } from 'nanoid';
-// import { get as _get, reduce as _reduce } from 'lodash';
 import { parseAndValidate } from './lib/ingressTemplating';
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16);
 
@@ -318,6 +318,39 @@ export default function() {
         await store.audit(meta, 'added cluster ingress class', { cluster });
 
         res.json(newId);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/ingress/:serviceId/:version/:namespace/latest-deployed', async (req, res, next) => {
+      try {
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+        if (! await store.hasPermissionOnRegistry(req.user, service.registry.id, 'registries-read')) return next(Boom.forbidden());
+
+        const release = await store.findRelease({
+          service: service.name,
+          registry: service.registry.name,
+          filters: parseFilters(req.params, ['version']),
+        });
+        if (!release) return next(Boom.notFound());
+
+        const namespace = await store.getNamespace(req.params.namespace);
+        if (!namespace) return next(Boom.notFound());
+        if (! await store.hasPermissionOnNamespace(req.user, namespace.id, 'ingress-apply')) return next(Boom.forbidden());
+
+        const meta = { date: new Date(), account: { id: req.user.id } };
+
+        const result = await store.getLatestDeployedIngressForReleaseToNamespace(release, namespace, meta);
+        await store.audit(meta, 'viewed latest deployed ingress for namespace', {
+          release,
+          namespace,
+          registry: service.registry,
+          service,
+          // ingressVersion: result,
+        });
+        res.json(result || {});
       } catch (err) {
         next(err);
       }

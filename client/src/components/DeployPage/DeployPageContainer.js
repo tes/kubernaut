@@ -13,6 +13,7 @@ import {
   validateService,
   validateVersion,
   fetchSecretVersions,
+  fetchIngressVersions,
 } from '../../modules/deploy';
 import DeployPage from './DeployPage';
 
@@ -42,6 +43,7 @@ const mapStateToProps = (state, props) => {
     deployments: deploy.deployments,
     currentFormValues,
     secretVersions: deploy.secretVersions,
+    ingressVersions: deploy.ingressVersions,
   };
 };
 
@@ -52,6 +54,7 @@ export default connect(mapStateToProps, {
   validateService,
   validateVersion,
   fetchSecretVersions,
+  fetchIngressVersions,
 })(reduxForm({
   form: formName,
   enableReinitialize: true,

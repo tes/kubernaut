@@ -247,6 +247,8 @@ export const getIngressClasses = ({ limit = 50, offset = 0, serviceId } = {}) =>
   return makeRequest(`/api/ingress/classes?${qs}`).then(computePagination);
 };
 
+export const getLatestDeployedIngressVersion = (serviceId, version, namespaceId) => makeRequest(`/api/ingress/${serviceId}/${version}/${namespaceId}/latest-deployed`);
+
 export const getLatestDeployedSecretVersion = (registry, service, version, namespaceId) => makeRequest(`/api/secrets/${registry}/${service}/${version}/${namespaceId}/latest-deployed`);
 
 export const getLatestDeploymentsByNamespaceForService = ({ registry, service, includeFailed }) => {

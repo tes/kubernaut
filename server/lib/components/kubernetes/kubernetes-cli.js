@@ -7,6 +7,7 @@ import {
   AppsV1Api,
   BatchV1Api,
   BatchV1beta1Api,
+  NetworkingV1beta1Api,
   loadAllYaml,
 } from '@kubernetes/client-node';
 import _ from 'lodash';
@@ -42,6 +43,7 @@ function createClients(configLocation, context) {
     k8sAppsApi: kc.makeApiClient(AppsV1Api),
     k8sBatchV1Api: kc.makeApiClient(BatchV1Api),
     k8sBatchV1Beta1Api: kc.makeApiClient(BatchV1beta1Api),
+    k8sNetworkingV1Beta1Api: kc.makeApiClient(NetworkingV1beta1Api),
   };
 }
 
@@ -71,6 +73,7 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
     k8sAppsApi,
     k8sBatchV1Beta1Api,
     k8sBatchV1Api,
+    k8sNetworkingV1Beta1Api,
   } = clients;
 
   for (const docType in docsByType) {
@@ -122,6 +125,13 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
     if (docType === 'statefulset') {
       for (const doc of docsByType[docType]) {
         patchResponseStatus(await k8sAppsApi.patchNamespacedStatefulSet(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+      }
+      continue;
+    }
+
+    if (docType === 'ingress') {
+      for (const doc of docsByType[docType]) {
+        patchResponseStatus(await k8sNetworkingV1Beta1Api.patchNamespacedIngress(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }

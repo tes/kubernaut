@@ -20,6 +20,7 @@ import {
   fetchNamespacesForService,
   fetchLatestDeploymentsPerNamespace,
   fetchSecretVersions,
+  fetchIngressVersions,
   INITIALISE,
   INITIALISE_ERROR,
   SET_LOADING,
@@ -29,6 +30,7 @@ import {
   SET_DEPLOYMENTS,
   SET_INITIAL_FORM_VALUES,
   setSecretVersions,
+  setIngressVersions,
   selectNamespaces,
   setCanManage,
   FETCH_TEAM_REQUEST,
@@ -47,6 +49,9 @@ import {
   getCanManageAnyNamespace,
   getTeamForService,
   getService,
+  hasPermissionOn,
+  getIngressVersions,
+  getLatestDeployedIngressVersion,
 } from '../lib/api';
 
 export function* fetchRegistriesSaga({ payload = {} }) {
@@ -89,6 +94,7 @@ export function* triggerDeploymentSaga({ payload: formValues }, options = {}) {
     namespace: selectedNamespace.name,
     cluster: selectedNamespace.cluster.name,
     secret: formValues.secret,
+    ingress: formValues.ingress,
   };
 
   let data;
@@ -130,7 +136,8 @@ const formFieldsOrder = [
   'service',
   'version',
   'namespace',
-  'secret'
+  'secret',
+  'ingress',
 ];
 export function* clearFormFieldsSaga({ payload }) {
   const index = formFieldsOrder.indexOf(payload.source);
@@ -204,6 +211,25 @@ export function* fetchSecretVersionsSaga(payload) {
   }
 }
 
+export function* fetchIngressVersionsSaga(payload) {
+  const { registry, service, version, namespaceId } = payload;
+  if (!registry || !service || !version || !namespaceId) return;
+  try {
+    const canEdit = yield call(hasPermissionOn, 'ingress-apply', 'namespace', namespaceId);
+    if (!canEdit.answer) return;
+    const richService = yield call(getService, { registry, service });
+    if (!richService) return;
+    const results = yield call(getIngressVersions, { serviceId: richService.id, limit: 20 });
+    yield put(setIngressVersions(results));
+    const { ingress: currentIngressValue } = yield select(getDeployFormValues);
+    if (currentIngressValue) return;
+    const latestDeployed = yield call(getLatestDeployedIngressVersion, richService.id, version, namespaceId);
+    if (latestDeployed) yield put(change('deploy', 'ingress', latestDeployed.id));
+  } catch (error) {
+    if (!payload.quiet) console.error(error); // eslint-disable-line no-console
+  }
+}
+
 export function* fetchSecretsInitProxySaga() {
   const currentValue = yield select(getDeployFormValues);
   if (!currentValue.namespace) return;
@@ -228,11 +254,47 @@ export function* fetchSecretsInitProxySaga() {
   });
 }
 
+export function* fetchIngressInitProxySaga() {
+  const currentValue = yield select(getDeployFormValues);
+  if (!currentValue.namespace) return;
+
+  let namespaces = yield select(selectNamespaces);
+  if (!namespaces.length) {
+    yield take(SET_NAMESPACES);
+    namespaces = yield select(selectNamespaces);
+  }
+
+  const namespace = namespaces.find(({ id }) => (currentValue.namespace === id));
+  if (!namespace) {
+    console.error(`looking for ${currentValue}/${currentValue.namespace} but not found in deployable namespaces for current service ${currentValue.registry}/${currentValue.service}`); // eslint-disable-line no-console
+    return;
+  }
+
+  yield call(fetchIngressVersionsSaga, {
+    registry: currentValue.registry,
+    service: currentValue.service,
+    version: currentValue.version,
+    namespaceId: namespace.id,
+  });
+}
+
 export function* fetchSecretsNamespaceChangedProxySaga({ payload = {} }) {
   const currentValue = yield select(getDeployFormValues);
   const namespaceId = payload.id;
 
   yield call(fetchSecretVersionsSaga, {
+    registry: currentValue.registry,
+    service: currentValue.service,
+    version: currentValue.version,
+    namespaceId,
+  });
+}
+
+export function* fetchIngressNamespaceChangedProxySaga({ payload = {} }) {
+  const currentValue = yield select(getDeployFormValues);
+  const namespaceId = payload.id;
+
+  yield call(fetchIngressVersionsSaga, {
     registry: currentValue.registry,
     service: currentValue.service,
     version: currentValue.version,
@@ -265,6 +327,7 @@ export function* initSaga({ payload = {} }) {
       version,
       namespace,
       secret,
+      ingress,
   } = parseQueryString(payload.location.search);
 
   const { match } = payload;
@@ -282,6 +345,7 @@ export function* initSaga({ payload = {} }) {
       version,
       namespace,
       secret,
+      ingress,
   }));
   yield call(canManageSaga, {});
   yield call(fetchRegistriesSaga, {});
@@ -290,6 +354,7 @@ export function* initSaga({ payload = {} }) {
   yield put(fetchLatestDeploymentsPerNamespace({ service, registry }));
   yield call(validateVersionSaga, validateVersion({ newValue: version }));
   yield call(fetchSecretsInitProxySaga, {});
+  yield call(fetchIngressInitProxySaga, {});
 }
 
 export default [
@@ -303,4 +368,5 @@ export default [
   takeLatest(validateVersion, validateVersionSaga),
   takeLatest(fetchLatestDeploymentsPerNamespace, fetchLatestDeploymentsPerNamespaceSaga),
   takeLatest(fetchSecretVersions, fetchSecretsNamespaceChangedProxySaga),
+  takeLatest(fetchIngressVersions, fetchIngressNamespaceChangedProxySaga),
 ];

@@ -13,6 +13,7 @@ import IngressVersion from '../../domain/IngressVersion';
 import IngressEntry from '../../domain/IngressEntry';
 import IngressEntryRule from '../../domain/IngressEntryRule';
 import IngressEntryAnnotation from '../../domain/IngressEntryAnnotation';
+import Service from '../../domain/Service';
 
 const { Op, raw, innerJoin, leftJoin } = sqb;
 
@@ -343,8 +344,12 @@ export default function() {
           innerJoin('active_ingress_host_key__vw ihk').on(Op.eq('cih.ingress_host_key', raw('ihk.id')))
         );
 
-      if(criteria.cluster) {
+      if (criteria.cluster) {
         [builder, countBuilder].forEach(builder => builder.where(Op.eq('c.id', criteria.cluster)));
+      }
+
+      if (criteria.ingressHostKey) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('ihk.id', criteria.ingressHostKey)));
       }
 
       return db.withTransaction(async connection => {
@@ -380,8 +385,12 @@ export default function() {
           innerJoin('active_ingress_variable_key__vw ivk').on(Op.eq('civ.ingress_variable_key', raw('ivk.id')))
         );
 
-      if(criteria.cluster) {
+      if (criteria.cluster) {
         [builder, countBuilder].forEach(builder => builder.where(Op.eq('c.id', criteria.cluster)));
+      }
+
+      if (criteria.name) {
+        [builder, countBuilder].forEach(builder => builder.where(Op.eq('ivk.name', criteria.name)));
       }
 
       return db.withTransaction(async connection => {
@@ -576,7 +585,7 @@ export default function() {
 
     function findIngressVersions(criteria = {}, limit = 50, offset = 0) {
       const builder = sqb
-        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name')
+        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name', 'iv.service', 's.name service_name')
         .from('active_ingress_version__vw iv')
         .join(
           innerJoin('account a').on(Op.eq('iv.created_by', raw('a.id'))),
@@ -593,7 +602,7 @@ export default function() {
           innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id')))
         );
 
-      if(criteria.service) {
+      if (criteria.service) {
         [builder, countBuilder].forEach(builder => builder.where(Op.eq('s.id', criteria.service.id)));
       }
 
@@ -617,7 +626,7 @@ export default function() {
 
     async function _getIngressVersion(connection, id) {
       const builder = sqb
-        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name')
+        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name', 'iv.service', 's.name service_name')
         .from('active_ingress_version__vw iv')
         .join(
           innerJoin('account a').on(Op.eq('iv.created_by', raw('a.id'))),
@@ -847,6 +856,34 @@ export default function() {
       });
     }
 
+    async function getLatestDeployedIngressForReleaseToNamespace(release, namespace, meta) {
+      logger.debug(`Fetching latest deployed ingress to namespace ${namespace.id} for ${meta.account.id}`);
+      const baseBuilder = () => sqb
+        .select('da.value')
+        .from('deployment_attribute da')
+        .join(sqb.join('active_deployment__vw d').on(Op.eq('da.deployment', raw('d.id'))))
+        .join(sqb.join('active_release__vw r').on(Op.eq('d.release', raw('r.id'))))
+        .where(Op.eq('d.namespace', namespace.id))
+        .where(Op.eq('r.service', release.service.id))
+        .where(Op.eq('da.name', 'ingress'))
+        .orderBy('d.created_on desc')
+        .limit(1);
+
+      const releaseSpecificBuilder = baseBuilder().where(Op.eq('r.version', release.version));
+
+      return db.withTransaction(async connection => {
+        const [deploymentsResult, releaseResult] = await Promise.all([
+          connection.query(db.serialize(baseBuilder(), {}).sql),
+          connection.query(db.serialize(releaseSpecificBuilder, {}).sql),
+        ]);
+        if (!releaseResult.rowCount && !deploymentsResult.rowCount) return undefined;
+
+        const { value: id } = releaseResult.rowCount ? releaseResult.rows[0] : deploymentsResult.rows[0];
+        if (!id) return undefined;
+        return await _getIngressVersion(connection, id);
+      });
+    }
+
     function toIngressHostKey(row) {
       return new IngressHostKey({
         id: row.id,
@@ -951,7 +988,10 @@ export default function() {
           displayName: row.display_name,
         }),
         comment: row.comment,
-        service,
+        service: service || new Service({
+          id: row.service,
+          name: row.service_name,
+        }),
         entries: entries.items,
       });
     }
@@ -1013,6 +1053,7 @@ export default function() {
       saveIngressVersion,
       updateClusterIngressHostValue,
       updateClusterIngressVariableValue,
+      getLatestDeployedIngressForReleaseToNamespace,
     });
   }
 
