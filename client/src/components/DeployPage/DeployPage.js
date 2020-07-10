@@ -194,7 +194,7 @@ class DeployPage extends Component {
                   </Col>
                 </FormGroup>
                 <FormGroup row>
-                  <Label sm="3" className="text-right" for="ingress">Secret:</Label>
+                  <Label sm="3" className="text-right" for="ingress">Ingress:</Label>
                   <Col sm="9">
                     <Field
                       className=""
