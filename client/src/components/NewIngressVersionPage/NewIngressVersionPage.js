@@ -53,9 +53,6 @@ class RenderRules extends Component {
                           component={RenderInput}
                           type="text"
                           autoComplete="off"
-                          validate={(value) => {
-                            if (!value) return 'Must provide a path.';
-                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -69,9 +66,6 @@ class RenderRules extends Component {
                           type="text"
                           autoComplete="off"
                           placeholder="80"
-                          validate={(value) => {
-                            if (!value) return 'Must provide a port.';
-                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -171,9 +165,6 @@ class RenderAnnotations extends Component {
                             'nginx.ingress.kubernetes.io/use-regex',
                             'nginx.ingress.kubernetes.io/configuration-snippet'
                           ]}
-                          validate={(value) => {
-                            if (!value) return 'Must select an annotation name.';
-                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -186,9 +177,6 @@ class RenderAnnotations extends Component {
                           component={RenderInput}
                           type="text"
                           autoComplete="off"
-                          validate={(value) => {
-                            if (!value) return 'Must provide an annotation value.';
-                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -266,9 +254,6 @@ class RenderEntry extends Component {
                     component={RenderSelect}
                     autoComplete="off"
                     options={ingressClasses}
-                    validate={(value) => {
-                      if (!value) return 'Must select an ingress class.';
-                    }}
                   />
                 </Col>
               </FormGroup>
@@ -345,7 +330,7 @@ class RenderEntries extends Component {
                 entryData={entryData}
                 entry={entry}
                 index={index}
-                key={index}
+                key={entryData.name}
                 ingressClasses={ingressClasses}
                 ingressHostKeys={ingressHostKeys}
                 ingressVariables={ingressVariables}
@@ -392,9 +377,12 @@ class NewIngressVersionPage extends Component {
       canWriteIngress,
       handleSubmit,
       submitForm,
-      canSave,
       validateCustomHost,
+      invalid,
+      currentFormValues,
     } = this.props;
+
+    const canSave = !invalid && currentFormValues.comment;
 
     if (meta.loading.loadingPercent !== 100) return (
       <Row className="page-frame d-flex justify-content-center">

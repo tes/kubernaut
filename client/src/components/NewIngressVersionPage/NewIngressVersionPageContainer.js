@@ -2,8 +2,6 @@ import { connect } from 'react-redux';
 import {
   reduxForm,
   getFormValues,
-  getFormSyncErrors,
-  // getFormAsyncErrors,
 } from 'redux-form';
 import {
   submitForm,
@@ -13,12 +11,33 @@ import NewIngressVersionPage from './NewIngressVersionPage';
 
 const formName = 'newIngressVersion';
 
+const validate = (values, props) => {
+  const errors = {};
+  errors.entries = (values.entries || []).map(entry => {
+    const toReturn = {
+      annotations: (entry.annotations || []).map(a => ({
+        name: a.name ? null : 'Must select an annotation name.',
+        value: a.value ? null : 'Must provide an annotation value.',
+      })),
+      rules: (entry.rules || []).map(rule => ({
+        path: rule.path ? null : 'Must provide a path.',
+        port: rule.port ? null : 'Must provide a port.',
+      })),
+    };
+
+    if (!entry.ingressClass) {
+      toReturn.ingressClass = 'Must select an ingress class.';
+    }
+
+    return toReturn;
+  });
+
+  return errors;
+};
+
+
 export default connect((state, props) => {
   const currentFormValues = getFormValues(formName)(state) || {};
-  const currentFormSyncErrors = getFormSyncErrors(formName)(state) || {};
-  const hasErrors = Object.keys(currentFormSyncErrors).length > 0;
-
-  const canSave = !hasErrors && currentFormValues && currentFormValues.comment;
 
   return {
     initialValues: state.newIngressVersion.initialValues,
@@ -33,8 +52,6 @@ export default connect((state, props) => {
     team: state.newIngressVersion.team,
     submitForm,
     currentFormValues,
-    currentFormSyncErrors,
-    canSave,
   };
 }, {
   validateCustomHost,
@@ -42,4 +59,5 @@ export default connect((state, props) => {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
+  validate,
 })(NewIngressVersionPage));
