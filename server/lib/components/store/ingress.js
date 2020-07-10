@@ -884,6 +884,31 @@ export default function() {
       });
     }
 
+    async function getLatestDeployedIngressToNamespace(service, namespace, meta) {
+      logger.debug(`Fetching latest deployed ingress to namespace ${namespace.id} for ${meta.account.id}`);
+      const baseBuilder = () => sqb
+        .select('da.value')
+        .from('deployment_attribute da')
+        .join(sqb.join('active_deployment__vw d').on(Op.eq('da.deployment', raw('d.id'))))
+        .join(sqb.join('active_release__vw r').on(Op.eq('d.release', raw('r.id'))))
+        .where(Op.eq('d.namespace', namespace.id))
+        .where(Op.eq('r.service', service.id))
+        .where(Op.eq('da.name', 'ingress'))
+        .orderBy('d.created_on desc')
+        .limit(1);
+
+      return db.withTransaction(async connection => {
+        const [deploymentsResult] = await Promise.all([
+          connection.query(db.serialize(baseBuilder(), {}).sql),
+        ]);
+        if (!deploymentsResult.rowCount) return undefined;
+
+        const { value: id } = deploymentsResult.rows[0];
+        if (!id) return undefined;
+        return await _getIngressVersion(connection, id);
+      });
+    }
+
     function toIngressHostKey(row) {
       return new IngressHostKey({
         id: row.id,
@@ -1054,6 +1079,7 @@ export default function() {
       updateClusterIngressHostValue,
       updateClusterIngressVariableValue,
       getLatestDeployedIngressForReleaseToNamespace,
+      getLatestDeployedIngressToNamespace,
     });
   }
 

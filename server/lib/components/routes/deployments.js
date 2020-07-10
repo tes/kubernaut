@@ -122,6 +122,7 @@ export default function(options = {}) {
         if (!req.body.service) return next(Boom.badRequest('service is required'));
         if (!req.body.version) return next(Boom.badRequest('version is required'));
         if (!req.body.namespace) return next(Boom.badRequest('namespace is required'));
+        const toDelete = [];
         const release = await store.findRelease({ registry: req.body.registry, service: req.body.service, version: `${req.body.version}` });
         if (!release) return next(Boom.badRequest(`release ${req.body.registry}/${req.body.service}/${req.body.version} was not found`));
 
@@ -166,7 +167,13 @@ export default function(options = {}) {
           if (versionOfIngress.service.id !== release.service.id) return next(Boom.forbidden());
           const ingressManifest = await getIngressManifest(versionOfIngress, namespace.cluster);
           versionOfIngress.setYaml(ingressManifest);
-          // Then we need to get the deleted situations handled.
+
+          const latestDeployed = await store.getLatestDeployedIngressToNamespace(release.service, namespace, meta);
+          if (latestDeployed) {
+            const toDeployEntryNames = versionOfIngress.entries.map(({ name }) => (name));
+            const deletedEntries = latestDeployed.entries.filter(({ name }) => (toDeployEntryNames.indexOf(name) === -1));
+            deletedEntries.forEach(({ name }) => toDelete.push({ objectType: 'ingress', name }));
+          }
         }
 
         const serviceNamespaceAttrs = await store.getServiceAttributesForNamespace(release.service, namespace);
@@ -193,7 +200,7 @@ export default function(options = {}) {
           await store.saveDeploymentLogEntry(new DeploymentLogEntry({ deployment, ...data }));
         });
 
-        const applyExitCode = await applyManifest(deployment, emitter);
+        const applyExitCode = await applyManifest(deployment, emitter, toDelete);
 
         if (applyExitCode === 0) {
           getRolloutStatus(deployment, emitter);
@@ -305,7 +312,7 @@ export default function(options = {}) {
       return { yaml, json };
     }
 
-    async function applyManifest(deployment, emitter) {
+    async function applyManifest(deployment, emitter, toDelete) {
       const yaml = deployment.secret ? `${deployment.secret.yaml}\n${deployment.manifest.yaml}`: deployment.manifest.yaml;
       const code = await kubernetes.apply(
         deployment.namespace.cluster.config,
@@ -313,6 +320,7 @@ export default function(options = {}) {
         deployment.namespace.name,
         yaml,
         emitter,
+        toDelete,
       );
       await store.saveApplyExitCode(deployment.id, code);
       return code;

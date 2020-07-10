@@ -140,6 +140,71 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
   }
 }
 
+async function deleteObjects(clients, toDelete, namespace, emitter) {
+  const {
+    k8sApi,
+    k8sAppsApi,
+    k8sBatchV1Beta1Api,
+    k8sBatchV1Api,
+    k8sNetworkingV1Beta1Api,
+  } = clients;
+
+  for (const toDeleteItem of toDelete) {
+    const { objectType, name } = toDeleteItem;
+
+    try {
+      if (objectType === 'secret') {
+        await k8sApi.deleteNamespacedSecret(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'service') {
+        await k8sApi.deleteNamespacedService(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'deployment') {
+        await k8sAppsApi.deleteNamespacedDeployment(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'cronjob') {
+        await k8sBatchV1Beta1Api.deleteNamespacedCronJob(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'job') {
+        await k8sBatchV1Api.deleteNamespacedJob(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'statefulset') {
+        await await k8sAppsApi.deleteNamespacedStatefulSet(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+
+      if (objectType === 'ingress') {
+        await await k8sNetworkingV1Beta1Api.deleteNamespacedIngress(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
+    } catch (errResult) {
+      if (!errResult.response && !errResult.response.body && !errResult.response.body.message) throw errResult;
+
+      emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: errResult.response.body.message });
+      throw new Error(errResult.response.body.message);
+    }
+
+    emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `[${objectType}] is unsupported for deletion at this time.` });
+  }
+}
+
 function getStatus(deployment, emitter) {
   if (deployment.metadata.generation <= deployment.status.observedGeneration) {
     const condition = deployment.status.conditions.find((c) => (c.type === 'Progressing'));
@@ -176,11 +241,12 @@ export default function(options = {}) {
 
   function start(deps, cb) {
 
-    async function apply(config, context, namespace, manifest, emitter) {
+    async function apply(config, context, namespace, manifest, emitter, toDelete) {
       const clients = createClients(config, context);
       const parsedDocs = splitTheYaml(manifest, emitter);
       try {
         await applyDocs(clients, parsedDocs, namespace, emitter);
+        if (toDelete && toDelete.length) await deleteObjects(clients, toDelete, namespace, emitter);
         return 0;
       } catch (err) {
         // logger.error(err);
