@@ -18,7 +18,7 @@ const ssaHeaders = {
 
 function splitTheYaml(yaml, emitter) {
   const docs = loadAllYaml(yaml);
-  return docs.reduce((acc, doc) => {
+  return docs.filter(_.identity).reduce((acc, doc) => {
     if (!doc.kind) {
       emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: 'Found doc in yaml without a \'kind\' defined. Ignoring.' });
       return acc;
