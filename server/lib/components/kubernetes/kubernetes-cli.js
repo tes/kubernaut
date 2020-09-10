@@ -175,7 +175,7 @@ function getStatus(deployment, emitter) {
 function getStatusStatefulSet(statefulset, emitter) {
   if (statefulset.spec.updateStrategy.type !== 'RollingUpdate') {
     emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `statefulset ${statefulset.metadata.name} - rollout status is only available for RollingUpdate strategy type` });
-    throw new Error(`rollout status is only available for RollingUpdate strategy type`);
+    return true;
   }
 
   if (statefulset.status.observedGeneration === 0 || (statefulset.metadata.generation > statefulset.status.observedGeneration)) {
