@@ -261,7 +261,7 @@ export default function(options = {}) {
           deployment.namespace.cluster.config,
           deployment.namespace.cluster.context,
           deployment.namespace.name,
-          deployment.release.service.name,
+          deployment.manifest.yaml,
           emitter
         );
 
