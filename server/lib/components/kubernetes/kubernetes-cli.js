@@ -131,7 +131,7 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
           }));
         });
 
-        await patchResponseStatus(await k8sAppsApi.patchNamespacedStatefulSet(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+        await patchResponseStatus(k8sAppsApi.patchNamespacedStatefulSet(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }
