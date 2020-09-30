@@ -19,7 +19,7 @@ const ssaHeaders = {
 
 function splitTheYaml(yaml, emitter) {
   const docs = loadAllYaml(yaml);
-  return docs.reduce((acc, doc) => {
+  return docs.filter(_.identity).reduce((acc, doc) => {
     if (!doc.kind) {
       emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: 'Found doc in yaml without a \'kind\' defined. Ignoring.' });
       return acc;
@@ -124,7 +124,17 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
 
     if (docType === 'statefulset') {
       for (const doc of docsByType[docType]) {
-        patchResponseStatus(await k8sAppsApi.patchNamespacedStatefulSet(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+        _.update(doc, 'spec.template.spec.containers', (c) => {
+          return c.map((containerSpec) => ({
+            ...containerSpec,
+            ports: containerSpec.ports && containerSpec.ports.map((portSpec) => ({
+              ...portSpec,
+              protocol: portSpec.protocol || 'TCP', // server side apply needs protocol, and they don't respect the default for some reason (at least, not at 1.17 anyway)
+            })),
+          }));
+        });
+
+        await patchResponseStatus(k8sAppsApi.patchNamespacedStatefulSet(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }
@@ -237,6 +247,87 @@ function getStatus(deployment, emitter) {
   return false;
 }
 
+function getStatusStatefulSet(statefulset, emitter) {
+  if (statefulset.spec.updateStrategy.type !== 'RollingUpdate') {
+    emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `statefulset ${statefulset.metadata.name} - rollout status is only available for RollingUpdate strategy type` });
+    return true;
+  }
+
+  if (statefulset.status.observedGeneration === 0 || (statefulset.metadata.generation > statefulset.status.observedGeneration)) {
+    emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for statefulset ${statefulset.metadata.name} spec update to be observed...` });
+    return false;
+  }
+
+  if (statefulset.spec.replicas !== undefined  && ((statefulset.status.readyReplicas || 0) < statefulset.spec.replicas)) {
+    emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for statefulset ${statefulset.metadata.name} ${statefulset.spec.replicas - (statefulset.status.readyReplicas || 0)} pods to be ready...` });
+    return false;
+  }
+
+  if (statefulset.spec.updateStrategy.type === 'RollingUpdate' && statefulset.spec.updateStrategy.rollingUpdate !== undefined) {
+    if (statefulset.spec.replicas !== undefined && statefulset.spec.updateStrategy.rollingUpdate.partition !== undefined) {
+      if ((statefulset.status.updatedReplicas || 0) < (statefulset.spec.replicas - statefulset.spec.updateStrategy.rollingUpdate.partition)) {
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `Waiting for statefulset ${statefulset.metadata.name} partitioned roll out to finish: ${(statefulset.status.updatedReplicas || 0)} out of ${statefulset.spec.replicas - statefulset.spec.updateStrategy.rollingUpdate.partition} new pods have been updated...` });
+        return false;
+      }
+    }
+    emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `statefulset ${statefulset.metadata.name} partitioned roll out complete: ${(statefulset.status.updatedReplicas || 0)} new pods have been updated...` });
+    return true;
+  }
+
+  emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `statefulset ${statefulset.metadata.name} rolling update complete ${statefulset.status.replicas} pods at revision ${statefulset.status.currentRevision}...` });
+  return true;
+}
+
+async function _rolloutStatus(clients, namespace, name, emitter) {
+  const { k8sAppsApi } = clients;
+
+  let keepWaiting = true;
+  let latestState = (await k8sAppsApi.readNamespacedDeployment(name, namespace)).body;
+  let oldState = latestState;
+
+  try {
+    keepWaiting = !getStatus(latestState, emitter);
+
+    while (keepWaiting) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      oldState = latestState;
+      latestState = (await k8sAppsApi.readNamespacedDeployment(name, namespace)).body;
+      if (!_.isEqual(oldState, latestState)) {
+        keepWaiting = !getStatus(latestState, emitter);
+      }
+    }
+  } catch (e) {
+    return 1;
+  }
+
+  return 0;
+}
+
+async function _rolloutStatusSS(clients, namespace, name, emitter) {
+  const { k8sAppsApi } = clients;
+
+  let keepWaiting = true;
+  let latestState = (await k8sAppsApi.readNamespacedStatefulSet(name, namespace)).body;
+  let oldState = latestState;
+
+  try {
+    keepWaiting = !getStatusStatefulSet(latestState, emitter);
+
+    while (keepWaiting) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      oldState = latestState;
+      latestState = (await k8sAppsApi.readNamespacedStatefulSet(name, namespace)).body;
+      if (!_.isEqual(oldState, latestState)) {
+        keepWaiting = !getStatusStatefulSet(latestState, emitter);
+      }
+    }
+  } catch (e) {
+    return 1;
+  }
+
+  return 0;
+}
+
 export default function(options = {}) {
 
   function start(deps, cb) {
@@ -254,29 +345,22 @@ export default function(options = {}) {
       }
     }
 
-    async function rolloutStatus(config, context, namespace, name, emitter) {
-      const { k8sAppsApi } = createClients(config, context);
+    async function rolloutStatus(config, context, namespace, manifest, emitter) {
+      const parsedDocs = splitTheYaml(manifest, emitter);
+      if (!parsedDocs.deployment && !parsedDocs.statefulset) return 0;
+      const clients = createClients(config, context);
 
-      let keepWaiting = true;
-      let latestState = (await k8sAppsApi.readNamespacedDeployment(name, namespace)).body;
-      let oldState = latestState;
-
-      try {
-        keepWaiting = !getStatus(latestState, emitter);
-
-        while (keepWaiting) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          oldState = latestState;
-          latestState = (await k8sAppsApi.readNamespacedDeployment(name, namespace)).body;
-          if (!_.isEqual(oldState, latestState)) {
-            keepWaiting = !getStatus(latestState, emitter);
-          }
-        }
-      } catch (e) {
-        return 1;
+      const statusChecks = [];
+      if (parsedDocs.deployment) {
+        parsedDocs.deployment.forEach(doc => statusChecks.push(_rolloutStatus(clients, namespace, doc.metadata.name, emitter)));
+      }
+      if (parsedDocs.statefulset) {
+        parsedDocs.statefulset.forEach(doc => statusChecks.push(_rolloutStatusSS(clients, namespace, doc.metadata.name, emitter)));
       }
 
-      return 0;
+      const results = await Promise.all(statusChecks);
+
+      return results.find(code => code === 1) || 0;
     }
 
     function checkConfig(config, logger) {

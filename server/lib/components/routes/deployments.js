@@ -58,7 +58,7 @@ export default function(options = {}) {
 
         const deployments = await store.findLatestDeploymentsByNamespaceForService(registry.id, req.params.service, req.user, includeFailed);
 
-        await Promise.each(deployments, async (latestDeployment, index) => {
+        await Promise.map(deployments, async (latestDeployment, index) => {
           const namespace = await store.getNamespace(latestDeployment.namespace.id);
           try {
             const restarts = await kubernetes.deploymentRestartsInANamespace(namespace.cluster.config, namespace.cluster.context, namespace.name, service.name, logger);
@@ -66,7 +66,7 @@ export default function(options = {}) {
           } catch (e) {
             logger.error(e);
           }
-        });
+        }, { concurrency: 6 });
 
         await store.audit(meta, 'viewed latest deployments for service by namespace', { registry, service });
         res.json(deployments);
@@ -340,7 +340,7 @@ export default function(options = {}) {
           deployment.namespace.cluster.config,
           deployment.namespace.cluster.context,
           deployment.namespace.name,
-          deployment.release.service.name,
+          deployment.manifest.yaml,
           emitter
         );
 

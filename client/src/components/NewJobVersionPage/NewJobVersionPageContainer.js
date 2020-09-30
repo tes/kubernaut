@@ -5,6 +5,7 @@ import {
   getFormSyncErrors,
   getFormAsyncErrors,
 } from 'redux-form';
+import { isValidCron } from 'cron-validator';
 
 import {
   toggleCollapsed,
@@ -18,6 +19,43 @@ import {
 import NewJobVersionPage from './NewJobVersionPage';
 
 const formName = 'newJobVersion';
+
+const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
+
+const validate = (values, props) => {
+  const errors = {};
+
+  if (!values.schedule) errors.schedule = 'Invalid cron syntax';
+  else if (!isValidCron(values.schedule, { alias: true })) errors.schedule = 'Invalid cron syntax';
+
+  errors.initContainers = (values.containers || []).map(c => ({
+    name: (c.name || '').match(validName) ? null : 'Invalid name',
+    image: c.image ? null : 'Cannot be empty',
+    command: (c.command || []).map(cm => cm ? null : 'Cannot be empty'),
+    volumeMounts: (c.volumeMounts || []).map(vm => ({
+      mountPath: vm.mountPath ? null : 'Cannot be empty',
+      name: vm.name ? null : 'Cannot be empty',
+    })),
+  }));
+  errors.containers = (values.containers || []).map(c => ({
+    name: (c.name || '').match(validName) ? null : 'Invalid name',
+    image: c.image ? null : 'Cannot be empty',
+    command: (c.command || []).map(cm => cm ? null : 'Cannot be empty'),
+    volumeMounts: (c.volumeMounts || []).map(vm => ({
+      mountPath: vm.mountPath ? null : 'Cannot be empty',
+      name: vm.name ? null : 'Cannot be empty',
+    })),
+  }));
+
+  errors.volumes = (values.volumes || []).map(v => ({
+    name: (v.name || '').match(validName) ? null : 'Invalid name',
+    configMap: v.type === 'configMap' ? {
+      name: ((v.configMap || {}).name || '').match(validName) ? null : 'Invalid name',
+    } : null,
+  }));
+
+  return errors;
+};
 
 const mapStateToProps = (state, props) => {
   const { newJobVersion } = state;
@@ -54,4 +92,5 @@ export default connect(mapStateToProps, {
   form: formName,
   enableReinitialize: true,
   destroyOnUnmount: false,
+  validate,
 })(NewJobVersionPage));

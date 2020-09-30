@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Field, FieldArray, FormSection } from 'redux-form';
 import { toString as humanCron } from 'cronstrue';
-import { isValidCron } from 'cron-validator';
+
 // import PropTypes from 'prop-types';
 import {
   Row,
@@ -22,8 +22,6 @@ import RenderInput from '../RenderInput';
 import RenderSelect from '../RenderSelect';
 import SecretEditor from '../SecretEditor';
 import Popover from '../Popover';
-
-const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
 
 const help = {
   schedule: {
@@ -155,10 +153,7 @@ class RenderCommands extends Component {
                         warn={(value = '') => {
                           if (value.match(/\s$/)) return 'Are you sure you want the trailing space?';
                         }}
-                        validate={(value) => {
-                          if (!value) return 'Cannot be empty';
-                        }}
-                        />
+                      />
                     </Col>
                     <Col>
                       <Button
@@ -239,9 +234,6 @@ class RenderVolumeMounts extends Component {
                               type="text"
                               autoComplete="off"
                               onChangeListener={this.props.onChangeListener}
-                              validate={(value) => {
-                                if (!value) return 'Cannot be empty';
-                              }}
                             />
                           </Col>
                         </FormGroup>
@@ -321,10 +313,6 @@ class RenderContainers extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
-                                    validate={(value = '') => {
-                                      if (value.match(validName)) return;
-                                      return 'Invalid name';
-                                    }}
                                   />
                                 </Col>
                               </FormGroup>
@@ -338,9 +326,6 @@ class RenderContainers extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
-                                    validate={(value) => {
-                                      if (!value) return 'Cannot be empty';
-                                    }}
                                   />
                                 </Col>
                               </FormGroup>
@@ -542,10 +527,6 @@ class RenderVolumes extends Component {
                                     type="text"
                                     autoComplete="off"
                                     onChangeListener={this.props.onChangeListener}
-                                    validate={(value = '') => {
-                                      if (value.match(validName)) return;
-                                      return 'Invalid name';
-                                    }}
                                   />
                                 </Col>
                               </FormGroup>
@@ -574,10 +555,6 @@ class RenderVolumes extends Component {
                                         type="text"
                                         autoComplete="off"
                                         onChangeListener={this.props.onChangeListener}
-                                        validate={(value = '') => {
-                                          if (value.match(validName)) return;
-                                          return 'Invalid name';
-                                        }}
                                       />
                                     </Col>
                                   </FormGroup>
@@ -690,6 +667,7 @@ class NewJobVersionPage extends Component {
       secretErrors,
       change: rfChange,
       initialContainerValues,
+      invalid,
     } = this.props;
 
     if (meta.loading.loadingPercent !== 100) return (
@@ -740,11 +718,7 @@ class NewJobVersionPage extends Component {
                       type="text"
                       autoComplete="off"
                       onChangeListener={() => this.props.triggerPreview()}
-                      validate={(value) => {
-                        if (!value) return 'Invalid cron syntax';
-                        return isValidCron(value, { alias: true }) ? undefined : 'Invalid cron syntax';
-                      }}
-                      />
+                    />
                     <span>{humanCronValue}</span>
                   </Col>
                 </FormGroup>
@@ -758,7 +732,7 @@ class NewJobVersionPage extends Component {
                       autoComplete="off"
                       options={['Allow', 'Forbid', 'Replace']}
                       onChangeListener={() => this.props.triggerPreview()}
-                      />
+                    />
                   </Col>
                 </FormGroup>
               </Col>
@@ -767,6 +741,7 @@ class NewJobVersionPage extends Component {
                   className="pull-right"
                   color="dark"
                   onClick={this.props.handleSubmit(this.props.submitForm)}
+                  disabled={invalid}
                 >Save</Button>
               </Col>
             </Row>

@@ -294,6 +294,10 @@ export default function(options) {
           db.applyFilter(criteria.filters.cluster, 'c.name', findDeploymentsBuilder, countDeploymentsBuilder);
         }
 
+        if (criteria.filters.registry) {
+          db.applyFilter(criteria.filters.registry, 'sr.name', findDeploymentsBuilder, countDeploymentsBuilder);
+        }
+
         if (criteria.filters.namespaces) {
           db.applyFilter(criteria.filters.namespace, 'n.id', findDeploymentsBuilder, countDeploymentsBuilder);
         }

@@ -1,14 +1,8 @@
 {
   "name": "kubernaut",
   "version": "1.0.0",
-  "description": "Manages kubernetes deployments",
+  "description": "Interface between humans and k8s clusters in the ways we wish to work.",
   "main": "server/build/index.js",
-  "config": {
-    "kubernaut": {
-      "registry": "payments",
-      "containerPort": 3001
-    }
-  },
   "scripts": {
     "start": "concurrently 'npm run start-server' 'npm run start-client'",
     "start-server": "npm run setup-local; nodemon server/index.js --exec babel-node --ignore client/",
@@ -61,6 +55,7 @@
     "@kubernetes/client-node": "^0.12.0",
     "async": "^2.6.0",
     "aws-sdk": "^2.450.0",
+    "bluebird": "^3.7.2",
     "body-parser": "^1.17.2",
     "boom": "^5.2.0",
     "bunyan": "^1.8.12",
@@ -108,10 +103,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tes/kube-hackday.git"
+    "url": "git+https://github.com/tes/kubernaut.git"
   },
   "bugs": {
-    "url": "https://github.com/tes/kube-hackday/issues"
+    "url": "https://github.com/tes/kubernaut/issues"
   },
-  "homepage": "https://github.com/tes/kube-hackday#readme"
+  "homepage": "https://github.com/tes/kubernaut#readme"
 }
