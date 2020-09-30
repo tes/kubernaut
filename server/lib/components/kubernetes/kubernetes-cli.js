@@ -141,7 +141,7 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
 
     if (docType === 'ingress') {
       for (const doc of docsByType[docType]) {
-        patchResponseStatus(await k8sNetworkingV1Beta1Api.patchNamespacedIngress(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+        patchResponseStatus(k8sNetworkingV1Beta1Api.patchNamespacedIngress(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }
@@ -194,13 +194,13 @@ async function deleteObjects(clients, toDelete, namespace, emitter) {
       }
 
       if (objectType === 'statefulset') {
-        await await k8sAppsApi.deleteNamespacedStatefulSet(name, namespace);
+        await k8sAppsApi.deleteNamespacedStatefulSet(name, namespace);
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
         continue;
       }
 
       if (objectType === 'ingress') {
-        await await k8sNetworkingV1Beta1Api.deleteNamespacedIngress(name, namespace);
+        await k8sNetworkingV1Beta1Api.deleteNamespacedIngress(name, namespace);
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
         continue;
       }
