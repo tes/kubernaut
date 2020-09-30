@@ -7,7 +7,6 @@ import {
   Nav,
   NavItem,
   NavLink,
-  Badge,
 } from 'reactstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 
@@ -48,7 +47,7 @@ class Navigation extends Component {
             {
               this.props.account.permissions['jobs-read'] ? (
                 <NavItem tag={LinkContainer} to="/cronjobs">
-                  <NavLink>CronJobs <Badge color="danger" pill>alpha</Badge></NavLink>
+                  <NavLink>CronJobs</NavLink>
                 </NavItem>
               ) : null
             }
