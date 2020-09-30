@@ -57,7 +57,7 @@ try {
     const cluster = await ensureCluster('development', 'saddlebrown', 100);
     const stagingCluster = await ensureCluster('staging', 'blue', 200);
     const liveCluster = await ensureCluster('live', 'goldenrod', 300);
-    const localCluster = await ensureCluster('local', 'lightblue', 100, resolve(process.env.HOME, '.config/k3d/k3s-default/kubeconfig.yaml'), 'k3s-default');
+    const localCluster = await ensureCluster('local', 'lightblue', 100, resolve(process.env.HOME, '.k3d/kubeconfig-default.yaml'), 'k3d-default');
 
     await ensureNamespace('default', localCluster);
     const defaultNS = await ensureNamespace('default', cluster);
