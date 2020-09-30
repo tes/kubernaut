@@ -164,6 +164,17 @@ describe('Ingress store', () => {
       expect(value.cluster.id).toBe(cluster.id);
       expect(value.ingressHostKey.id).toBe(hostKeyId);
     });
+
+    it('updates a cluster host value', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const hostKeyId = await store.saveIngressHostKey('testKey', makeRootMeta());
+      const id = await store.saveClusterIngressHostValue({id: hostKeyId }, cluster, 'testVal', makeRootMeta());
+      await store.updateClusterIngressHostValue(id, 'newVal');
+      const value = await store.getClusterIngressHost(id);
+      expect(value.value).toBe('newVal');
+      expect(value.cluster.id).toBe(cluster.id);
+      expect(value.ingressHostKey.id).toBe(hostKeyId);
+    });
   });
 
   describe('Cluster Ingress Variable Value', () => {
@@ -173,6 +184,17 @@ describe('Ingress store', () => {
       const id = await store.saveClusterIngressVariableValue({id: variableKeyId }, cluster, 'testVal', makeRootMeta());
       const value = await store.getClusterIngressVariable(id);
       expect(value.value).toBe('testVal');
+      expect(value.cluster.id).toBe(cluster.id);
+      expect(value.ingressVariableKey.id).toBe(variableKeyId);
+    });
+
+    it('updates a cluster variable value', async () => {
+      const cluster = await store.saveCluster(makeCluster(), makeRootMeta());
+      const variableKeyId = await store.saveIngressVariableKey('testKey', makeRootMeta());
+      const id = await store.saveClusterIngressVariableValue({id: variableKeyId }, cluster, 'testVal', makeRootMeta());
+      await store.updateClusterIngressVariableValue(id, 'newVal');
+      const value = await store.getClusterIngressVariable(id);
+      expect(value.value).toBe('newVal');
       expect(value.cluster.id).toBe(cluster.id);
       expect(value.ingressVariableKey.id).toBe(variableKeyId);
     });
@@ -186,6 +208,80 @@ describe('Ingress store', () => {
       const value = await store.getClusterIngressClass(id);
       expect(value.cluster.id).toBe(cluster.id);
       expect(value.ingressClass.id).toBe(classId);
+    });
+  });
+
+  describe('Ingress Version', () => {
+    it('saves an ingress version and retrieves it by id', async () => {
+      const release = await store.saveRelease(makeRelease({ service: { name: 'app-1' } }), makeRootMeta(), makeRootMeta());
+      const classId = await store.saveIngressClass('nginx', makeRootMeta());
+      const ingressClass = await store.getIngressClass(classId);
+      const hostKeyId = await store.saveIngressHostKey('testKey', makeRootMeta());
+      const ingressHostKey = await store.getIngressHostKey(hostKeyId);
+
+      const versionData = {
+        comment: 'abc',
+        entries: [
+          {
+            name: 'xyz-123',
+            ingressClass: classId,
+            annotations: [],
+            rules: [
+              {
+                path: '/',
+                port: '80',
+                ingressHostKey: hostKeyId
+              }
+            ]
+          },
+          {
+            name: 'xyz-456',
+            ingressClass: classId,
+            annotations: [
+              { name: 'a', value: 'bc' }
+            ],
+            rules: [
+              {
+                path: '/',
+                port: '80',
+              }
+            ]
+          }
+        ],
+      };
+
+      const id = await store.saveIngressVersion(release.service, versionData, makeRootMeta());
+      const version = await store.getIngressVersion(id);
+      expect(version).toBeDefined();
+      expect(version).toMatchObject({
+        ...versionData,
+        entries: [
+          {
+            ...versionData.entries[0],
+            ingressClass: {
+              id: ingressClass.id,
+              name: ingressClass.name,
+            },
+            rules: [
+              {
+                ...versionData.entries[0].rules[0],
+                ingressHostKey: {
+                  id: ingressHostKey.id,
+                  name: ingressHostKey.name,
+                },
+              },
+            ]
+          },
+          {
+            ...versionData.entries[1],
+            ingressClass: {
+              id: ingressClass.id,
+              name: ingressClass.name,
+            },
+            rules: versionData.entries[1].rules,
+          },
+        ],
+      });
     });
   });
 });
