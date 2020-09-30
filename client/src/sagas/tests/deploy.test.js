@@ -160,7 +160,8 @@ describe('Deploy sagas', () => {
     expect(gen.next().value).toMatchObject(all([
       put(change('deploy', 'version', '')),
       put(change('deploy', 'namespace', '')),
-      put(change('deploy', 'secret', ''))
+      put(change('deploy', 'secret', '')),
+      put(change('deploy', 'ingress', ''))
     ]));
   });
 
