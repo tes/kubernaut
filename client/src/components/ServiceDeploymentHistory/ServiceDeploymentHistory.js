@@ -77,6 +77,7 @@ class ServiceDeploymentHistory extends Component {
                     cluster={item.namespace.cluster}
                     namespace={item.namespace}
                     secret={item.attributes.secret || ''}
+                    ingress={item.attributes.ingress || ''}
                     text="Re-deploy"
                     />
                 </CardFooter>

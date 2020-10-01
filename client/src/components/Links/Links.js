@@ -136,6 +136,7 @@ export const CreateDeploymentLink = (props) => {
     version,
     namespace = {},
     secret = '',
+    ingress = '',
     text,
     children,
     container,
@@ -148,6 +149,7 @@ export const CreateDeploymentLink = (props) => {
         version,
         namespace: namespace.id || '',
         secret: secret,
+        ingress: ingress,
       })
     },
     ...container && { exact: true },
