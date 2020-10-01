@@ -44,6 +44,9 @@ class DeploymentDetailsPage extends Component {
         if (name === 'secret' && typeof(deployment.attributes[name]) === 'object') {
           const secret = deployment.attributes[name];
           attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'><pre style={{display: 'inline'}}>{secret.comment}</pre> - <AccountLink account={secret.createdBy} /></dd>);
+        } else if (name === 'ingress' && typeof(deployment.attributes[name]) === 'object') {
+          const ingress = deployment.attributes[name];
+          attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'><pre style={{display: 'inline'}}>{ingress.comment}</pre> - <AccountLink account={ingress.createdBy} /></dd>);
         }
         else attributesEls.push(<dd key={`${name}-val`} className='col-md-auto'>{deployment.attributes[name]}</dd>);
         attributesEls.push(<div key={`${name}-spacer`}className="w-100"></div>); // Force new line

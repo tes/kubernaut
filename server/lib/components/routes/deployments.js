@@ -105,6 +105,10 @@ export default function(options = {}) {
           const storedSecret = await store.getVersionOfSecretById(deployment.attributes.secret, meta);
           if (storedSecret) deployment.attributes.secret = storedSecret;
         }
+        if (deployment.attributes.ingress && await store.hasPermissionOnNamespace(req.user, deployment.namespace.id, 'ingress-apply')) {
+          const storedIngress = await store.getIngressVersion(deployment.attributes.ingress);
+          if (storedIngress) deployment.attributes.ingress = storedIngress;
+        }
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed deployment', { deployment });
         res.json(deployment);
