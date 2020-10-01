@@ -14,6 +14,7 @@ import IngressEntry from '../../domain/IngressEntry';
 import IngressEntryRule from '../../domain/IngressEntryRule';
 import IngressEntryAnnotation from '../../domain/IngressEntryAnnotation';
 import Service from '../../domain/Service';
+import Registry from '../../domain/Registry';
 
 const { Op, raw, innerJoin, leftJoin } = sqb;
 
@@ -626,11 +627,12 @@ export default function() {
 
     async function _getIngressVersion(connection, id) {
       const builder = sqb
-        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name', 'iv.service', 's.name service_name')
+        .select('iv.id', 'iv.comment', 'iv.created_on', 'iv.created_by', 'a.display_name', 'iv.service', 's.name service_name', 'sr.id registry_id', 'sr.name registry_name')
         .from('active_ingress_version__vw iv')
         .join(
           innerJoin('account a').on(Op.eq('iv.created_by', raw('a.id'))),
-          innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id')))
+          innerJoin('active_service__vw s').on(Op.eq('iv.service', raw('s.id'))),
+          innerJoin('active_registry__vw sr').on(Op.eq('s.registry', raw('sr.id')))
         )
         .where(Op.eq('iv.id', id));
 
@@ -1016,6 +1018,10 @@ export default function() {
         service: service || new Service({
           id: row.service,
           name: row.service_name,
+          registry: new Registry({
+            id: row.registry_id,
+            name: row.registry_name,
+          })
         }),
         entries: entries.items,
       });

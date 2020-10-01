@@ -10,6 +10,7 @@ export const idTypes = [
   'team',
   'job',
   'jobVersion',
+  'ingressVersion',
 ];
 
 export default class AuditEntry {

@@ -450,7 +450,7 @@ export default function() {
         const meta = { date: new Date(), account: req.user };
         const newId = await store.saveIngressVersion(service, versionData, meta);
 
-        await store.audit(meta, 'saved ingress version for service', { service });
+        await store.audit(meta, 'saved ingress version for service', { service, ingressVersion: { id: newId } });
 
         res.json(newId);
       } catch (err) {
@@ -468,7 +468,7 @@ export default function() {
         if (!ingressVersion) return next(Boom.notFound());
 
         const meta = { date: new Date(), account: req.user };
-        await store.audit(meta, 'viewed ingress version for service', { service });
+        await store.audit(meta, 'viewed ingress version for service', { service, ingressVersion });
 
         res.json(ingressVersion);
       } catch (err) {

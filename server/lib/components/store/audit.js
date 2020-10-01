@@ -22,6 +22,7 @@ export default function(options) {
         team,
         job,
         jobVersion,
+        ingressVersion,
       } = subjects;
 
       const toInsert = {
@@ -42,6 +43,7 @@ export default function(options) {
       if (team) toInsert.action_team = team.id;
       if (job) toInsert.action_job = job.id;
       if (jobVersion) toInsert.action_job_version = jobVersion.id;
+      if (ingressVersion) toInsert.action_ingress_version = ingressVersion.id;
 
       const builder = sqb.insert('audit', toInsert);
       await db.query(db.serialize(builder, {}).sql);
@@ -51,7 +53,7 @@ export default function(options) {
       logger.debug(`Listing up to ${limit} audit endtries from offset ${offset}`);
 
       const auditBuilder = sqb
-        .select('au.id', 'au.created_on', 'au.action', 'a.id account_id', 'a.display_name account_display_name', 'au.action_secret_version', 'au.action_namespace', 'au.action_service', 'au.action_release', 'au.action_deployment', 'au.action_account', 'au.action_cluster', 'au.action_registry', 'au.action_team', 'au.action_job', 'au.action_job_version')
+        .select('au.id', 'au.created_on', 'au.action', 'a.id account_id', 'a.display_name account_display_name', 'au.action_secret_version', 'au.action_namespace', 'au.action_service', 'au.action_release', 'au.action_deployment', 'au.action_account', 'au.action_cluster', 'au.action_registry', 'au.action_team', 'au.action_job', 'au.action_job_version', 'au.action_ingress_version')
         .from('audit au')
         .join(sqb.join('account a').on(Op.eq('a.id', raw('au.account'))))
         .orderBy('au.created_on desc')
@@ -111,6 +113,10 @@ export default function(options) {
           db.applyFilter(criteria.filters.jobVersion, 'au.action_job_version', auditBuilder, countBuilder);
         }
 
+        if (criteria.filters.ingressVersion) {
+          db.applyFilter(criteria.filters.ingressVersion, 'au.action_ingress_version', auditBuilder, countBuilder);
+        }
+
       }
 
       const [auditResults, countResults] = await db.withTransaction(connection => Promise.all([
@@ -146,6 +152,7 @@ export default function(options) {
           team: row.action_team,
           job: row.action_job,
           jobVersion: row.action_job_version,
+          ingressVersion: row.action_ingress_version,
         }
       });
     }

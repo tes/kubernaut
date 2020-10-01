@@ -18,6 +18,7 @@ export default function(options = {}) {
       team: store.getTeam, // getTeam(id)
       job: store.getJob, // getJob(id)
       jobVersion: store.getJobVersion, // getJobVersion(id)
+      ingressVersion: store.getIngressVersion, // getIngressVersion(id)
     };
     const getAuditTypeStoreFunc = (type, id, meta) => {
       if (type === 'secretVersion') return auditTypeStoreLookup[type](id, meta);
@@ -58,7 +59,7 @@ export default function(options = {}) {
 
         const meta = { date: new Date(), account: req.user };
 
-        const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry', 'team', 'job', 'jobVersion']);
+        const filters = parseFilters(req.query, ['sourceAccount', 'secretVersion', 'namespace', 'service', 'release', 'deployment', 'account', 'cluster', 'registry', 'team', 'job', 'jobVersion', 'ingressVersion']);
 
         const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;

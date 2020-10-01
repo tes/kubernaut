@@ -23,6 +23,7 @@ import {
   TeamLink,
   JobLink,
   JobVersionLink,
+  IngressVersionsLink,
 } from '../Links';
 import { CreateQuickFilters } from '../TableFilter';
 import { Ago } from '../DisplayDate';
@@ -42,6 +43,7 @@ const filterDisplayNameLookup = {
   team: 'Team',
   job: 'Cronjob',
   jobVersion: 'Cronjob version',
+  ingressVersion: 'Ingress version',
 };
 class AuditPage extends Component {
 
@@ -179,6 +181,12 @@ class AuditPage extends Component {
                             audit.jobVersion ? <div className="mr-1 cellFilterActionsParent">
                               Cronjob version: <JobVersionLink version={audit.jobVersion} />
                             <QuickFilters value={audit.jobVersion.id} column='jobVersion' displayValue={audit.jobVersion.createdOn} />
+                            </div> : null
+                          }
+                          {
+                            audit.ingressVersion ? <div className="mr-1 cellFilterActionsParent">
+                              Ingress version: <IngressVersionsLink versionId={audit.ingressVersion.id} serviceName={audit.ingressVersion.service.name} registryName={audit.ingressVersion.service.registry.name} ><span>{audit.ingressVersion.comment}</span></IngressVersionsLink>
+                            <QuickFilters value={audit.ingressVersion.id} column='ingressVersion' displayValue={audit.ingressVersion.comment} />
                             </div> : null
                           }
                         </CardFooter>
