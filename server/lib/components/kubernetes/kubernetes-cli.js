@@ -141,7 +141,7 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
 
     if (docType === 'ingress') {
       for (const doc of docsByType[docType]) {
-        patchResponseStatus(k8sNetworkingV1Beta1Api.patchNamespacedIngress(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+        await patchResponseStatus(k8sNetworkingV1Beta1Api.patchNamespacedIngress(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
       }
       continue;
     }
