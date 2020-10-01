@@ -311,7 +311,7 @@ export default function(options = {}) {
       let yaml = hogan.compile(release.template.source.yaml).render(attributes);
       const json = yaml2json(yaml);
       if (versionOfIngress && versionOfIngress.yaml) {
-        yaml = [yaml, versionOfIngress.yaml].join('---\n');
+        yaml = [yaml, versionOfIngress.yaml].join('\n---\n');
       }
       return { yaml, json };
     }
