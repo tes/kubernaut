@@ -284,7 +284,7 @@ export default function(options = {}) {
                   acc[name] = ingressVersion.service.name;
                   return acc;
                 }
-                const [clusterIngressVariable] = (await store.findClusterIngressVariables({ name })).items;
+                const [clusterIngressVariable] = (await store.findClusterIngressVariables({ name, cluster: cluster.id })).items;
                 acc[name] = clusterIngressVariable.value;
                 return acc;
               }, {});
