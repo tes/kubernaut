@@ -8,7 +8,7 @@ import parseFilters from './lib/parseFilters';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
 
-const shortNameGenerator = (jobName = '') => `${jobName.substring(0, 10)}-${shortHash(jobName)}`;
+const shortNameGenerator = (jobName = '') => `${jobName.toLowerCase().substring(0, 10)}-${shortHash(jobName)}`;
 
 function valuesFromYaml(parsed) {
   const { spec } = parsed || {};

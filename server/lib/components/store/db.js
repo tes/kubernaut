@@ -15,7 +15,7 @@ export default function(options = {}) {
     });
 
     async function query(...args) {
-      return postgres.query.apply(postgres, args);
+      return postgres.query(...args);
     }
 
     async function withTransaction(operations) {
