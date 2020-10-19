@@ -17,7 +17,7 @@
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
     "nanoid": "^3.1.10",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.14.1",
     "popper.js": "^1.14.3",
     "query-string": "^5.1.1",
     "react": "^16.0.0",
