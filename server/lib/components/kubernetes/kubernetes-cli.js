@@ -211,6 +211,12 @@ async function deleteObjects(clients, toDelete, namespace, emitter) {
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
         continue;
       }
+
+      if (objectType === 'configmap') {
+        await k8sApi.deleteNamespacedConfigMap(name, namespace);
+        emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdout', content: `${objectType}/${name} deleted`});
+        continue;
+      }
     } catch (errResult) {
       if (!errResult.response && !errResult.response.body && !errResult.response.body.message) throw errResult;
 
