@@ -146,6 +146,13 @@ async function applyDocs(clients, docsByType = {}, namespace, emitter) {
       continue;
     }
 
+    if (docType === 'configmap') {
+      for (const doc of docsByType[docType]) {
+        await patchResponseStatus(k8sApi.patchNamespacedConfigMap(doc.metadata.name, namespace, doc, undefined, undefined, 'kubernaut', 'true', { headers: ssaHeaders }), emitter);
+      }
+      continue;
+    }
+
     emitter.emit('error', { writtenOn: new Date(), writtenTo: 'stderr', content: `[${docType}] detected and is unsupported at this time.` });
   }
 }
