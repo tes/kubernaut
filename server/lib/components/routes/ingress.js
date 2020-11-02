@@ -2,7 +2,7 @@ import bodyParser from 'body-parser';
 import Boom from 'boom';
 import parseFilters from './lib/parseFilters';
 import { customAlphabet } from 'nanoid';
-import { parseAndValidate } from './lib/ingressTemplating';
+import { parseAndValidate, getIngressManifest } from './lib/ingressTemplating';
 const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 16);
 
 const systemProvidedTemplateVariables = [
@@ -471,6 +471,27 @@ export default function() {
         await store.audit(meta, 'viewed ingress version for service', { service, ingressVersion });
 
         res.json(ingressVersion);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.get('/api/ingress/:serviceId/versions/:id/render/:clusterId', async (req, res, next) => {
+      try {
+        if (! await store.hasPermission(req.user, 'ingress-read')) return next(Boom.forbidden());
+        const service = await store.getService(req.params.serviceId);
+        if (!service) return next(Boom.notFound());
+
+        const ingressVersion = await store.getIngressVersion(req.params.id);
+        if (!ingressVersion) return next(Boom.notFound());
+
+        const cluster = await store.getCluster(req.params.clusterId);
+        if (!cluster) return next(Boom.notFound());
+
+        const meta = { date: new Date(), account: req.user };
+        await store.audit(meta, 'rendered ingress version for service', { service, ingressVersion, cluster });
+
+        res.send(await getIngressManifest(store, ingressVersion, cluster));
       } catch (err) {
         next(err);
       }

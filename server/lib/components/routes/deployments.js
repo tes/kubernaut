@@ -4,10 +4,10 @@ import hogan from 'hogan.js';
 import Boom from 'boom';
 import EventEmitter from 'events';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
-import { safeLoadAll as yaml2json, safeDump } from 'js-yaml';
+import { safeLoadAll as yaml2json } from 'js-yaml';
 import parseFilters from './lib/parseFilters';
 import secretTemplate from './lib/secretTemplate';
-import { extractTemplateVariables } from './lib/ingressTemplating';
+import { getIngressManifest } from './lib/ingressTemplating';
 
 export default function(options = {}) {
 
@@ -169,7 +169,7 @@ export default function(options = {}) {
           versionOfIngress = await store.getIngressVersion(req.body.ingress);
           if (!versionOfIngress) return next(Boom.badRequest(`ingress ${req.body.ingress} was not found`));
           if (versionOfIngress.service.id !== release.service.id) return next(Boom.forbidden());
-          const ingressManifest = await getIngressManifest(versionOfIngress, namespace.cluster);
+          const ingressManifest = await getIngressManifest(store, versionOfIngress, namespace.cluster);
           versionOfIngress.setYaml(ingressManifest);
 
           const latestDeployed = await store.getLatestDeployedIngressToNamespace(release.service, namespace, meta);
@@ -247,60 +247,6 @@ export default function(options = {}) {
         next(err);
       }
     });
-
-    async function getIngressManifest(ingressVersion, cluster) {
-      const entryDocs = await Promise.mapSeries(ingressVersion.entries, async entry => ({
-        apiVersion: 'networking.k8s.io/v1beta1',
-        kind: 'Ingress',
-        metadata: {
-          name: entry.name,
-          annotations: entry.annotations.reduce((acc, { name, value }) => {
-            acc[name] = value;
-            return acc;
-          }, {
-            'kubernetes.io/ingress.class': entry.ingressClass.name,
-          }),
-        },
-        spec: {
-          rules: await Promise.mapSeries(entry.rules, async rule => {
-            const toReturn = {
-              http: {
-                paths: [
-                  {
-                    backend: {
-                      serviceName: ingressVersion.service.name,
-                      servicePort: parseInt(rule.port, 10),
-                    },
-                    path: rule.path,
-                  }
-                ]
-              }
-            };
-
-            if (rule.customHost) {
-              const variableNames = extractTemplateVariables(rule.customHost);
-              const variableMap = await Promise.reduce(variableNames, async (acc, name) => {
-                if (name === 'service') {
-                  acc[name] = ingressVersion.service.name;
-                  return acc;
-                }
-                const [clusterIngressVariable] = (await store.findClusterIngressVariables({ name, cluster: cluster.id })).items;
-                acc[name] = clusterIngressVariable.value;
-                return acc;
-              }, {});
-              toReturn.host = hogan.compile(rule.customHost).render(variableMap);
-            } else if (rule.ingressHostKey.id) {
-              const [clusterIngressHost] = (await store.findClusterIngressHosts({ cluster: cluster.id, ingressHostKey: rule.ingressHostKey.id })).items;
-              toReturn.host = clusterIngressHost.value;
-            }
-
-            return toReturn;
-          }),
-        }
-      }));
-
-      return entryDocs.map(doc => safeDump(doc, { lineWidth: 120 })).join('---\n');
-    }
 
     function getSecretManifest(versionOfSecret) {
       const secretYaml = versionOfSecret ? hogan.compile(secretTemplate).render(versionOfSecret) : '';
