@@ -45,16 +45,16 @@ export default function(options = {}) {
         if (!cluster) return next(Boom.notFound());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
-        if (!req.body.config) return next(Boom.badRequest('config is required'));
+        if (req.body.context && !req.body.config) return next(Boom.badRequest('config is required'));
         if (!req.body.color) return next(Boom.badRequest('color is required'));
-        if (!req.body.context) return next(Boom.badRequest('context is required'));
+        if (req.body.config && !req.body.context) return next(Boom.badRequest('context is required'));
 
         const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
 
-        const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
+        const configOk = (!req.body.config) || await kubernetes.checkConfig(req.body.config, res.locals.logger);
         if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
 
-        const clusterOk = await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
+        const clusterOk = (!req.body.config && !req.body.context) || await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
         if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster`));
 
         const colorOk = isCSSColorHex(req.body.color) || isCSSColorName(req.body.color);
@@ -81,16 +81,16 @@ export default function(options = {}) {
         if (! await store.hasPermission(req.user, 'clusters-write')) return next(Boom.forbidden());
 
         if (!req.body.name) return next(Boom.badRequest('name is required'));
-        if (!req.body.config) return next(Boom.badRequest('config is required'));
+        if (req.body.context && !req.body.config) return next(Boom.badRequest('config is required'));
         if (!req.body.color) return next(Boom.badRequest('color is required'));
-        if (!req.body.context) return next(Boom.badRequest('context is required'));
+        if (req.body.config && !req.body.context) return next(Boom.badRequest('context is required'));
 
         const priority = req.body.priority ? parseInt(req.body.priority, 10) : undefined;
 
-        const configOk = await kubernetes.checkConfig(req.body.config, res.locals.logger);
+        const configOk = (!req.body.config) || await kubernetes.checkConfig(req.body.config, res.locals.logger);
         if (!configOk) return next(Boom.badRequest(`Config ${req.body.config} was not found`));
 
-        const clusterOk = await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
+        const clusterOk = (!req.body.config && !req.body.context) || await kubernetes.checkCluster(req.body.config, req.body.context, res.locals.logger);
         if (!clusterOk) return next(Boom.badRequest(`Unable to verify cluster`));
 
         const colorOk = isCSSColorHex(req.body.color) || isCSSColorName(req.body.color);

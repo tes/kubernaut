@@ -48,7 +48,7 @@ export function* submitSaga() {
   try {
     const values = yield select(getFormValues);
 
-    if (!values.name || !values.config) {
+    if (!values.name) {
       yield put(submitForm.failure());
       return;
     }
