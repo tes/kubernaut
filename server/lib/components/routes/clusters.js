@@ -2,10 +2,17 @@ import bodyParser from 'body-parser';
 import Boom from 'boom';
 import isCSSColorName from 'is-css-color-name';
 import isCSSColorHex from 'is-css-color-hex';
+import Promise from 'bluebird';
+import { safeLoadAll, safeDump } from 'js-yaml';
+import { get as _get, set as _set } from 'lodash';
+import hogan from 'hogan.js';
+import parseFilters from './lib/parseFilters';
+import secretTemplate from './lib/secretTemplate';
+import { generateJobSecretYaml } from './lib/jobFunctions';
 
 export default function(options = {}) {
 
-  function start({ pkg, app, store, kubernetes, auth }, cb) {
+  function start({ pkg, app, store, kubernetes, auth, logger }, cb) {
 
     app.use('/api/clusters', auth('api'));
 
@@ -122,6 +129,120 @@ export default function(options = {}) {
         await store.deleteCluster(req.params.id, meta);
         await store.audit(meta, 'deleted cluster', { cluster });
         res.status(204).send();
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    app.post('/api/clusters/:id/export', async (req, res, next) => {
+      try {
+        const meta = { date: new Date(), account: { id: req.user.id } };
+        const hasGlobalAdmin = !!(await store.rolesForSystem(req.user.id, req.user)).currentRoles.find(({ name, global }) => (name === 'admin' && global));
+        if (!hasGlobalAdmin) return next(Boom.forbidden());
+
+        const cluster = await store.getCluster(req.params.id);
+        if (!cluster) return next(Boom.badRequest('cluster was not found'));
+
+        const namespaces = await store.findNamespaces({ cluster: cluster.name });
+
+        const byNamespace = await Promise.mapSeries(namespaces.items, async (namespace) => {
+          const services = await store.findServicesAndShowStatusForNamespace({
+            namespace: namespace.id
+          }, 1000);
+
+          const deployments = await Promise.reduce(services.items, async (acc, { service }) => {
+            const deploymentsForService = await store.findDeployments({
+              filters: parseFilters({
+                namespace: namespace.name,
+                service: service.name,
+                cluster: cluster.name,
+                registry: service.registry.name,
+              }, ['registry', 'service', 'namespace', 'cluster'])
+            }, 1, 0, 'created', 'desc');
+
+            if (deploymentsForService && deploymentsForService.items && deploymentsForService.items.length) {
+              acc.push(await store.getDeployment(deploymentsForService.items[0].id));
+            }
+            return acc;
+          }, []);
+
+          const secrets = await Promise.reduce(deployments, async (acc, dep) => {
+            if (dep.attributes && dep.attributes.secret) {
+              try {
+                const version = await store.getVersionOfSecretWithDataById(dep.attributes.secret, meta, { opaque: true });
+                acc.push(version);
+              } catch (e) {
+                logger.warn(`Could not find secretVersion [${dep.attributes.secret}] during export.`);
+              }
+            }
+
+            return acc;
+          }, []);
+
+          const cronjobs = await Promise.reduce((await store.findJobs({
+            filters: parseFilters({
+              namespace: namespace.name,
+              cluster: cluster.name,
+            }, ['namespace', 'cluster']),
+          }, 1000)).items, async (acc, cronjob) => {
+            const latest = await store.getLastAppliedVersion(cronjob);
+            if (latest) {
+              latest.secrets = await store.getJobVersionSecretWithData(latest.id, meta, { opaque: true });
+              acc.push(latest);
+            }
+
+            return acc;
+          }, []);
+
+          return {
+            namespace,
+            secrets,
+            deployments,
+            cronjobs,
+          };
+        });
+
+        // Try not to block the event loop
+        const yamlByNamespace = await Promise.mapSeries(byNamespace, async (data) => {
+          const secretsYaml = await Promise.mapSeries(data.secrets, (secret) => hogan.compile(secretTemplate).render(secret));
+          const deploymentsYaml = await Promise.mapSeries(data.deployments, (dep) => dep.manifest.yaml);
+          const cronjobsYaml = await Promise.reduce(data.cronjobs, (acc, job) => {
+            acc.push(job.yaml);
+            if(job.secrets) acc.push(generateJobSecretYaml(job, job.secrets));
+
+            return acc;
+          }, []);
+
+          return {
+            namespace: data.namespace,
+            secretsYaml,
+            deploymentsYaml,
+            cronjobsYaml,
+          };
+        });
+
+        // Try not to block the event loop
+        const namespacedYaml = await Promise.reduce(yamlByNamespace, async (acc, data) => {
+          const applyNamespace = (namespacedAcc, yaml) => {
+            const docs = safeLoadAll(yaml);
+            docs.forEach(doc => {
+              if (!_get(doc, 'metadata.namespace')) {
+                _set(doc, 'metadata.namespace', data.namespace.name);
+              }
+            });
+
+            return namespacedAcc.concat(docs.filter(doc => doc).map(doc => safeDump(doc, { lineWidth: 120 })));
+          };
+
+          const docs = []
+            .concat(await Promise.reduce(data.secretsYaml, applyNamespace, []))
+            .concat(await Promise.reduce(data.deploymentsYaml, applyNamespace, []))
+            .concat(await Promise.reduce(data.cronjobsYaml, applyNamespace, []));
+
+          return acc.concat(docs);
+        }, []);
+
+        res.send(namespacedYaml.join('\n---\n'));
       } catch (err) {
         next(err);
       }

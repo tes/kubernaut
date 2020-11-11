@@ -8,6 +8,7 @@ import {
   openModal,
   closeModal,
   submitForm,
+  triggerExport,
 } from '../../modules/clusters';
 
 function mapStateToProps(state, props) {
@@ -31,6 +32,7 @@ export default connect(mapStateToProps, {
   fetchClustersPagination,
   openModal,
   closeModal,
+  triggerExport,
 })(reduxForm({
   form: 'newCluster',
   enableReinitialize: true,

@@ -16,6 +16,7 @@ export const setClusters = createAction(`${actionsPrefix}/SET_CLUSTERS`);
 export const openModal = createAction(`${actionsPrefix}/OPEN_MODAL`);
 export const closeModal = createAction(`${actionsPrefix}/CLOSE_MODAL`);
 export const setPagination = createAction(`${actionsPrefix}/SET_PAGINATION`);
+export const triggerExport = createAction(`${actionsPrefix}/TRIGGER_EXPORT`);
 
 
 export const getFormValues = (state) => rfGetFormValues('newCluster')(state);

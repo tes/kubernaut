@@ -1,4 +1,4 @@
-import { takeLatest, call, put, select } from 'redux-saga/effects';
+import { takeLatest, takeEvery, call, put, select } from 'redux-saga/effects';
 import { SubmissionError } from 'redux-form';
 import { push, getLocation } from 'connected-react-router';
 
@@ -20,11 +20,13 @@ import {
   selectPaginationState,
   setPagination,
   closeModal,
+  triggerExport,
 } from '../modules/clusters';
 
 import {
   getClusters,
   saveCluster,
+  exportCluster,
 } from '../lib/api';
 
 const pageUrl = '/admin/clusters';
@@ -78,9 +80,21 @@ export function* locationChangeSaga({ payload = {} }) {
   yield put(fetchClusters());
 }
 
+export function* triggerExportSaga({ payload = {} }) {
+  const { cluster } = payload;
+  if (!cluster || !cluster.id) return;
+
+  try {
+    yield call(exportCluster, cluster.id);
+  } catch (e) {
+    console.error(e); // eslint-disable-line no-console
+  }
+}
+
 export default [
   takeLatest(fetchClusters, fetchClustersDataSaga),
   takeLatest(initialiseClustersPage, locationChangeSaga),
   takeLatest(fetchClustersPagination, paginationSaga),
   takeLatest(submitForm.REQUEST, submitSaga),
+  takeEvery(triggerExport, triggerExportSaga),
 ];

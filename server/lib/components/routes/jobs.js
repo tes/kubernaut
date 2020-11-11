@@ -3,12 +3,13 @@ import Boom from 'boom';
 import { safeLoad, safeDump } from 'js-yaml';
 import { get as _get, reduce as _reduce } from 'lodash';
 import EventEmitter from 'events';
-import shortHash from 'short-hash';
 import parseFilters from './lib/parseFilters';
+import {
+  shortNameGenerator,
+  generateJobSecretYaml
+} from './lib/jobFunctions';
 
 const validName = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
-
-const shortNameGenerator = (jobName = '') => `${jobName.toLowerCase().substring(0, 10)}-${shortHash(jobName)}`;
 
 function valuesFromYaml(parsed) {
   const { spec } = parsed || {};
@@ -177,25 +178,6 @@ function buildJobSpecFromCronJob (cronJob) {
       ttlSecondsAfterFinished: 30 * 60,
     },
   };
-}
-
-function generateJobSecretYaml(jobVersion, secretData) {
-  const doc = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: `cronjob-${shortNameGenerator(jobVersion.job.name)}`,
-    },
-    type: 'Opaque',
-    data: secretData.reduce((acc, secret) => {
-      return {
-        ...acc,
-        [secret.key]: secret.value,
-      };
-    }, {}),
-  };
-
-  return safeDump(doc, { lineWidth: 120 });
 }
 
 export default function() {

@@ -38,6 +38,7 @@ class AdminClustersPage extends Component {
       handleSubmit,
       submitForm,
       error,
+      triggerExport,
     } = this.props;
 
     return (
@@ -58,6 +59,7 @@ class AdminClustersPage extends Component {
                     <th></th>
                     <th>Name</th>
                     <th></th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -75,6 +77,14 @@ class AdminClustersPage extends Component {
                         <td style={{width: '100%'}}><ClusterLink cluster={c} /></td>
                         <td>
                           <EditClusterLink cluster={c} />
+                        </td>
+                        <td>
+                          <Button
+                            color="light"
+                            size="sm"
+                            className="export-button py-0 px-2"
+                            onClick={() => triggerExport({ cluster: c })}
+                          >Export</Button>
                         </td>
                       </tr>
                     ))

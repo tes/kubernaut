@@ -588,6 +588,12 @@ export const executeJob = (job) => {
   });
 };
 
+export const exportCluster = (clusterId) => {
+  return makeRequest(`/api/clusters/${clusterId}/export`, {
+    method: 'POST',
+  });
+};
+
 export const makeDeployment = (data, options = {}) => {
   return makeRequest('/api/deployments', {
     method: 'POST',
