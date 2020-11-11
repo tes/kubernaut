@@ -85,7 +85,7 @@ export function* triggerExportSaga({ payload = {} }) {
   if (!cluster || !cluster.id) return;
 
   try {
-    yield call(exportCluster, cluster.id);
+    yield call(exportCluster, cluster.id, cluster.name);
   } catch (e) {
     console.error(e); // eslint-disable-line no-console
   }

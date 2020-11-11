@@ -588,10 +588,18 @@ export const executeJob = (job) => {
   });
 };
 
-export const exportCluster = (clusterId) => {
+export const exportCluster = (clusterId, clusterName) => {
   return makeRequest(`/api/clusters/${clusterId}/export`, {
     method: 'POST',
-  });
+    returnResponse: true,
+  }).then(res => res.blob())
+    .then(blob => {
+      const file = window.URL.createObjectURL(blob);
+      const tempLink = document.createElement('a');
+      tempLink.href = file;
+      tempLink.setAttribute('download', `${clusterName}.yaml`);
+      tempLink.click();
+    });
 };
 
 export const makeDeployment = (data, options = {}) => {

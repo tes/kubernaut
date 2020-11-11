@@ -242,6 +242,8 @@ export default function(options = {}) {
           return acc.concat(docs);
         }, []);
 
+        res.set('Content-Type', 'text/yaml');
+        res.set('Content-Disposition', `attachment; filename="${cluster.name}.yaml"`);
         res.send(namespacedYaml.join('\n---\n'));
       } catch (err) {
         next(err);
