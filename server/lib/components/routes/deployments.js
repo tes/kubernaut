@@ -36,6 +36,11 @@ export default function(options = {}) {
         const offset = req.query.offset ? parseInt(req.query.offset, 10) : undefined;
         const sort = req.query.sort ? req.query.sort : 'created';
         const order = req.query.order ? req.query.order : 'asc';
+        const since = req.query.since ? new Date(parseInt(req.query.since, 10)) : undefined;
+        const till = req.query.till ? new Date(parseInt(req.query.till, 10)) : undefined;
+
+        if (since) criteria.since = since;
+        if (till) criteria.till = till;
 
         const result = await store.findDeployments(criteria, limit, offset, sort, order);
         res.json(result);

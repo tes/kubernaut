@@ -269,11 +269,21 @@ export default function(options) {
         db.applyFilter({ value: criteria.namespaces }, 'n.id', findDeploymentsBuilder, countDeploymentsBuilder);
       }
 
-      if(criteria.hasOwnProperty('hasNotes')) {
+      if (criteria.hasOwnProperty('hasNotes')) {
         const stringOp = criteria.hasNotes ? Op.ne : Op.eq;
         const nullOp = criteria.hasNotes ? Op.not : Op.is;
         const groupOp = criteria.hasNotes ? Op.and : Op.or;
         const op = groupOp(nullOp('d.note', null), stringOp('d.note', ''), stringOp('d.note', '""'));
+        [findDeploymentsBuilder, countDeploymentsBuilder].forEach(b => b.where(op));
+      }
+
+      if (criteria.hasOwnProperty('since')) {
+        const op = Op.gte('d.created_on', criteria.since);
+        [findDeploymentsBuilder, countDeploymentsBuilder].forEach(b => b.where(op));
+      }
+
+      if (criteria.hasOwnProperty('till')) {
+        const op = Op.lt('d.created_on', criteria.till);
         [findDeploymentsBuilder, countDeploymentsBuilder].forEach(b => b.where(op));
       }
 
