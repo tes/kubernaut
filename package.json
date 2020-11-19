@@ -63,7 +63,7 @@
     "confabulous": "^1.5.3",
     "connect-pg-simple": "^6.2.1",
     "cryptus": "^1.2.0",
-    "elastic-apm-node": "glasseyes42/apm-agent-nodejs#6047efec07c0e7ae83d8a3e70320b991eceb7045",
+    "elastic-apm-node": "^3.8.0",
     "express-session": "^1.15.6",
     "groundhog-day": "^1.1.1",
     "highwayhash": "^2.5.0",
