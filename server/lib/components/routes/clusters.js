@@ -150,7 +150,9 @@ export default function(options = {}) {
             namespace: namespace.id
           }, 1000);
 
-          const deployments = await Promise.reduce(services.items, async (acc, { service }) => {
+          const enabledServices = services.items.filter(s => s.enabled);
+
+          const deployments = await Promise.reduce(enabledServices, async (acc, { service }) => {
             const deploymentsForService = await store.findDeployments({
               filters: parseFilters({
                 namespace: namespace.name,
