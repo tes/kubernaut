@@ -272,7 +272,7 @@ export default function() {
         .join(
           innerJoin('account a').on(Op.eq('ic.created_by', raw('a.id')))
         )
-        .orderBy('ic.name')
+        .orderBy(raw('ic.priority DESC NULLS LAST, ic.name'))
         .limit(limit)
         .offset(offset);
 
@@ -415,7 +415,7 @@ export default function() {
           innerJoin('active_cluster__vw c').on(Op.eq('cic.cluster', raw('c.id'))),
           innerJoin('active_ingress_class__vw ic').on(Op.eq('cic.ingress_class', raw('ic.id')))
         )
-        .orderBy('ic.name')
+        .orderBy(raw('ic.priority DESC NULLS LAST, ic.name'))
         .limit(limit)
         .offset(offset);
 
