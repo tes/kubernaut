@@ -163,7 +163,9 @@ class RenderAnnotations extends Component {
                           options={[
                             'nginx.ingress.kubernetes.io/rewrite-target',
                             'nginx.ingress.kubernetes.io/use-regex',
-                            'nginx.ingress.kubernetes.io/configuration-snippet'
+                            'nginx.ingress.kubernetes.io/configuration-snippet',
+                            'nginx.ingress.kubernetes.io/proxy-read-timeout',
+                            'nginx.ingress.kubernetes.io/proxy-send-timeout'
                           ]}
                         />
                       </FormGroup>
