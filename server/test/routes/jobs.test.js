@@ -31,6 +31,7 @@ spec:
           initContainers:
             - name: init
               image: busybox
+              imagePullPolicy: Always
               command:
                 - some
                 - command
@@ -49,6 +50,7 @@ spec:
           containers:
             - name: main
               image: busybox
+              imagePullPolicy: Always
               command:
                 - some
                 - other

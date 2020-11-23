@@ -70,6 +70,7 @@ function buildSpec (values, job) {
     const toReturn = {
       name: c.name || '',
       image: c.image || '',
+      imagePullPolicy: 'Always',
     };
 
     const filteredArgs = [].concat(c.args)
