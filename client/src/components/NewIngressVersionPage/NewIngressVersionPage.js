@@ -225,6 +225,7 @@ class RenderEntry extends Component {
       ingressVariables,
       entryData,
       entry,
+      service,
       index,
       validateCustomHost,
     } = this.props;
@@ -240,6 +241,20 @@ class RenderEntry extends Component {
             >
             <i
               className="fa fa-trash text-danger"
+              aria-hidden='true'
+              ></i>
+          </Button>
+          <Button
+            close
+            onClick={() => {
+              this.props.fields.push({
+                ...entryData,
+                name: `${service.name}-${nanoid()}`,
+              });
+            }}
+            >
+            <i
+              className="fa fa-clone text-info mr-3"
               aria-hidden='true'
               ></i>
           </Button>
@@ -338,6 +353,7 @@ class RenderEntries extends Component {
                 ingressVariables={ingressVariables}
                 fields={fields}
                 validateCustomHost={validateCustomHost}
+                service={service}
               />
             );
           })}
