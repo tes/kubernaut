@@ -1,5 +1,5 @@
 import bunyan from 'bunyan';
-import R from 'ramda';
+import { omit } from 'lodash';
 
 export default function() {
 
@@ -11,7 +11,7 @@ export default function() {
   }
 
   function onMessage(event) {
-    log[event.level](R.omit(['level', 'message'], event), event.message);
+    log[event.level](omit(event, ['level', 'message']), event.message);
   }
 
   return {

@@ -2,9 +2,7 @@
 
 import chalk from 'chalk';
 import hogan from 'hogan.js';
-import merge from 'lodash.merge';
-import has from 'lodash.has';
-import get from 'lodash.get';
+import { get, has, merge } from 'lodash';
 
 const response = hogan.compile('{{{displayTracer}}} {{{displayLevel}}} {{{request.method}}} {{{response.statusCode}}} {{{request.url}}}');
 const error = hogan.compile('{{{displayTracer}}} {{{displayLevel}}} {{{message}}} {{{code}}}\n{{{error.stack}}} {{{details}}}');
@@ -66,4 +64,3 @@ export default function(options = {}) {
     start,
   };
 }
-

@@ -1,4 +1,4 @@
-import pick from 'lodash.pick';
+import { pick } from 'lodash';
 import onHeaders from 'on-headers';
 import prepper from 'prepper';
 

@@ -1,6 +1,6 @@
 import Chance from 'chance';
 import { v4 as uuid } from 'uuid';
-import get from 'lodash.get';
+import { get } from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import highwayhash from 'highwayhash';

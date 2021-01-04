@@ -1,5 +1,4 @@
-import merge from 'lodash.merge';
-import get from 'lodash.get';
+import { get, merge } from 'lodash';
 
 module.exports = function(options = {}) {
 
