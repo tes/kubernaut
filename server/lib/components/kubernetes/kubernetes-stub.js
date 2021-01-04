@@ -1,4 +1,4 @@
-import { safeLoadAll } from 'js-yaml';
+import { loadAll } from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -36,7 +36,7 @@ export default function(options = {}) {
         if (!contexts[context]) return reject(new Error(`Unknown context: ${context}`));
         if (!contexts[context].namespaces[namespace]) return reject(new Error(`Unknown namespace: ${namespace}`));
 
-        const manifestJson = safeLoadAll(manifest);
+        const manifestJson = loadAll(manifest);
         emitter.emit('data', { writtenOn: new Date(), writtenTo: 'stdin', content: `kubectl --context ${context} --namespace ${namespace} apply -f \${MANIFEST}\n` });
 
         const name = manifestJson.find((doc) => (doc && doc.kind && doc.kind === 'Deployment')).metadata.name;

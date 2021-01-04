@@ -3,7 +3,7 @@ import Boom from 'boom';
 import isCSSColorName from 'is-css-color-name';
 import isCSSColorHex from 'is-css-color-hex';
 import Promise from 'bluebird';
-import { safeLoadAll, safeDump } from 'js-yaml';
+import { loadAll, dump } from 'js-yaml';
 import { get as _get, set as _set } from 'lodash';
 import hogan from 'hogan.js';
 import parseFilters from './lib/parseFilters';
@@ -226,14 +226,14 @@ export default function(options = {}) {
         // Try not to block the event loop
         const namespacedYaml = await Promise.reduce(yamlByNamespace, async (acc, data) => {
           const applyNamespace = (namespacedAcc, yaml) => {
-            const docs = safeLoadAll(yaml);
+            const docs = loadAll(yaml);
             docs.forEach(doc => {
               if (!_get(doc, 'metadata.namespace')) {
                 _set(doc, 'metadata.namespace', data.namespace.name);
               }
             });
 
-            return namespacedAcc.concat(docs.filter(doc => doc).map(doc => safeDump(doc, { lineWidth: 120 })));
+            return namespacedAcc.concat(docs.filter(doc => doc).map(doc => dump(doc, { lineWidth: 120 })));
           };
 
           const docs = []

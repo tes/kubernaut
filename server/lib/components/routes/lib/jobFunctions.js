@@ -1,4 +1,4 @@
-import { safeDump } from 'js-yaml';
+import { dump } from 'js-yaml';
 import shortHash from 'short-hash';
 
 export const shortNameGenerator = (jobName = '') => `${jobName.toLowerCase().substring(0, 10)}-${shortHash(jobName)}`;
@@ -19,5 +19,5 @@ export function generateJobSecretYaml(jobVersion, secretData) {
     }, {}),
   };
 
-  return safeDump(doc, { lineWidth: 120 });
+  return dump(doc, { lineWidth: 120 });
 }

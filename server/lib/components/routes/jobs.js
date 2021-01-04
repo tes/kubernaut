@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import Boom from 'boom';
-import { safeLoad, safeDump } from 'js-yaml';
+import { load, dump } from 'js-yaml';
 import { get as _get, reduce as _reduce } from 'lodash';
 import EventEmitter from 'events';
 import parseFilters from './lib/parseFilters';
@@ -237,9 +237,9 @@ export default function() {
             const latestVersionToCopy = await store.getJobVersion(versions.items[0].id);
 
             const newJob = await store.getJob(newJobId);
-            const values = valuesFromYaml(safeLoad(latestVersionToCopy.yaml || ''));
+            const values = valuesFromYaml(load(latestVersionToCopy.yaml || ''));
             const spec = buildSpec(values, newJob);
-            const yaml = safeDump(spec, { lineWidth: 120 });
+            const yaml = dump(spec, { lineWidth: 120 });
             const newVersionId = await store.saveJobVersion(newJob, { yaml }, meta);
             await store.audit(meta, 'saved new job version', { jobVersion: { id: newVersionId} });
           }
@@ -365,7 +365,7 @@ export default function() {
         const meta = { date: new Date(), account: req.user };
         await store.audit(meta, 'viewed job version', { jobVersion });
 
-        jobVersion.values = valuesFromYaml(safeLoad(jobVersion.yaml || ''));
+        jobVersion.values = valuesFromYaml(load(jobVersion.yaml || ''));
         jobVersion.values.secret = {
           secrets: await store.getJobVersionSecretWithData(jobVersion.id, meta),
         };
@@ -403,7 +403,7 @@ export default function() {
 
         const values = req.body || {};
         const spec = buildSpec(values, job);
-        const yaml = safeDump(spec, { lineWidth: 120 });
+        const yaml = dump(spec, { lineWidth: 120 });
         const meta = { date: new Date(), account: req.user };
 
         const newVersionId = await store.saveJobVersion(job, { yaml }, meta);
@@ -431,7 +431,7 @@ export default function() {
         const values = req.body || {};
 
         const spec = buildSpec(values, { id: 'preview-uuid', name: 'preview' });
-        const yaml = safeDump(spec, { lineWidth: 120 });
+        const yaml = dump(spec, { lineWidth: 120 });
 
         return res.json({ yaml });
       } catch (err) {
@@ -458,10 +458,10 @@ export default function() {
         }
         if (!lastApplied) return next(Boom.badRequest());
 
-        const cronSpec = safeLoad(lastApplied.yaml || '');
+        const cronSpec = load(lastApplied.yaml || '');
         const jobSpec = buildJobSpecFromCronJob(cronSpec);
 
-        const yamlDocs = [safeDump(jobSpec, { lineWidth: 120 })];
+        const yamlDocs = [dump(jobSpec, { lineWidth: 120 })];
 
         const jobVersionSecrets = await store.getJobVersionSecretWithData(lastApplied.id, meta, { opaque: true });
 

@@ -2,7 +2,6 @@
   "parser": "babel-eslint",
   "extends": "imperative-es6",
   "plugins": [
-    "react",
     "react-hooks"
   ],
   "parserOptions": {

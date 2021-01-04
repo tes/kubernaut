@@ -4,7 +4,7 @@ import hogan from 'hogan.js';
 import Boom from 'boom';
 import EventEmitter from 'events';
 import DeploymentLogEntry from '../../domain/DeploymentLogEntry';
-import { safeLoadAll as yaml2json } from 'js-yaml';
+import { loadAll as yaml2json } from 'js-yaml';
 import parseFilters from './lib/parseFilters';
 import secretTemplate from './lib/secretTemplate';
 import { getIngressManifest } from './lib/ingressTemplating';

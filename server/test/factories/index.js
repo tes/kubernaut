@@ -7,7 +7,7 @@ import highwayhash from 'highwayhash';
 import crypto from 'crypto';
 import pm from 'power-merge';
 import hogan from 'hogan.js';
-import { safeLoadAll as yaml2json } from 'js-yaml';
+import { loadAll as yaml2json } from 'js-yaml';
 import request from 'request-promise';
 import { stringify } from 'querystring';
 
