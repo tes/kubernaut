@@ -1,5 +1,5 @@
 import React from 'react';
-import Timeago from 'timeago.js';
+import { format } from 'timeago.js';
 
 export const Human = ({ date }) => {
   const text = getText(date, inHumanFormat);
@@ -33,8 +33,7 @@ function inHumanFormat(d) {
 }
 
 function inAgoFormat(d) {
-  const timeago = Timeago();
-  return timeago.format(d);
+  return format(d);
 }
 
 function getText(d, transform) {
