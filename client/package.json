@@ -22,7 +22,7 @@
     "postcss": "^8.2.2",
     "query-string": "^6.13.8",
     "react": "^16.14.0",
-    "react-ace": "^6.4.0",
+    "react-ace": "^9.2.1",
     "react-dom": "^16.14.0",
     "react-helmet": "^5.2.0",
     "react-markdown": "^4.0.3",
