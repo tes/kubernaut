@@ -154,7 +154,7 @@ export default function(options = {}) {
 
     async function findAccounts(criteria = {}, limit = 50, offset = 0, sort = 'name', order = 'asc') {
 
-      logger.debug(`Finding up to ${limit} accounts matching criteria: ${criteria} starting from offset: ${offset}`);
+      logger.debug(`Finding up to ${limit} accounts matching criteria: ${JSON.stringify(criteria)} starting from offset: ${offset}`);
 
       const bindVariables = {};
       const sortColumn = sortMapping[sort] || 'a.display_name';

@@ -40,7 +40,7 @@ export default function(options) {
 
     async function findRegistries(criteria = {}, limit = 50, offset = 0) {
 
-      logger.debug(`Finding up to ${limit} registries matching criteria: ${criteria} starting from offset: ${offset}`);
+      logger.debug(`Finding up to ${limit} registries matching criteria: ${JSON.stringify(criteria)} starting from offset: ${offset}`);
 
       const bindVariables = {};
 

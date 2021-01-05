@@ -56,7 +56,7 @@ export default function(options) {
 
     async function findClusters(criteria = {}, limit = 50, offset = 0) {
 
-      logger.debug(`Finding up to ${limit} clusters matching criteria: ${criteria} starting from offset: ${offset}`);
+      logger.debug(`Finding up to ${limit} clusters matching criteria: ${JSON.stringify(criteria)} starting from offset: ${offset}`);
 
       const bindVariables = {};
 
