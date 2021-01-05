@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import AceEditor from 'react-ace';
-import 'brace/mode/json';
-import 'brace/mode/plain_text';
-import 'brace/theme/github';
-import 'brace/ext/language_tools';
-require('brace');
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-plain_text';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import "ace-builds/webpack-resolver";
 
 class RenderEditor extends Component {
   render() {
